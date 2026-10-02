@@ -1,0 +1,30 @@
+# FVM Version Cache
+.fvm/
+.flutter-plugins-dependencies
+
+.flutter-plugins
+.fvmrc
+.metadata
+pubspec.lock
+.dart_tool/
+.vscode/
+.idea/
+build/
+docs/_site/
+# Generated files
+# Flutter/Dart/Pub related
+.opencode
+/symbols/
+/android/.kotlin/
+
+# Secrets
+.env
+android/key.properties
+*.jks
+*.keystore
+
+.DS_Store
+.history/
+
+.codebuddy/
+AGENTS.md

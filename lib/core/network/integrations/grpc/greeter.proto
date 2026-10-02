@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+// 经典的 gRPC "Greeter" 示例契约 —— `SayHello` 与每个 gRPC 入门指南
+// 附带的规范 helloworld.Greeter 服务一致（grpcb.in 等公共测试服务器
+// 也实现了该服务），因此本 demo 中的一元调用可以直接对接真实服务器，
+// 无需任何额外配置。`SayHelloStream` 在此基础上增加了服务端流式调用；
+// 将 demo 指向你自己的服务器（参见 tool/grpc_demo_server.dart 中的
+// 本地参考实现）即可完整测试。
+package helloworld;
+
+service Greeter {
+  // 一元 RPC：一个请求，一个响应。
+  rpc SayHello (HelloRequest) returns (HelloReply);
+
+  // 服务端流式 RPC：一个请求，一个响应流。
+  rpc SayHelloStream (HelloRequest) returns (stream HelloReply);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}

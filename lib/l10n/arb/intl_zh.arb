@@ -1,0 +1,209 @@
+{
+  "@@locale": "zh",
+  "appTitle": "Flutter Riverpod 整洁架构",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcomeMessage": "欢迎使用 Flutter Riverpod 整洁架构",
+  "@welcomeMessage": {
+    "description": "The welcome message displayed on the home screen"
+  },
+  "home": "首页",
+  "@home": {
+    "description": "Label for the home tab or button"
+  },
+  "settings": "设置",
+  "@settings": {
+    "description": "Label for the settings tab or button"
+  },
+  "profile": "个人中心",
+  "@profile": {
+    "description": "Label for the profile tab or button"
+  },
+  "darkMode": "深色模式",
+  "@darkMode": {
+    "description": "Label for the dark mode option"
+  },
+  "lightMode": "浅色模式",
+  "@lightMode": {
+    "description": "Label for the light mode option"
+  },
+  "systemMode": "跟随系统",
+  "@systemMode": {
+    "description": "Label for the system theme mode option"
+  },
+  "language": "语言",
+  "@language": {
+    "description": "Label for the language setting"
+  },
+  "change_language": "更改应用语言",
+  "@change_language": {
+    "description": "Label for changing the application language"
+  },
+  "theme": "主题",
+  "@theme": {
+    "description": "Label for theme selection"
+  },
+  "change_theme": "更改应用主题",
+  "@change_theme": {
+    "description": "Label for changing the application theme"
+  },
+  "notifications": "通知",
+  "@notifications": {
+    "description": "Label for notifications settings"
+  },
+  "notification_settings": "配置通知偏好设置",
+  "@notification_settings": {
+    "description": "Label for notification settings description"
+  },
+  "localization_demo": "本地化演示",
+  "@localization_demo": {
+    "description": "Label for the localization demo option"
+  },
+  "localization_demo_description": "查看本地化功能",
+  "@localization_demo_description": {
+    "description": "Description for the localization demo option"
+  },
+  "language_settings": "语言设置",
+  "@language_settings": {
+    "description": "Title for the language settings screen"
+  },
+  "select_your_language": "选择您偏好的语言",
+  "@select_your_language": {
+    "description": "Instruction to select a language"
+  },
+  "language_explanation": "所选语言将应用于整个应用",
+  "@language_explanation": {
+    "description": "Explanation of the language selection effects"
+  },
+  "localization_assets_demo": "本地化与资源演示",
+  "@localization_assets_demo": {
+    "description": "Title for the localization assets demo screen"
+  },
+  "current_language": "当前语言",
+  "@current_language": {
+    "description": "Label for displaying current language info"
+  },
+  "language_code": "语言代码",
+  "@language_code": {
+    "description": "Label for language code"
+  },
+  "language_name": "语言名称",
+  "@language_name": {
+    "description": "Label for language name"
+  },
+  "formatting_examples": "格式化示例",
+  "@formatting_examples": {
+    "description": "Title for formatting examples section"
+  },
+  "date_full": "日期（完整）",
+  "@date_full": {
+    "description": "Label for full date format example"
+  },
+  "date_short": "日期（简短）",
+  "@date_short": {
+    "description": "Label for short date format example"
+  },
+  "time": "时间",
+  "@time": {
+    "description": "Label for time format example"
+  },
+  "currency": "货币",
+  "@currency": {
+    "description": "Label for currency format example"
+  },
+  "percent": "百分比",
+  "@percent": {
+    "description": "Label for percent format example"
+  },
+  "localized_assets": "本地化资源",
+  "@localized_assets": {
+    "description": "Title for localized assets section"
+  },
+  "localized_assets_explanation": "此部分演示如何根据所选语言加载不同的资源。图片、音频等资源均可随语言变化。",
+  "@localized_assets_explanation": {
+    "description": "Explanation of localized assets feature"
+  },
+  "image_example": "本地化图片示例",
+  "@image_example": {
+    "description": "Title for localized image example"
+  },
+  "welcome_image_caption": "此图片会根据您所选的语言加载",
+  "@welcome_image_caption": {
+    "description": "Caption for the welcome image example"
+  },
+  "common_image_example": "通用图片示例",
+  "@common_image_example": {
+    "description": "Title for common image example"
+  },
+  "common_image_caption": "此图片在所有语言下都相同",
+  "@common_image_caption": {
+    "description": "Caption for the common image example"
+  },
+  "logout": "退出登录",
+  "@logout": {
+    "description": "Label for the logout button"
+  },
+  "login": "登录",
+  "@login": {
+    "description": "Label for the login button"
+  },
+  "email": "邮箱",
+  "@email": {
+    "description": "Label for the email field"
+  },
+  "password": "密码",
+  "@password": {
+    "description": "Label for the password field"
+  },
+  "signIn": "登录",
+  "@signIn": {
+    "description": "Label for the sign in button"
+  },
+  "register": "注册",
+  "@register": {
+    "description": "Label for the register button"
+  },
+  "forgotPassword": "忘记密码？",
+  "@forgotPassword": {
+    "description": "Label for the forgot password button"
+  },
+  "errorOccurred": "发生错误",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+  "tryAgain": "重试",
+  "@tryAgain": {
+    "description": "Label for the try again button"
+  },
+  "greeting": "你好，{name}！",
+  "@greeting": {
+    "description": "A greeting message with the person's name",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "张三"
+      }
+    }
+  },
+  "itemCount": "{count, plural, =0{没有项目} =1{1 个项目} other{{count} 个项目}}",
+  "@itemCount": {
+    "description": "A plural message based on an item count",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "lastUpdated": "最后更新：{date}",
+  "@lastUpdated": {
+    "description": "When something was last updated",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  }
+}

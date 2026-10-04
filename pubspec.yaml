@@ -41,8 +41,6 @@ dependencies:
 
   #值相等性比较（实体 == / hashCode）
   equatable: ^3.0.0
-  #安全存储（Keychain / Keystore）
-  flutter_secure_storage: ^11.2.0
   #日期 / 数字 / 货币格式化
   intl: ^0.20.3
   #骨架屏微光占位
@@ -50,13 +48,11 @@ dependencies:
   #UI 组件库
   material_ui: 1.5.0
   #打开网页 电话 短信 邮件等
-  url_launcher: ^6.3.2
+  url_launcher: ^6.3.3
   #UUID 生成
   uuid: ^4.6.0
   #锁 同步代码
   synchronized: ^3.4.2
-  #生物识别
-  local_auth: ^3.0.2
   #函数式编程
   fpdart: ^1.2.0
   #golden 测试
@@ -101,14 +97,12 @@ dependencies:
   flex_color_scheme: ^9.0.0
   #文件系统目录
   path_provider: ^2.1.6
-  #文件下载和打开
-  flutter_downloader: ^1.12.1
   #图片缓存
   cached_network_image: ^4.0.4
   #loading 加载指示器集合
   flutter_spinkit: ^5.2.2
   #替换pull refresh
-  easy_refresh: ^3.5.1
+  easy_refresh: ^4.0.0
   #websocket
   web_socket_channel: ^3.0.3
   #Stream扩展
@@ -130,6 +124,9 @@ dependencies:
   workmanager: ^0.10.10
   #本地数据库（SQLite）
   drift: ^2.35.1
+  path: ^1.9.1
+  #瀑布流网格（D1 笔记列表 2 列）—— ARCHITECTURE-DESIGN §7.5 裁决新增的唯一 UI 依赖
+  flutter_staggered_grid_view: ^0.7.0
 
 dev_dependencies:
   #单元测试 / Widget 测试

@@ -1,3 +1,8 @@
+# 状态：已停用。质量门禁（analyze + format + test）统一由 `flutter_ci.yml` 承担，
+# 避免同一份门禁跑两遍。
+# 恢复条件：① Android / iOS 签名密钥进 GitHub Secrets（下方 build job 依赖已不存在的
+#    `android/app/keystore.jks` 路径，现启用必红）；② fastlane / Codecov 凭据到位。
+# 依据：`specs/docs/ROADMAP.md` §7 CONFLICT-09。
 name: Flutter CI/CD
 
 on:

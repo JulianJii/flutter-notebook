@@ -1,4 +1,3 @@
-
 /// 应用中所有分析事件的基础类
 abstract class AnalyticsEvent {
   /// 事件名称，将按此上报给分析服务

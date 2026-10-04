@@ -9,10 +9,10 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => 'Flutter Riverpod 整洁架构';
+  String get app_title => 'Flutter Riverpod 整洁架构';
 
   @override
-  String get welcomeMessage => '欢迎使用 Flutter Riverpod 整洁架构';
+  String get welcome_message => '欢迎使用 Flutter Riverpod 整洁架构';
 
   @override
   String get home => '首页';
@@ -24,16 +24,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get profile => '个人中心';
 
   @override
-  String get darkMode => '深色模式';
+  String get dark_mode => '深色模式';
 
   @override
-  String get lightMode => '浅色模式';
+  String get light_mode => '浅色模式';
 
   @override
-  String get systemMode => '跟随系统';
+  String get system_mode => '跟随系统';
 
   @override
   String get language => '语言';
+
+  @override
+  String get no_data => '暂无数据';
+
+  @override
+  String get loading => '加载中...';
+
+  @override
+  String get cancel => '取消';
 
   @override
   String get change_language => '更改应用语言';
@@ -115,31 +124,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_image_caption => '此图片在所有语言下都相同';
 
   @override
-  String get logout => '退出登录';
+  String get error_occurred => '发生错误';
 
   @override
-  String get login => '登录';
-
-  @override
-  String get email => '邮箱';
-
-  @override
-  String get password => '密码';
-
-  @override
-  String get signIn => '登录';
-
-  @override
-  String get register => '注册';
-
-  @override
-  String get forgotPassword => '忘记密码？';
-
-  @override
-  String get errorOccurred => '发生错误';
-
-  @override
-  String get tryAgain => '重试';
+  String get try_again => '重试';
 
   @override
   String greeting(String name) {
@@ -147,7 +135,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String itemCount(num count) {
+  String item_count(num count) {
     final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
       locale: localeName,
     );
@@ -164,7 +152,129 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String lastUpdated(DateTime date) {
+  String get noteSnippetPlaceholder => '无附加文案';
+
+  @override
+  String get notes => '笔记';
+
+  @override
+  String get todos => '待办';
+
+  @override
+  String get all => '全部';
+
+  @override
+  String get uncategorized => '未分类';
+
+  @override
+  String get back => '返回';
+
+  @override
+  String get share => '分享';
+
+  @override
+  String get palette => '配色';
+
+  @override
+  String get more => '更多';
+
+  @override
+  String get folders => '文件夹';
+
+  @override
+  String get createFolder => '新建文件夹';
+
+  @override
+  String get folderName => '文件夹名称';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get delete => '删除';
+
+  @override
+  String get noteTitleHint => '标题';
+
+  @override
+  String noteMetaWordCount(int count) {
+    return '$count字';
+  }
+
+  @override
+  String get settingsGroupCloud => '云服务';
+
+  @override
+  String get settingsGroupNoteStyle => '笔记样式';
+
+  @override
+  String get settingsGroupQuick => '快捷功能';
+
+  @override
+  String get settingsGroupReminder => '提醒';
+
+  @override
+  String get settingsGroupOther => '其他';
+
+  @override
+  String get settingsRecentDeleted => '最近删除';
+
+  @override
+  String get settingsQuickCapture => '速记';
+
+  @override
+  String get settingsPrivacyPolicy => '隐私政策';
+
+  @override
+  String get settingsUserAgreement => '用户协议';
+
+  @override
+  String get settingsTextScale => '文字大小';
+
+  @override
+  String get settingsNoteSort => '选择排序方式';
+
+  @override
+  String get settingsNoteLayout => '笔记列表布局';
+
+  @override
+  String get settingsStrongReminder => '强提醒';
+
+  @override
+  String get settingsStrongReminderDesc => '持续响铃且静音和勿扰状态下仍有效';
+
+  @override
+  String get settingsTextScaleSmall => '小';
+
+  @override
+  String get settingsTextScaleDefault => '默认';
+
+  @override
+  String get settingsTextScaleLarge => '大';
+
+  @override
+  String get settingsTextScaleXLarge => '超大';
+
+  @override
+  String get settingsSortEditedDesc => '按编辑日期';
+
+  @override
+  String get settingsSortEditedAsc => '按编辑日期（最早）';
+
+  @override
+  String get settingsSortCreatedDesc => '按创建日期';
+
+  @override
+  String get settingsSortTitleAsc => '按标题';
+
+  @override
+  String get settingsLayoutGrid => '宫格模式';
+
+  @override
+  String get settingsLayoutList => '列表模式';
+
+  @override
+  String last_updated(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
     final String dateString = dateDateFormat.format(date);
 

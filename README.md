@@ -1,216 +1,177 @@
-# Flutter Riverpod 干净架构模板
+# 笔记本 · Notebook
 
-![Flutter](https://img.shields.io/badge/Flutter-3.7+-02569B?style=flat&logo=flutter)
-![Riverpod](https://img.shields.io/badge/Riverpod-2.0+-0175C2?style=flat)
+![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?style=flat&logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-3.11+-0175C2?style=flat&logo=dart)
+![Riverpod](https://img.shields.io/badge/Riverpod-3.4-0175C2?style=flat)
 ![Architecture](https://img.shields.io/badge/Architecture-Clean-success)
 ![License](https://img.shields.io/badge/License-MIT-purple)
 
-面向现代应用开发、生产就绪、高度可扩展的 Flutter 模板。本项目实现了严格类型化的**干净架构**，并使用 **Riverpod** 进行状态管理与依赖注入。
+一个**本地优先（local-first）的笔记本应用**：记笔记、管文件夹、勾待办。
+工程上同时是一套生产就绪的 Flutter 骨架 —— **Clean Architecture** 严格分层 + **Riverpod 3**（状态管理 + 依赖注入）+ **fpdart** 函数式错误处理。
+
+数据全部落在本地（Drift / SQLite + SharedPreferences），无登录、无账号，打开即写。
 
 ---
 
-## 🚀 核心特性
+## 应用功能
 
-### 核心架构
-- **严格干净架构**：Domain、Data、Presentation 各层清晰分离。
-- **函数式错误处理**：使用 `fpdart` 实现类型安全的错误处理（`Either<Failure, T>`）。
-- **Riverpod 2.0**：使用 `Notifier` 和 `AsyncNotifier` 的现代 Provider 模式。
-- **框架无关**：Domain 与 Data 层无需依赖 Flutter 即可测试。
+| 页面 | 路由 | 能力 |
+|------|------|------|
+| 笔记列表 | `/notes` | 瀑布流卡片、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计 |
+| 笔记详情 | `/notes/:id`、`/notes/new` | 标题 + 正文编辑，自动保存，归属文件夹 |
+| 文件夹管理 | `/notes/folders` | 新建 / 重命名 / 删除文件夹，显示每个文件夹的笔记数 |
+| 待办 | `/todos` | 新建、编辑、勾选完成、删除 |
+| 设置 | `/settings` | 笔记字号、默认排序、列表布局、强提醒开关 |
 
-### 开发者体验
-- **特性生成器**：数秒内生成完整功能（`./generate_feature.sh`）。
-- **严格 Lint**：零容忍的分析选项，保障代码质量。
-- **CI/CD 就绪**：内置 GitHub Actions 自动化测试与分析。
-- **类型安全**：全程空安全与严格类型化。
-
-### 高级能力
-- **实时功能**：WebSocket 集成示例（Chat）。
-- **复杂表单**：带验证的高级表单处理（Survey）。
-- **离线优先**：使用 SharedPreferences 的本地存储策略。
-- **安全存储**：加密的凭据存储。
-- **生物识别认证**：FaceID 与指纹集成。
-- **本地化**：内置多语言支持。
+底部 `NotesShell` 用 `StatefulShellRoute.indexedStack` 承载「笔记 / 待办」两个 Tab，切换不丢列表状态；`/settings` 挂在 root navigator 上整屏覆盖。
 
 ---
 
-## 📚 文档
+## 工程特性
 
-- [**架构指南**](docs/ARCHITECTURE_GUIDE.md)：深入解析项目结构。
-- [**编码规范**](docs/CODING_STANDARDS.md)：本项目使用的规则与模式。
-- [**功能指南**](docs/FEATURES.md)：核心功能文档。
-- [**CLI 工具**](docs/TOOLS.md)：如何使用生成器脚本。
+**架构**
+- 四层分离：`domain` / `data` / `presentation` / `providers`（DI 装配）。`domain` 是纯 Dart，不依赖 Flutter，可脱离框架测试。
+- 错误处理类型化：`Either<Failure, T>`；Exception→Failure 的映射只在 data 层发生，UI 永不接触原始异常。
+- Riverpod 3 注解式 provider（`riverpod_generator`）+ `AsyncNotifier` / `Notifier`。
+
+**已接入的基建**
+- 离线优先：变更队列 + 后台同步 + 冲突策略（ClientWins / ServerWins / SmartMerge）。
+- 本地持久化：Drift（笔记、文件夹、待办）+ SharedPreferences（设置）。
+- 自建 Design Token 主题（颜色 / 字阶走 `ThemeExtension`，间距 / 圆角 / 阴影走常量），中英双语，功能开关，埋点分析，本地通知，两级缓存，应用更新检查。
+- 集成示例（`core/network/integrations/`）：WebSocket、gRPC、基于 dio 的轻量 GraphQL、webhook、文件传输。
+
+**工程化**
+- 零容忍 lint（`flutter_lints` + `riverpod_lint`），`flutter analyze` 必须全绿。
+- 代码生成脚本（feature / 语言 / 图标 / 重命名 / 测试脚手架），`.sh` 与 `.ps1` 双版本。
+- GitHub Actions：分析、测试、覆盖率、文档站点。
 
 ---
 
-## 🛠️ 快速开始
+## 快速开始
 
-### 1. 环境要求
-- Flutter SDK（3.7+）
-- Dart SDK（3.0+）
+**环境**：Flutter 3.47.5 / Dart `>=3.11.0 <4.0.0`（见 `pubspec.yaml`）
 
-### 2. 安装
 ```bash
-# 克隆仓库
-git clone https://github.com/jessejii/init.git
+git clone <your-repo-url>
+cd flutter-notebook
 
-# 安装依赖
-flutter pub get
-
-# 生成代码（Freezed、Riverpod 等）
-dart run build_runner build --delete-conflicting-outputs
+flutter pub get                                          # 安装依赖
+dart run build_runner build --delete-conflicting-outputs  # 生成 freezed / json / riverpod / drift / assets
+flutter run                                              # 开发运行
 ```
 
-### 3. 运行应用
-```bash
-# 开发模式
-flutter run
+> 新增或修改了 `@riverpod` / `@freezed` / `@JsonSerializable` / Drift 表，必须先跑 build_runner。
+> 只改了 `.arb` 文案则只需 `flutter gen-l10n`（`run`/`build` 时也会自动执行）。
 
-# 生产构建
-flutter build apk --release
+**生产构建**
+
+```bash
+flutter build apk --release --split-per-abi --obfuscate --split-debug-info=./symbols
+flutter build ios --release --obfuscate --split-debug-info=./symbols
 ```
 
 ---
 
-## ⚡ 生成新功能
-
-无需手动编写样板代码！使用内置的生成器脚本：
+## 常用命令
 
 ```bash
-# 生成包含 UI、Domain 与 Data 层的完整功能
-./generate_feature.sh --name my_awesome_feature
+flutter analyze                  # 静态分析（零容忍）
+flutter test                     # 全量测试
+flutter test test/features/notes # 单 feature 测试
+flutter test --update-goldens    # 刷新 golden 基线
+dart run build_runner clean      # 清除生成物
+dart run build_runner watch -d   # 监听式生成
+dart fix --apply                 # 批量自动修复
 ```
-
-这将创建：
-- `domain/entities/`、`repositories/`、`usecases/`
-- `data/models/`、`datasources/`、`repositories/`
-- `presentation/providers/`、`screens/`、`widgets/`
-- `providers/`（DI 配置）
-- 各层的单元测试
-
-## 📦 应用重命名
-
-让你的项目拥有正确的身份！使用我们的重命名工具：
-
-```bash
-./rename_app.sh --app-name "My Super App" --package-name com.company.superapp
-```
-
-这将更新：
-- Android：`AndroidManifest.xml`、`build.gradle`、Kotlin 文件
-- iOS：`Info.plist`、项目文件
-- macOS、Windows、Linux 构建文件
-- Dart 包名与导入
-
-## 🎨 图标生成
-
-一条命令即可生成全平台的原生应用图标：
-
-1. 将你的图标文件（1024x1024）放到 `assets/icon/app_icon.png`。
-2. 运行生成器脚本：
-
-```bash
-./generate_icons.sh
-```
-
-这将更新：
-- Android `mipmap` 资源
-- iOS `Assets.xcassets`
-- Web `manifest.json` 与图标
-- Windows/macOS/Linux 图标文件
 
 ---
 
-## 🏗️ 项目结构
+## 项目结构
 
 ```
 lib/
-├── core/                       # 共享内核（错误、网络、工具）
-├── features/                   # 功能模块
-│   ├── auth/                   # 认证功能
-│   ├── chat/                   # WebSocket 聊天功能
-│   ├── survey/                 # 复杂表单功能
-│   └── ...
-├── main.dart                   # 入口点
-└── ...
+├── core/             # 共享内核
+│   ├── error/        # Failure / AppException
+│   ├── network/      # ApiClient(dio)、离线同步、WS/gRPC/GraphQL 集成
+│   ├── database/     # drift AppDatabase + appDatabaseProvider
+│   ├── storage/      # 本地存储 + 两级缓存
+│   ├── theme/tokens/ # AppColors / AppTextStyles / AppSpacing / AppRadius / AppElevation
+│   ├── router/       # app_routes.dart（路径常量）+ app_router.dart（唯一 GoRouter）
+│   ├── shell/        # NotesShell（底部 Tab 外壳）
+│   ├── localization/ images/ logging/ analytics/ feature_flags/
+│   ├── notifications/ updates/ background/ providers/ ui/ utils/
+│   └── cli/ constants/
+├── features/         # notes（笔记 + 文件夹）、todos（待办）、settings（设置）
+├── examples/         # 各能力演示页
+├── gen/              # 生成代码（assets.gen.dart、l10n）
+├── l10n/arb/         # ARB 源（模板 intl_zh.arb）
+└── main.dart         # ProviderScope + overrides
 ```
 
-### 功能结构（"Screaming Architecture"）
-每个功能都是一个自包含的模块：
+### Feature 结构（Screaming Architecture）
 
 ```
-feature_name/
-├── domain/                     # 1. 最内层（纯 Dart）
-│   ├── entities/               # 业务对象（Equatable）
-│   ├── repositories/           # 抽象接口
-│   └── usecases/               # 业务逻辑单元
-├── data/                       # 2. 外层（实现）
-│   ├── datasources/            # API/DB 客户端
-│   ├── models/                 # JSON 解析与适配
-│   └── repositories/           # 仓库实现
-├── presentation/               # 3. UI 层（Flutter）
-│   ├── providers/              # UI 状态管理（Notifiers）
-│   ├── screens/                # 页面组件
-│   └── widgets/                # 可复用组件
-└── providers/                  # 4. DI 层（Riverpod）
-    └── feature_providers.dart  # 数据层依赖注入
+features/<feature>/
+├── domain/           # 纯 Dart，禁止 import Flutter / data / presentation
+│   ├── entities/     # 业务对象
+│   ├── repositories/ # 抽象接口
+│   └── usecases/     # 单个操作，返回 Future<Either<Failure, T>>
+├── data/             # 禁止 import Flutter，禁止 print（用 core/logging）
+│   ├── datasources/  # 远程 + 本地
+│   ├── models/       # fromJson / toJson + toEntity()
+│   └── repositories/ # 实现 domain 接口：Exception → Failure
+├── presentation/     # UI
+│   ├── providers/    # Notifier / AsyncNotifier
+│   ├── screens/
+│   └── widgets/
+└── providers/        # DI 装配：datasource / repository / usecase
 ```
+
+以 `features/notes` 为例：`Note`/`NoteFolder`/`NoteQuery` 是纯实体，筛选是 `sealed NoteFolderFilter` 三态（全部 / 未分类 / 指定文件夹），列表由 `StreamProvider.family(NoteQuery)` 驱动，改筛选即自动重查。
 
 ---
 
-## 🧪 测试
-
-我们采用全面的测试策略：
-
-- **单元测试**：针对 Use Cases、Repositories 与 Data Sources。
-- **Widget 测试**：针对可复用的 UI 组件。
-- **Golden 测试**：针对页面的视觉回归测试。
+## 代码生成脚本
 
 ```bash
-# 运行全部测试
-flutter test
-
-# 刷新 Golden 文件
-flutter test --update-goldens
+./generate_feature.sh --name my_feature [--no-ui] [--no-repo]   # 生成四层 feature
+./generate_language.sh add fr "Français"                        # 新增语言（--sync 对齐 ARB，--gen 生成 Dart）
+./generate_icons.sh                                             # 先把 1024×1024 图标放到 assets/icon/app_icon.png
+./rename_app.sh --app-name "My App" --package-name com.company.app
+./test_generator.sh notes                                       # 生成测试脚手架
 ```
+
+Windows 用同名 `.ps1`（参数一致）；执行策略受限时：
+`powershell -ExecutionPolicy Bypass -File .\generate_feature.ps1 --name my_feature`
 
 ---
 
-## 🤝 参与贡献
+## 测试
 
-1. Fork 本项目
-2. 创建你的功能分支（`git checkout -b feature/AmazingFeature`）
-3. 提交你的更改（`git commit -m 'Add some AmazingFeature'`）
-4. 推送到该分支（`git push origin feature/AmazingFeature`）
-5. 发起 Pull Request
+- **单元测试**：use case mock repository，repository mock datasource，用 `mocktail`。
+- **Widget 测试**：Screen 级 override repository 为 mock，不接真实 drift 库。
+- **Golden 测试**：`zoloto`，基线 360×778 / `pixelRatio = 1.0`。
 
-## 常用命令
-```
-
-dart fix --dry-run
-dart fix --apply
-
-flutter create . --platforms=android  --org com.wode
-
-# 删除所有生成的文件
-dart run build_runner clean
-
-# 重新生成
-dart run build_runner build -d
-flutter pub run build_runner watch -d
-
-#修改包名
-dart run change_app_package_name:main com.new.package.name
-
-flutter build apk --release --split-per-abi --obfuscate --split-debug-info=./symbols
-flutter build ios --release --obfuscate --split-debug-info=./symbols
-
-dart run flutter_native_splash:create
-
-```
-
+每个 use case 覆盖成功 + 失败路径；新功能必须带测试。
 
 ---
 
-## 📄 许可证
+## 文档
 
-基于 MIT 许可证发布。更多信息请参阅 `LICENSE`。
+| 文档 | 内容 |
+|------|------|
+| [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) | 上手流程 |
+| [docs/ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md) | 分层与目录约定 |
+| [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | 编码规范与设计模式 |
+| [docs/FEATURES.md](docs/FEATURES.md) | 核心功能说明 |
+| [docs/TOOLS.md](docs/TOOLS.md) | 生成器脚本用法 |
+| [docs/CICD_GUIDE.md](docs/CICD_GUIDE.md) | CI/CD 与发布 |
+| [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献流程 |
+
+专项指南：`LOCALIZATION_GUIDE.md`、`OFFLINE_ARCHITECTURE_GUIDE.md`、`FEATURE_FLAGS_GUIDE.md`、`IMAGE_HANDLING_GUIDE.md`、`ANALYTICS_GUIDE.md`、`EXAMPLES.md`。
+
+---
+
+## 许可证
+
+MIT，详见 [LICENSE](LICENSE)。

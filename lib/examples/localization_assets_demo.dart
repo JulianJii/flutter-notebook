@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:init/core/localization/language_selector_widget.dart';
 import 'package:init/core/localization/localized_asset_service.dart';
 import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/l10n/l10n.dart';
+import 'package:init/core/localization/localization_service.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 /// 展示本地化功能的演示页面
@@ -15,15 +16,14 @@ class LocalizationAssetsDemo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(persistentLocaleProvider);
 
-    // 创建 AppLocalizations 实例用于格式化
-    final l10n = AppLocalizations(locale);
+    final l10n = AppLocalizations.of(context);
 
     // 用于格式化示例的当前日期
     final now = DateTime.now();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('localization_assets_demo')),
+        title: Text(l10n.localization_assets_demo),
         actions: const [
           // 应用栏中的语言弹出菜单
           LanguagePopupMenuButton(),
@@ -43,17 +43,13 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.tr('current_language'),
+                      l10n.current_language,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      '${context.tr('language_code')}: ${locale.languageCode}',
-                    ),
+                    Text('${l10n.language_code}: ${locale.languageCode}'),
                     const SizedBox(height: 4),
-                    Text(
-                      '${context.tr('language_name')}: ${getLanguageName(locale.languageCode)}',
-                    ),
+                    Text('${l10n.language_name}: ${localeDisplayName(locale)}'),
                   ],
                 ),
               ),
@@ -69,26 +65,28 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.tr('formatting_examples'),
+                      l10n.formatting_examples,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${context.tr('date_full')}: ${DateFormat.yMMMMEEEEd(locale.toString()).format(now)}',
+                      '${l10n.date_full}: ${DateFormat.yMMMMEEEEd(locale.toString()).format(now)}',
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${context.tr('date_short')}: ${DateFormat.yMd(locale.toString()).format(now)}',
-                    ),
-                    const SizedBox(height: 4),
-                    Text('${context.tr('time')}: ${l10n.formatTime(now)}'),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${context.tr('currency')}: ${l10n.formatCurrency(1234.56)}',
+                      '${l10n.date_short}: ${DateFormat.yMd(locale.toString()).format(now)}',
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${context.tr('percent')}: ${NumberFormat.percentPattern(locale.toString()).format(0.1234)}',
+                      '${l10n.time}: ${DateFormat.Hm(locale.toString()).format(now)}',
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${l10n.currency}: ${NumberFormat.currency(locale: locale.toString()).format(1234.56)}',
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${l10n.percent}: ${NumberFormat.percentPattern(locale.toString()).format(0.1234)}',
                     ),
                   ],
                 ),
@@ -99,7 +97,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
 
             // 本地化资源示例
             Text(
-              context.tr('localized_assets'),
+              l10n.localized_assets,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -120,7 +118,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      context.tr('localized_assets_explanation'),
+                      l10n.localized_assets_explanation,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
@@ -138,7 +136,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.tr('image_example'),
+                      l10n.image_example,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
@@ -155,7 +153,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            context.tr('welcome_image_caption'),
+                            l10n.welcome_image_caption,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -166,7 +164,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
 
                     // 通用（非本地化）图片示例
                     Text(
-                      context.tr('common_image_example'),
+                      l10n.common_image_example,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 16),
@@ -184,7 +182,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            context.tr('common_image_caption'),
+                            l10n.common_image_caption,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -198,17 +196,5 @@ class LocalizationAssetsDemo extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  /// 根据语言代码获取语言名称的辅助方法
-  String getLanguageName(String languageCode) {
-    switch (languageCode) {
-      case 'zh':
-        return '中文';
-      case 'en':
-        return 'English';
-      default:
-        return languageCode;
-    }
   }
 }

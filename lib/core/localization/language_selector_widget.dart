@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/l10n/app_localizations_delegate.dart';
-import 'package:init/l10n/l10n.dart';
+import 'package:init/core/localization/localization_service.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 
 /// 允许用户从受支持的语言环境中选择语言的 widget
 class LanguageSelectorWidget extends ConsumerWidget {
@@ -22,7 +22,7 @@ class LanguageSelectorWidget extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            context.tr('language'),
+            AppLocalizations.of(context).language,
             style: Theme.of(context).textTheme.titleLarge,
           ),
         ),
@@ -37,7 +37,7 @@ class LanguageSelectorWidget extends ConsumerWidget {
                 currentLocale.languageCode == locale.languageCode;
 
             return ListTile(
-              title: Text(LocalizationUtils.getLocaleName(locale)),
+              title: Text(localeDisplayName(locale)),
               subtitle: Text(locale.languageCode.toUpperCase()),
               leading: CircleAvatar(
                 child: Text(
@@ -45,10 +45,9 @@ class LanguageSelectorWidget extends ConsumerWidget {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
-              trailing:
-                  isSelected
-                      ? const Icon(Icons.check, color: Colors.green)
-                      : null,
+              trailing: isSelected
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null,
               selected: isSelected,
               onTap: () async {
                 await ref
@@ -94,7 +93,7 @@ class LanguageSelectorDialog extends StatelessWidget {
             const SizedBox(height: 16),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(context.tr('cancel')),
+              child: Text(AppLocalizations.of(context).cancel),
             ),
           ],
         ),
@@ -112,7 +111,7 @@ class LanguagePopupMenuButton extends ConsumerWidget {
     final currentLocale = ref.watch(persistentLocaleProvider);
 
     return PopupMenuButton<Locale>(
-      tooltip: context.tr('language'),
+      tooltip: AppLocalizations.of(context).language,
       icon: const Icon(Icons.language),
       onSelected: (Locale locale) async {
         await ref.read(persistentLocaleProvider.notifier).setLocale(locale);
@@ -123,7 +122,7 @@ class LanguagePopupMenuButton extends ConsumerWidget {
             value: locale,
             child: Row(
               children: [
-                Text(LocalizationUtils.getLocaleName(locale)),
+                Text(localeDisplayName(locale)),
                 const Spacer(),
                 if (currentLocale.languageCode == locale.languageCode)
                   const Icon(Icons.check, size: 18, color: Colors.green),

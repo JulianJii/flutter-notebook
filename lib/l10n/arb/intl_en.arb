@@ -1,11 +1,11 @@
 {
   "@@locale": "en",
-  "appTitle": "Flutter Riverpod Clean Architecture",
-  "@appTitle": {
+  "app_title": "Flutter Riverpod Clean Architecture",
+  "@app_title": {
     "description": "The title of the application"
   },
-  "welcomeMessage": "Welcome to Flutter Riverpod Clean Architecture",
-  "@welcomeMessage": {
+  "welcome_message": "Welcome to Flutter Riverpod Clean Architecture",
+  "@welcome_message": {
     "description": "The welcome message displayed on the home screen"
   },
   "home": "Home",
@@ -20,21 +20,33 @@
   "@profile": {
     "description": "Label for the profile tab or button"
   },
-  "darkMode": "Dark Mode",
-  "@darkMode": {
+  "dark_mode": "Dark Mode",
+  "@dark_mode": {
     "description": "Label for the dark mode option"
   },
-  "lightMode": "Light Mode",
-  "@lightMode": {
+  "light_mode": "Light Mode",
+  "@light_mode": {
     "description": "Label for the light mode option"
   },
-  "systemMode": "System Mode",
-  "@systemMode": {
+  "system_mode": "System Mode",
+  "@system_mode": {
     "description": "Label for the system mode option"
   },
   "language": "Language",
   "@language": {
     "description": "Label for language selection"
+  },
+  "no_data": "No data available",
+  "@no_data": {
+    "description": "Placeholder shown when a list has no items"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Placeholder shown while data is loading"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Label for the cancel button"
   },
   "change_language": "Change application language",
   "@change_language": {
@@ -140,47 +152,15 @@
   "@common_image_caption": {
     "description": "Caption for the common image example"
   },
-  "@systemMode": {
+  "@system_mode": {
     "description": "Label for the system theme mode option"
   },
-  "language": "Language",
-  "@language": {
-    "description": "Label for the language setting"
-  },
-  "logout": "Logout",
-  "@logout": {
-    "description": "Label for the logout button"
-  },
-  "login": "Login",
-  "@login": {
-    "description": "Label for the login button"
-  },
-  "email": "Email",
-  "@email": {
-    "description": "Label for the email field"
-  },
-  "password": "Password",
-  "@password": {
-    "description": "Label for the password field"
-  },
-  "signIn": "Sign In",
-  "@signIn": {
-    "description": "Label for the sign in button"
-  },
-  "register": "Register",
-  "@register": {
-    "description": "Label for the register button"
-  },
-  "forgotPassword": "Forgot Password?",
-  "@forgotPassword": {
-    "description": "Label for the forgot password button"
-  },
-  "errorOccurred": "An error occurred",
-  "@errorOccurred": {
+  "error_occurred": "An error occurred",
+  "@error_occurred": {
     "description": "Generic error message"
   },
-  "tryAgain": "Try Again",
-  "@tryAgain": {
+  "try_again": "Try Again",
+  "@try_again": {
     "description": "Label for the try again button"
   },
   "greeting": "Hello, {name}!",
@@ -193,8 +173,8 @@
       }
     }
   },
-  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
-  "@itemCount": {
+  "item_count": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@item_count": {
     "description": "A plural message based on an item count",
     "placeholders": {
       "count": {
@@ -203,8 +183,173 @@
       }
     }
   },
-  "lastUpdated": "Last updated: {date}",
-  "@lastUpdated": {
+  "noteSnippetPlaceholder": "No additional text",
+  "@noteSnippetPlaceholder": {
+    "description": "Placeholder snippet shown on a note card whose body is empty"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "P1 page large title and bottom navigation tab label"
+  },
+  "todos": "Todos",
+  "@todos": {
+    "description": "P2 page large title and bottom navigation tab label"
+  },
+  "all": "All",
+  "@all": {
+    "description": "Filter chip meaning no folder filter is applied"
+  },
+  "uncategorized": "Uncategorized",
+  "@uncategorized": {
+    "description": "Filter chip for notes without a folder"
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Tooltip of the P3 top bar back button"
+  },
+  "share": "Share",
+  "@share": {
+    "description": "Tooltip of the P3 top bar share icon (Q8 unresolved)"
+  },
+  "palette": "Palette",
+  "@palette": {
+    "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+  },
+  "more": "More",
+  "@more": {
+    "description": "Tooltip of the P3 top bar overflow icon (Q9 unresolved)"
+  },
+  "folders": "Folders",
+  "@folders": {
+    "description": "P4 folder manager screen large title and the P1 top bar folder icon tooltip"
+  },
+  "createFolder": "New folder",
+  "@createFolder": {
+    "description": "Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog"
+  },
+  "folderName": "Folder name",
+  "@folderName": {
+    "description": "Hint text of the create-folder dialog text field (P4)"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Confirm button of the create-folder dialog (P4)"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)"
+  },
+  "noteTitleHint": "Title",
+  "@noteTitleHint": {
+    "description": "Placeholder shown in the P3 note title field when it is empty"
+  },
+  "noteMetaWordCount": "{count} chars",
+  "@noteMetaWordCount": {
+    "description": "Word count shown in the P3 note meta line",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsGroupCloud": "Cloud",
+  "@settingsGroupCloud": {
+    "description": "P5 section header: cloud services"
+  },
+  "settingsGroupNoteStyle": "Note style",
+  "@settingsGroupNoteStyle": {
+    "description": "P5 section header: note appearance"
+  },
+  "settingsGroupQuick": "Quick actions",
+  "@settingsGroupQuick": {
+    "description": "P5 section header: quick actions"
+  },
+  "settingsGroupReminder": "Reminders",
+  "@settingsGroupReminder": {
+    "description": "P5 section header: reminders"
+  },
+  "settingsGroupOther": "Other",
+  "@settingsGroupOther": {
+    "description": "P5 section header: misc"
+  },
+  "settingsRecentDeleted": "Recently deleted",
+  "@settingsRecentDeleted": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsQuickCapture": "Quick capture",
+  "@settingsQuickCapture": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsPrivacyPolicy": "Privacy policy",
+  "@settingsPrivacyPolicy": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsUserAgreement": "User agreement",
+  "@settingsUserAgreement": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsTextScale": "Font size",
+  "@settingsTextScale": {
+    "description": "P5 stepper row title: font size"
+  },
+  "settingsNoteSort": "Sort by",
+  "@settingsNoteSort": {
+    "description": "P5 stepper row title: note sort order"
+  },
+  "settingsNoteLayout": "Note list layout",
+  "@settingsNoteLayout": {
+    "description": "P5 stepper row title: note list layout"
+  },
+  "settingsStrongReminder": "Strong reminder",
+  "@settingsStrongReminder": {
+    "description": "P5 switch row title"
+  },
+  "settingsStrongReminderDesc": "Keeps ringing even when silent or do not disturb is on",
+  "@settingsStrongReminderDesc": {
+    "description": "P5 switch row subtitle"
+  },
+  "settingsTextScaleSmall": "Small",
+  "@settingsTextScaleSmall": {
+    "description": "Font size option: small"
+  },
+  "settingsTextScaleDefault": "Default",
+  "@settingsTextScaleDefault": {
+    "description": "Font size option: default"
+  },
+  "settingsTextScaleLarge": "Large",
+  "@settingsTextScaleLarge": {
+    "description": "Font size option: large"
+  },
+  "settingsTextScaleXLarge": "Extra large",
+  "@settingsTextScaleXLarge": {
+    "description": "Font size option: extra large"
+  },
+  "settingsSortEditedDesc": "Last edited",
+  "@settingsSortEditedDesc": {
+    "description": "Sort option: most recently edited"
+  },
+  "settingsSortEditedAsc": "First edited",
+  "@settingsSortEditedAsc": {
+    "description": "Sort option: least recently edited"
+  },
+  "settingsSortCreatedDesc": "Recently created",
+  "@settingsSortCreatedDesc": {
+    "description": "Sort option: most recently created"
+  },
+  "settingsSortTitleAsc": "Title",
+  "@settingsSortTitleAsc": {
+    "description": "Sort option: by title"
+  },
+  "settingsLayoutGrid": "Grid",
+  "@settingsLayoutGrid": {
+    "description": "Note list layout option: masonry grid"
+  },
+  "settingsLayoutList": "List",
+  "@settingsLayoutList": {
+    "description": "Note list layout option: single column list"
+  },
+  "last_updated": "Last updated: {date}",
+  "@last_updated": {
     "description": "When something was last updated",
     "placeholders": {
       "date": {

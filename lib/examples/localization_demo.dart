@@ -2,7 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:init/core/localization/language_selector_widget.dart';
 import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/l10n/l10n.dart';
+import 'package:init/core/localization/localization_service.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class LocalizationDemo extends ConsumerWidget {
@@ -14,12 +15,16 @@ class LocalizationDemo extends ConsumerWidget {
     final now = DateTime.now();
     final orderDate = DateTime.now().subtract(const Duration(days: 3));
 
-    // 创建 AppLocalizations 实例用于格式化
-    final l10n = AppLocalizations(currentLocale);
+    final l10n = AppLocalizations.of(context);
+    final dateFormat = DateFormat.yMMMd(currentLocale.toString());
+    final timeFormat = DateFormat.Hm(currentLocale.toString());
+    final currencyFormat = NumberFormat.currency(
+      locale: currentLocale.toString(),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.tr('language')),
+        title: Text(l10n.language),
         actions: const [LanguagePopupMenuButton()],
       ),
       body: SingleChildScrollView(
@@ -36,12 +41,12 @@ class LocalizationDemo extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        context.tr('welcomeMessage'),
+                        l10n.welcome_message,
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Current Language: ${_getLocaleName(currentLocale)}',
+                        'Current Language: ${localeDisplayName(currentLocale)}',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
@@ -77,12 +82,24 @@ class LocalizationDemo extends ConsumerWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
-                      _buildTranslationItem(context, 'appTitle'),
-                      _buildTranslationItem(context, 'home'),
-                      _buildTranslationItem(context, 'settings'),
-                      _buildTranslationItem(context, 'profile'),
-                      _buildTranslationItem(context, 'darkMode'),
-                      _buildTranslationItem(context, 'lightMode'),
+                      _buildTranslationItem(
+                        context,
+                        'app_title',
+                        l10n.app_title,
+                      ),
+                      _buildTranslationItem(context, 'home', l10n.home),
+                      _buildTranslationItem(context, 'settings', l10n.settings),
+                      _buildTranslationItem(context, 'profile', l10n.profile),
+                      _buildTranslationItem(
+                        context,
+                        'dark_mode',
+                        l10n.dark_mode,
+                      ),
+                      _buildTranslationItem(
+                        context,
+                        'light_mode',
+                        l10n.light_mode,
+                      ),
                     ],
                   ),
                 ),
@@ -103,27 +120,25 @@ class LocalizationDemo extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        context.trParams('greeting', {'name': 'John Doe'}),
+                        l10n.greeting('John Doe'),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        context.tr('itemCount').replaceAll('{count}', '0'),
+                        l10n.item_count(0),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       Text(
-                        context.tr('itemCount').replaceAll('{count}', '1'),
+                        l10n.item_count(1),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       Text(
-                        context.tr('itemCount').replaceAll('{count}', '5'),
+                        l10n.item_count(5),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        context
-                            .tr('lastUpdated')
-                            .replaceAll('{date}', l10n.formatDate(now)),
+                        l10n.last_updated(now),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                     ],
@@ -148,7 +163,7 @@ class LocalizationDemo extends ConsumerWidget {
                       _buildFormattingExample(
                         context,
                         'Date:',
-                        l10n.formatDate(now),
+                        dateFormat.format(now),
                       ),
                       _buildFormattingExample(
                         context,
@@ -158,12 +173,12 @@ class LocalizationDemo extends ConsumerWidget {
                       _buildFormattingExample(
                         context,
                         'Time:',
-                        l10n.formatTime(now),
+                        timeFormat.format(now),
                       ),
                       _buildFormattingExample(
                         context,
                         'DateTime:',
-                        '${l10n.formatDate(now)} ${l10n.formatTime(now)}',
+                        '${dateFormat.format(now)} ${timeFormat.format(now)}',
                       ),
                       _buildFormattingExample(
                         context,
@@ -176,7 +191,7 @@ class LocalizationDemo extends ConsumerWidget {
                       _buildFormattingExample(
                         context,
                         'Currency:',
-                        l10n.formatCurrency(1234.56),
+                        currencyFormat.format(1234.56),
                       ),
                     ],
                   ),
@@ -206,7 +221,7 @@ class LocalizationDemo extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Order Date:'),
-                          Text(l10n.formatDate(orderDate)),
+                          Text(dateFormat.format(orderDate)),
                         ],
                       ),
                       const Divider(),
@@ -214,14 +229,14 @@ class LocalizationDemo extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Product 1'),
-                          Text(l10n.formatCurrency(59.99)),
+                          Text(currencyFormat.format(59.99)),
                         ],
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Product 2'),
-                          Text(l10n.formatCurrency(149.99)),
+                          Text(currencyFormat.format(149.99)),
                         ],
                       ),
                       const Divider(),
@@ -229,14 +244,14 @@ class LocalizationDemo extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Subtotal:'),
-                          Text(l10n.formatCurrency(209.98)),
+                          Text(currencyFormat.format(209.98)),
                         ],
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Tax:'),
-                          Text(l10n.formatCurrency(16.80)),
+                          Text(currencyFormat.format(16.80)),
                         ],
                       ),
                       const Divider(),
@@ -248,7 +263,7 @@ class LocalizationDemo extends ConsumerWidget {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            l10n.formatCurrency(226.78),
+                            currencyFormat.format(226.78),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -271,7 +286,7 @@ class LocalizationDemo extends ConsumerWidget {
     );
   }
 
-  Widget _buildTranslationItem(BuildContext context, String key) {
+  Widget _buildTranslationItem(BuildContext context, String key, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -283,7 +298,7 @@ class LocalizationDemo extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Expanded(child: Text(context.tr(key))),
+          Expanded(child: Text(value)),
         ],
       ),
     );
@@ -309,17 +324,5 @@ class LocalizationDemo extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  /// 根据语言代码获取语言名称
-  String _getLocaleName(Locale locale) {
-    switch (locale.languageCode) {
-      case 'zh':
-        return '中文';
-      case 'en':
-        return 'English';
-      default:
-        return locale.languageCode;
-    }
   }
 }

@@ -12,11 +12,11 @@
 class $AssetsFontsGen {
   const $AssetsFontsGen();
 
-  /// File path: assets/fonts/PLACE_FONTS_HERE
-  String get placeFontsHere => 'assets/fonts/PLACE_FONTS_HERE';
+  /// File path: assets/fonts/.gitkeep
+  String get aGitkeep => 'assets/fonts/.gitkeep';
 
   /// List of all assets
-  List<String> get values => [placeFontsHere];
+  List<String> get values => [aGitkeep];
 }
 
 class $AssetsImagesGen {
@@ -25,34 +25,28 @@ class $AssetsImagesGen {
   /// Directory path: assets/images/en
   $AssetsImagesEnGen get en => const $AssetsImagesEnGen();
 
-  /// File path: assets/images/logo.png.placeholder
-  String get logoPng => 'assets/images/logo.png.placeholder';
-
   /// Directory path: assets/images/zh
   $AssetsImagesZhGen get zh => const $AssetsImagesZhGen();
-
-  /// List of all assets
-  List<String> get values => [logoPng];
 }
 
 class $AssetsImagesEnGen {
   const $AssetsImagesEnGen();
 
-  /// File path: assets/images/en/welcome.png.placeholder
-  String get welcomePng => 'assets/images/en/welcome.png.placeholder';
+  /// File path: assets/images/en/.gitkeep
+  String get aGitkeep => 'assets/images/en/.gitkeep';
 
   /// List of all assets
-  List<String> get values => [welcomePng];
+  List<String> get values => [aGitkeep];
 }
 
 class $AssetsImagesZhGen {
   const $AssetsImagesZhGen();
 
-  /// File path: assets/images/zh/welcome.png.placeholder
-  String get welcomePng => 'assets/images/zh/welcome.png.placeholder';
+  /// File path: assets/images/zh/.gitkeep
+  String get aGitkeep => 'assets/images/zh/.gitkeep';
 
   /// List of all assets
-  List<String> get values => [welcomePng];
+  List<String> get values => [aGitkeep];
 }
 
 abstract final class Assets {

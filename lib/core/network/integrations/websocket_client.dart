@@ -12,9 +12,9 @@ enum WebSocketConnectionState { disconnected, connecting, connected, error }
 /// 一个轻量、可复用的 WebSocket 客户端。
 ///
 /// 它被设计为通用的（不绑定到任何单一功能），以便在任何功能需要
-/// 实时双向连接时复制/适配——实时聊天、在线状态、价格行情、
-/// 协作编辑、服务器推送等。聊天功能（`features/chat`）展示了一个具体用例；
-/// 此类展示了底层的可复用原语，包含重连机制和类型化的连接状态流。
+/// 实时双向连接时复制/适配——实时消息、在线状态、价格行情、
+/// 协作编辑、服务器推送等。此类展示了底层的可复用原语，
+/// 包含重连机制和类型化的连接状态流。
 class WebSocketClient {
   WebSocketClient({
     this.autoReconnect = true,

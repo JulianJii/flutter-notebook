@@ -102,13 +102,13 @@ abstract class AppLocalizations {
   ///
   /// In zh, this message translates to:
   /// **'Flutter Riverpod 整洁架构'**
-  String get appTitle;
+  String get app_title;
 
   /// The welcome message displayed on the home screen
   ///
   /// In zh, this message translates to:
   /// **'欢迎使用 Flutter Riverpod 整洁架构'**
-  String get welcomeMessage;
+  String get welcome_message;
 
   /// Label for the home tab or button
   ///
@@ -132,25 +132,43 @@ abstract class AppLocalizations {
   ///
   /// In zh, this message translates to:
   /// **'深色模式'**
-  String get darkMode;
+  String get dark_mode;
 
   /// Label for the light mode option
   ///
   /// In zh, this message translates to:
   /// **'浅色模式'**
-  String get lightMode;
+  String get light_mode;
 
   /// Label for the system theme mode option
   ///
   /// In zh, this message translates to:
   /// **'跟随系统'**
-  String get systemMode;
+  String get system_mode;
 
   /// Label for the language setting
   ///
   /// In zh, this message translates to:
   /// **'语言'**
   String get language;
+
+  /// Placeholder shown when a list has no items
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无数据'**
+  String get no_data;
+
+  /// Placeholder shown while data is loading
+  ///
+  /// In zh, this message translates to:
+  /// **'加载中...'**
+  String get loading;
+
+  /// Label for the cancel button
+  ///
+  /// In zh, this message translates to:
+  /// **'取消'**
+  String get cancel;
 
   /// Label for changing the application language
   ///
@@ -308,59 +326,17 @@ abstract class AppLocalizations {
   /// **'此图片在所有语言下都相同'**
   String get common_image_caption;
 
-  /// Label for the logout button
-  ///
-  /// In zh, this message translates to:
-  /// **'退出登录'**
-  String get logout;
-
-  /// Label for the login button
-  ///
-  /// In zh, this message translates to:
-  /// **'登录'**
-  String get login;
-
-  /// Label for the email field
-  ///
-  /// In zh, this message translates to:
-  /// **'邮箱'**
-  String get email;
-
-  /// Label for the password field
-  ///
-  /// In zh, this message translates to:
-  /// **'密码'**
-  String get password;
-
-  /// Label for the sign in button
-  ///
-  /// In zh, this message translates to:
-  /// **'登录'**
-  String get signIn;
-
-  /// Label for the register button
-  ///
-  /// In zh, this message translates to:
-  /// **'注册'**
-  String get register;
-
-  /// Label for the forgot password button
-  ///
-  /// In zh, this message translates to:
-  /// **'忘记密码？'**
-  String get forgotPassword;
-
   /// Generic error message
   ///
   /// In zh, this message translates to:
   /// **'发生错误'**
-  String get errorOccurred;
+  String get error_occurred;
 
   /// Label for the try again button
   ///
   /// In zh, this message translates to:
   /// **'重试'**
-  String get tryAgain;
+  String get try_again;
 
   /// A greeting message with the person's name
   ///
@@ -372,13 +348,253 @@ abstract class AppLocalizations {
   ///
   /// In zh, this message translates to:
   /// **'{count, plural, =0{没有项目} =1{1 个项目} other{{count} 个项目}}'**
-  String itemCount(num count);
+  String item_count(num count);
+
+  /// Placeholder snippet shown on a note card whose body is empty
+  ///
+  /// In zh, this message translates to:
+  /// **'无附加文案'**
+  String get noteSnippetPlaceholder;
+
+  /// P1 page large title and bottom navigation tab label
+  ///
+  /// In zh, this message translates to:
+  /// **'笔记'**
+  String get notes;
+
+  /// P2 page large title and bottom navigation tab label
+  ///
+  /// In zh, this message translates to:
+  /// **'待办'**
+  String get todos;
+
+  /// Filter chip meaning no folder filter is applied
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get all;
+
+  /// Filter chip for notes without a folder
+  ///
+  /// In zh, this message translates to:
+  /// **'未分类'**
+  String get uncategorized;
+
+  /// Tooltip of the P3 top bar back button
+  ///
+  /// In zh, this message translates to:
+  /// **'返回'**
+  String get back;
+
+  /// Tooltip of the P3 top bar share icon (Q8 unresolved)
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get share;
+
+  /// Tooltip of the P3 top bar palette icon (Q10 unresolved)
+  ///
+  /// In zh, this message translates to:
+  /// **'配色'**
+  String get palette;
+
+  /// Tooltip of the P3 top bar overflow icon (Q9 unresolved)
+  ///
+  /// In zh, this message translates to:
+  /// **'更多'**
+  String get more;
+
+  /// P4 folder manager screen large title and the P1 top bar folder icon tooltip
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get folders;
+
+  /// Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文件夹'**
+  String get createFolder;
+
+  /// Hint text of the create-folder dialog text field (P4)
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹名称'**
+  String get folderName;
+
+  /// Confirm button of the create-folder dialog (P4)
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get save;
+
+  /// Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get delete;
+
+  /// Placeholder shown in the P3 note title field when it is empty
+  ///
+  /// In zh, this message translates to:
+  /// **'标题'**
+  String get noteTitleHint;
+
+  /// Word count shown in the P3 note meta line
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}字'**
+  String noteMetaWordCount(int count);
+
+  /// P5 section header: cloud services
+  ///
+  /// In zh, this message translates to:
+  /// **'云服务'**
+  String get settingsGroupCloud;
+
+  /// P5 section header: note appearance
+  ///
+  /// In zh, this message translates to:
+  /// **'笔记样式'**
+  String get settingsGroupNoteStyle;
+
+  /// P5 section header: quick actions
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷功能'**
+  String get settingsGroupQuick;
+
+  /// P5 section header: reminders
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒'**
+  String get settingsGroupReminder;
+
+  /// P5 section header: misc
+  ///
+  /// In zh, this message translates to:
+  /// **'其他'**
+  String get settingsGroupOther;
+
+  /// P5 chevron row (Q14: no second level page)
+  ///
+  /// In zh, this message translates to:
+  /// **'最近删除'**
+  String get settingsRecentDeleted;
+
+  /// P5 chevron row (Q14: no second level page)
+  ///
+  /// In zh, this message translates to:
+  /// **'速记'**
+  String get settingsQuickCapture;
+
+  /// P5 chevron row (Q14: no second level page)
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私政策'**
+  String get settingsPrivacyPolicy;
+
+  /// P5 chevron row (Q14: no second level page)
+  ///
+  /// In zh, this message translates to:
+  /// **'用户协议'**
+  String get settingsUserAgreement;
+
+  /// P5 stepper row title: font size
+  ///
+  /// In zh, this message translates to:
+  /// **'文字大小'**
+  String get settingsTextScale;
+
+  /// P5 stepper row title: note sort order
+  ///
+  /// In zh, this message translates to:
+  /// **'选择排序方式'**
+  String get settingsNoteSort;
+
+  /// P5 stepper row title: note list layout
+  ///
+  /// In zh, this message translates to:
+  /// **'笔记列表布局'**
+  String get settingsNoteLayout;
+
+  /// P5 switch row title
+  ///
+  /// In zh, this message translates to:
+  /// **'强提醒'**
+  String get settingsStrongReminder;
+
+  /// P5 switch row subtitle
+  ///
+  /// In zh, this message translates to:
+  /// **'持续响铃且静音和勿扰状态下仍有效'**
+  String get settingsStrongReminderDesc;
+
+  /// Font size option: small
+  ///
+  /// In zh, this message translates to:
+  /// **'小'**
+  String get settingsTextScaleSmall;
+
+  /// Font size option: default
+  ///
+  /// In zh, this message translates to:
+  /// **'默认'**
+  String get settingsTextScaleDefault;
+
+  /// Font size option: large
+  ///
+  /// In zh, this message translates to:
+  /// **'大'**
+  String get settingsTextScaleLarge;
+
+  /// Font size option: extra large
+  ///
+  /// In zh, this message translates to:
+  /// **'超大'**
+  String get settingsTextScaleXLarge;
+
+  /// Sort option: most recently edited
+  ///
+  /// In zh, this message translates to:
+  /// **'按编辑日期'**
+  String get settingsSortEditedDesc;
+
+  /// Sort option: least recently edited
+  ///
+  /// In zh, this message translates to:
+  /// **'按编辑日期（最早）'**
+  String get settingsSortEditedAsc;
+
+  /// Sort option: most recently created
+  ///
+  /// In zh, this message translates to:
+  /// **'按创建日期'**
+  String get settingsSortCreatedDesc;
+
+  /// Sort option: by title
+  ///
+  /// In zh, this message translates to:
+  /// **'按标题'**
+  String get settingsSortTitleAsc;
+
+  /// Note list layout option: masonry grid
+  ///
+  /// In zh, this message translates to:
+  /// **'宫格模式'**
+  String get settingsLayoutGrid;
+
+  /// Note list layout option: single column list
+  ///
+  /// In zh, this message translates to:
+  /// **'列表模式'**
+  String get settingsLayoutList;
 
   /// When something was last updated
   ///
   /// In zh, this message translates to:
   /// **'最后更新：{date}'**
-  String lastUpdated(DateTime date);
+  String last_updated(DateTime date);
 }
 
 class _AppLocalizationsDelegate

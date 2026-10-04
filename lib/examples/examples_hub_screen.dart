@@ -23,13 +23,6 @@ class ExamplesHubScreen extends StatelessWidget {
             title: 'Networking & integrations',
             entries: [
               _Entry(
-                icon: Icons.cable,
-                title: 'REST (Dio)',
-                subtitle:
-                    'ApiClient + repository pattern - see the Posts feature',
-                onTap: (context) => context.push(AppConstants.postsRoute),
-              ),
-              _Entry(
                 icon: Icons.sync_alt,
                 title: 'WebSocket',
                 subtitle:
@@ -68,14 +61,6 @@ class ExamplesHubScreen extends StatelessWidget {
                 subtitle: 'WorkManager: one-off and periodic scheduled work',
                 onTap: (context) =>
                     context.push(AppConstants.backgroundTasksDemoRoute),
-              ),
-              _Entry(
-                icon: Icons.fingerprint,
-                title: 'Biometric authentication',
-                subtitle:
-                    'Fingerprint / Face ID gating app access & transactions',
-                onTap: (context) =>
-                    context.push(AppConstants.biometricDemoRoute),
               ),
               _Entry(
                 icon: Icons.file_present,

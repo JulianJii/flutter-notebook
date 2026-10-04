@@ -1,137 +1,88 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/constants/app_constants.dart';
-import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/core/router/locale_aware_router.dart';
-import 'package:init/examples/localization_assets_demo.dart';
-import 'package:init/features/auth/presentation/screens/login_screen.dart';
-import 'package:init/features/auth/presentation/screens/register_screen.dart';
-import 'package:init/features/home/presentation/screens/home_screen.dart';
-import 'package:init/features/auth/presentation/providers/auth_provider.dart';
-import 'package:init/features/settings/presentation/screens/settings_screen.dart';
-import 'package:init/features/settings/presentation/screens/language_settings_screen.dart';
 import 'package:go_router/go_router.dart';
-import 'package:init/features/chat/presentation/screens/chat_screen.dart';
-import 'package:init/features/survey/presentation/screens/survey_screen.dart';
+import 'package:init/core/router/app_routes.dart';
+import 'package:init/core/shell/notes_shell.dart';
+import 'package:init/core/theme/tokens/app_spacing.dart';
+import 'package:init/features/notes/presentation/providers/note_editor_provider.dart';
+import 'package:init/features/notes/presentation/screens/folder_manager_screen.dart';
+import 'package:init/features/notes/presentation/screens/note_detail_screen.dart';
+import 'package:init/features/notes/presentation/screens/note_list_screen.dart';
+import 'package:init/features/settings/presentation/screens/settings_screen.dart';
+import 'package:init/features/todos/presentation/screens/todo_list_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
+/// 全局 navigator key，供顶层（非 branch 内）路由使用。
+/// `/settings` 需要覆盖整个 Shell 显示，因此挂在 root 上。
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+/// 唯一 routerProvider（`DEVELOPMENT-GUIDELINES.md` §13 规则 1）。
+///
+/// 无 `redirect`：笔记 App 无登录（CONFLICT-01 已裁决移除登录守卫）。
+/// 不 watch `persistentLocaleProvider`：语言由 `main.dart` 的 `MaterialApp.locale`
+/// 负责，在此 watch 会让语言切换重建 GoRouter 并丢失导航栈。
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
-  // 监听语言环境变化 - 语言环境改变时重建路由器
-  ref.watch(persistentLocaleProvider);
-
-  // 创建带语言环境感知的路由器
   return GoRouter(
-    initialLocation: AppConstants.initialRoute,
-    debugLogDiagnostics: true,
-    // 添加语言环境感知的观察者
-    observers: [ref.read(localizationRouterObserverProvider)],
-    redirect: (context, state) {
-      // 获取认证状态
-      final isLoggedIn = authState.isAuthenticated;
-
-      // 检查用户是否正前往登录页面
-      final isGoingToLogin = state.matchedLocation == AppConstants.loginRoute;
-
-      // 检查用户是否正前往注册页面
-      final isGoingToRegister =
-          state.matchedLocation == AppConstants.registerRoute;
-
-      // 若未登录且不是前往登录或注册页面，则重定向到登录
-      if (!isLoggedIn && !isGoingToLogin && !isGoingToRegister) {
-        return AppConstants.loginRoute;
-      }
-
-      // 若已登录且正前往登录或注册页面，则重定向到首页
-      if (isLoggedIn && (isGoingToLogin || isGoingToRegister)) {
-        return AppConstants.homeRoute;
-      }
-
-      // 无需重定向
-      return null;
-    },
-    routes: [
-      // 首页路由
-      GoRoute(
-        path: AppConstants.homeRoute,
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: AppRoutes.initial,
+    routes: <RouteBase>[
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            NotesShell(navigationShell: navigationShell),
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.notes,
+                builder: (context, state) => const NoteListScreen(),
+                routes: <RouteBase>[
+                  // ⚠️ 顺序不可调换：`folders` 与 `new` 都必须先于 `:id` 注册，
+                  // 否则 'folders' / 'new' 会被当作笔记 id。
+                  GoRoute(
+                    path: 'new',
+                    builder: (context, state) =>
+                        const NoteDetailScreen(noteId: kNewNoteId),
+                  ),
+                  GoRoute(
+                    path: 'folders',
+                    builder: (context, state) => const FolderManagerScreen(),
+                  ),
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) =>
+                        NoteDetailScreen(noteId: state.pathParameters['id']!),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: AppRoutes.todos,
+                builder: (context, state) => const TodoListScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
-
-      // 登录路由
       GoRoute(
-        path: AppConstants.loginRoute,
-        name: 'login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-
-      // 注册路由
-      GoRoute(
-        path: AppConstants.registerRoute,
-        name: 'register',
-        builder: (context, state) => const RegisterScreen(),
-      ),
-
-      // 设置路由
-      GoRoute(
-        path: AppConstants.settingsRoute,
-        name: 'settings',
+        path: AppRoutes.settings,
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SettingsScreen(),
       ),
-
-      // 语言设置路由
-      GoRoute(
-        path: AppConstants.languageSettingsRoute,
-        name: 'language_settings',
-        builder: (context, state) => const LanguageSettingsScreen(),
-      ),
-
-      // 本地化资源演示路由
-      GoRoute(
-        path: AppConstants.localizationAssetsDemoRoute,
-        name: 'localization_assets_demo',
-        builder: (context, state) => const LocalizationAssetsDemo(),
-      ),
-
-      // 聊天路由
-      GoRoute(
-        path: AppConstants.chatRoute,
-        name: 'chat',
-        builder: (context, state) => const ChatScreen(),
-      ),
-
-      // 调查路由
-      GoRoute(
-        path: AppConstants.surveyRoute,
-        name: 'survey',
-        builder: (context, state) => const SurveyScreen(),
-      ),
-
-      // 初始路由 - 根据认证状态重定向
-      GoRoute(
-        path: AppConstants.initialRoute,
-        name: 'initial',
-        redirect: (context, state) => authState.isAuthenticated
-            ? AppConstants.homeRoute
-            : AppConstants.loginRoute,
-      ),
     ],
+    // 404 是路由层诊断页，不是产品错误页（`COMPONENT-INVENTORY.md` §2 不含
+    // `AppErrorView`），故不抽组件。恢复出口跳 `AppRoutes.initial`。
     errorBuilder: (context, state) => Scaffold(
-      appBar: AppBar(title: const Text('Page Not Found')),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              '404',
-              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text('Page ${state.uri.path} not found'),
-            const SizedBox(height: 16),
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text('404 · ${state.uri.path}'),
+            const SizedBox(height: AppSpacing.chipGap),
             ElevatedButton(
-              onPressed: () => context.go(AppConstants.homeRoute),
-              child: const Text('Go Home'),
+              onPressed: () => context.go(AppRoutes.initial),
+              child: const Text('返回笔记'),
             ),
           ],
         ),

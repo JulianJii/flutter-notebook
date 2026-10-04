@@ -1,0 +1,75 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:init/core/error/exceptions.dart';
+import 'package:init/core/error/failures.dart';
+import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:init/features/todos/domain/entities/todo.dart';
+import 'package:init/features/todos/domain/repositories/todo_repository.dart';
+import 'package:uuid/uuid.dart';
+
+/// 待办 Repository 的唯一实现。与 [NoteRepositoryImpl] 同构。
+///
+/// ⛔ **不提供 `toggle()`**：勾选是 `isDone` 这一个字段的变更，单独开一个方法名
+/// 只会让调用方多一次心智映射（`REPOSITORY-MAP.md` §1.3）。上层传**目标值**，
+/// 不传「翻转」—— 重试时不会二次翻转。
+class TodoRepositoryImpl implements TodoRepository {
+  TodoRepositoryImpl(this._localDataSource, {Uuid uuid = const Uuid()})
+    : _uuid = uuid;
+
+  final TodoLocalDataSource _localDataSource;
+  final Uuid _uuid;
+
+  /// 直接透传，不包 `Either`，不加 try（流错误由 `AsyncValue` 表达）。
+  @override
+  Stream<List<Todo>> watchAll() => _localDataSource.watchAll();
+
+  @override
+  Future<Either<Failure, Todo>> create(Todo todo) async {
+    try {
+      final toSave = todo.id.isEmpty ? _withId(todo, _uuid.v4()) : todo;
+      return Right(await _localDataSource.insert(toSave));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  /// `updatedAt` 在这里刷新。`createdAt` 同样不由本方法决定：datasource 的 update
+  /// 是部分写入，不碰 `created_at`，待办不会在 `createdAt DESC` 的列表里跳位。
+  @override
+  Future<Either<Failure, Todo>> update(Todo todo) async {
+    try {
+      return Right(
+        await _localDataSource.update(todo.copyWith(updatedAt: DateTime.now())),
+      );
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> delete(String todoId) async {
+    try {
+      await _localDataSource.delete(todoId);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+}
+
+/// 给 [todo] 补上 id。⛔ 不用 `copyWith`：`Todo.copyWith` 刻意不带 `id`
+/// （id 是实体身份，`TASK-014` 的设计），改实体不在本 Task 的 Scope。
+Todo _withId(Todo todo, String id) {
+  return Todo(
+    id: id,
+    title: todo.title,
+    isDone: todo.isDone,
+    createdAt: todo.createdAt,
+    updatedAt: todo.updatedAt,
+  );
+}

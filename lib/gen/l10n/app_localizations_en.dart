@@ -9,10 +9,11 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Flutter Riverpod Clean Architecture';
+  String get app_title => 'Flutter Riverpod Clean Architecture';
 
   @override
-  String get welcomeMessage => 'Welcome to Flutter Riverpod Clean Architecture';
+  String get welcome_message =>
+      'Welcome to Flutter Riverpod Clean Architecture';
 
   @override
   String get home => 'Home';
@@ -24,16 +25,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile => 'Profile';
 
   @override
-  String get darkMode => 'Dark Mode';
+  String get dark_mode => 'Dark Mode';
 
   @override
-  String get lightMode => 'Light Mode';
+  String get light_mode => 'Light Mode';
 
   @override
-  String get systemMode => 'System Mode';
+  String get system_mode => 'System Mode';
 
   @override
   String get language => 'Language';
+
+  @override
+  String get no_data => 'No data available';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get cancel => 'Cancel';
 
   @override
   String get change_language => 'Change application language';
@@ -119,31 +129,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This image is the same across all languages';
 
   @override
-  String get logout => 'Logout';
+  String get error_occurred => 'An error occurred';
 
   @override
-  String get login => 'Login';
-
-  @override
-  String get email => 'Email';
-
-  @override
-  String get password => 'Password';
-
-  @override
-  String get signIn => 'Sign In';
-
-  @override
-  String get register => 'Register';
-
-  @override
-  String get forgotPassword => 'Forgot Password?';
-
-  @override
-  String get errorOccurred => 'An error occurred';
-
-  @override
-  String get tryAgain => 'Try Again';
+  String get try_again => 'Try Again';
 
   @override
   String greeting(String name) {
@@ -151,7 +140,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String itemCount(num count) {
+  String item_count(num count) {
     final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
       locale: localeName,
     );
@@ -168,7 +157,130 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String lastUpdated(DateTime date) {
+  String get noteSnippetPlaceholder => 'No additional text';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get todos => 'Todos';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get uncategorized => 'Uncategorized';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get palette => 'Palette';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get folders => 'Folders';
+
+  @override
+  String get createFolder => 'New folder';
+
+  @override
+  String get folderName => 'Folder name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get noteTitleHint => 'Title';
+
+  @override
+  String noteMetaWordCount(int count) {
+    return '$count chars';
+  }
+
+  @override
+  String get settingsGroupCloud => 'Cloud';
+
+  @override
+  String get settingsGroupNoteStyle => 'Note style';
+
+  @override
+  String get settingsGroupQuick => 'Quick actions';
+
+  @override
+  String get settingsGroupReminder => 'Reminders';
+
+  @override
+  String get settingsGroupOther => 'Other';
+
+  @override
+  String get settingsRecentDeleted => 'Recently deleted';
+
+  @override
+  String get settingsQuickCapture => 'Quick capture';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsUserAgreement => 'User agreement';
+
+  @override
+  String get settingsTextScale => 'Font size';
+
+  @override
+  String get settingsNoteSort => 'Sort by';
+
+  @override
+  String get settingsNoteLayout => 'Note list layout';
+
+  @override
+  String get settingsStrongReminder => 'Strong reminder';
+
+  @override
+  String get settingsStrongReminderDesc =>
+      'Keeps ringing even when silent or do not disturb is on';
+
+  @override
+  String get settingsTextScaleSmall => 'Small';
+
+  @override
+  String get settingsTextScaleDefault => 'Default';
+
+  @override
+  String get settingsTextScaleLarge => 'Large';
+
+  @override
+  String get settingsTextScaleXLarge => 'Extra large';
+
+  @override
+  String get settingsSortEditedDesc => 'Last edited';
+
+  @override
+  String get settingsSortEditedAsc => 'First edited';
+
+  @override
+  String get settingsSortCreatedDesc => 'Recently created';
+
+  @override
+  String get settingsSortTitleAsc => 'Title';
+
+  @override
+  String get settingsLayoutGrid => 'Grid';
+
+  @override
+  String get settingsLayoutList => 'List';
+
+  @override
+  String last_updated(DateTime date) {
     final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
     final String dateString = dateDateFormat.format(date);
 

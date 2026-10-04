@@ -187,7 +187,6 @@ class RemoteFeatureFlagService extends FeatureFlagService {
       'enable_dark_mode': true,
       'enable_push_notifications': true,
       'enable_analytics': true,
-      'enable_biometric_login': true,
       'api_timeout_ms': 20000,
       'home_screen_layout': 'list', // 已从默认值 'grid' 更改
       'primary_color': '#FF4CAF50', // 已从默认的蓝色更改

@@ -1,15 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'
-    hide GlobalMaterialLocalizations;
 import 'package:init/core/constants/app_constants.dart';
 import 'package:init/core/providers/localization_providers.dart';
 import 'package:init/core/providers/storage_providers.dart';
 import 'package:init/core/router/app_router.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/core/updates/update_providers.dart';
-import 'package:init/l10n/app_localizations_delegate.dart';
-import 'package:init/l10n/l10n.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
@@ -77,10 +74,10 @@ class MyApp extends ConsumerWidget {
         // 本地化设置
         locale: locale,
         localizationsDelegates: [
-          const AppLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+          ...AppLocalizations.localizationsDelegates,
+          // material_ui 是 flutter/material 的 fork，自带一套 Localizations，
+          // gen-l10n 生成的列表里只有 flutter_localizations 那套，缺它会崩
+          ...GlobalMaterialLocalizations.delegates,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
       ),

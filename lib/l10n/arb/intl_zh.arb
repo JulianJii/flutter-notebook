@@ -1,11 +1,11 @@
 {
   "@@locale": "zh",
-  "appTitle": "Flutter Riverpod 整洁架构",
-  "@appTitle": {
+  "app_title": "Flutter Riverpod 整洁架构",
+  "@app_title": {
     "description": "The title of the application"
   },
-  "welcomeMessage": "欢迎使用 Flutter Riverpod 整洁架构",
-  "@welcomeMessage": {
+  "welcome_message": "欢迎使用 Flutter Riverpod 整洁架构",
+  "@welcome_message": {
     "description": "The welcome message displayed on the home screen"
   },
   "home": "首页",
@@ -20,21 +20,33 @@
   "@profile": {
     "description": "Label for the profile tab or button"
   },
-  "darkMode": "深色模式",
-  "@darkMode": {
+  "dark_mode": "深色模式",
+  "@dark_mode": {
     "description": "Label for the dark mode option"
   },
-  "lightMode": "浅色模式",
-  "@lightMode": {
+  "light_mode": "浅色模式",
+  "@light_mode": {
     "description": "Label for the light mode option"
   },
-  "systemMode": "跟随系统",
-  "@systemMode": {
+  "system_mode": "跟随系统",
+  "@system_mode": {
     "description": "Label for the system theme mode option"
   },
   "language": "语言",
   "@language": {
     "description": "Label for the language setting"
+  },
+  "no_data": "暂无数据",
+  "@no_data": {
+    "description": "Placeholder shown when a list has no items"
+  },
+  "loading": "加载中...",
+  "@loading": {
+    "description": "Placeholder shown while data is loading"
+  },
+  "cancel": "取消",
+  "@cancel": {
+    "description": "Label for the cancel button"
   },
   "change_language": "更改应用语言",
   "@change_language": {
@@ -140,40 +152,12 @@
   "@common_image_caption": {
     "description": "Caption for the common image example"
   },
-  "logout": "退出登录",
-  "@logout": {
-    "description": "Label for the logout button"
-  },
-  "login": "登录",
-  "@login": {
-    "description": "Label for the login button"
-  },
-  "email": "邮箱",
-  "@email": {
-    "description": "Label for the email field"
-  },
-  "password": "密码",
-  "@password": {
-    "description": "Label for the password field"
-  },
-  "signIn": "登录",
-  "@signIn": {
-    "description": "Label for the sign in button"
-  },
-  "register": "注册",
-  "@register": {
-    "description": "Label for the register button"
-  },
-  "forgotPassword": "忘记密码？",
-  "@forgotPassword": {
-    "description": "Label for the forgot password button"
-  },
-  "errorOccurred": "发生错误",
-  "@errorOccurred": {
+  "error_occurred": "发生错误",
+  "@error_occurred": {
     "description": "Generic error message"
   },
-  "tryAgain": "重试",
-  "@tryAgain": {
+  "try_again": "重试",
+  "@try_again": {
     "description": "Label for the try again button"
   },
   "greeting": "你好，{name}！",
@@ -186,8 +170,8 @@
       }
     }
   },
-  "itemCount": "{count, plural, =0{没有项目} =1{1 个项目} other{{count} 个项目}}",
-  "@itemCount": {
+  "item_count": "{count, plural, =0{没有项目} =1{1 个项目} other{{count} 个项目}}",
+  "@item_count": {
     "description": "A plural message based on an item count",
     "placeholders": {
       "count": {
@@ -196,8 +180,173 @@
       }
     }
   },
-  "lastUpdated": "最后更新：{date}",
-  "@lastUpdated": {
+  "noteSnippetPlaceholder": "无附加文案",
+  "@noteSnippetPlaceholder": {
+    "description": "Placeholder snippet shown on a note card whose body is empty"
+  },
+  "notes": "笔记",
+  "@notes": {
+    "description": "P1 page large title and bottom navigation tab label"
+  },
+  "todos": "待办",
+  "@todos": {
+    "description": "P2 page large title and bottom navigation tab label"
+  },
+  "all": "全部",
+  "@all": {
+    "description": "Filter chip meaning no folder filter is applied"
+  },
+  "uncategorized": "未分类",
+  "@uncategorized": {
+    "description": "Filter chip for notes without a folder"
+  },
+  "back": "返回",
+  "@back": {
+    "description": "Tooltip of the P3 top bar back button"
+  },
+  "share": "分享",
+  "@share": {
+    "description": "Tooltip of the P3 top bar share icon (Q8 unresolved)"
+  },
+  "palette": "配色",
+  "@palette": {
+    "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+  },
+  "more": "更多",
+  "@more": {
+    "description": "Tooltip of the P3 top bar overflow icon (Q9 unresolved)"
+  },
+  "folders": "文件夹",
+  "@folders": {
+    "description": "P4 folder manager screen large title and the P1 top bar folder icon tooltip"
+  },
+  "createFolder": "新建文件夹",
+  "@createFolder": {
+    "description": "Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog"
+  },
+  "folderName": "文件夹名称",
+  "@folderName": {
+    "description": "Hint text of the create-folder dialog text field (P4)"
+  },
+  "save": "保存",
+  "@save": {
+    "description": "Confirm button of the create-folder dialog (P4)"
+  },
+  "delete": "删除",
+  "@delete": {
+    "description": "Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)"
+  },
+  "noteTitleHint": "标题",
+  "@noteTitleHint": {
+    "description": "Placeholder shown in the P3 note title field when it is empty"
+  },
+  "noteMetaWordCount": "{count}字",
+  "@noteMetaWordCount": {
+    "description": "Word count shown in the P3 note meta line",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsGroupCloud": "云服务",
+  "@settingsGroupCloud": {
+    "description": "P5 section header: cloud services"
+  },
+  "settingsGroupNoteStyle": "笔记样式",
+  "@settingsGroupNoteStyle": {
+    "description": "P5 section header: note appearance"
+  },
+  "settingsGroupQuick": "快捷功能",
+  "@settingsGroupQuick": {
+    "description": "P5 section header: quick actions"
+  },
+  "settingsGroupReminder": "提醒",
+  "@settingsGroupReminder": {
+    "description": "P5 section header: reminders"
+  },
+  "settingsGroupOther": "其他",
+  "@settingsGroupOther": {
+    "description": "P5 section header: misc"
+  },
+  "settingsRecentDeleted": "最近删除",
+  "@settingsRecentDeleted": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsQuickCapture": "速记",
+  "@settingsQuickCapture": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsPrivacyPolicy": "隐私政策",
+  "@settingsPrivacyPolicy": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsUserAgreement": "用户协议",
+  "@settingsUserAgreement": {
+    "description": "P5 chevron row (Q14: no second level page)"
+  },
+  "settingsTextScale": "文字大小",
+  "@settingsTextScale": {
+    "description": "P5 stepper row title: font size"
+  },
+  "settingsNoteSort": "选择排序方式",
+  "@settingsNoteSort": {
+    "description": "P5 stepper row title: note sort order"
+  },
+  "settingsNoteLayout": "笔记列表布局",
+  "@settingsNoteLayout": {
+    "description": "P5 stepper row title: note list layout"
+  },
+  "settingsStrongReminder": "强提醒",
+  "@settingsStrongReminder": {
+    "description": "P5 switch row title"
+  },
+  "settingsStrongReminderDesc": "持续响铃且静音和勿扰状态下仍有效",
+  "@settingsStrongReminderDesc": {
+    "description": "P5 switch row subtitle"
+  },
+  "settingsTextScaleSmall": "小",
+  "@settingsTextScaleSmall": {
+    "description": "Font size option: small"
+  },
+  "settingsTextScaleDefault": "默认",
+  "@settingsTextScaleDefault": {
+    "description": "Font size option: default"
+  },
+  "settingsTextScaleLarge": "大",
+  "@settingsTextScaleLarge": {
+    "description": "Font size option: large"
+  },
+  "settingsTextScaleXLarge": "超大",
+  "@settingsTextScaleXLarge": {
+    "description": "Font size option: extra large"
+  },
+  "settingsSortEditedDesc": "按编辑日期",
+  "@settingsSortEditedDesc": {
+    "description": "Sort option: most recently edited"
+  },
+  "settingsSortEditedAsc": "按编辑日期（最早）",
+  "@settingsSortEditedAsc": {
+    "description": "Sort option: least recently edited"
+  },
+  "settingsSortCreatedDesc": "按创建日期",
+  "@settingsSortCreatedDesc": {
+    "description": "Sort option: most recently created"
+  },
+  "settingsSortTitleAsc": "按标题",
+  "@settingsSortTitleAsc": {
+    "description": "Sort option: by title"
+  },
+  "settingsLayoutGrid": "宫格模式",
+  "@settingsLayoutGrid": {
+    "description": "Note list layout option: masonry grid"
+  },
+  "settingsLayoutList": "列表模式",
+  "@settingsLayoutList": {
+    "description": "Note list layout option: single column list"
+  },
+  "last_updated": "最后更新：{date}",
+  "@last_updated": {
     "description": "When something was last updated",
     "placeholders": {
       "date": {

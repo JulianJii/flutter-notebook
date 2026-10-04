@@ -1,10 +1,15 @@
-
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/l10n/app_localizations_delegate.dart';
-import 'package:init/l10n/l10n.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+
+/// 语言在其母语中的名称。gen-l10n 不提供，需自行维护。
+String localeDisplayName(Locale locale) => switch (locale.languageCode) {
+  'zh' => '中文',
+  'en' => 'English',
+  _ => locale.languageCode,
+};
 
 /// 用于处理本地化相关功能的服务类
 class LocalizationService {
@@ -26,15 +31,13 @@ class LocalizationService {
   }
 
   /// 获取语言环境在其母语中的名称
-  String getLocaleName(Locale locale) {
-    return LocalizationUtils.getLocaleName(locale);
-  }
+  String getLocaleName(Locale locale) => localeDisplayName(locale);
 
   /// 获取所有受支持的语言环境
   List<Locale> get supportedLocales => AppLocalizations.supportedLocales;
 
   /// 检查某个语言环境是否受支持
-  bool isSupported(Locale locale) => AppLocalizations.isSupported(locale);
+  bool isSupported(Locale locale) => isSupportedLocale(locale);
 
   /// 根据当前语言环境格式化日期
   String formatDate(DateTime date, {String? pattern}) {

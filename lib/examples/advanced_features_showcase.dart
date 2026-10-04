@@ -1,8 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:init/core/analytics/analytics_providers.dart';
-// 直接导入生物识别演示
-import 'package:init/examples/biometrics_demo.dart';
 import 'package:init/core/feature_flags/feature_flag_providers.dart';
 import 'package:init/core/images/advanced_image.dart';
 import 'package:init/core/images/image_transformer.dart';
@@ -55,9 +53,6 @@ class _AdvancedFeaturesShowcaseState
     final showAnalytics = ref.watch(
       featureFlagProvider('enable_analytics', defaultValue: true),
     );
-    final showBiometrics = ref.watch(
-      featureFlagProvider('enable_biometric_login', defaultValue: true),
-    );
     final primaryColor = ref.watch(
       colorConfigProvider('primary_color', defaultValue: Colors.blue),
     );
@@ -78,9 +73,6 @@ class _AdvancedFeaturesShowcaseState
 
           _buildSectionHeader('Analytics'),
           if (showAnalytics) _buildAnalytics(analytics),
-
-          _buildSectionHeader('Biometric Authentication'),
-          if (showBiometrics) _buildBiometrics(),
 
           _buildSectionHeader('Notifications'),
           _buildNotifications(),
@@ -127,7 +119,6 @@ class _AdvancedFeaturesShowcaseState
               'Push Notifications',
               'enable_push_notifications',
             ),
-            _buildFeatureSwitch('Biometric Login', 'enable_biometric_login'),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
@@ -233,10 +224,6 @@ class _AdvancedFeaturesShowcaseState
         ),
       ),
     );
-  }
-
-  Widget _buildBiometrics() {
-    return const BiometricsDemo();
   }
 
   Widget _buildNotifications() {
@@ -824,5 +811,3 @@ class _AdvancedFeaturesShowcaseState
     }
   }
 }
-
-

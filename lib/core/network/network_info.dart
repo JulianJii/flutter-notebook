@@ -24,6 +24,4 @@ class NetworkInfoImpl implements NetworkInfo {
 }
 
 /// NetworkInfo 的 Riverpod provider
-final networkInfoProvider = Provider<NetworkInfo>(
-  (ref) => NetworkInfoImpl(),
-);
+final networkInfoProvider = Provider<NetworkInfo>((ref) => NetworkInfoImpl());

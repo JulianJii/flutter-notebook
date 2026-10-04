@@ -403,7 +403,10 @@ class SharedPreferencesOfflineSyncService implements OfflineSyncService {
   Future<void> _processChange(OfflineChange change) async {
     // 标记为同步中
     final syncingChange = change.copyWith(status: SyncStatus.syncing);
-    await _prefs.setString(_keyFor(change.id), jsonEncode(syncingChange.toJson()));
+    await _prefs.setString(
+      _keyFor(change.id),
+      jsonEncode(syncingChange.toJson()),
+    );
     _notifyListeners();
 
     try {
@@ -413,7 +416,10 @@ class SharedPreferencesOfflineSyncService implements OfflineSyncService {
 
       // 标记为已同步
       final syncedChange = syncingChange.copyWith(status: SyncStatus.synced);
-      await _prefs.setString(_keyFor(change.id), jsonEncode(syncedChange.toJson()));
+      await _prefs.setString(
+        _keyFor(change.id),
+        jsonEncode(syncedChange.toJson()),
+      );
     } catch (e) {
       // 处理失败
       final failedChange = syncingChange.copyWith(

@@ -13,8 +13,6 @@ const Map<String, dynamic> kDefaultFeatureFlags = {
   'enable_push_notifications': true,
   'enable_analytics': true,
   'enable_crash_reporting': true,
-  'enable_biometric_login': true,
-  'use_debug_biometrics': false,
   'force_firebase_analytics': false,
 
   // 功能参数
@@ -34,10 +32,9 @@ const Map<String, dynamic> kDefaultFeatureFlags = {
 /// 功能开关服务的 Provider
 final featureFlagServiceProvider = Provider<FeatureFlagService>((ref) {
   // 生产环境使用远程功能开关，调试模式使用本地功能开关
-  final service =
-      kDebugMode
-          ? LocalFeatureFlagService() as FeatureFlagService
-          : RemoteFeatureFlagService();
+  final service = kDebugMode
+      ? LocalFeatureFlagService() as FeatureFlagService
+      : RemoteFeatureFlagService();
 
   // 设置默认值
   service.setDefaults(kDefaultFeatureFlags);

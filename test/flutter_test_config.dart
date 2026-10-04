@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:init/core/theme/app_theme.dart';
+import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:zoloto/zoloto.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
@@ -16,15 +17,19 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
       // 使用应用真实主题作为 golden 外壳
       // （应用主题来自 material_ui，与 zoloto 的 flutter/material 版本不兼容，
       // 因此这里自行构造 material_ui 的 MaterialApp 外壳）
-      appWrapperFactory: () => (child) => MaterialApp(
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        debugShowCheckedModeBanner: false,
-        home: Material(
-          color: Colors.transparent,
-          child: child,
-        ),
-      ),
+      appWrapperFactory: () =>
+          (child) => MaterialApp(
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            localizationsDelegates: [
+              ...AppLocalizations.localizationsDelegates,
+              ...GlobalMaterialLocalizations.delegates,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('zh'),
+            debugShowCheckedModeBanner: false,
+            home: Material(color: Colors.transparent, child: child),
+          ),
     ),
   );
 }

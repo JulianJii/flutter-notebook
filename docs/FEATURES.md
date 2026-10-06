@@ -85,9 +85,16 @@ if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
 
 详情请参见[离线架构指南](https://jessejii.github.io/init/offline_architecture.html)。
 
+### 路由
+
+`core/router/app_router.dart` 是唯一的 `routerProvider`：`StatefulShellRoute.indexedStack` + `NotesShell` 承载 `/notes`、`/todos` 两个 Tab（切 Tab 不丢列表状态），二级页（`/notes/new`、`/notes/folders`、`/notes/trash`、`/notes/:id`、`/settings`、隐私政策、用户协议）一律挂 `_rootNavigatorKey` 整屏覆盖。
+
+> ⚠️ **注册顺序是硬约束**：`new` / `folders` / `trash` 必须注册在 `:id` 之前，否则会被当作笔记 id 吃掉。
+> 路径常量只在 `AppRoutes`（唯一 SoT，`initial = '/notes'`）。router 里**不 watch** `persistentLocaleProvider`——会重建 GoRouter 并清空导航栈，语言由 `main.dart` 的 `MaterialApp.locale` 负责。
+
 ### 本地持久化
 
-`drift`（SQLite：笔记 / 文件夹 / 待办）+ `shared_preferences`（设置偏好）。改表后必须跑 build_runner。
+`drift`（SQLite：笔记 / 文件夹 / 待办）通过 `appDatabaseProvider`（`core/providers/database_providers.dart`）注入；设置偏好用 `shared_preferences`。**改表后必须跑 build_runner**。
 
 ### 高级图片处理
 
@@ -122,13 +129,17 @@ await cacheManager.setItem('note_1', noteEntity);
 
 自建 design token：颜色 / 字阶走 `ThemeExtension`（`core/theme/tokens/` 的 `AppColors`、`AppTextStyles`），间距 / 圆角 / 阴影走常量（`AppSpacing`、`AppRadius`、`AppElevation`）。
 
+色板由 **flex_color_scheme** 从配色方案的主色派生（`FlexSchemeColor.from` + `FlexKeyColors` + `surfaceMode` 混合），主题按「明暗 × 配色方案」缓存（`AppTheme.light(scheme)` / `dark(scheme)`）。两个维度**正交**：`AppSettings.themeMode`（浅色 / 深色 / 跟随系统）管亮度，`AppSettings.colorScheme`（琥珀 / 蓝 / 绿 / 紫）管强调色，各自持久化、互不覆盖，都在 `/settings/theme` 主题页上选。
+
 ```dart
 return MaterialApp(
-  theme: AppTheme.lightTheme,
-  darkTheme: AppTheme.darkTheme,
+  theme: AppTheme.light(colorScheme),
+  darkTheme: AppTheme.dark(colorScheme),
   themeMode: themeMode, // 来自 settingsProvider，main.dart 做 AppThemeMode → ThemeMode 映射
 );
 ```
+
+> ⚠️ `flex_color_scheme` 内部 import 的是 `package:material_ui`（与本项目的 material_ui fork 同源），因此 `FlexThemeData` 返回的就是 material_ui 的 `ThemeData`，无类型冲突。
 
 ### 应用更新
 

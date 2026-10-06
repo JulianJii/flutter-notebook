@@ -41,7 +41,7 @@ void main() {
         // override 打在 Repository 层：测试环境无 `shared_preferences` 插件实现。
         overrides: [settingsRepositoryProvider.overrideWithValue(repo)],
         child: MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
             ...GlobalMaterialLocalizations.delegates,

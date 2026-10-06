@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:init/core/error/exceptions.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/core/storage/local_storage_service.dart';
+import 'package:init/core/theme/app_color_scheme.dart';
 import 'package:init/features/settings/domain/entities/app_settings.dart';
 import 'package:init/features/settings/domain/repositories/settings_repository.dart';
 
@@ -64,6 +65,7 @@ Map<String, Object?> _toJson(AppSettings s) {
     'strongReminder': s.strongReminder,
     'locale': s.locale,
     'themeMode': s.themeMode.name,
+    'colorScheme': s.colorScheme.name,
   };
 }
 
@@ -88,6 +90,8 @@ AppSettings _fromJson(Map<String, Object?> json) {
       _ => null,
     },
     themeMode: _byName(AppThemeMode.values, json['themeMode']) ?? d.themeMode,
+    colorScheme:
+        _byName(AppColorScheme.values, json['colorScheme']) ?? d.colorScheme,
   );
 }
 

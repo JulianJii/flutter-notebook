@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:init/core/error/failures.dart';
+import 'package:init/core/theme/app_color_scheme.dart';
 import 'package:init/features/settings/domain/entities/app_settings.dart';
 import 'package:init/features/settings/domain/repositories/settings_repository.dart';
 import 'package:init/features/settings/presentation/providers/settings_provider.dart';
@@ -98,6 +99,18 @@ void main() {
     expect(captured.textScale, AppSettings.defaults().textScale);
     expect(captured.noteSort, AppSettings.defaults().noteSort);
     expect(captured.noteLayout, AppSettings.defaults().noteLayout);
+  });
+
+  test('setColorScheme 立即改 state，且不动 themeMode（两个维度互不覆盖）', () async {
+    final n = container.read(settingsProvider.notifier);
+    n.setThemeMode(AppThemeMode.dark);
+    n.setColorScheme(AppColorScheme.green);
+
+    final s = container.read(settingsProvider);
+    expect(s.colorScheme, AppColorScheme.green);
+    expect(s.themeMode, AppThemeMode.dark);
+    verify(() => repo.save(any())).called(2);
+    await settle();
   });
 
   test('4 个 setter 各改各的字段', () async {

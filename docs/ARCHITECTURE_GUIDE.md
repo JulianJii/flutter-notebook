@@ -76,8 +76,6 @@ class NoteRepositoryImpl implements NoteRepository {
 }
 ```
 
-> 本项目数据源是本地的（drift），只有 `core/network/` 下的集成示例才走 dio。
-
 ### 🟢 Presentation 层（UI）
 **路径：** `lib/features/[feature]/presentation/`
 

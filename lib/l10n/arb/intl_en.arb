@@ -360,9 +360,47 @@
   "@settingsLayoutList": {
     "description": "Note list layout option: single column list"
   },
-  "settingsThemeMode": "Dark mode",
-  "@settingsThemeMode": {
-    "description": "Settings row title: dark mode"
+  "themeTitle": "Theme",
+  "@themeTitle": {
+    "description": "Title of the theme page and of its entry row in settings"
+  },
+  "themeSectionBrightness": "Appearance",
+  "@themeSectionBrightness": {
+    "description": "Section header of the light / dark / system segmented control"
+  },
+  "themeSectionPalette": "Color scheme",
+  "@themeSectionPalette": {
+    "description": "Section header of the color scheme list"
+  },
+  "themeCurrent": "Current: {scheme} · {mode}",
+  "@themeCurrent": {
+    "description": "Summary line showing the selected palette and brightness",
+    "placeholders": {
+      "scheme": {
+        "type": "String",
+        "example": "Amber"
+      },
+      "mode": {
+        "type": "String",
+        "example": "System"
+      }
+    }
+  },
+  "themePaletteAmber": "Amber",
+  "@themePaletteAmber": {
+    "description": "Color scheme option: amber"
+  },
+  "themePaletteBlue": "Blue",
+  "@themePaletteBlue": {
+    "description": "Color scheme option: blue"
+  },
+  "themePaletteGreen": "Green",
+  "@themePaletteGreen": {
+    "description": "Color scheme option: green"
+  },
+  "themePaletteViolet": "Violet",
+  "@themePaletteViolet": {
+    "description": "Color scheme option: violet"
   },
   "settingsThemeSystem": "System",
   "@settingsThemeSystem": {

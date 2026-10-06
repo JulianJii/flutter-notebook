@@ -8,7 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-    theme: AppTheme.lightTheme,
+    theme: AppTheme.light(),
     home: Scaffold(
       body: Center(child: SizedBox(width: 200, child: child)),
     ),
@@ -53,7 +53,7 @@ void main() {
     await tester.pumpWidget(wrap(const AppCard(child: Text('笔记'))));
 
     final card = tester.widget<Card>(find.byType(Card));
-    final theme = AppTheme.lightTheme.cardTheme;
+    final theme = AppTheme.light().cardTheme;
     expect(card.color ?? theme.color, const AppColors.light().surface);
     expect(theme.elevation, 0, reason: '§2.4 elevation.card = 0');
     expect(theme.shape, isA<RoundedRectangleBorder>());

@@ -8,7 +8,7 @@ import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-  theme: AppTheme.lightTheme,
+  theme: AppTheme.light(),
   localizationsDelegates: <LocalizationsDelegate<dynamic>>[
     ...AppLocalizations.localizationsDelegates,
     ...GlobalMaterialLocalizations.delegates,

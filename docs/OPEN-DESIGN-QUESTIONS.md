@@ -24,12 +24,14 @@
 | Q25c | 选中行是否需要底色高亮无稿 | 不加底色，靠琥珀勾区分；补稿后只改 `FolderRow` |
 | Q26b | D5 只画了 Switch 的 off 态 | 沿用 Material 默认 on 态；补稿后只改 `AppTheme` 的 `switchTheme` |
 | Q28 | SafeArea 按「非 edge-to-edge」实现是否正确 | `AppTopBar` / `NotesShell` 均已包 SafeArea；若改 edge-to-edge，此两处最先动 |
-| Q29 | 深色模式配色表无稿 | `AppColors.dark()` 整体回落浅色值；补稿后只改这一个构造器 |
+| Q29 | 深色模式配色表无稿 | ⛔ **已被 Q36 取代**：原「`AppColors.dark()` 整体回落浅色值」作废，深色现在是真实深色（会深底深字） |
 | Q31 | 空状态视觉无稿（P1 宫格 / P2 待办 / P3 详情 / 回收站） | 已落地的三处（回收站 / 待办 / 笔记搜索无结果）都是内联 `Center + Text(subtitle/textTertiary)`；⛔ 不抽 `AppEmptyView` |
 | Q32 | 首屏读库的 Loading 视觉无稿 | 由 `AsyncValue` 承载 loading/error，UI 不额外画骨架屏 |
 | Q33 | 读库 / 保存失败的用户可见反馈无稿 | 已落地：待办勾选失败、自动保存失败（`NoteEditorState.lastFailure`）→ `AppUtils.showSnackBar`。**未落地**：设置偏好保存失败（`_write` 是 fire-and-forget、state 不变 ⇒ 没有 UI 事件源；补反馈要新增 `lastFailure` 状态源，而偏好的可恢复路径只有「重启 App」，判定不值得） |
 | Q34 | Snackbar / Toast / Dialog 整类视觉无稿 | 一律沿用既有 `AppUtils.showSnackBar` + Material 默认弹窗，不建 `AppDialog` / `AppBottomSheet` |
 | Q35 | 全稿无按压态 / 禁用态 | 沿用 `IconButton` / `InkWell` 默认；补稿后按组件逐个校 |
+| Q36 | 深色模式的色表无稿（原 Q29「深色回落浅色值」已作废） | 13 个语义色另给一套深色值（`AppColors.dark()`），按 M3 深色规范反推：bg `#121212` / surface `#1E1E1E` / 文字 `#F2F2F2`；拿到深色稿只改 `AppColors.dark()`，`app_theme.dart` 零改动 |
+| Q37 | 配色方案的**清单与数量**无稿 | 暂定 4 套（琥珀 = 设计稿 `#F0A020` 默认 / 蓝 / 绿 / 紫），主色写在 `AppColorSchemeSeed.seed`；补稿后只改这个枚举与它的 4 个 int 值 |
 | Q-§2.2 | §2.2 的 13 个字阶里没有「分组标题」这一级 | `AppSectionHeader` 暂取最接近的 `text.subtitle`（13sp / w400），按 D5 量取后修正该行 |
 | Q-新 | 待办排序覆盖 D2 稿「本页无排序入口」 | 用户已确认覆盖：`TodoDao.watchAll` 的 `ORDER BY is_done ASC, created_at DESC`（未完成置顶 + 同组创建时间倒序），「已完成 N」折叠分组复用这条顺序 |
 | Q-新2 | 文件夹拖拽排序覆盖 D4 稿「本页无排序入口」 | 用户已要求：新增 `note_folders.sort_index`（schemaVersion 4）+ `FolderDao.updateSortIndexes`；P4 真实文件夹行右侧的计数换成拖动图标（`AppIcons.drag`），「全部」/「未分类」不可拖、仍显示计数 |

@@ -10,6 +10,7 @@ import 'package:init/features/notes/presentation/screens/note_list_screen.dart';
 import 'package:init/features/notes/presentation/screens/recently_deleted_screen.dart';
 import 'package:init/features/settings/presentation/screens/legal_screens.dart';
 import 'package:init/features/settings/presentation/screens/settings_screen.dart';
+import 'package:init/features/settings/presentation/screens/theme_screen.dart';
 import 'package:init/features/todos/presentation/screens/todo_list_screen.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -78,6 +79,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.settings,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.theme,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ThemeScreen(),
       ),
       GoRoute(
         path: AppRoutes.privacyPolicy,

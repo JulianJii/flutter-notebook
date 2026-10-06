@@ -9,7 +9,7 @@ void main() {
   testWidgets('AppFab 渲染 64dp 圆形', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(
           floatingActionButton: AppFab(onPressed: () {}),
           body: const SizedBox(),
@@ -38,7 +38,7 @@ void main() {
   testWidgets('AppFab onPressed == null 时不渲染', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(
           floatingActionButton: AppFab(onPressed: null),
           body: const SizedBox(),
@@ -54,7 +54,7 @@ void main() {
     var pressed = 0;
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(
           floatingActionButton: AppFab(onPressed: () => pressed++),
           body: const SizedBox(),
@@ -69,7 +69,7 @@ void main() {
   testWidgets('AppCheckbox value=true 不崩（D2 checked 无稿）', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(body: AppCheckbox(value: true, onChanged: (_) {})),
       ),
     );
@@ -84,7 +84,7 @@ void main() {
     bool? received;
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(
           body: AppCheckbox(value: false, onChanged: (v) => received = v),
         ),
@@ -98,7 +98,7 @@ void main() {
   testWidgets('AppSwitchRow 显示标题与副标题', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: const Scaffold(
           body: AppSwitchRow(
             title: '强提醒',
@@ -123,7 +123,7 @@ void main() {
     bool? received;
     await tester.pumpWidget(
       MaterialApp(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         home: Scaffold(
           body: AppSwitchRow(
             title: '强提醒',

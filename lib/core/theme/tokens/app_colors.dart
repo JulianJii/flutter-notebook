@@ -1,8 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
+/// 设计稿强调色。`UI-IMPLEMENTATION-SPEC.md` §2.1 的 `accent`。
+///
+/// ⛔ 不要散落字面量：换配色方案时只有 `AppTheme` 会传新的 `accent`，
+/// 其余 12 个中性色不动，故默认值集中在这里。
+const Color kDesignAccent = Color(0xFFF0A020);
+
 /// 语义色单一来源。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.1（14 行表格）。
 ///
-/// 实现为 [ThemeExtension] 而非散落的 const：13 个语义色 + 将来的 Q29 深色模式，
+/// 实现为 [ThemeExtension] 而非散落的 const：13 个语义色 + 深色模式，
 /// 必须一处改全生效。见 `ARCHITECTURE-DESIGN.md` §7.3。
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
@@ -23,7 +29,9 @@ class AppColors extends ThemeExtension<AppColors> {
   });
 
   /// 浅色模式取值。`UI-IMPLEMENTATION-SPEC.md` §2.1 原表。
-  const AppColors.light()
+  ///
+  /// [accent] 由配色方案传入（`AppTheme`），默认 [kDesignAccent]。
+  const AppColors.light({this.accent = kDesignAccent})
     : bg = const Color(0xFFF2F2F2),
       surface = const Color(0xFFFFFFFF),
       surfaceInverse = const Color(0xFF1A1A1A),
@@ -32,7 +40,6 @@ class AppColors extends ThemeExtension<AppColors> {
       textTertiary = const Color(0xFFB3B3B3),
       textPlaceholder = const Color(0xFFC0C0C0),
       textSectionHeader = const Color(0xFFA0A0A0),
-      accent = const Color(0xFFF0A020),
       divider = const Color(0xFFE5E5E5),
       outlineControl = const Color(0xFF9E9E9E),
       switchOff = const Color(0xFFBDBDBD),
@@ -41,8 +48,23 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// 深色模式取值。
   ///
-  // Q29 → docs/OPEN-DESIGN-QUESTIONS.md（深色表无稿，整体回落浅色值）
-  const AppColors.dark() : this.light();
+  /// ⚠️ 中性色**不是**浅色的复制：深底配深字会不可读，故 13 个语义色全部
+  /// 另给一套深色值（色板本身由 flex_color_scheme 从 [accent] 派生）。
+  /// Q36 → docs/OPEN-DESIGN-QUESTIONS.md（深色表无稿，按 M3 深色规范反推）
+  const AppColors.dark({this.accent = kDesignAccent})
+    : bg = const Color(0xFF121212),
+      surface = const Color(0xFF1E1E1E),
+      surfaceInverse = const Color(0xFFE5E5E5),
+      textPrimary = const Color(0xFFF2F2F2),
+      textSecondary = const Color(0xFF999999),
+      textTertiary = const Color(0xFF7A7A7A),
+      textPlaceholder = const Color(0xFF5A5A5A),
+      textSectionHeader = const Color(0xFF8A8A8A),
+      divider = const Color(0xFF2E2E2E),
+      outlineControl = const Color(0xFF9E9E9E),
+      switchOff = const Color(0xFF4A4A4A),
+      chipSelectedBg = const Color(0xFF2A2A2A),
+      textDisabled = const Color(0xFFA0A0A0);
 
   /// 页面底色（列表页 / 设置页）。D1/D2/D4/D5 卡片外区域。
   final Color bg;

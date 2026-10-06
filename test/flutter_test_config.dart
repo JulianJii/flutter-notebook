@@ -19,8 +19,8 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
       // 因此这里自行构造 material_ui 的 MaterialApp 外壳）
       appWrapperFactory: () =>
           (child) => MaterialApp(
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
             localizationsDelegates: [
               ...AppLocalizations.localizationsDelegates,
               ...GlobalMaterialLocalizations.delegates,

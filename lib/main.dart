@@ -54,6 +54,12 @@ class MyApp extends ConsumerWidget {
       AppThemeMode.dark => ThemeMode.dark,
     };
 
+    // 配色方案：`select` 只在它变时重建整个 MaterialApp（明暗由 themeMode 管，
+    // 改文字大小等无关偏好不触发这里）。
+    final colorScheme = ref.watch(
+      settingsProvider.select((s) => s.colorScheme),
+    );
+
     // 监听持久化语言环境
     final locale = ref.watch(persistentLocaleProvider);
 
@@ -62,8 +68,8 @@ class MyApp extends ConsumerWidget {
       enforceCriticalUpdates: true,
       child: MaterialApp.router(
         title: AppConstants.appName,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        theme: AppTheme.light(colorScheme),
+        darkTheme: AppTheme.dark(colorScheme),
         themeMode: themeMode,
         routerConfig: router,
         debugShowCheckedModeBanner: false,

@@ -11,7 +11,7 @@ import 'package:material_ui/material_ui.dart';
 /// 里，golden 会随文案改动整片飘红）。
 void main() {
   Widget app(GoRouter router) => MaterialApp.router(
-    theme: AppTheme.lightTheme,
+    theme: AppTheme.light(),
     routerConfig: router,
     localizationsDelegates: <LocalizationsDelegate<dynamic>>[
       ...AppLocalizations.localizationsDelegates,

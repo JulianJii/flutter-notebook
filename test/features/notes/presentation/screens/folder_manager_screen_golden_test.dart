@@ -72,7 +72,7 @@ void main() {
       widget: ProviderScope(
         overrides: [folderRepositoryProvider.overrideWithValue(folderRepo)],
         child: MaterialApp.router(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           routerConfig: _router(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,

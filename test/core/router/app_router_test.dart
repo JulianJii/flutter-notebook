@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/core/router/app_router.dart';
 import 'package:init/core/router/app_routes.dart';
@@ -94,11 +95,13 @@ void main() {
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
       ],
       child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         routerConfig: router,
         localizationsDelegates: <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,
           ...GlobalMaterialLocalizations.delegates,
+          // `/notes/new` 与 `/notes/:id` 会渲染 Quill 工具栏，缺它工具栏按钮全崩。
+          FlutterQuillLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('zh'),
@@ -264,7 +267,7 @@ void main() {
       );
       expect(scaffold.backgroundColor, isNull);
       expect(
-        AppTheme.lightTheme.scaffoldBackgroundColor,
+        AppTheme.light().scaffoldBackgroundColor,
         const AppColors.light().bg,
       );
     });

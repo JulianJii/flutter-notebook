@@ -608,11 +608,53 @@ abstract class AppLocalizations {
   /// **'列表模式'**
   String get settingsLayoutList;
 
-  /// Settings row title: dark mode
+  /// Title of the theme page and of its entry row in settings
   ///
   /// In zh, this message translates to:
-  /// **'深色模式'**
-  String get settingsThemeMode;
+  /// **'主题'**
+  String get themeTitle;
+
+  /// Section header of the light / dark / system segmented control
+  ///
+  /// In zh, this message translates to:
+  /// **'明暗模式'**
+  String get themeSectionBrightness;
+
+  /// Section header of the color scheme list
+  ///
+  /// In zh, this message translates to:
+  /// **'配色方案'**
+  String get themeSectionPalette;
+
+  /// Summary line showing the selected palette and brightness
+  ///
+  /// In zh, this message translates to:
+  /// **'当前：{scheme} · {mode}'**
+  String themeCurrent(String scheme, String mode);
+
+  /// Color scheme option: amber
+  ///
+  /// In zh, this message translates to:
+  /// **'琥珀'**
+  String get themePaletteAmber;
+
+  /// Color scheme option: blue
+  ///
+  /// In zh, this message translates to:
+  /// **'蓝色'**
+  String get themePaletteBlue;
+
+  /// Color scheme option: green
+  ///
+  /// In zh, this message translates to:
+  /// **'绿色'**
+  String get themePaletteGreen;
+
+  /// Color scheme option: violet
+  ///
+  /// In zh, this message translates to:
+  /// **'紫色'**
+  String get themePaletteViolet;
 
   /// Theme mode option: follow system
   ///

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:init/core/error/exceptions.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/core/storage/local_storage_service.dart';
+import 'package:init/core/theme/app_color_scheme.dart';
 import 'package:init/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:init/features/settings/domain/entities/app_settings.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,7 +37,7 @@ void main() {
       );
     });
 
-    test('往返一致：save(X) -> load() == X（6 字段逐字段相等）', () async {
+    test('往返一致：save(X) -> load() == X（7 字段逐字段相等）', () async {
       const x = AppSettings(
         textScale: TextScaleLevel.xLarge,
         noteSort: AppNoteSort.titleAsc,
@@ -44,6 +45,7 @@ void main() {
         strongReminder: true,
         locale: 'en',
         themeMode: AppThemeMode.dark,
+        colorScheme: AppColorScheme.violet,
       );
       final real = await realRepo({});
 
@@ -175,6 +177,14 @@ void main() {
       expect(s.noteLayout, NoteLayout.list);
     });
 
+    test('colorScheme 写成 int / 未知名 -> amber', () async {
+      for (final raw in <String>['3', '"NOPE"', 'null']) {
+        final s = await loadWith('{"colorScheme":$raw,"themeMode":"dark"}');
+        expect(s.colorScheme, AppColorScheme.amber, reason: 'raw=$raw');
+        expect(s.themeMode, AppThemeMode.dark, reason: '其余字段必须保留');
+      }
+    });
+
     test('locale 写成 int / 空串 -> null（null = 跟系统）', () async {
       for (final raw in <String>['42', '""']) {
         final s = await loadWith('{"locale":$raw,"noteLayout":"list"}');
@@ -248,6 +258,7 @@ void main() {
       expect(d.strongReminder, isFalse);
       expect(d.locale, isNull, reason: '跟系统');
       expect(d.themeMode, AppThemeMode.system);
+      expect(d.colorScheme, AppColorScheme.amber);
     });
 
     test('值相等：默认构造 == defaults()', () {

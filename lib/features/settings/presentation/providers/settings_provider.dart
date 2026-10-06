@@ -1,4 +1,5 @@
 import 'package:init/core/logging/logger_provider.dart';
+import 'package:init/core/theme/app_color_scheme.dart';
 import 'package:init/core/usecases/usecase.dart';
 import 'package:init/features/settings/domain/entities/app_settings.dart';
 import 'package:init/features/settings/providers/settings_providers.dart';
@@ -71,8 +72,13 @@ class Settings extends _$Settings {
   /// 之前主题读的是 `main.dart` 的 `themeModeProvider`（`build()` 写死 `system`
   /// 且不落盘），用户的选择一重建就没了。现统一从 [AppSettings.themeMode] 走，
   /// 与其余偏好共用 [_write] 的落盘、首帧竞态防护与「失败不回滚」。
+  /// 明暗三档。写入口在主题页（设置页只放跳转入口）。
   void setThemeMode(AppThemeMode value) =>
       _write(state.copyWith(themeMode: value));
+
+  /// 配色方案。与 [setThemeMode] 正交：只换强调色与派生色板，不动亮度。
+  void setColorScheme(AppColorScheme value) =>
+      _write(state.copyWith(colorScheme: value));
 
   // ⛔ **仍不建 `setLocale`**：语言有独立的 `persistentLocaleProvider`（它自己写盘），
   // 在这里再存一份就成了双真相源。要在 P5 加语言行时先决定谁是真源。

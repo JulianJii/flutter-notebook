@@ -11,7 +11,7 @@ void main() {
     testWidgets('高 28dp、pill 全圆角', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(
             body: Center(
               child: AppFilterChip(label: '全部', selected: true, textScale: 1),
@@ -42,7 +42,7 @@ void main() {
     testWidgets('选中态：#EFEFEF 底 + textPrimary 字', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(
             body: Center(
               child: AppFilterChip(label: '全部', selected: true, textScale: 1),
@@ -72,7 +72,7 @@ void main() {
     testWidgets('未选中态：surface 底 + textSecondary 字', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(
             body: Center(
               child: AppFilterChip(label: '未分类', selected: false, textScale: 1),
@@ -102,7 +102,7 @@ void main() {
     testWidgets('文字样式取 text.chip（13sp / w500）且单行省略', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(
             body: Center(
               child: AppFilterChip(label: '词声笔记', selected: true, textScale: 1),
@@ -121,7 +121,7 @@ void main() {
     testWidgets('无勾选标记（D1 未提勾）', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(
             body: Center(
               child: AppFilterChip(label: '全部', selected: true, textScale: 1),
@@ -138,7 +138,7 @@ void main() {
       var tapped = 0;
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: Scaffold(
             body: Center(
               child: AppFilterChip(
@@ -161,7 +161,7 @@ void main() {
     testWidgets('缩进 28 / 上 16 / 下 8，字色 #A0A0A0', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           home: const Scaffold(body: AppSectionHeader(text: '云服务')),
         ),
       );

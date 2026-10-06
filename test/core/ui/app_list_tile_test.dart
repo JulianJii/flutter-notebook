@@ -6,7 +6,7 @@ import 'package:init/core/ui/app_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
-  theme: AppTheme.lightTheme,
+  theme: AppTheme.light(),
   home: Scaffold(body: child),
 );
 
@@ -88,7 +88,7 @@ void main() {
       await tester.pumpWidget(_wrap(const AppListTile(title: '清空回收站')));
       expect(
         tester.widget<Text>(find.text('清空回收站')).style?.fontWeight,
-        AppTheme.lightTheme.extension<AppTextStyles>()!.rowTitle.fontWeight,
+        AppTheme.light().extension<AppTextStyles>()!.rowTitle.fontWeight,
       );
     });
   });

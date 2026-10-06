@@ -18,7 +18,7 @@ import '../providers/settings_provider.dart';
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
 /// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
-/// | 笔记样式 | 深色模式 | 选择器，跟随系统 / 浅色 / 深色 三选一 |
+/// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
 /// | 快捷功能 | 速记 | chevron，**不可点**（Q14） |
 /// | 提醒 | 强提醒 | 选择器，开启 / 关闭 二选一 |
 /// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
@@ -26,8 +26,9 @@ import '../providers/settings_provider.dart';
 /// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
 /// 「最近删除」并入「其他」（回收站页 = `RecentlyDeletedScreen`）。
 ///
-/// 「深色模式」是 D5 稿之后补的一行（D5 无主题行，见 `TASK-046` 的 Out of Scope）：
-/// 不给入口，`AppSettings.themeMode` 就只是个永远读不到第二值的字段。
+/// 主题入口是 D5 稿之后补的一行（D5 无主题行，见 `TASK-046` 的 Out of Scope）：
+/// 不给入口，`AppSettings.themeMode` / `colorScheme` 就只是永远读不到第二值的字段。
+/// 值的选择在**主题页**（`ThemeScreen`），明暗与配色是两个正交维度。
 ///
 /// ⛔ **不渲染 `AppBottomNav`**：P5 是 root 层的顶层路由（`parentNavigatorKey`），
 /// 整个盖住 Shell，稿上（D5）底部也没有 Tab。
@@ -115,19 +116,14 @@ class SettingsScreen extends ConsumerWidget {
                         onSelected: notifier.setNoteLayout,
                         dividerBefore: true,
                       ),
-                      // 主题模式：读 `AppSettings.themeMode` 并落盘。三档
-                      // （跟随系统 / 浅色 / 深色）用**选择器**而不是开关 ——
-                      // 开关只有两态，`system` 档会变成不可达的死值。
-                      _selectTile<AppThemeMode>(
+                      // 主题：明暗 × 配色两个维度都在独立的主题页里选
+                      // （三档分段控件 + 配色列表），这里只留入口。
+                      _chevronTile(
                         context,
-                        key: const Key('select_theme_mode'),
-                        title: l10n.settingsThemeMode,
-                        valueText: _themeModeLabel(l10n, settings.themeMode),
-                        options: AppThemeMode.values,
-                        current: settings.themeMode,
-                        labelOf: (mode) => _themeModeLabel(l10n, mode),
-                        onSelected: notifier.setThemeMode,
+                        key: const Key('chevron_theme'),
+                        title: l10n.themeTitle,
                         dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.theme),
                       ),
                     ],
                   ),
@@ -368,14 +364,6 @@ Future<T?> _pickOption<T>(
     ),
   );
 }
-
-/// 主题模式 → 当前值文案。3 值穷尽 `switch`，无 `default`（新增枚举值编译失败）。
-String _themeModeLabel(AppLocalizations l10n, AppThemeMode mode) =>
-    switch (mode) {
-      AppThemeMode.system => l10n.settingsThemeSystem,
-      AppThemeMode.light => l10n.settingsThemeLight,
-      AppThemeMode.dark => l10n.settingsThemeDark,
-    };
 
 /// 布尔偏好 → 开 / 关文案。
 String _onOffLabel(AppLocalizations l10n, bool value) =>

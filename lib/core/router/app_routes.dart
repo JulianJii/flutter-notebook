@@ -44,6 +44,11 @@ abstract final class AppRoutes {
   /// P5 设置。从 P1 或 P2 push 进入，返回目标为 P1。
   static const String settings = '/settings';
 
+  /// 主题。明暗（浅色 / 深色 / 跟随系统）+ 配色方案两个独立维度，从 P5 进入。
+  ///
+  /// ⚠️ 路径前缀是 `/settings`，与隐私政策 / 用户协议同层（root navigator）。
+  static const String theme = '/settings/theme';
+
   /// 隐私政策。`/settings` 的兄弟路由（root navigator，整页覆盖）。
   static const String privacyPolicy = '/settings/privacy-policy';
 

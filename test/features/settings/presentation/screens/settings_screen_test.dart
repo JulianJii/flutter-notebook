@@ -62,7 +62,7 @@ void main() {
       UncontrolledProviderScope(
         container: container,
         child: MaterialApp(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
             ...GlobalMaterialLocalizations.delegates,
@@ -171,12 +171,15 @@ void main() {
       expect(find.byType(AppCard), findsNWidgets(4));
       expect(find.byType(AppListTile), findsNWidgets(9));
       expect(find.byType(Switch), findsNothing, reason: '开关已改为选择器行');
-      // 4 个 chevron 行 + 5 个选择器行（文字大小 / 排序 / 布局 / 深色模式 / 强提醒）。
+      // 5 个 chevron 行（速记 / 主题 / 最近删除 / 隐私政策 / 用户协议）
+      // + 4 个选择器行（文字大小 / 排序 / 布局 / 强提醒）。
       expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(9));
     });
   });
 
-  group('5 个可写行走 settingsProvider', () {
+  /// ⚠️ **4 个**而不是 5 个：主题（明暗 + 配色）已迁到独立的主题页，
+  /// P5 上只剩跳转入口行（见 `theme_screen_test.dart`）。
+  group('4 个可写行走 settingsProvider', () {
     testWidgets('3 个选择器行显示当前值文案，不是枚举英文名', (tester) async {
       await pumpP5(tester);
 
@@ -272,54 +275,24 @@ void main() {
       expect(find.text('开启'), findsOneWidget);
     });
 
-    testWidgets('深色模式：点行弹选项单，选中才落盘；选当前值不写', (tester) async {
+    testWidgets('主题行是跳转入口：chevron 行，不再弹选项单', (tester) async {
       await pumpP5(tester);
 
-      expect(container.read(settingsProvider).themeMode, AppThemeMode.system);
-      expect(find.text('跟随系统'), findsOneWidget, reason: '行尾显示当前值');
-      expect(find.byType(Switch), findsNothing, reason: '已不是开关行');
+      // 三档的选择已迁到主题页，P5 上只留入口。
+      expect(find.byKey(const Key('select_theme_mode')), findsNothing);
+      expect(find.byKey(const Key('chevron_theme')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('chevron_theme')),
+          matching: find.byIcon(AppIcons.chevronRight),
+        ),
+        findsOneWidget,
+      );
 
-      await tester.tap(find.byKey(const Key('select_theme_mode')));
-      await tester.pumpAndSettle();
-      // 三档全列出 —— 开关形态下 `system` 永不可达。
-      // ⚠️ 选项文案在弹层内，行尾当前值同名，故必须按 `BottomSheet` 限定。
-      final sheet = find.byType(BottomSheet);
-      for (final option in <String>['跟随系统', '浅色', '深色']) {
-        expect(
-          find.descendant(of: sheet, matching: find.text(option)),
-          findsOneWidget,
-          reason: '选项缺少 $option',
-        );
-      }
-
-      // 选当前值：不写盘
-      await tester.tap(find.descendant(of: sheet, matching: find.text('跟随系统')));
-      await tester.pumpAndSettle();
+      // ⛔ 不在这里 tap：入口走 `context.push(AppRoutes.theme)`，本页没有 GoRouter，
+      // 跳转本身由 `app_router_test.dart` 守；主题页内的选值由 `theme_screen_test.dart` 守。
+      expect(find.byType(BottomSheet), findsNothing);
       verifyNever(() => repo.save(any()));
-
-      await tester.tap(find.byKey(const Key('select_theme_mode')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.descendant(of: sheet, matching: find.text('深色')));
-      await tester.pumpAndSettle();
-
-      expect(container.read(settingsProvider).themeMode, AppThemeMode.dark);
-      expect(find.text('深色'), findsOneWidget);
-      verify(() => repo.save(any())).called(1);
-    });
-
-    testWidgets('深色模式只改自己的字段', (tester) async {
-      await pumpP5(tester);
-
-      await tester.tap(find.byKey(const Key('select_theme_mode')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('深色'));
-      await tester.pumpAndSettle();
-
-      final settings = container.read(settingsProvider);
-      expect(settings.themeMode, AppThemeMode.dark);
-      expect(settings.textScale, TextScaleLevel.normal);
-      expect(settings.noteSort, AppNoteSort.editedDesc);
-      expect(settings.noteLayout, NoteLayout.grid);
     });
   });
 
@@ -327,8 +300,9 @@ void main() {
     /// 仍不可点的一行（Q14：速记二级页无稿）。
     const String deadKey = 'chevron_quick_capture';
 
-    /// 已接线的 3 行（最近删除 / 隐私政策 / 用户协议）。
+    /// 已接线的 4 行（主题 / 最近删除 / 隐私政策 / 用户协议）。
     const List<String> wiredKeys = <String>[
+      'chevron_theme',
       'chevron_recent_deleted',
       'chevron_privacy_policy',
       'chevron_user_agreement',
@@ -401,6 +375,7 @@ void main() {
       // 断言随之撤销；主题缺席的约束改由上面 `change_theme` 一项守住。
       expect(source, isNot(contains('.notifications')));
       // Q14 的不可点行只剩「速记」；最近删除 / 隐私政策 / 用户协议已接线。
+      expect(source, contains('AppRoutes.theme'));
       expect(source, contains('AppRoutes.noteTrash'));
       expect(source, contains('AppRoutes.privacyPolicy'));
       expect(source, contains('AppRoutes.userAgreement'));

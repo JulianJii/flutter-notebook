@@ -90,7 +90,7 @@ void main() {
         // 的初始态**。
         overrides: [todoRepositoryProvider.overrideWithValue(repo)],
         child: MaterialApp.router(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           routerConfig: _router(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
@@ -132,7 +132,7 @@ void main() {
       widget: ProviderScope(
         overrides: [todoRepositoryProvider.overrideWithValue(repo)],
         child: MaterialApp.router(
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.light(),
           routerConfig: _router(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,

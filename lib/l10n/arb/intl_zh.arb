@@ -357,9 +357,47 @@
   "@settingsLayoutList": {
     "description": "Note list layout option: single column list"
   },
-  "settingsThemeMode": "深色模式",
-  "@settingsThemeMode": {
-    "description": "Settings row title: dark mode"
+  "themeTitle": "主题",
+  "@themeTitle": {
+    "description": "Title of the theme page and of its entry row in settings"
+  },
+  "themeSectionBrightness": "明暗模式",
+  "@themeSectionBrightness": {
+    "description": "Section header of the light / dark / system segmented control"
+  },
+  "themeSectionPalette": "配色方案",
+  "@themeSectionPalette": {
+    "description": "Section header of the color scheme list"
+  },
+  "themeCurrent": "当前：{scheme} · {mode}",
+  "@themeCurrent": {
+    "description": "Summary line showing the selected palette and brightness",
+    "placeholders": {
+      "scheme": {
+        "type": "String",
+        "example": "琥珀"
+      },
+      "mode": {
+        "type": "String",
+        "example": "跟随系统"
+      }
+    }
+  },
+  "themePaletteAmber": "琥珀",
+  "@themePaletteAmber": {
+    "description": "Color scheme option: amber"
+  },
+  "themePaletteBlue": "蓝色",
+  "@themePaletteBlue": {
+    "description": "Color scheme option: blue"
+  },
+  "themePaletteGreen": "绿色",
+  "@themePaletteGreen": {
+    "description": "Color scheme option: green"
+  },
+  "themePaletteViolet": "紫色",
+  "@themePaletteViolet": {
+    "description": "Color scheme option: violet"
   },
   "settingsThemeSystem": "跟随系统",
   "@settingsThemeSystem": {

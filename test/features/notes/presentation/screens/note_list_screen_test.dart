@@ -95,7 +95,7 @@ void main() {
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
       ],
       child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         routerConfig: router,
         localizationsDelegates: <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,

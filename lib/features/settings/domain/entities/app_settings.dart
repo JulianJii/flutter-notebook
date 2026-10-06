@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:init/core/theme/app_color_scheme.dart';
 
 /// 文字大小。`ARCHITECTURE-DESIGN.md` §2.13 的 4 值枚举，默认 `normal`。
 ///
@@ -22,7 +23,7 @@ enum NoteLayout { grid, list }
 /// 映射成 `ThemeMode` 在 `main.dart` 的 `MyApp` 里（3↔3 一一对应）。
 enum AppThemeMode { system, light, dark }
 
-/// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
+/// 用户偏好。7 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
 /// 6 个标量、需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
 ///
@@ -36,6 +37,7 @@ class AppSettings extends Equatable {
     this.strongReminder = false,
     this.locale,
     this.themeMode = AppThemeMode.system,
+    this.colorScheme = AppColorScheme.amber,
   });
 
   /// 默认值入口。D5 稿上显示的正是这几个值。
@@ -45,7 +47,8 @@ class AppSettings extends Equatable {
       noteLayout = NoteLayout.grid,
       strongReminder = false,
       locale = null,
-      themeMode = AppThemeMode.system;
+      themeMode = AppThemeMode.system,
+      colorScheme = AppColorScheme.amber;
 
   final TextScaleLevel textScale;
 
@@ -64,7 +67,12 @@ class AppSettings extends Equatable {
   /// 映射成 `Locale` 在 presentation 层（`TASK-045`）。
   final String? locale;
 
+  /// 明暗。P5「跟随系统 / 浅色 / 深色」三档（主题页）。
   final AppThemeMode themeMode;
+
+  /// 配色方案。与 [themeMode] **正交**：明暗管亮度，这里管强调色与派生色板。
+  /// 默认 `amber` = 设计稿 `#F0A020`。
+  final AppColorScheme colorScheme;
 
   AppSettings copyWith({
     TextScaleLevel? textScale,
@@ -73,6 +81,7 @@ class AppSettings extends Equatable {
     bool? strongReminder,
     Object? locale = _unset,
     AppThemeMode? themeMode,
+    AppColorScheme? colorScheme,
   }) {
     return AppSettings(
       textScale: textScale ?? this.textScale,
@@ -81,6 +90,7 @@ class AppSettings extends Equatable {
       strongReminder: strongReminder ?? this.strongReminder,
       locale: identical(locale, _unset) ? this.locale : locale as String?,
       themeMode: themeMode ?? this.themeMode,
+      colorScheme: colorScheme ?? this.colorScheme,
     );
   }
 
@@ -92,6 +102,7 @@ class AppSettings extends Equatable {
     strongReminder,
     locale,
     themeMode,
+    colorScheme,
   ];
 }
 

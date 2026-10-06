@@ -67,7 +67,7 @@ void main() {
     return ProviderScope(
       overrides: [noteRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp.router(
-        theme: AppTheme.lightTheme,
+        theme: AppTheme.light(),
         routerConfig: router,
         localizationsDelegates: <LocalizationsDelegate<dynamic>>[
           ...AppLocalizations.localizationsDelegates,

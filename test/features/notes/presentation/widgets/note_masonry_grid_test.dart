@@ -29,7 +29,7 @@ void main() {
   );
 
   Widget wrap(Widget child) => MaterialApp(
-    theme: AppTheme.lightTheme,
+    theme: AppTheme.light(),
     localizationsDelegates: <LocalizationsDelegate<dynamic>>[
       ...AppLocalizations.localizationsDelegates,
       ...GlobalMaterialLocalizations.delegates,

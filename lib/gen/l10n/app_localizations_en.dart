@@ -289,7 +289,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLayoutList => 'List';
 
   @override
-  String get settingsThemeMode => 'Dark mode';
+  String get themeTitle => 'Theme';
+
+  @override
+  String get themeSectionBrightness => 'Appearance';
+
+  @override
+  String get themeSectionPalette => 'Color scheme';
+
+  @override
+  String themeCurrent(String scheme, String mode) {
+    return 'Current: $scheme · $mode';
+  }
+
+  @override
+  String get themePaletteAmber => 'Amber';
+
+  @override
+  String get themePaletteBlue => 'Blue';
+
+  @override
+  String get themePaletteGreen => 'Green';
+
+  @override
+  String get themePaletteViolet => 'Violet';
 
   @override
   String get settingsThemeSystem => 'System';

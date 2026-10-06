@@ -51,8 +51,6 @@ dependencies:
   url_launcher: ^6.3.3
   #UUID 生成
   uuid: ^4.6.0
-  #锁 同步代码
-  synchronized: ^3.4.2
   #函数式编程
   fpdart: ^1.2.0
   #golden 测试
@@ -79,8 +77,6 @@ dependencies:
   dio: ^5.11.1
   #dio 请求日志美化输出
   pretty_dio_logger: ^1.4.0
-  #网络连通性监听
-  connectivity_plus: ^7.3.2
   #官方路由
   go_router: ^18.0.2
   #屏幕适配
@@ -126,6 +122,15 @@ dependencies:
   #瀑布流网格（D1 笔记列表 2 列）—— ARCHITECTURE-DESIGN §7.5 裁决新增的唯一 UI 依赖
   flutter_staggered_grid_view: ^0.7.0
   file_picker: ^13.1.0
+  #待办提醒：到点弹系统通知（Android / iOS）
+  # ⚠️ 只能用 23.0.0-dev.x：稳定版（19~22）的 Linux 实现锁 `dbus ^0.7.8`，而
+  # `wakelock_plus >=1.8.1` 要 `dbus ^0.8.0`，两者求解不出来。等上游跟到 dbus 0.8
+  # 再回稳定版。
+  flutter_local_notifications: ^23.0.0-dev.3
+  #定时通知要用 TZDateTime（Android 12+ 的精确闹钟只认带时区的时刻）
+  timezone: ^0.11.1
+  #取系统时区：`tz.local` 自己读不到，必须由它给
+  flutter_timezone: ^5.1.1
 
 dev_dependencies:
   #单元测试 / Widget 测试

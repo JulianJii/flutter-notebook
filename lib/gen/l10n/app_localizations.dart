@@ -950,6 +950,96 @@ abstract class AppLocalizations {
   /// **'还没有待办'**
   String get emptyTodos;
 
+  /// Label of the reminder row in the to-do detail sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒时间'**
+  String get todoReminder;
+
+  /// Placeholder shown when a to-do has no reminder
+  ///
+  /// In zh, this message translates to:
+  /// **'未设置'**
+  String get todoReminderNone;
+
+  /// Title of the bottom sheet that picks a reminder date and time
+  ///
+  /// In zh, this message translates to:
+  /// **'设置提醒时间'**
+  String get todoReminderTitle;
+
+  /// Row that opens the date picker
+  ///
+  /// In zh, this message translates to:
+  /// **'日期'**
+  String get todoReminderDate;
+
+  /// Row that opens the time picker
+  ///
+  /// In zh, this message translates to:
+  /// **'时间'**
+  String get todoReminderTime;
+
+  /// Action that removes the reminder of a to-do
+  ///
+  /// In zh, this message translates to:
+  /// **'清除提醒'**
+  String get todoReminderClear;
+
+  /// Tooltip of the clock icon that opens the reminder sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'设置提醒时间'**
+  String get todoReminderPickTime;
+
+  /// Button that marks the to-do as done
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get todoComplete;
+
+  /// Button that marks a finished to-do as not done again
+  ///
+  /// In zh, this message translates to:
+  /// **'重新打开'**
+  String get todoReopen;
+
+  /// Body of the reminder notification
+  ///
+  /// In zh, this message translates to:
+  /// **'你有一条待办要处理'**
+  String get todoReminderNotificationBody;
+
+  /// Snackbar shown after a reminder is set
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒已设置'**
+  String get todoReminderSaved;
+
+  /// Snackbar shown after a reminder is removed
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒已清除'**
+  String get todoReminderCleared;
+
+  /// Snackbar shown when the picked reminder time is in the past
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒时间要晚于现在'**
+  String get todoReminderPast;
+
+  /// Snackbar shown when the notification permission is denied
+  ///
+  /// In zh, this message translates to:
+  /// **'没有通知权限，去系统设置里打开后才能提醒'**
+  String get todoReminderPermissionDenied;
+
+  /// Snackbar shown when setting or clearing a reminder fails
+  ///
+  /// In zh, this message translates to:
+  /// **'提醒没有设置成功，请再试一次'**
+  String get todoReminderFailed;
+
   /// Empty state of the note list when a search term matches nothing
   ///
   /// In zh, this message translates to:

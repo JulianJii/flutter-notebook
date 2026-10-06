@@ -29,7 +29,12 @@ void main() {
   setUpAll(() {
     registerFallbackValue(todo('t1'));
     registerFallbackValue(
-      const ToggleTodoParams(todoId: 't1', title: '', isDone: false),
+      const ToggleTodoParams(
+        todoId: 't1',
+        title: '',
+        isDone: false,
+        reminderAt: null,
+      ),
     );
   });
 

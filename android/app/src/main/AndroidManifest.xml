@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 待办提醒：通知权限（Android 13+）+ 精确到点的闹钟权限。
+         `SCHEDULE_EXACT_ALARM` 覆盖 12~13，`USE_EXACT_ALARM` 覆盖 14+（14 起前者
+         不再默认授予，且这两条缺任一句 `zonedSchedule` 都会直接抛错）。 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+
     <application
         android:label="init"
         android:name="${applicationName}"

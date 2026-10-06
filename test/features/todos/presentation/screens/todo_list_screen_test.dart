@@ -131,10 +131,7 @@ void main() {
     // 标题在顶栏内（形态 A'），不再另起一行大标题。
     expect(find.byType(AppLargeTitle), findsNothing);
     expect(
-      find.descendant(
-        of: find.byType(AppTopBar),
-        matching: find.text('待办'),
-      ),
+      find.descendant(of: find.byType(AppTopBar), matching: find.text('待办')),
       findsOneWidget,
     );
     expect(find.byType(TodoCard), findsNothing);
@@ -405,10 +402,28 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('点卡片：弹编辑弹窗且预填当前标题', (tester) async {
+    /// 点卡片 → 详情小窗（提醒 / 完成），再点小窗里的铅笔 → 原来的编辑弹窗。
+    ///
+    /// ⚠️ 小窗**不自己关**：编辑弹窗叠在它上面，关掉弹窗还能接着设提醒。
+    Future<void> openEditDialog(WidgetTester tester) async {
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsOneWidget);
+      await tester.tap(find.byTooltip('编辑待办'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('点卡片：先弹详情小窗，再点铅笔弹编辑弹窗（预填当前标题）', (tester) async {
       await pumpOneTodo(tester, router: shellRouter());
 
       await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.text('提醒时间'), findsOneWidget);
+      expect(find.text('完成'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('编辑待办'));
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDialog), findsOneWidget);
@@ -436,8 +451,7 @@ void main() {
       await tester.tap(find.text('已完成 1'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.enterText(find.byType(TextField), '买牛奶');
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
@@ -463,13 +477,13 @@ void main() {
         },
       );
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.tap(find.text('取消'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
 
-      await tester.tap(find.byType(TodoCard));
+      // 小窗没关，再点铅笔就能重新开编辑弹窗（不用退到列表）。
+      await tester.tap(find.byTooltip('编辑待办'));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), '   ');
       await tester.tap(find.text('保存'));
@@ -487,8 +501,7 @@ void main() {
             const Left<Failure, Todo>(CacheFailure(message: 'disk full')),
       );
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.enterText(find.byType(TextField), '买牛奶');
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
@@ -508,8 +521,7 @@ void main() {
         },
       );
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.tap(find.text('删除待办'));
       await tester.pumpAndSettle();
 
@@ -534,8 +546,7 @@ void main() {
         },
       );
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.tap(find.text('删除待办'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('取消'));
@@ -553,8 +564,7 @@ void main() {
             const Left<Failure, Unit>(CacheFailure(message: 'boom')),
       );
 
-      await tester.tap(find.byType(TodoCard));
-      await tester.pumpAndSettle();
+      await openEditDialog(tester);
       await tester.tap(find.text('删除待办'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('删除'));

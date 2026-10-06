@@ -7,8 +7,6 @@ import 'package:init/core/images/image_transformer.dart';
 import 'package:init/core/images/shimmer_placeholder.dart';
 import 'package:init/core/images/svg_renderer.dart';
 import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/core/network/offline_sync_providers.dart';
-import 'package:init/core/network/offline_sync_service.dart';
 import 'package:init/core/notifications/notification_providers.dart';
 // 主题处理通过 feature flag 来管理
 import 'package:init/core/updates/update_providers.dart';
@@ -85,9 +83,6 @@ class _AdvancedFeaturesShowcaseState
 
           _buildSectionHeader('App Update Flow'),
           _buildUpdateFlow(),
-
-          _buildSectionHeader('Offline-First Architecture'),
-          _buildOfflineSync(),
         ],
       ),
     );
@@ -669,145 +664,5 @@ class _AdvancedFeaturesShowcaseState
         ),
       ),
     );
-  }
-
-  Widget _buildOfflineSync() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Keep working even when offline:'),
-            const SizedBox(height: 16),
-            const OfflineStatusIndicator(),
-            const SizedBox(height: 16),
-            Consumer(
-              builder: (context, ref, _) {
-                final pendingChanges = ref.watch(pendingChangesProvider);
-
-                return pendingChanges.when(
-                  data: (changes) {
-                    if (changes.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('No pending changes'),
-                      );
-                    }
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pending Changes: ${changes.length}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        for (final change in changes)
-                          ListTile(
-                            dense: true,
-                            title: Text(
-                              '${change.entityType} ${change.operationType.toString().split('.').last}',
-                            ),
-                            subtitle: Text(
-                              'Status: ${change.status.toString().split('.').last}',
-                            ),
-                            leading: _getOperationIcon(change.operationType),
-                            trailing: _getStatusIcon(change.status),
-                          ),
-                      ],
-                    );
-                  },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => const Text('Error loading changes'),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    ref
-                        .read(offlineSyncServiceProvider)
-                        .queueChange(
-                          entityType: 'testEntity',
-                          operationType: OfflineOperationType.create,
-                          data: {
-                            'name': 'Test Entity',
-                            'createdAt': DateTime.now().toIso8601String(),
-                          },
-                        )
-                        .then((_) {
-                          if (!context.mounted) return;
-                          // ignore: use_build_context_synchronously
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Test operation created'),
-                            ),
-                          );
-                          ref.invalidate(pendingChangesProvider);
-                        });
-                  },
-                  child: const Text('Create Test Change'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.read(offlineSyncServiceProvider).syncChanges().then((
-                      _,
-                    ) {
-                      if (!context.mounted) return;
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sync triggered')),
-                      );
-                      ref.invalidate(pendingChangesProvider);
-                    });
-                  },
-                  child: const Text('Sync Now'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _getOperationIcon(OfflineOperationType type) {
-    switch (type) {
-      case OfflineOperationType.create:
-        return const Icon(Icons.add_circle, color: Colors.green);
-      case OfflineOperationType.update:
-        return const Icon(Icons.edit, color: Colors.blue);
-      case OfflineOperationType.delete:
-        return const Icon(Icons.delete, color: Colors.red);
-      case OfflineOperationType.custom:
-        return const Icon(Icons.code, color: Colors.purple);
-    }
-  }
-
-  Widget _getStatusIcon(SyncStatus status) {
-    switch (status) {
-      case SyncStatus.pending:
-        return const Icon(Icons.pending, color: Colors.orange);
-      case SyncStatus.syncing:
-        return const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        );
-      case SyncStatus.synced:
-        return const Icon(Icons.check_circle, color: Colors.green);
-      case SyncStatus.failed:
-        return const Icon(Icons.error, color: Colors.red);
-      case SyncStatus.conflict:
-        return const Icon(Icons.warning, color: Colors.deepOrange);
-      case SyncStatus.canceled:
-        return const Icon(Icons.cancel, color: Colors.grey);
-    }
   }
 }

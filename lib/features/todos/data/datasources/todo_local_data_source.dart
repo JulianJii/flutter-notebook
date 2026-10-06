@@ -52,6 +52,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         isDone: Value(todo.isDone),
         createdAt: todo.createdAt,
         updatedAt: todo.updatedAt,
+        reminderAt: Value(todo.reminderAt),
       ),
     );
     return _toEntity(row);
@@ -67,6 +68,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         title: Value(todo.title),
         isDone: Value(todo.isDone),
         updatedAt: Value(todo.updatedAt),
+        reminderAt: Value(todo.reminderAt),
       ),
     );
     if (!hit) {
@@ -109,6 +111,7 @@ Todo _toEntity(TodoRow row) {
     id: row.id,
     title: row.title,
     isDone: row.isDone,
+    reminderAt: row.reminderAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

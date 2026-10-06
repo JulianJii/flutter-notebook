@@ -40,7 +40,13 @@ class TodoOverrides extends _$TodoOverrides {
     final previous = state;
     state = <String, bool>{...state, todo.id: value};
     final result = await ref.read(toggleTodoUseCaseProvider)(
-      ToggleTodoParams(todoId: todo.id, title: todo.title, isDone: value),
+      ToggleTodoParams(
+        todoId: todo.id,
+        title: todo.title,
+        isDone: value,
+        // 提醒不属于勾选语义，但 update 是全字段写入 —— 不传就没了。
+        reminderAt: todo.reminderAt,
+      ),
     );
     if (result.isLeft()) {
       // 回滚：草稿（乐观值）丢弃，UI 立即回到 stream 的权威值。

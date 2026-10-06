@@ -31,6 +31,7 @@ class UpdateTodoUseCase {
         id: params.todoId,
         title: title,
         isDone: params.isDone,
+        reminderAt: params.reminderAt,
         createdAt: now,
         updatedAt: now,
       ),

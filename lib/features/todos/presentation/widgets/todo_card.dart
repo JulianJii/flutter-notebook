@@ -2,6 +2,7 @@ import 'package:init/core/theme/tokens/app_colors.dart';
 import 'package:init/core/theme/tokens/app_spacing.dart';
 import 'package:init/core/theme/tokens/app_text_styles.dart';
 import 'package:init/core/ui/ui.dart';
+import 'package:init/core/utils/app_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// D2 的待办卡：左复选框 + 右标题，此外什么都没有（D2 明确「无日期、无优先级、
@@ -19,6 +20,7 @@ class TodoCard extends StatelessWidget {
     required this.title,
     required this.checked,
     super.key,
+    this.reminderAt,
     this.onChanged,
     this.onTap,
   });
@@ -28,6 +30,9 @@ class TodoCard extends StatelessWidget {
 
   /// 勾选态，由页面持有（`todoOverridesProvider` 的乐观层是唯一真相源）。
   final bool checked;
+
+  /// 提醒时刻。null = 没设提醒 → 不渲染提醒标记。
+  final DateTime? reminderAt;
 
   /// 勾选变更。null → 复选框禁用。
   final ValueChanged<bool>? onChanged;
@@ -75,6 +80,27 @@ class TodoCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          // 提醒标记：让人一眼看出哪条设了提醒。⛔ 不单独给它一个点击区 ——
+          // 整张卡点开就是详情小窗，再开一个入口等于同一件事两个地方做。
+          if (reminderAt != null) ...[
+            const SizedBox(width: AppSpacing.sm),
+            AppIcon(
+              icon: AppIcons.alarm,
+              size: AppSpacing.rowIconSize,
+              color: checked
+                  ? context.colors.textTertiary
+                  : context.colors.accent,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              AppUtils.formatLocaleDateTime(context, reminderAt!),
+              style: context.textStyles.meta.copyWith(
+                color: checked
+                    ? context.colors.textTertiary
+                    : context.colors.textSecondary,
+              ),
+            ),
+          ],
         ],
       ),
     );

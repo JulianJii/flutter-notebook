@@ -60,7 +60,12 @@ void main() {
     expect(todo!.isDone, isFalse);
 
     await container.read(toggleTodoUseCaseProvider)(
-      ToggleTodoParams(todoId: todo.id, title: todo.title, isDone: true),
+      ToggleTodoParams(
+        todoId: todo.id,
+        title: todo.title,
+        isDone: true,
+        reminderAt: null,
+      ),
     );
 
     final all = await container

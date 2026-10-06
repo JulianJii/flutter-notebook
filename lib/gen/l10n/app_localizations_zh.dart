@@ -471,6 +471,51 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emptyTodos => '还没有待办';
 
   @override
+  String get todoReminder => '提醒时间';
+
+  @override
+  String get todoReminderNone => '未设置';
+
+  @override
+  String get todoReminderTitle => '设置提醒时间';
+
+  @override
+  String get todoReminderDate => '日期';
+
+  @override
+  String get todoReminderTime => '时间';
+
+  @override
+  String get todoReminderClear => '清除提醒';
+
+  @override
+  String get todoReminderPickTime => '设置提醒时间';
+
+  @override
+  String get todoComplete => '完成';
+
+  @override
+  String get todoReopen => '重新打开';
+
+  @override
+  String get todoReminderNotificationBody => '你有一条待办要处理';
+
+  @override
+  String get todoReminderSaved => '提醒已设置';
+
+  @override
+  String get todoReminderCleared => '提醒已清除';
+
+  @override
+  String get todoReminderPast => '提醒时间要晚于现在';
+
+  @override
+  String get todoReminderPermissionDenied => '没有通知权限，去系统设置里打开后才能提醒';
+
+  @override
+  String get todoReminderFailed => '提醒没有设置成功，请再试一次';
+
+  @override
   String get emptySearchResult => '没有找到相关笔记';
 
   @override

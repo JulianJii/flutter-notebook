@@ -36,7 +36,6 @@
 - Riverpod 3 注解式 provider（`riverpod_generator`）+ `AsyncNotifier` / `Notifier`。
 
 **已接入的基建**
-- 离线优先：变更队列 + 后台同步 + 冲突策略（ClientWins / ServerWins / SmartMerge）。
 - 本地持久化：Drift（笔记、文件夹、待办）+ SharedPreferences（设置）。
 - 自建 Design Token 主题（颜色 / 字阶走 `ThemeExtension`，间距 / 圆角 / 阴影走常量），中英双语，功能开关，埋点分析，本地通知，两级缓存，应用更新检查。
 - 集成示例（`core/network/integrations/`）：WebSocket、gRPC、基于 dio 的轻量 GraphQL、webhook、文件传输。
@@ -93,7 +92,7 @@ dart fix --apply                 # 批量自动修复
 lib/
 ├── core/             # 共享内核
 │   ├── error/        # Failure / AppException
-│   ├── network/      # ApiClient(dio)、离线同步、WS/gRPC/GraphQL 集成
+│   ├── network/      # ApiClient(dio)、WS/gRPC/GraphQL 集成
 │   ├── database/     # drift AppDatabase + appDatabaseProvider
 │   ├── storage/      # 本地存储 + 两级缓存
 │   ├── theme/tokens/ # AppColors / AppTextStyles / AppSpacing / AppRadius / AppElevation
@@ -170,7 +169,7 @@ Windows 用同名 `.ps1`（参数一致）；执行策略受限时：
 | [docs/CICD_GUIDE.md](docs/CICD_GUIDE.md) | CI/CD 与发布 |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献流程 |
 
-专项指南：`LOCALIZATION_GUIDE.md`、`OFFLINE_ARCHITECTURE_GUIDE.md`、`FEATURE_FLAGS_GUIDE.md`、`IMAGE_HANDLING_GUIDE.md`、`ANALYTICS_GUIDE.md`、`EXAMPLES.md`。
+专项指南：`LOCALIZATION_GUIDE.md`、`FEATURE_FLAGS_GUIDE.md`、`IMAGE_HANDLING_GUIDE.md`、`ANALYTICS_GUIDE.md`、`EXAMPLES.md`。
 
 ---
 

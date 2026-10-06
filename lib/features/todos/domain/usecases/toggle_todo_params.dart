@@ -6,11 +6,14 @@ import 'package:equatable/equatable.dart';
 /// ⚠️ [title] 不是可选：`TodoRepository.update` 收的是整个实体，让调用方显式传
 /// 当前标题可以避免 Repository 内部去查，也让测试的 `verify` 能直接验证参数。
 /// 「先读后写」是本 App 的既定取舍（没有并发写者，调用方本来就在持有列表）。
+/// ⚠️ [reminderAt] 同理且**必须传**：datasource 的 update 是全字段写入，漏传会把
+/// 用户的提醒抹掉 —— 所以它是 `required`（可空，但显式）。
 class ToggleTodoParams extends Equatable {
   const ToggleTodoParams({
     required this.todoId,
     required this.title,
     required this.isDone,
+    required this.reminderAt,
   });
 
   final String todoId;
@@ -20,6 +23,9 @@ class ToggleTodoParams extends Equatable {
   /// 目标勾选状态，**不是**「取反」。
   final bool isDone;
 
+  /// 当前提醒时刻，null = 没设提醒。
+  final DateTime? reminderAt;
+
   @override
-  List<Object?> get props => [todoId, title, isDone];
+  List<Object?> get props => [todoId, title, isDone, reminderAt];
 }

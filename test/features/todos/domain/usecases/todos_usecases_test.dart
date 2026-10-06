@@ -32,10 +32,20 @@ void main() {
   setUpAll(() {
     registerFallbackValue(_todo);
     registerFallbackValue(
-      const ToggleTodoParams(todoId: 't', title: 'x', isDone: false),
+      const ToggleTodoParams(
+        todoId: 't',
+        title: 'x',
+        isDone: false,
+        reminderAt: null,
+      ),
     );
     registerFallbackValue(
-      const UpdateTodoParams(todoId: 't', title: 'x', isDone: false),
+      const UpdateTodoParams(
+        todoId: 't',
+        title: 'x',
+        isDone: false,
+        reminderAt: null,
+      ),
     );
     registerFallbackValue(NoParams());
   });
@@ -105,7 +115,12 @@ void main() {
     test('#11 空 todoId -> InputFailure 且不调 Repository', () {
       expectInputFailure(
         ToggleTodoUseCase(repo)(
-          const ToggleTodoParams(todoId: '', title: 'x', isDone: true),
+          const ToggleTodoParams(
+            todoId: '',
+            title: 'x',
+            isDone: true,
+            reminderAt: null,
+          ),
         ),
         repo,
       );
@@ -116,7 +131,12 @@ void main() {
         () => repo.update(any()),
       ).thenAnswer((_) async => Right<Failure, Todo>(_todo));
       await ToggleTodoUseCase(repo)(
-        const ToggleTodoParams(todoId: 't1', title: '买牛奶', isDone: true),
+        const ToggleTodoParams(
+          todoId: 't1',
+          title: '买牛奶',
+          isDone: true,
+          reminderAt: null,
+        ),
       );
       final captured =
           verify(() => repo.update(captureAny())).captured.single as Todo;
@@ -130,7 +150,12 @@ void main() {
         () => repo.update(any()),
       ).thenAnswer((_) async => Right<Failure, Todo>(_todo));
       await ToggleTodoUseCase(repo)(
-        const ToggleTodoParams(todoId: 't1', title: '买牛奶', isDone: false),
+        const ToggleTodoParams(
+          todoId: 't1',
+          title: '买牛奶',
+          isDone: false,
+          reminderAt: null,
+        ),
       );
       final captured =
           verify(() => repo.update(captureAny())).captured.single as Todo;
@@ -142,7 +167,12 @@ void main() {
         () => repo.update(any()),
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
       final result = await ToggleTodoUseCase(repo)(
-        const ToggleTodoParams(todoId: 't1', title: 'x', isDone: true),
+        const ToggleTodoParams(
+          todoId: 't1',
+          title: 'x',
+          isDone: true,
+          reminderAt: null,
+        ),
       );
       result.fold(
         (f) => expect(f, isA<CacheFailure>()),
@@ -155,7 +185,12 @@ void main() {
     test('空 todoId -> InputFailure 且不调 Repository', () {
       expectInputFailure(
         UpdateTodoUseCase(repo)(
-          const UpdateTodoParams(todoId: '', title: 'x', isDone: false),
+          const UpdateTodoParams(
+            todoId: '',
+            title: 'x',
+            isDone: false,
+            reminderAt: null,
+          ),
         ),
         repo,
       );
@@ -164,7 +199,12 @@ void main() {
     test('空标题 -> InputFailure 且不调 Repository', () {
       expectInputFailure(
         UpdateTodoUseCase(repo)(
-          const UpdateTodoParams(todoId: 't1', title: '   ', isDone: false),
+          const UpdateTodoParams(
+            todoId: 't1',
+            title: '   ',
+            isDone: false,
+            reminderAt: null,
+          ),
         ),
         repo,
       );
@@ -175,7 +215,12 @@ void main() {
         () => repo.update(any()),
       ).thenAnswer((_) async => Right<Failure, Todo>(_todo));
       await UpdateTodoUseCase(repo)(
-        const UpdateTodoParams(todoId: 't1', title: '  写周报 ', isDone: true),
+        const UpdateTodoParams(
+          todoId: 't1',
+          title: '  写周报 ',
+          isDone: true,
+          reminderAt: null,
+        ),
       );
       final captured =
           verify(() => repo.update(captureAny())).captured.single as Todo;
@@ -188,7 +233,12 @@ void main() {
         () => repo.update(any()),
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
       final result = await UpdateTodoUseCase(repo)(
-        const UpdateTodoParams(todoId: 't1', title: 'x', isDone: false),
+        const UpdateTodoParams(
+          todoId: 't1',
+          title: 'x',
+          isDone: false,
+          reminderAt: null,
+        ),
       );
       result.fold(
         (f) => expect(f, isA<CacheFailure>()),

@@ -80,6 +80,7 @@ Todo _withId(Todo todo, String id) {
     id: id,
     title: todo.title,
     isDone: todo.isDone,
+    reminderAt: todo.reminderAt,
     createdAt: todo.createdAt,
     updatedAt: todo.updatedAt,
   );

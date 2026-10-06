@@ -34,6 +34,14 @@ abstract final class AppIcons {
   /// 取平台惯例的 `drag_handle`。
   static const IconData drag = Icons.drag_handle;
 
+  // ---- 提醒（待办小窗）----
+  //
+  // ⚠️ 这三个**不在设计稿的 15 个语义里**：D2 原本「无日期、无提醒」，小窗是后加
+  // 的能力（无稿）。取 Material 惯例字形，等设计补稿后只改这里。
+  static const IconData alarm = Icons.alarm;
+  static const IconData clock = Icons.access_time;
+  static const IconData edit = Icons.edit_outlined;
+
   // ---- 底部导航（D1/D2）----
   static const IconData navNotes = Icons.list_rounded;
   static const IconData navTodo = Icons.check_rounded;

@@ -14,6 +14,7 @@ import '../../domain/usecases/update_todo_params.dart';
 import '../../providers/todos_providers.dart';
 import '../providers/todo_list_provider.dart';
 import '../widgets/todo_card.dart';
+import '../widgets/todo_reminder_sheet.dart';
 
 /// P2 待办列表（D2）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
@@ -91,7 +92,7 @@ class TodoListScreen extends ConsumerWidget {
                         ref.read(todoDoneSectionProvider.notifier).toggle(),
                     onChanged: (todo, value) =>
                         _toggle(context, ref, todo, value),
-                    onEdit: (todo) => _edit(context, ref, todo),
+                    onEdit: (todo) => _openSheet(context, ref, todo),
                   ),
                 ),
               ],
@@ -136,6 +137,18 @@ class TodoListScreen extends ConsumerWidget {
     }, (_) {});
   }
 
+  /// 点卡片 → 详情小窗（提醒时间 + 完成）。
+  ///
+  /// 改标题 / 删除**不在这里做**：小窗只负责提醒与完成，标题编辑仍走原弹窗
+  /// （小窗里的铅笔按钮回调回 [\_edit]），免得同一个字段有两条写入路径。
+  Future<void> _openSheet(BuildContext context, WidgetRef ref, Todo todo) {
+    return showTodoReminderSheet(
+      context: context,
+      todo: todo,
+      onEditTitle: () => _edit(context, ref, todo),
+    );
+  }
+
   /// 编辑待办（Q21 的编辑入口）：改标题，或从同一个弹窗里删除。
   ///
   /// 勾选**不在**这里做 —— 卡片左侧的复选框才是勾选入口，弹窗里再放一个会出现
@@ -163,7 +176,12 @@ class TodoListScreen extends ConsumerWidget {
     if (title == null || title.trim().isEmpty) return;
 
     final result = await ref.read(updateTodoUseCaseProvider)(
-      UpdateTodoParams(todoId: todo.id, title: title, isDone: todo.isDone),
+      UpdateTodoParams(
+        todoId: todo.id,
+        title: title,
+        isDone: todo.isDone,
+        reminderAt: todo.reminderAt,
+      ),
     );
     if (!context.mounted) return;
     result.fold(
@@ -387,6 +405,7 @@ class _TodoList extends StatelessWidget {
           key: ValueKey<String>(todo.id),
           title: todo.title,
           checked: todo.isDone,
+          reminderAt: todo.reminderAt,
           onChanged: (value) => onChanged(todo, value),
           onTap: () => onEdit(todo),
         );

@@ -1,14 +1,7 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class AppUtils {
-  // 网络连接检查
-  static Future<bool> hasNetworkConnection() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-    return !connectivityResult.contains(ConnectivityResult.none);
-  }
-
   // 日期格式化
   static String formatDate(DateTime date, {String format = 'yyyy-MM-dd'}) {
     return DateFormat(format).format(date);
@@ -25,6 +18,16 @@ class AppUtils {
     String format = 'yyyy-MM-dd HH:mm',
   }) {
     return DateFormat(format).format(dateTime);
+  }
+
+  /// 随系统语言的「月日 + 时分」（提醒时间、卡片上的提醒标记）。
+  ///
+  /// ⚠️ 与 [formatDateTime] 的区别：那条是固定 `yyyy-MM-dd HH:mm`（给日志 / 导出
+  /// 用），这条走 `intl` 的 locale 形态（zh 输出「10月7日 09:30」）。
+  static String formatLocaleDateTime(BuildContext context, DateTime dateTime) {
+    final locale = Localizations.localeOf(context).toString();
+    return '${DateFormat.MMMd(locale).format(dateTime)} '
+        '${DateFormat.Hm(locale).format(dateTime)}';
   }
 
   // 相对时间（例如："2 hours ago"）

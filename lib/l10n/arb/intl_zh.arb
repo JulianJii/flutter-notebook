@@ -606,6 +606,66 @@
   "@emptyTodos": {
     "description": "Empty state of the to-do list"
   },
+  "todoReminder": "提醒时间",
+  "@todoReminder": {
+    "description": "Label of the reminder row in the to-do detail sheet"
+  },
+  "todoReminderNone": "未设置",
+  "@todoReminderNone": {
+    "description": "Placeholder shown when a to-do has no reminder"
+  },
+  "todoReminderTitle": "设置提醒时间",
+  "@todoReminderTitle": {
+    "description": "Title of the bottom sheet that picks a reminder date and time"
+  },
+  "todoReminderDate": "日期",
+  "@todoReminderDate": {
+    "description": "Row that opens the date picker"
+  },
+  "todoReminderTime": "时间",
+  "@todoReminderTime": {
+    "description": "Row that opens the time picker"
+  },
+  "todoReminderClear": "清除提醒",
+  "@todoReminderClear": {
+    "description": "Action that removes the reminder of a to-do"
+  },
+  "todoReminderPickTime": "设置提醒时间",
+  "@todoReminderPickTime": {
+    "description": "Tooltip of the clock icon that opens the reminder sheet"
+  },
+  "todoComplete": "完成",
+  "@todoComplete": {
+    "description": "Button that marks the to-do as done"
+  },
+  "todoReopen": "重新打开",
+  "@todoReopen": {
+    "description": "Button that marks a finished to-do as not done again"
+  },
+  "todoReminderNotificationBody": "你有一条待办要处理",
+  "@todoReminderNotificationBody": {
+    "description": "Body of the reminder notification"
+  },
+  "todoReminderSaved": "提醒已设置",
+  "@todoReminderSaved": {
+    "description": "Snackbar shown after a reminder is set"
+  },
+  "todoReminderCleared": "提醒已清除",
+  "@todoReminderCleared": {
+    "description": "Snackbar shown after a reminder is removed"
+  },
+  "todoReminderPast": "提醒时间要晚于现在",
+  "@todoReminderPast": {
+    "description": "Snackbar shown when the picked reminder time is in the past"
+  },
+  "todoReminderPermissionDenied": "没有通知权限，去系统设置里打开后才能提醒",
+  "@todoReminderPermissionDenied": {
+    "description": "Snackbar shown when the notification permission is denied"
+  },
+  "todoReminderFailed": "提醒没有设置成功，请再试一次",
+  "@todoReminderFailed": {
+    "description": "Snackbar shown when setting or clearing a reminder fails"
+  },
   "emptySearchResult": "没有找到相关笔记",
   "@emptySearchResult": {
     "description": "Empty state of the note list when a search term matches nothing"

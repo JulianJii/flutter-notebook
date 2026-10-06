@@ -62,3 +62,11 @@ class UnauthorizedFailure extends Failure {
 class InputFailure extends Failure {
   const InputFailure({super.message = 'Invalid input', super.statusCode});
 }
+
+/// 系统通知失败：没授予通知权限，或 `zonedSchedule` 被系统拒绝（如精确闹钟权限）。
+class NotificationFailure extends Failure {
+  const NotificationFailure({
+    super.message = 'Notification failure',
+    super.statusCode,
+  });
+}

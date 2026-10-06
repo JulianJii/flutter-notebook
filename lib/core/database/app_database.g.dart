@@ -954,6 +954,17 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _reminderAtMeta = const VerificationMeta(
+    'reminderAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> reminderAt = GeneratedColumn<DateTime>(
+    'reminder_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -961,6 +972,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     isDone,
     createdAt,
     updatedAt,
+    reminderAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1009,6 +1021,12 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('reminder_at')) {
+      context.handle(
+        _reminderAtMeta,
+        reminderAt.isAcceptableOrUnknown(data['reminder_at']!, _reminderAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1038,6 +1056,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      reminderAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}reminder_at'],
+      ),
     );
   }
 
@@ -1056,12 +1078,17 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
   final bool isDone;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// 提醒时刻，null = 没设提醒。⛔ 不存「是否已提醒 / 是否已响铃」这类
+  /// 通知侧状态 —— 那是 `flutter_local_notifications` 的事，库里只留用户意图。
+  final DateTime? reminderAt;
   const TodoRow({
     required this.id,
     required this.title,
     required this.isDone,
     required this.createdAt,
     required this.updatedAt,
+    this.reminderAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1071,6 +1098,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     map['is_done'] = Variable<bool>(isDone);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || reminderAt != null) {
+      map['reminder_at'] = Variable<DateTime>(reminderAt);
+    }
     return map;
   }
 
@@ -1081,6 +1111,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       isDone: Value(isDone),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      reminderAt: reminderAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderAt),
     );
   }
 
@@ -1095,6 +1128,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       isDone: serializer.fromJson<bool>(json['isDone']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      reminderAt: serializer.fromJson<DateTime?>(json['reminderAt']),
     );
   }
   @override
@@ -1106,6 +1140,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       'isDone': serializer.toJson<bool>(isDone),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'reminderAt': serializer.toJson<DateTime?>(reminderAt),
     };
   }
 
@@ -1115,12 +1150,14 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     bool? isDone,
     DateTime? createdAt,
     DateTime? updatedAt,
+    Value<DateTime?> reminderAt = const Value.absent(),
   }) => TodoRow(
     id: id ?? this.id,
     title: title ?? this.title,
     isDone: isDone ?? this.isDone,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    reminderAt: reminderAt.present ? reminderAt.value : this.reminderAt,
   );
   TodoRow copyWithCompanion(TodosCompanion data) {
     return TodoRow(
@@ -1129,6 +1166,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       isDone: data.isDone.present ? data.isDone.value : this.isDone,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      reminderAt: data.reminderAt.present
+          ? data.reminderAt.value
+          : this.reminderAt,
     );
   }
 
@@ -1139,13 +1179,15 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           ..write('title: $title, ')
           ..write('isDone: $isDone, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('reminderAt: $reminderAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, isDone, createdAt, updatedAt);
+  int get hashCode =>
+      Object.hash(id, title, isDone, createdAt, updatedAt, reminderAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1154,7 +1196,8 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           other.title == this.title &&
           other.isDone == this.isDone &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.reminderAt == this.reminderAt);
 }
 
 class TodosCompanion extends UpdateCompanion<TodoRow> {
@@ -1163,6 +1206,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
   final Value<bool> isDone;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<DateTime?> reminderAt;
   final Value<int> rowid;
   const TodosCompanion({
     this.id = const Value.absent(),
@@ -1170,6 +1214,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     this.isDone = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.reminderAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TodosCompanion.insert({
@@ -1178,6 +1223,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     this.isDone = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.reminderAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -1189,6 +1235,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Expression<bool>? isDone,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<DateTime>? reminderAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1197,6 +1244,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       if (isDone != null) 'is_done': isDone,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (reminderAt != null) 'reminder_at': reminderAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1207,6 +1255,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Value<bool>? isDone,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<DateTime?>? reminderAt,
     Value<int>? rowid,
   }) {
     return TodosCompanion(
@@ -1215,6 +1264,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       isDone: isDone ?? this.isDone,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      reminderAt: reminderAt ?? this.reminderAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1237,6 +1287,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (reminderAt.present) {
+      map['reminder_at'] = Variable<DateTime>(reminderAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1251,6 +1304,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
           ..write('isDone: $isDone, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('reminderAt: $reminderAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1974,6 +2028,7 @@ typedef $$TodosTableCreateCompanionBuilder =
       Value<bool> isDone,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<DateTime?> reminderAt,
       Value<int> rowid,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
@@ -1983,6 +2038,7 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<bool> isDone,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<DateTime?> reminderAt,
       Value<int> rowid,
     });
 
@@ -2016,6 +2072,11 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get reminderAt => $composableBuilder(
+    column: $table.reminderAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2053,6 +2114,11 @@ class $$TodosTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get reminderAt => $composableBuilder(
+    column: $table.reminderAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TodosTableAnnotationComposer
@@ -2078,6 +2144,11 @@ class $$TodosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get reminderAt => $composableBuilder(
+    column: $table.reminderAt,
+    builder: (column) => column,
+  );
 }
 
 class $$TodosTableTableManager
@@ -2113,6 +2184,7 @@ class $$TodosTableTableManager
                 Value<bool> isDone = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> reminderAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
@@ -2120,6 +2192,7 @@ class $$TodosTableTableManager
                 isDone: isDone,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                reminderAt: reminderAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2129,6 +2202,7 @@ class $$TodosTableTableManager
                 Value<bool> isDone = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<DateTime?> reminderAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
@@ -2136,6 +2210,7 @@ class $$TodosTableTableManager
                 isDone: isDone,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                reminderAt: reminderAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

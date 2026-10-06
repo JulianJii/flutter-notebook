@@ -42,7 +42,6 @@ class AppConstants {
   // Hive box names
   static const String settingsBox = 'settings';
   static const String cacheBox = 'cache';
-  static const String offlineSyncBox = 'offlineSync';
 
   // Animation durations
   static const Duration defaultAnimationDuration = Duration(milliseconds: 300);

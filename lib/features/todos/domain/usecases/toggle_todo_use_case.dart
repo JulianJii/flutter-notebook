@@ -30,6 +30,7 @@ class ToggleTodoUseCase {
         id: params.todoId,
         title: params.title,
         isDone: params.isDone,
+        reminderAt: params.reminderAt,
         createdAt: now,
         updatedAt: now,
       ),

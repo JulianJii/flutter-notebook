@@ -609,6 +609,66 @@
   "@emptyTodos": {
     "description": "Empty state of the to-do list"
   },
+  "todoReminder": "Reminder",
+  "@todoReminder": {
+    "description": "Label of the reminder row in the to-do detail sheet"
+  },
+  "todoReminderNone": "Not set",
+  "@todoReminderNone": {
+    "description": "Placeholder shown when a to-do has no reminder"
+  },
+  "todoReminderTitle": "Set a reminder",
+  "@todoReminderTitle": {
+    "description": "Title of the bottom sheet that picks a reminder date and time"
+  },
+  "todoReminderDate": "Date",
+  "@todoReminderDate": {
+    "description": "Row that opens the date picker"
+  },
+  "todoReminderTime": "Time",
+  "@todoReminderTime": {
+    "description": "Row that opens the time picker"
+  },
+  "todoReminderClear": "Remove reminder",
+  "@todoReminderClear": {
+    "description": "Action that removes the reminder of a to-do"
+  },
+  "todoReminderPickTime": "Set a reminder",
+  "@todoReminderPickTime": {
+    "description": "Tooltip of the clock icon that opens the reminder sheet"
+  },
+  "todoComplete": "Done",
+  "@todoComplete": {
+    "description": "Button that marks the to-do as done"
+  },
+  "todoReopen": "Reopen",
+  "@todoReopen": {
+    "description": "Button that marks a finished to-do as not done again"
+  },
+  "todoReminderNotificationBody": "You have a to-do to take care of",
+  "@todoReminderNotificationBody": {
+    "description": "Body of the reminder notification"
+  },
+  "todoReminderSaved": "Reminder set",
+  "@todoReminderSaved": {
+    "description": "Snackbar shown after a reminder is set"
+  },
+  "todoReminderCleared": "Reminder removed",
+  "@todoReminderCleared": {
+    "description": "Snackbar shown after a reminder is removed"
+  },
+  "todoReminderPast": "Pick a time later than now",
+  "@todoReminderPast": {
+    "description": "Snackbar shown when the picked reminder time is in the past"
+  },
+  "todoReminderPermissionDenied": "Notifications are off — turn them on in system settings",
+  "@todoReminderPermissionDenied": {
+    "description": "Snackbar shown when the notification permission is denied"
+  },
+  "todoReminderFailed": "Couldn't save the reminder, please try again",
+  "@todoReminderFailed": {
+    "description": "Snackbar shown when setting or clearing a reminder fails"
+  },
   "emptySearchResult": "No matching notes",
   "@emptySearchResult": {
     "description": "Empty state of the note list when a search term matches nothing"

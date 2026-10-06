@@ -485,6 +485,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyTodos => 'No to-dos yet';
 
   @override
+  String get todoReminder => 'Reminder';
+
+  @override
+  String get todoReminderNone => 'Not set';
+
+  @override
+  String get todoReminderTitle => 'Set a reminder';
+
+  @override
+  String get todoReminderDate => 'Date';
+
+  @override
+  String get todoReminderTime => 'Time';
+
+  @override
+  String get todoReminderClear => 'Remove reminder';
+
+  @override
+  String get todoReminderPickTime => 'Set a reminder';
+
+  @override
+  String get todoComplete => 'Done';
+
+  @override
+  String get todoReopen => 'Reopen';
+
+  @override
+  String get todoReminderNotificationBody => 'You have a to-do to take care of';
+
+  @override
+  String get todoReminderSaved => 'Reminder set';
+
+  @override
+  String get todoReminderCleared => 'Reminder removed';
+
+  @override
+  String get todoReminderPast => 'Pick a time later than now';
+
+  @override
+  String get todoReminderPermissionDenied =>
+      'Notifications are off — turn them on in system settings';
+
+  @override
+  String get todoReminderFailed =>
+      'Couldn\'t save the reminder, please try again';
+
+  @override
   String get emptySearchResult => 'No matching notes';
 
   @override

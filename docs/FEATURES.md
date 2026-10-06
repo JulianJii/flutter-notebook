@@ -23,6 +23,16 @@ title: Features
 
 新建、编辑、勾选完成（完成态灰字删除线）、删除（二次确认）；未完成置顶，已完成沉入可折叠的「已完成 N」，顶栏可一键清除全部已完成。排序真相源在 `TodoDao.watchAll` 的 `ORDER BY is_done ASC, created_at DESC`。
 
+- **点卡片 → 详情小窗**（`todo_reminder_sheet.dart`）：只读标题 + 提醒时间 + 完成；标题旁的铅笔回落到原来的编辑弹窗（改标题 / 删除只有一个入口）。
+- **提醒**：小窗里点时钟图标 → 从下往上弹「设置提醒时间」（内置 `showDatePicker` / `showTimePicker`，⛔ 无农历）。确定后由 `todoReminderProvider` **先落库 `reminder_at` 再注册系统通知**（`flutter_local_notifications`），清除则反过来先取消通知。没授予通知权限时不落库 —— 存了也提醒不了。
+
+| 入口 | 位置 |
+|---|---|
+| `todoReminderProvider` | `features/todos/presentation/providers/todo_reminder_provider.dart`（编排：落库 + 调度） |
+| `reminderSchedulerProvider` | `core/notifications/reminder_scheduler.dart`（平台通知的唯一出入口） |
+
+> ⚠️ 通知 id 由 `todo.id.hashCode` 掩码到 31 位派生，不另存列；**不做**重复提醒、不做重启后恢复（重启后已设的提醒不会响）。
+
 ### 设置（`lib/features/settings/`）
 
 笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、强提醒开关、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
@@ -41,7 +51,7 @@ title: Features
 
 **合并规则只有一条**：逐条比 `max(updatedAt, deletedAt ?? 0)`，新的赢，一样新保留本地（避免无意义写库）。只新增不删除 —— 符合「永不丢数据」，且软删除靠 `deletedAt` 也能跨设备传播，不会被一条更晚的编辑复活。
 
-- 同步是**单文件快照**，不是增量队列：`GET` 到 404 就当「远端还没文件」，等价于首次推送。因此不需要冲突状态机，`core/network/offline_sync_service.dart` 那套变更队列**不接线**。
+- 同步是**单文件快照**，不是增量队列：`GET` 到 404 就当「远端还没文件」，等价于首次推送。因此不需要冲突状态机 —— 模板自带的离线变更队列（`offline_sync_service` / `connectivity_plus`）未接线，已整体移除。
 - 快照有自己的 `version`（当前 1），高于它的直接拒绝导入，不静默降级解析。
 - WebDAV 客户端是 **dio 手搓**的（`GET` / `PUT` / `MKCOL` / `PROPFIND` + Basic Auth），不引第三方包；该 Dio 实例独立（`webDavDioProvider`），不加 `LogInterceptor` —— 请求头里有密码。
 - ⛔ 待办是硬删除、无墓碑 —— **Q40**；密码明文落本地 —— **Q41**（均见 `docs/OPEN-DESIGN-QUESTIONS.md`）。
@@ -72,6 +82,8 @@ analytics.logUserAction(
 
 本地通知 + 深链 + 权限申请：
 
+> ⚠️ **与待办提醒不是一回事**：提醒走 `reminderSchedulerProvider`（`flutter_local_notifications` 的定时通知，见「待办」一节）；本节的 `notificationServiceProvider` 是**推送**抽象，当前实现是 Debug 空壳。
+
 ```dart
 final service = ref.watch(notificationServiceProvider);
 
@@ -97,12 +109,6 @@ if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
 ```
 
 也可用 `FeatureFlag` widget 按开关挂载子树。详情请参见[功能开关指南](https://jessejii.github.io/init/feature_flags.html)。
-
-### 离线优先
-
-变更队列 + 后台同步 + 冲突策略（ClientWins / ServerWins / SmartMerge），入口 `offlineSyncServiceProvider`、`pendingChangesProvider`。
-
-详情请参见[离线架构指南](https://jessejii.github.io/init/offline_architecture.html)。
 
 ### 路由
 

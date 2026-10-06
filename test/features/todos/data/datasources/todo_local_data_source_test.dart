@@ -66,6 +66,22 @@ void main() {
     expect((await source.watchAll().first).single.isDone, isTrue);
   });
 
+  test('reminderAt 落库往返：写入可读回，显式置 null 即清除', () async {
+    final todo = await source.insert(_todo('t1'));
+    expect(todo.reminderAt, isNull);
+
+    final at = DateTime.fromMillisecondsSinceEpoch(300 * 1000);
+    final withReminder = await source.update(todo.copyWith(reminderAt: at));
+    expect(withReminder.reminderAt, at);
+    expect((await source.watchAll().first).single.reminderAt, at);
+
+    final cleared = await source.update(
+      withReminder.copyWith(reminderAt: null),
+    );
+    expect(cleared.reminderAt, isNull);
+    expect((await source.watchAll().first).single.reminderAt, isNull);
+  });
+
   test('update 未命中 -> CacheException', () async {
     await expectLater(
       source.update(_todo('nope')),

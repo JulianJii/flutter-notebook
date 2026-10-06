@@ -51,6 +51,24 @@ void main() {
       );
     });
 
+    testWidgets('count 为 null 时不画计数（P4 把这一位换成了拖动图标）', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const FolderRow(
+            name: '闻声笔记',
+            trailing: AppIcon(icon: AppIcons.drag),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(AppIcons.drag), findsOneWidget);
+      expect(find.byType(Text), findsOneWidget, reason: '只剩名称一个 Text');
+      expect(
+        tester.getTopRight(find.byIcon(AppIcons.drag)).dx,
+        greaterThan(tester.getTopRight(find.text('闻声笔记')).dx),
+      );
+    });
+
     testWidgets('onTap 非空时被调用一次', (tester) async {
       var tapped = 0;
       await tester.pumpWidget(

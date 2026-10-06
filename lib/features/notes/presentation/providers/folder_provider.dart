@@ -16,8 +16,9 @@ part 'folder_provider.g.dart';
 /// `LEFT JOIN` 语义）。「全部」与「未分类」**不是**本流的行（§5.3）——
 /// 前者由消费方求和，后者见 [uncategorizedCountProvider]。
 ///
-/// ⛔ 不做二次排序：`ORDER BY created_at ASC` 已在 DAO 的 SQL 里排完
-/// （设计稿无排序入口）。
+/// ⛔ 不做二次排序：`ORDER BY sort_index ASC, created_at ASC` 已在 DAO 的 SQL 里
+/// 排完。P4 拖拽后 `sort_index` 一变，drift watch 就推出新顺序 —— 顺序的真相源
+/// 只有这一条 SQL。
 @riverpod
 Stream<List<FolderWithCount>> folder(Ref ref) {
   return ref.watch(watchFolderCountsUseCaseProvider).call(NoParams());

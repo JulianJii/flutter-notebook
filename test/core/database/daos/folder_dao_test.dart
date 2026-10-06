@@ -60,6 +60,33 @@ void main() {
     expect(await dao.watchUncategorizedCount().first, 2);
   });
 
+  Future<List<String>> ids() async =>
+      (await dao.watchWithCounts().first).map((r) => r.folder.id).toList();
+
+  test('updateSortIndexes 决定顺序（同 createdAt 时靠它分先后）', () async {
+    // setUp 的两次插入 createdAt 相同 → 顺序只看 sort_index（0 在前）。
+    expect(await ids(), <String>['f1', 'f0']);
+
+    await dao.updateSortIndexes(<String>['f0', 'f1']);
+
+    expect(await ids(), <String>['f0', 'f1']);
+  });
+
+  test('insert 把新文件夹排到末尾（sort_index = MAX+1）', () async {
+    await dao.updateSortIndexes(<String>['f0', 'f1']);
+    await dao.insert(
+      NoteFoldersCompanion.insert(
+        id: 'f3',
+        name: '新来的',
+        createdAt: DateTime(2026, 10, 2),
+        updatedAt: t,
+      ),
+    );
+
+    // 即使 createdAt 比谁都早，也排在末尾 —— 顺序由 sort_index 说了算。
+    expect(await ids(), <String>['f0', 'f1', 'f3']);
+  });
+
   test('笔记的增删改会推动计数变化（watch 自动重算，无需手动失效）', () async {
     final before = await dao.watchWithCounts().first;
     expect(before.firstWhere((r) => r.folder.id == 'f1').count, 1);

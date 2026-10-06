@@ -3,7 +3,8 @@ import 'package:init/core/theme/tokens/app_spacing.dart';
 import 'package:init/core/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// D4 的文件夹行：左选中勾 / 中名称 / 右计数。唯一调用方是 P4（TASK-050）。
+/// D4 的文件夹行：左选中勾 / 中名称 / 右计数或拖动图标。唯一调用方是 P4
+/// （TASK-050）。
 ///
 /// 容器与中右区都复用 `core/ui` 的 T1 组件（`AppCard` + `AppListTile`）——
 /// 全App 只有一种卡片外观、一种行骨架，本组件只负责「文件夹」这一行的业务语义：
@@ -20,8 +21,9 @@ import 'package:material_ui/material_ui.dart';
 class FolderRow extends StatelessWidget {
   const FolderRow({
     required this.name,
-    required this.count,
     super.key,
+    this.count,
+    this.trailing,
     this.isSelected = false,
     this.onTap,
   });
@@ -30,7 +32,14 @@ class FolderRow extends StatelessWidget {
   final String name;
 
   /// 右侧计数（D4 实测 155 / 1 / 154）。字阶 `text.value` + `secondary`。
-  final int count;
+  /// null → 不画计数（真实文件夹行把它换成了 [trailing] 的拖动图标）。
+  final int? count;
+
+  /// 右侧插槽。P4 传拖动图标（`ReorderableDragStartListener`）。
+  ///
+  /// ⛔ 本组件不认识拖拽：「全部」/「未分类」是不可拖的系统行，传 null 即可，
+  /// 组件不需要 `isDraggable` 之类的开关。
+  final Widget? trailing;
 
   /// 选中态。D4 中**仅**通过左侧琥珀勾区分，无底色高亮。
   // Q25c → docs/OPEN-DESIGN-QUESTIONS.md（选中态只用琥珀勾区分，不加底色）
@@ -59,7 +68,8 @@ class FolderRow extends StatelessWidget {
               )
             : null,
         title: name,
-        trailingValue: '$count',
+        trailingValue: count == null ? null : '$count',
+        trailing: trailing,
       ),
     );
   }

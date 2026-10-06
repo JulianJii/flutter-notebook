@@ -50,8 +50,26 @@ class $NoteFoldersTable extends NoteFolders
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _sortIndexMeta = const VerificationMeta(
+    'sortIndex',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name, createdAt, updatedAt];
+  late final GeneratedColumn<int> sortIndex = GeneratedColumn<int>(
+    'sort_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    sortIndex,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -93,6 +111,12 @@ class $NoteFoldersTable extends NoteFolders
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('sort_index')) {
+      context.handle(
+        _sortIndexMeta,
+        sortIndex.isAcceptableOrUnknown(data['sort_index']!, _sortIndexMeta),
+      );
+    }
     return context;
   }
 
@@ -118,6 +142,10 @@ class $NoteFoldersTable extends NoteFolders
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
+      sortIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sort_index'],
+      )!,
     );
   }
 
@@ -135,11 +163,19 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// P4 拖拽排序位。越小越靠前，**同值按 [createdAt] 兜底** ——
+  /// 迁移前的老数据全是默认值 0，兜底保证了升级后列表顺序与升级前一致。
+  ///
+  /// 写入只有两条路径：新建时取 `MAX+1`（排末尾），拖拽时整表写成 `0..n-1`
+  /// （见 `FolderDao.insert` / `FolderDao.updateSortIndexes`）。
+  final int sortIndex;
   const NoteFolderRow({
     required this.id,
     required this.name,
     required this.createdAt,
     required this.updatedAt,
+    required this.sortIndex,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -148,6 +184,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     map['name'] = Variable<String>(name);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['sort_index'] = Variable<int>(sortIndex);
     return map;
   }
 
@@ -157,6 +194,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       name: Value(name),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      sortIndex: Value(sortIndex),
     );
   }
 
@@ -170,6 +208,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       name: serializer.fromJson<String>(json['name']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      sortIndex: serializer.fromJson<int>(json['sortIndex']),
     );
   }
   @override
@@ -180,6 +219,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       'name': serializer.toJson<String>(name),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'sortIndex': serializer.toJson<int>(sortIndex),
     };
   }
 
@@ -188,11 +228,13 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     String? name,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? sortIndex,
   }) => NoteFolderRow(
     id: id ?? this.id,
     name: name ?? this.name,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
+    sortIndex: sortIndex ?? this.sortIndex,
   );
   NoteFolderRow copyWithCompanion(NoteFoldersCompanion data) {
     return NoteFolderRow(
@@ -200,6 +242,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       name: data.name.present ? data.name.value : this.name,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      sortIndex: data.sortIndex.present ? data.sortIndex.value : this.sortIndex,
     );
   }
 
@@ -209,13 +252,14 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sortIndex: $sortIndex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt, updatedAt);
+  int get hashCode => Object.hash(id, name, createdAt, updatedAt, sortIndex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -223,7 +267,8 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           other.id == this.id &&
           other.name == this.name &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.sortIndex == this.sortIndex);
 }
 
 class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
@@ -231,12 +276,14 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
   final Value<String> name;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<int> sortIndex;
   final Value<int> rowid;
   const NoteFoldersCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.sortIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   NoteFoldersCompanion.insert({
@@ -244,6 +291,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     required String name,
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.sortIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -254,6 +302,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Expression<String>? name,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<int>? sortIndex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -261,6 +310,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       if (name != null) 'name': name,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (sortIndex != null) 'sort_index': sortIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -270,6 +320,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Value<String>? name,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
+    Value<int>? sortIndex,
     Value<int>? rowid,
   }) {
     return NoteFoldersCompanion(
@@ -277,6 +328,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       name: name ?? this.name,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      sortIndex: sortIndex ?? this.sortIndex,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -296,6 +348,9 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (sortIndex.present) {
+      map['sort_index'] = Variable<int>(sortIndex.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -309,6 +364,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
           ..write('name: $name, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('sortIndex: $sortIndex, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1244,6 +1300,7 @@ typedef $$NoteFoldersTableCreateCompanionBuilder =
       required String name,
       required DateTime createdAt,
       required DateTime updatedAt,
+      Value<int> sortIndex,
       Value<int> rowid,
     });
 typedef $$NoteFoldersTableUpdateCompanionBuilder =
@@ -1252,6 +1309,7 @@ typedef $$NoteFoldersTableUpdateCompanionBuilder =
       Value<String> name,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
+      Value<int> sortIndex,
       Value<int> rowid,
     });
 
@@ -1305,6 +1363,11 @@ class $$NoteFoldersTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sortIndex => $composableBuilder(
+    column: $table.sortIndex,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1362,6 +1425,11 @@ class $$NoteFoldersTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get sortIndex => $composableBuilder(
+    column: $table.sortIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NoteFoldersTableAnnotationComposer
@@ -1384,6 +1452,9 @@ class $$NoteFoldersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get sortIndex =>
+      $composableBuilder(column: $table.sortIndex, builder: (column) => column);
 
   Expression<T> notesRefs<T extends Object>(
     Expression<T> Function($$NotesTableAnnotationComposer a) f,
@@ -1443,12 +1514,14 @@ class $$NoteFoldersTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> sortIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion(
                 id: id,
                 name: name,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                sortIndex: sortIndex,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1457,12 +1530,14 @@ class $$NoteFoldersTableTableManager
                 required String name,
                 required DateTime createdAt,
                 required DateTime updatedAt,
+                Value<int> sortIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion.insert(
                 id: id,
                 name: name,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                sortIndex: sortIndex,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -26,6 +26,10 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// query 参数（[selectedFolderFilter]），因此不需要任何本地 state，返回上一页
 /// 时筛选态自动恢复。
 ///
+/// **可拖项只有真实文件夹**：`ReorderableListView` 的 `header` / `footer` 装
+/// 「全部」「未分类」「新建文件夹」三行固定项，拖动顺序写进库里的 `sort_index`
+/// （覆盖 D4 稿「本页无排序入口」，见 `docs/OPEN-DESIGN-QUESTIONS.md` Q-新2）。
+///
 /// ⛔ **不提供重命名 / 删除入口**：无长按菜单、无多选态、顶栏也不画 trash
 /// （Q11 / Q12 未答，trash 语义未知已定：删掉）。
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
@@ -37,6 +41,16 @@ class FolderManagerScreen extends ConsumerWidget {
   /// ⚠️ `AppSpacing.gridRow`(12dp) 是 D1 的值，两者不同；8dp 只有 P4 一个调用点，
   /// 故留在页面内不进 `core/theme/tokens/`（只有一个调用点的值不是 token）。
   static const double rowGap = 8;
+
+  /// 一行 + 它下方的 [rowGap]。
+  ///
+  /// `ReorderableListView` 没有 `separatorBuilder`，间距只能挂在行上；列表最后
+  /// 一行（「新建文件夹」）不加，否则底部会多出一段 8dp。
+  static Widget _gappedBelow(Widget child, {Key? key}) => Padding(
+    key: key,
+    padding: const EdgeInsets.only(bottom: rowGap),
+    child: child,
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -74,46 +88,67 @@ class FolderManagerScreen extends ConsumerWidget {
               showDivider: false,
             ),
             Expanded(
-              child: ListView.separated(
+              // ⚠️ 只有**真实文件夹**是可拖项：`header` / `footer` 放三行页合成的
+              // 固定行，这样 `onReorderItem` 拿到的 index 就是 `folders` 的下标，
+              // 不需要任何偏移换算。
+              child: ReorderableListView.builder(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.pageH,
                 ),
-                itemCount: folders.length + 3,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: rowGap),
+                // 关掉内置把手：桌面端它会**再加**一个右侧把手，而本页的把手
+                // （`AppIcons.drag`）是行内自己画的。
+                buildDefaultDragHandles: false,
+                itemCount: folders.length,
+                // `onReorderItem`（不是已废弃的 `onReorder`）：框架已经把
+                // `newIndex` 里被拖走的那一项减掉了，本页不需要再修索引。
+                onReorderItem: (oldIndex, newIndex) =>
+                    _reorderFolders(context, ref, oldIndex, newIndex),
+                header: _gappedBelow(
+                  FolderRow(
+                    name: l10n.all,
+                    count: total,
+                    isSelected: selected == null,
+                    onTap: () => context.go(AppRoutes.notes),
+                  ),
+                ),
+                footer: Column(
+                  children: <Widget>[
+                    _gappedBelow(
+                      FolderRow(
+                        name: l10n.uncategorized,
+                        count: uncategorized,
+                        isSelected: selected == kFolderFilterUncategorized,
+                        onTap: () => context.go(
+                          '${AppRoutes.notes}?'
+                          '${AppRoutes.folderQueryKey}=$kFolderFilterUncategorized',
+                        ),
+                      ),
+                    ),
+                    CreateFolderRow(
+                      onTap: () => _promptCreateFolder(context, ref),
+                    ),
+                  ],
+                ),
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return FolderRow(
-                      name: l10n.all,
-                      count: total,
-                      isSelected: selected == null,
-                      onTap: () => context.go(AppRoutes.notes),
-                    );
-                  }
-                  if (index == folders.length + 1) {
-                    return FolderRow(
-                      name: l10n.uncategorized,
-                      count: uncategorized,
-                      isSelected: selected == kFolderFilterUncategorized,
+                  final item = folders[index];
+                  return _gappedBelow(
+                    // 可拖项必须有 key（`ReorderableListView` 的硬要求）。
+                    key: ValueKey<String>(item.folder.id),
+                    FolderRow(
+                      name: item.folder.name,
+                      // 计数让位给拖动图标（P4 拖拽排序）。
+                      isSelected: selected == item.folder.id,
                       onTap: () => context.go(
                         '${AppRoutes.notes}?'
-                        '${AppRoutes.folderQueryKey}=$kFolderFilterUncategorized',
+                        '${AppRoutes.folderQueryKey}=${item.folder.id}',
                       ),
-                    );
-                  }
-                  if (index == folders.length + 2) {
-                    return CreateFolderRow(
-                      onTap: () => _promptCreateFolder(context, ref),
-                    );
-                  }
-                  final item = folders[index - 1];
-                  return FolderRow(
-                    name: item.folder.name,
-                    count: item.count,
-                    isSelected: selected == item.folder.id,
-                    onTap: () => context.go(
-                      '${AppRoutes.notes}?'
-                      '${AppRoutes.folderQueryKey}=${item.folder.id}',
+                      trailing: ReorderableDragStartListener(
+                        index: index,
+                        child: const AppIcon(
+                          icon: AppIcons.drag,
+                          size: AppSpacing.rowIconSize,
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -123,6 +158,30 @@ class FolderManagerScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// 拖拽落点 → 新顺序 → `ReorderFoldersUseCase`。
+  ///
+  /// ⛔ **不在本地留一份顺序**：`folderProvider` 由 drift watch 驱动，`sort_index`
+  /// 一变新顺序自己回来（与新建文件夹同一条路径，§8.4），本地再存一份就是
+  /// 第二个真相源。
+  Future<void> _reorderFolders(
+    BuildContext context,
+    WidgetRef ref,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    // 回调里用 `read`：`watch` 只属于 `build`。
+    final folders = ref.read(folderProvider).value ?? const [];
+    final ids = folders.map((item) => item.folder.id).toList();
+    ids.insert(newIndex, ids.removeAt(oldIndex));
+
+    final result = await ref.read(reorderFoldersUseCaseProvider).call(ids);
+    if (!context.mounted) return;
+    result.fold((failure) {
+      // 写失败时列表不动（顺序的真相在库里），只把原因说出来。
+      AppUtils.showSnackBar(context, message: failure.message);
+    }, (_) {});
   }
 
   /// 新建文件夹。**弹窗视觉无稿（Q13）**：用 `showDialog` + Material 默认样式，

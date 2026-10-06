@@ -24,7 +24,8 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   /// ⚠️ 结果里**不含**「全部」与「未分类」两行（§5.3：不是表里的行）。
   /// Q18 → docs/OPEN-DESIGN-QUESTIONS.md（「未分类」当前是筛选哨兵，非系统行）
   ///
-  /// 排序固定 `createdAt ASC`（设计稿无排序入口）。
+  /// 排序 `sortIndex ASC, createdAt ASC`（P4 拖拽排序；`createdAt` 只作同值兜底，
+  /// 让迁移后全是默认 0 的老数据保持原顺序）。
   Stream<List<FolderWithCountRow>> watchWithCounts() {
     final count = notes.id.count();
     final query =
@@ -40,7 +41,10 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
           ])
           ..addColumns([count])
           ..groupBy([noteFolders.id])
-          ..orderBy([OrderingTerm.asc(noteFolders.createdAt)]);
+          ..orderBy([
+            OrderingTerm.asc(noteFolders.sortIndex),
+            OrderingTerm.asc(noteFolders.createdAt),
+          ]);
 
     return query.watch().map(
       (rows) => rows
@@ -69,8 +73,38 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   }
 
   /// 插入。时间戳由调用方通过 Companion 传入（DAO 不取时钟）。
-  Future<NoteFolderRow> insert(NoteFoldersCompanion row) {
-    return into(noteFolders).insertReturning(row);
+  ///
+  /// `sort_index` 由本方法填成 `MAX+1` → 新文件夹**永远排末尾**，调用方不用管
+  /// 排位。读 + 写不在一个事务里：并发新建拿到同一个值时，`createdAt` 兜底
+  /// 仍给出确定顺序（单用户 App，不为它开事务）。
+  Future<NoteFolderRow> insert(NoteFoldersCompanion row) async {
+    final maxIndex = noteFolders.sortIndex.max();
+    final current = await (selectOnly(
+      noteFolders,
+    )..addColumns([maxIndex])).map((r) => r.read(maxIndex)).getSingle();
+    return into(
+      noteFolders,
+    ).insertReturning(row.copyWith(sortIndex: Value((current ?? -1) + 1)));
+  }
+
+  /// 按给定顺序整表重排：把每个 id 的 `sort_index` 写成 `0..n-1`。
+  ///
+  /// 顺序的**真相**是这一条命令（`orderedIds` 就是 UI 上的最终顺序），
+  /// 不用增量交换 —— 一次 `batch`，不会留下半新半旧的顺序。
+  /// 未知 id 静默跳过（`batch` 里 update 命中 0 行不是错误）。
+  Future<void> updateSortIndexes(List<String> orderedIds) async {
+    if (orderedIds.isEmpty) {
+      return;
+    }
+    await batch((b) {
+      for (var i = 0; i < orderedIds.length; i++) {
+        b.update(
+          noteFolders,
+          NoteFoldersCompanion(sortIndex: Value(i)),
+          where: (t) => t.id.equals(orderedIds[i]),
+        );
+      }
+    });
   }
 
   /// 重命名，返回是否命中行。文件夹不存在时返回 `false`。

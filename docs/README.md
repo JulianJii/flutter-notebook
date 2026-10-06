@@ -14,8 +14,8 @@
     <p style="font-size: 1.5em; max-width: 800px; margin: 38px auto 0 auto; line-height: 1.6; color: white; font-weight: 300; text-shadow: 0 2px 4px rgba(0,0,0,0.10); text-align: center;">一个<b style="font-weight: 600; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3);">生产就绪</b>的 Flutter 模板，适用于可扩展、可维护、可测试的应用。基于 Riverpod、Clean Architecture 和现代最佳实践构建。</p>
     <div style="background: linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7)); border-radius: 6px; padding: 8px 20px; color: #0175C2; font-weight: 700; margin: 25px auto 0; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transform: rotate(-1deg); font-size: 1.2em; animation: pulse 2s infinite ease-in-out;">⚡️ 比以往更快地构建应用！⚡️</div>
     <div style="margin: 40px 0 0 0; display: flex; gap: 18px; flex-wrap: wrap; justify-content: center;">
-      <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">⚡ Flutter 3.7+</span>
-      <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">💎 Dart 3.10+</span>
+      <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">⚡ Flutter 3.47.5</span>
+      <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">💎 Dart 3.11+</span>
       <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">🔄 Riverpod 3</span>
       <span style="display: inline-block; background: rgba(255,255,255,0.22); border-radius: 30px; font-size: 1.1em; color: white; font-weight: 600; padding: 10px 22px; box-shadow: 0 5px 15px rgba(0,0,0,0.10);">📜 MIT 许可证</span>
     </div>
@@ -144,13 +144,13 @@
       <p style="margin: 0; line-height: 1.65; font-size: 1.05em; opacity: 0.9;">完整的国际化支持，包含本地化资源和自动化生成。</p>
     </div>
     
-    <!-- 生物识别认证 -->
+    <!-- 本地优先 / Drift -->
     <div style="background: var(--biometric-gradient); border-radius: 16px; padding: 35px 30px; color: white; box-shadow: var(--card-box-shadow); transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(103,58,183,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=var(--card-box-shadow);">
       <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.1);"></div>
       <div style="position: absolute; bottom: -30px; left: -20px; width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.1);"></div>
-      <div style="font-size: 3em; margin-bottom: 25px; text-shadow: var(--card-text-shadow);">🔐</div>
-      <h3 style="font-size: 1.6em; margin: 0 0 15px; font-weight: 700; text-shadow: var(--card-text-shadow);">生物识别认证</h3>
-      <p style="margin: 0; line-height: 1.65; font-size: 1.05em; opacity: 0.9;">跨平台安全认证，支持 Face ID 和指纹识别。</p>
+      <div style="font-size: 3em; margin-bottom: 25px; text-shadow: var(--card-text-shadow);">🗄️</div>
+      <h3 style="font-size: 1.6em; margin: 0 0 15px; font-weight: 700; text-shadow: var(--card-text-shadow);">本地优先</h3>
+      <p style="margin: 0; line-height: 1.65; font-size: 1.05em; opacity: 0.9;">笔记 / 文件夹 / 待办全部落在 Drift（SQLite），离线可用，无需账号。</p>
     </div>
     
     <!-- Feature Flags -->
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <span class="faq-icon" style="display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: linear-gradient(135deg, #4CAF50, #81C784); border-radius: 50%; color: white; font-size: 1.2em; box-shadow: 0 4px 10px rgba(76,175,80,0.25); transition: all 0.3s ease;">⌄</span>
       </summary>
       <div style="padding: 5px 30px 26px 30px; border-top: 1px solid var(--faq-content-border); background: linear-gradient(to bottom right, rgba(76,175,80,0.02), transparent);">
-        <p style="color: var(--faq-text); line-height: 1.8; font-size: 1.1em; margin-top: 16px;">此模板支持 Flutter 3.10+ 和 Dart >=3.10.0 <4.0.0。它会定期更新以兼容最新的稳定版 Flutter，并利用模式匹配和记录等新语言特性。</p>
+        <p style="color: var(--faq-text); line-height: 1.8; font-size: 1.1em; margin-top: 16px;">本项目固定 Flutter 3.47.5（`pubspec.yaml`）与 Dart >=3.11.0 &lt;4.0.0，并利用模式匹配和记录等新语言特性。</p>
       </div>
     </details>
     

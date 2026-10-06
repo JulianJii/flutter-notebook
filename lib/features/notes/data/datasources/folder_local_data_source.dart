@@ -41,6 +41,10 @@ abstract class FolderLocalDataSource {
   /// 删除：删文件夹行 + 其下笔记 `folder_id` 置 NULL，**同一个事务**（Q37）。
   /// 命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String folderId);
+
+  /// 按给定顺序重排（P4 拖拽）。[orderedFolderIds] 是 UI 上的完整最终顺序，
+  /// 实现把它整表写成 `sort_index = 0..n-1`。
+  Future<void> reorder(List<String> orderedFolderIds);
 }
 
 class FolderLocalDataSourceImpl implements FolderLocalDataSource {
@@ -112,6 +116,11 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
       }
     });
   });
+
+  @override
+  Future<void> reorder(List<String> orderedFolderIds) {
+    return _guard(() => _dao.updateSortIndexes(orderedFolderIds));
+  }
 
   /// 重命名后回读单行。
   ///

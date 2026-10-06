@@ -25,6 +25,8 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(_folder());
+    // `reorder(List<String>)` 的 ids：mocktail 的 any() 要它。
+    registerFallbackValue(<String>[]);
   });
 
   setUp(() {
@@ -133,6 +135,27 @@ void main() {
         const Left<Failure, Unit>(
           CacheFailure(message: 'Folder not found: nope'),
         ),
+      );
+    });
+  });
+
+  group('reorder', () {
+    test('成功 -> Right(unit)，ids 原样透传', () async {
+      when(() => ds.reorder(any())).thenAnswer((_) async {});
+      expect(
+        await repo.reorder(<String>['f2', 'f1']),
+        const Right<Failure, Unit>(unit),
+      );
+      verify(() => ds.reorder(<String>['f2', 'f1'])).called(1);
+    });
+
+    test('CacheException -> Left(CacheFailure)', () async {
+      when(
+        () => ds.reorder(any()),
+      ).thenThrow(CacheException(message: 'disk full'));
+      expect(
+        await repo.reorder(<String>['f1']),
+        const Left<Failure, Unit>(CacheFailure(message: 'disk full')),
       );
     });
   });

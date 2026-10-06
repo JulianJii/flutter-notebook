@@ -72,7 +72,7 @@ powershell -ExecutionPolicy Bypass -File .\rename_app.ps1 --app-name "Your App N
 ./test_generator.sh feature_name
 ```
 
-Windows（PowerShell）等价版本：`powershell -ExecutionPolicy Bypass -File .\test_generator.ps1 --target test/features/auth/`（也支持 `--no-coverage` / `--no-report`）。
+Windows（PowerShell）等价版本：`powershell -ExecutionPolicy Bypass -File .\test_generator.ps1 --target test/features/notes/`（也支持 `--no-coverage` / `--no-report`）。
 
 该脚本为指定的 feature 创建必要的测试文件并包含适当的样板代码。
 

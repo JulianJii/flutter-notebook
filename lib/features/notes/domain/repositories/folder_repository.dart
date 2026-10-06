@@ -30,4 +30,8 @@ abstract class FolderRepository {
   /// 依赖 `notes.folder_id` 的 `ON DELETE SET NULL` 外键 + `PRAGMA foreign_keys`
   /// 同时生效，故实现内部必须走事务（仓库里唯一需要显式 `transaction()` 的方法）。
   Future<Either<Failure, Unit>> delete(String folderId);
+
+  /// 按 [orderedFolderIds] 的顺序重排（P4 拖拽）。传入的是**完整顺序**，
+  /// 不是增量交换；`watchWithCounts` 会在写完后推出新顺序。
+  Future<Either<Failure, Unit>> reorder(List<String> orderedFolderIds);
 }

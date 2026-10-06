@@ -5,6 +5,10 @@ description: Flutter 应用中安全生物识别认证的实现指南
 
 <!-- Heading defined in front matter, no need for duplicate -->
 
+> ⚠️ **本文已废弃（archived）**：本项目的生物识别认证（`BiometricService`、`biometricServiceProvider`、`biometricAuthControllerProvider`）与 `local_auth` 依赖均已从代码库移除，`lib/core/auth/` 目录不存在。下文仅作为历史记录保留，**不要照它写代码**。
+>
+> 如需生物识别，需自行引入 `local_auth` 并新建服务；现状以 `AGENTS.md` 与 `lib/` 为准。
+
 本指南介绍如何使用 Flutter Riverpod Clean Architecture 模板中的生物识别认证功能。
 
 ## 目录

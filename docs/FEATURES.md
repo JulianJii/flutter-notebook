@@ -4,156 +4,132 @@ title: Features
 
 # 核心功能
 
-本文档详细介绍了 Flutter Riverpod Clean Architecture 模板中的核心功能。
-
-## 🚀 展示功能（新增！）
-
-### 实时聊天（WebSocket）
-基于 WebSocket 的聊天应用完整实现。
-- **访问方式**：`Ref -> ChatProvider`
-- **架构**：领域层中的 `Stream<Message>`
-- **技术**：`web_socket_channel`，乐观 UI 更新
-- **路径**：`lib/features/chat/`
-
-### 复杂表单问卷
-支持验证和条件逻辑的高级表单处理。
-- **技术**：`flutter_form_builder`
-- **功能**：
-  - 异步验证（例如，用户名可用性检查）
-  - 条件字段（依赖于前序答案）
-  - 自定义表单输入
-- **路径**：`lib/features/survey/`
+本文档介绍本项目的两类功能：**产品功能**（`features/` 下真实存在的笔记 / 待办 / 设置）与**工程能力**（`core/` 下的基建）。
 
 ---
 
-## 分析集成
+## 产品功能
 
-通过灵活的分析系统追踪用户交互和应用性能：
+### 笔记（`lib/features/notes/`）
+
+- **列表** `/notes`：瀑布流卡片、按标题 / 正文搜索（无结果有空态提示）、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计。
+- **详情** `/notes/:id`、`/notes/new`：标题 + 正文编辑，**自动保存**（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认）。正文唯一真相源是 **Quill Delta JSON**（`flutter_quill`）。
+- **文件夹管理** `/notes/folders`：新建 / 重命名 / 删除 / 拖拽排序，显示每个文件夹的笔记数。
+- **最近删除** `/notes/trash`：软删除列表，支持恢复、永久删除、清空回收站（均二次确认）。
+
+> 筛选是 `sealed NoteFolderFilter` 三态；列表由 `StreamProvider.family(NoteQuery)` 驱动，筛选 / 排序变化即自动重查。
+
+### 待办（`lib/features/todos/`）
+
+新建、编辑、勾选完成（完成态灰字删除线）、删除（二次确认）；未完成置顶，已完成沉入可折叠的「已完成 N」，顶栏可一键清除全部已完成。排序真相源在 `TodoDao.watchAll` 的 `ORDER BY is_done ASC, created_at DESC`。
+
+### 设置（`lib/features/settings/`）
+
+笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、强提醒开关、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
+
+---
+
+## 工程能力
+
+### 分析集成
 
 ```dart
-// Access analytics
 final analytics = ref.watch(analyticsProvider);
 
 // Log screen views
-analytics.logScreenView('HomeScreen', parameters: {'referrer': 'deeplink'});
+analytics.logScreenView('NoteListScreen', parameters: {'referrer': 'deeplink'});
 
 // Log user actions
 analytics.logUserAction(
   action: 'button_tap',
   category: 'engagement',
-  label: 'sign_up_button',
+  label: 'new_note_button',
 );
 ```
 
 详情请参见[分析指南](https://jessejii.github.io/init/analytics.html)。
 
-## 推送通知
+### 推送通知
 
-完整的通知处理，支持深度链接和后台处理：
+本地通知 + 深链 + 权限申请：
 
 ```dart
-// Access notification service
 final service = ref.watch(notificationServiceProvider);
 
-// Request permission
 final status = await service.requestPermission();
 
-// Show a local notification
 await service.showLocalNotification(
-  id: 'msg-123',
-  title: 'New message',
-  body: 'You received a new message from John',
-  action: '/chat/john',
-  channel: 'messages',
+  id: 'note-123',
+  title: '笔记已保存',
+  body: '你的修改已同步',
+  action: '/notes/123',
+  channel: 'notes',
 );
 ```
 
-## 生物识别认证
+### 功能开关
 
-安全的指纹和人脸识别，用于保护敏感操作：
+运行时开关，用于 A/B 测试与分阶段发布。默认值集中在 `core/feature_flags/feature_flag_providers.dart` 的 `kDefaultFeatureFlags`：
 
 ```dart
-// Access biometric authentication
-final biometricAuth = ref.watch(biometricAuthControllerProvider);
-
-// Authenticate the user
-if (isAvailable) {
-  final result = await biometricAuth.authenticate(
-    reason: 'Please authenticate to access your account',
-    authReason: AuthReason.appAccess,
-  );
+if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
+  // 深色模式入口
 }
 ```
 
-详情请参见[生物识别认证指南](https://jessejii.github.io/init/biometric_auth.html)。
+也可用 `FeatureFlag` widget 按开关挂载子树。详情请参见[功能开关指南](https://jessejii.github.io/init/feature_flags.html)。
 
-## 功能开关
+### 离线优先
 
-用于 A/B 测试和分阶段发布的运行时功能开关：
-
-```dart
-// Check if a feature is enabled
-if (service.isFeatureEnabled('premium_features')) {
-  // Show premium features
-}
-```
-
-详情请参见[功能开关指南](https://jessejii.github.io/init/feature_flags.html)。
-
-## 高级图片处理
-
-支持缓存、SVG、特效和精美占位图的优化图片加载方案。
-
-详情请参见[图片处理指南](https://jessejii.github.io/init/image_handling.html)。
-
-## 多语言支持
-
-内置国际化，轻松切换语言：
-
-```dart
-// Access translated text
-Text(context.tr('welcome_message'));
-```
-
-详情请参见[本地化指南](https://jessejii.github.io/init/localization.html)。
-
-## 高级缓存系统
-
-项目实现了健壮的两级缓存系统，支持内存和磁盘两种存储方式。
-
-```dart
-// Using the cache
-final cacheManager = ref.watch(userDiskCacheProvider);
-await cacheManager.setItem('user_1', userEntity);
-```
-
-## 动态主题
-
-主题系统允许完全自定义应用外观。
-
-```dart
-// Use in MaterialApp
-return MaterialApp(
-  theme: AppTheme.lightTheme,
-  darkTheme: AppTheme.darkTheme,
-  themeMode: themeMode,
-);
-```
-
-## 无障碍支持
-
-> **注意**：`core/accessibility/` 模块当前为占位目录，待后续实现。
-
-## 离线优先架构
-
-让你的应用在有无网络连接的情况下都能无缝运行。
+变更队列 + 后台同步 + 冲突策略（ClientWins / ServerWins / SmartMerge），入口 `offlineSyncServiceProvider`、`pendingChangesProvider`。
 
 详情请参见[离线架构指南](https://jessejii.github.io/init/offline_architecture.html)。
 
-## 应用更新流程
+### 本地持久化
 
-管理应用更新，支持自定义流程。
+`drift`（SQLite：笔记 / 文件夹 / 待办）+ `shared_preferences`（设置偏好）。改表后必须跑 build_runner。
 
-## 应用评价系统
+### 高级图片处理
 
-从用户那里获取反馈和评分。
+支持缓存、SVG、特效和占位图的图片加载方案。
+
+详情请参见[图片处理指南](https://jessejii.github.io/init/image_handling.html)。
+
+### 多语言支持
+
+中英双语，取文案用 gen-l10n 生成的**强类型 getter**（key 一律 snake_case），不存在 `context.tr()`：
+
+```dart
+Text(AppLocalizations.of(context).note_title);
+// 带参数的消息是生成的方法
+Text(AppLocalizations.of(context).item_count(count));
+```
+
+日期 / 时间 / 货币用 `context.formatDate/formatTime/formatDateTime/formatCurrency` 扩展。
+
+详情请参见[本地化指南](https://jessejii.github.io/init/localization.html)。
+
+### 两级缓存
+
+内存 + 磁盘两级缓存：
+
+```dart
+final cacheManager = ref.watch(userDiskCacheProvider);
+await cacheManager.setItem('note_1', noteEntity);
+```
+
+### 主题
+
+自建 design token：颜色 / 字阶走 `ThemeExtension`（`core/theme/tokens/` 的 `AppColors`、`AppTextStyles`），间距 / 圆角 / 阴影走常量（`AppSpacing`、`AppRadius`、`AppElevation`）。
+
+```dart
+return MaterialApp(
+  theme: AppTheme.lightTheme,
+  darkTheme: AppTheme.darkTheme,
+  themeMode: themeMode, // 来自 settingsProvider，main.dart 做 AppThemeMode → ThemeMode 映射
+);
+```
+
+### 应用更新
+
+`updateServiceProvider` 检查更新与强制更新，`main.dart` 中 `UpdateChecker` 包裹 `MaterialApp.router`。

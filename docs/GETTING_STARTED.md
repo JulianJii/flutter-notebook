@@ -4,8 +4,8 @@
 
 ## 环境要求
 
-- Flutter SDK（3.10.0 或更高版本）
-- Dart SDK（>=3.10.0 <4.0.0）
+- Flutter SDK 3.47.5（`pubspec.yaml` 固定版本）
+- Dart SDK（>=3.11.0 <4.0.0）
 - 支持 Flutter 的 IDE（VS Code、Android Studio 或 IntelliJ）
 
 ## 安装方式
@@ -31,6 +31,7 @@ flutter pub get
 2. 点击「Use this template」创建新仓库
 3. 克隆新仓库到本地
 4. 运行 `flutter pub get` 安装依赖
+5. 运行 `dart run build_runner build --delete-conflicting-outputs` 生成代码（freezed / json / riverpod / drift / assets；`lib/gen/` 已入 git，但改动注解后必须重跑）
 
 ## 运行项目
 

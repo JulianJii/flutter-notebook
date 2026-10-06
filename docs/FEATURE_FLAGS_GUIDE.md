@@ -82,15 +82,22 @@ FeatureFlag(
 
 ```dart
 const Map<String, dynamic> kDefaultFeatureFlags = {
-  // Feature flags
-  'enable_analytics': true,
+  // 功能开关
+  'enable_dark_mode': true,
   'enable_push_notifications': true,
-  'enable_biometric_login': true,
-  'use_debug_biometrics': false,
+  'enable_analytics': true,
+  'enable_crash_reporting': true,
   'force_firebase_analytics': false,
+
+  // 功能参数
+  'cache_ttl_seconds': 3600,
+  'api_timeout_ms': 30000,
+  'max_retry_count': 3,
   // ...other defaults
 };
 ```
+
+> 早期文档里的 `enable_biometric_login` / `use_debug_biometrics` 已随生物识别代码一并移除。
 
 ## 实现细节
 

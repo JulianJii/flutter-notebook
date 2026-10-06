@@ -59,37 +59,35 @@ use-deferred-loading: false
 
 ### 基本翻译
 
-在 BuildContext 上使用 `tr` 扩展方法：
+用 gen-l10n 生成的**强类型 getter**，key 一律 snake_case：
 
 ```dart
 // In a widget build method
-Text(context.tr('welcome_message'));
+Text(AppLocalizations.of(context).welcome_message);
 
-// For static text keys
-final buttonLabel = context.tr('login');
+// 也可先取出来
+final l10n = AppLocalizations.of(context);
+final buttonLabel = l10n.save;
 ```
+
+> ⚠️ **不存在** `context.tr()` / `context.trParams()` 这类字符串 key API —— 早期文档里的写法已失效，编译不过。
 
 ### 带参数的翻译
 
-使用 `trParams` 扩展方法处理带参数的消息：
+gen-l10n 为带参数的消息生成**方法**：
 
 ```dart
-// With named parameters
-Text(context.trParams('greeting', {'name': user.displayName}));
+Text(AppLocalizations.of(context).greeting(user.displayName));
 
-// Example message in ARB file: "greeting": "Hello, {name}!"
+// ARB: "greeting": "你好，{name}！"
 ```
 
 ### 复数形式
 
-处理根据数量值变化的消息：
-
 ```dart
-// With pluralization logic
-final itemText = context.tr('itemCount').replaceAll('{count}', items.length.toString());
+Text(AppLocalizations.of(context).item_count(items.length));
 
-// ARB definition: 
-// "itemCount": "{count, plural, =0{No items} =1{1 item} other{% raw %}{{count}}{% endraw %} items}"
+// ARB: "item_count": "{count, plural, =0{没有项目} =1{1 个项目} other{{count} 个项目}}"
 ```
 
 ### 日期和货币格式
@@ -296,7 +294,7 @@ final translations = ref.watch(translationsProvider);
 1. **使用扁平键** - 翻译键使用扁平命名（例如 `login_title`、`welcome_message`），不使用点分隔
 2. **添加描述** - 在 ARB 文件中为所有键包含描述
 3. **处理缺失翻译** - 如果翻译缺失，系统将回退到英语
-4. **使用 context 扩展** - 优先使用 `context.tr()` 而不是直接访问翻译对象
+4. **用强类型 getter** - 一律 `AppLocalizations.of(context).xxx`，不要自造字符串 key 扩展；日期 / 时间 / 货币才用 `context.formatXxx()` 扩展
 5. **保持 ARB 文件一致性** - 确保所有语言具有相同的键集
 6. **使用参数** - 避免字符串拼接，使用参数代替
 7. **测试所有语言** - 在所有支持的语言中验证 UI 布局（某些语言可能更长/更短）

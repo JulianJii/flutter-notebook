@@ -1,7 +1,9 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:init/core/theme/app_theme.dart';
+import 'package:init/core/ui/app_icon.dart';
 import 'package:init/features/notes/domain/entities/folder_with_count.dart';
 import 'package:init/features/notes/domain/entities/note_folder.dart';
 import 'package:init/features/notes/domain/repositories/folder_repository.dart';
@@ -21,6 +23,12 @@ final NoteFolder _f1 = NoteFolder(
   createdAt: DateTime(2026, 1, 1),
   updatedAt: DateTime(2026, 1, 1),
 );
+final NoteFolder _f2 = NoteFolder(
+  id: 'f2',
+  name: '速记',
+  createdAt: DateTime(2026, 1, 2),
+  updatedAt: DateTime(2026, 1, 2),
+);
 void main() {
   setUpAll(() {
     registerFallbackValue(
@@ -31,6 +39,8 @@ void main() {
         updatedAt: DateTime(2026),
       ),
     );
+    // `reorder(List<String>)` 的 ids：mocktail 的 any()/captureAny() 要它。
+    registerFallbackValue(<String>[]);
   });
 
   late GoRouter router;
@@ -58,18 +68,19 @@ void main() {
   });
 
   /// override 打在 Repository 层（data 的边界）；**不接真实 drift 库**。
-  Widget app({int uncategorized = 154}) {
+  Widget app({int uncategorized = 154, List<FolderWithCount>? folders}) {
     final repo = _MockFolderRepository();
     when(repo.watchWithCounts).thenAnswer(
-      (_) => Stream<List<FolderWithCount>>.value(<FolderWithCount>[
-        FolderWithCount(folder: _f1, count: 1),
-      ]),
+      (_) => Stream<List<FolderWithCount>>.value(
+        folders ?? <FolderWithCount>[FolderWithCount(folder: _f1, count: 1)],
+      ),
     );
+    when(() => repo.reorder(any())).thenAnswer((_) async => const Right(unit));
     // 「未分类」走 DAO 的 `COUNT(*)` 透传，不再是「取笔记列表再 .length」——
     // 所以这里 stub 的是一个标量流，不是一批假笔记。
-    when(repo.watchUncategorizedCount).thenAnswer(
-      (_) => Stream<int>.value(uncategorized),
-    );
+    when(
+      repo.watchUncategorizedCount,
+    ).thenAnswer((_) => Stream<int>.value(uncategorized));
     folderRepo = repo;
     return ProviderScope(
       overrides: [folderRepositoryProvider.overrideWithValue(repo)],
@@ -100,8 +111,52 @@ void main() {
     expect(items[0].name, '全部');
     expect(items[1].name, '闻声笔记');
     expect(items[2].name, '未分类');
-    // D4 的 1 + 154 = 155。
-    expect(items.map((e) => e.count).toList(), <int>[155, 1, 154]);
+    // D4 的 1 + 154 = 155。真实文件夹行**没有计数**（那一位是拖动图标）。
+    expect(items.map((e) => e.count).toList(), <int?>[155, null, 154]);
+  });
+
+  testWidgets('文件夹行右侧是拖动图标，且只有真实文件夹可拖', (tester) async {
+    await tester.pumpWidget(
+      app(
+        folders: <FolderWithCount>[
+          FolderWithCount(folder: _f1, count: 1),
+          FolderWithCount(folder: _f2, count: 2),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 把手是唯一入口：框架内置把手已关（桌面端它会再加一个）。
+    expect(find.byIcon(AppIcons.drag), findsNWidgets(2));
+    expect(find.byType(ReorderableDragStartListener), findsNWidgets(2));
+    final list = tester.widget<ReorderableListView>(
+      find.byType(ReorderableListView),
+    );
+    expect(list.buildDefaultDragHandles, isFalse);
+  });
+
+  testWidgets('拖动 → 按落点把新顺序交给 reorder', (tester) async {
+    await tester.pumpWidget(
+      app(
+        folders: <FolderWithCount>[
+          FolderWithCount(folder: _f1, count: 1),
+          FolderWithCount(folder: _f2, count: 2),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 手势本身是框架的活；这里只验「落点 → ids」的换算（onReorderItem 已经
+    // 扣掉被拖走的那一项，故 1 → 0 就是把第二个挪到最前）。
+    tester
+        .widget<ReorderableListView>(find.byType(ReorderableListView))
+        .onReorderItem!(1, 0);
+    await tester.pumpAndSettle();
+
+    final captured =
+        verify(() => folderRepo.reorder(captureAny())).captured.single
+            as List<String>;
+    expect(captured, <String>['f2', 'f1']);
   });
 
   testWidgets('进入页面时按 URL query 决定哪一行选中', (tester) async {

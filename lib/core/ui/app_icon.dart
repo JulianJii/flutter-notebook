@@ -30,6 +30,10 @@ abstract final class AppIcons {
   static const IconData circlePlusOutline = Icons.add_circle_outline;
   static const IconData checkboxOutline = Icons.check_box_outlined;
 
+  /// P4 拖动排序把手。**不在设计稿的 15 个语义里**（稿无排序入口），
+  /// 取平台惯例的 `drag_handle`。
+  static const IconData drag = Icons.drag_handle;
+
   // ---- 底部导航（D1/D2）----
   static const IconData navNotes = Icons.list_rounded;
   static const IconData navTodo = Icons.check_rounded;

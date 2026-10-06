@@ -662,6 +662,54 @@ final class DeleteFolderUseCaseProvider
 String _$deleteFolderUseCaseHash() =>
     r'1eaf361cfecb8a14cbb9f695c67f48978e70fbaa';
 
+@ProviderFor(reorderFoldersUseCase)
+final reorderFoldersUseCaseProvider = ReorderFoldersUseCaseProvider._();
+
+final class ReorderFoldersUseCaseProvider
+    extends
+        $FunctionalProvider<
+          ReorderFoldersUseCase,
+          ReorderFoldersUseCase,
+          ReorderFoldersUseCase
+        >
+    with $Provider<ReorderFoldersUseCase> {
+  ReorderFoldersUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'reorderFoldersUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$reorderFoldersUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<ReorderFoldersUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ReorderFoldersUseCase create(Ref ref) {
+    return reorderFoldersUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ReorderFoldersUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ReorderFoldersUseCase>(value),
+    );
+  }
+}
+
+String _$reorderFoldersUseCaseHash() =>
+    r'f860b0f1b1e721861f5001fa269bf36e7a6a48f8';
+
 @ProviderFor(watchDeletedNotesUseCase)
 final watchDeletedNotesUseCaseProvider = WatchDeletedNotesUseCaseProvider._();
 

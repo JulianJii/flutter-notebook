@@ -18,6 +18,7 @@ import 'package:init/features/notes/domain/usecases/delete_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_params.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_use_case.dart';
+import 'package:init/features/notes/domain/usecases/reorder_folders_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
 import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_params.dart';
@@ -489,6 +490,36 @@ void main() {
       result.fold(
         (f) => expect(f, isA<CacheFailure>()),
         (_) => fail('应为 Left'),
+      );
+    });
+  });
+
+  group('ReorderFoldersUseCase', () {
+    test('成功：整份顺序原样透传（不预检、不比较）', () async {
+      // 同一个 List 实例贯穿 when / call / verify —— mocktail 对 List 参数
+      // 走 `==`（即同一性），换一个字面量就匹配不上。
+      final ids = <String>['f2', 'f1'];
+      when(
+        () => folders.reorder(ids),
+      ).thenAnswer((_) async => const Right(unit));
+
+      expect(
+        await ReorderFoldersUseCase(folders)(ids),
+        const Right<Failure, Unit>(unit),
+      );
+      verify(() => folders.reorder(ids)).called(1);
+    });
+
+    test('失败透传：Left 原样，不二次包装', () async {
+      final ids = <String>['f1', 'f2'];
+      when(
+        () => folders.reorder(ids),
+      ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+
+      final result = await ReorderFoldersUseCase(folders)(ids);
+      expect(
+        result,
+        const Left<Failure, Unit>(CacheFailure(message: 'disk full')),
       );
     });
   });

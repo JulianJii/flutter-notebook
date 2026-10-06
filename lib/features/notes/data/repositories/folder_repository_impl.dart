@@ -70,6 +70,18 @@ class FolderRepositoryImpl implements FolderRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Unit>> reorder(List<String> orderedFolderIds) async {
+    try {
+      await _localDataSource.reorder(orderedFolderIds);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return _mapFailure(e.message);
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
   /// **唯一**的判定分支，只写这一处，其余方法不复制。
   ///
   /// ⛔ 不靠 `message.contains('UNIQUE')` 匹配 SQLite 错误文案（drift 换版本就失效），

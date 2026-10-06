@@ -32,6 +32,7 @@
 | Q35 | 全稿无按压态 / 禁用态 | 沿用 `IconButton` / `InkWell` 默认；补稿后按组件逐个校 |
 | Q-§2.2 | §2.2 的 13 个字阶里没有「分组标题」这一级 | `AppSectionHeader` 暂取最接近的 `text.subtitle`（13sp / w400），按 D5 量取后修正该行 |
 | Q-新 | 待办排序覆盖 D2 稿「本页无排序入口」 | 用户已确认覆盖：`TodoDao.watchAll` 的 `ORDER BY is_done ASC, created_at DESC`（未完成置顶 + 同组创建时间倒序），「已完成 N」折叠分组复用这条顺序 |
+| Q-新2 | 文件夹拖拽排序覆盖 D4 稿「本页无排序入口」 | 用户已要求：新增 `note_folders.sort_index`（schemaVersion 4）+ `FolderDao.updateSortIndexes`；P4 真实文件夹行右侧的计数换成拖动图标（`AppIcons.drag`），「全部」/「未分类」不可拖、仍显示计数 |
 
 ## 已定稿（本轮落地）
 

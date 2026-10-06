@@ -14,6 +14,7 @@ import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/purge_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/restore_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_use_case.dart';
+import 'package:init/features/notes/domain/usecases/reorder_folders_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
@@ -99,6 +100,11 @@ RenameFolderUseCase renameFolderUseCase(Ref ref) {
 @riverpod
 DeleteFolderUseCase deleteFolderUseCase(Ref ref) {
   return DeleteFolderUseCase(ref.watch(folderRepositoryProvider));
+}
+
+@riverpod
+ReorderFoldersUseCase reorderFoldersUseCase(Ref ref) {
+  return ReorderFoldersUseCase(ref.watch(folderRepositoryProvider));
 }
 
 // ---- 回收站（最近删除）----

@@ -11,8 +11,8 @@ void main() {
 
   tearDown(() => db.close());
 
-  test('schemaVersion == 3', () {
-    expect(db.schemaVersion, 3);
+  test('schemaVersion == 4', () {
+    expect(db.schemaVersion, 4);
   });
 
   test('beforeOpen 已打开 PRAGMA foreign_keys', () async {

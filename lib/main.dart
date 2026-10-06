@@ -1,11 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:init/core/constants/app_constants.dart';
 import 'package:init/core/providers/localization_providers.dart';
 import 'package:init/core/providers/storage_providers.dart';
 import 'package:init/core/router/app_router.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/core/updates/update_providers.dart';
+import 'package:init/features/settings/domain/entities/app_settings.dart';
+import 'package:init/features/settings/presentation/providers/settings_provider.dart';
 import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,19 +36,6 @@ void main() async {
   );
 }
 
-// 用于管理主题模式的 Provider
-// 用于管理主题模式的 Provider
-class ThemeModeNotifier extends Notifier<ThemeMode> {
-  @override
-  ThemeMode build() => ThemeMode.system;
-
-  void set(ThemeMode mode) => state = mode;
-}
-
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
-  ThemeModeNotifier.new,
-);
-
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -54,8 +44,15 @@ class MyApp extends ConsumerWidget {
     // 从 provider 中监听 router
     final router = ref.watch(routerProvider);
 
-    // 监听主题模式
-    final themeMode = ref.watch(themeModeProvider);
+    // 监听主题模式：`select` 只在 themeMode 变时重建，文字大小等无关偏好的改动
+    // 不会把整个 MaterialApp 重建一遍。
+    final themeMode = switch (ref.watch(
+      settingsProvider.select((s) => s.themeMode),
+    )) {
+      AppThemeMode.system => ThemeMode.system,
+      AppThemeMode.light => ThemeMode.light,
+      AppThemeMode.dark => ThemeMode.dark,
+    };
 
     // 监听持久化语言环境
     final locale = ref.watch(persistentLocaleProvider);
@@ -78,6 +75,8 @@ class MyApp extends ConsumerWidget {
           // material_ui 是 flutter/material 的 fork，自带一套 Localizations，
           // gen-l10n 生成的列表里只有 flutter_localizations 那套，缺它会崩
           ...GlobalMaterialLocalizations.delegates,
+          // Quill 工具栏/编辑器的本地化，缺它编辑页会崩
+          FlutterQuillLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
       ),

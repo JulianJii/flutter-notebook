@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/usecases/create_note_params.dart';
 import 'package:init/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
+import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_params.dart';
 import 'package:init/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:init/features/notes/presentation/providers/note_editor_provider.dart';
@@ -18,10 +21,18 @@ class _MockCreateNote extends Mock implements CreateNoteUseCase {}
 
 class _MockUpdateNote extends Mock implements UpdateNoteUseCase {}
 
-Note _note({String title = '标题', String content = '正文'}) => Note(
+class _MockUpdateNoteBackground extends Mock
+    implements UpdateNoteBackgroundUseCase {}
+
+Note _note({
+  String title = '标题',
+  String content = '正文',
+  NoteBackground? background,
+}) => Note(
   id: 'n1',
   title: title,
   content: content,
+  background: background,
   createdAt: DateTime(2026, 10, 3, 6, 40),
   updatedAt: DateTime(2026, 10, 3, 6, 40),
 );
@@ -33,18 +44,29 @@ void main() {
       const UpdateNoteParams(noteId: 'n1', title: '', content: ''),
     );
     registerFallbackValue(const CreateNoteParams(title: '', content: ''));
+    registerFallbackValue(
+      const UpdateNoteBackgroundParams(
+        noteId: 'n1',
+        background: NoteBackground.paper,
+      ),
+    );
   });
 
   ProviderContainer containerFor(
     GetNoteUseCase get, {
     CreateNoteUseCase? create,
     UpdateNoteUseCase? update,
+    UpdateNoteBackgroundUseCase? updateBackground,
   }) {
     final container = ProviderContainer(
       overrides: [
         getNoteUseCaseProvider.overrideWithValue(get),
         if (create != null) createNoteUseCaseProvider.overrideWithValue(create),
         if (update != null) updateNoteUseCaseProvider.overrideWithValue(update),
+        if (updateBackground != null)
+          updateNoteBackgroundUseCaseProvider.overrideWithValue(
+            updateBackground,
+          ),
       ],
     );
     addTearDown(container.dispose);
@@ -201,6 +223,48 @@ void main() {
     expect(s.isSaving, isFalse);
   });
 
+  test('保存失败：lastFailure 带 Failure，clearFailure 后清空', () async {
+    final get = _MockGetNote();
+    final update = _MockUpdateNote();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => update(any()),
+    ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+    final container = containerFor(get, update: update);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    final notifier = container.read(noteEditorProvider('n1').notifier);
+    notifier.setTitle('新标题');
+    await notifier.flush();
+
+    // 自动保存走 Timer、返回值被丢弃，`lastFailure` 是唯一的用户可见信号。
+    expect(
+      container.read(noteEditorProvider('n1')).value!.lastFailure,
+      isA<CacheFailure>(),
+    );
+    notifier.clearFailure();
+    expect(container.read(noteEditorProvider('n1')).value!.lastFailure, isNull);
+  });
+
+  test('保存成功后 lastFailure 为 null（不会残留上一次的失败）', () async {
+    final get = _MockGetNote();
+    final update = _MockUpdateNote();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => update(any()),
+    ).thenAnswer((_) async => Right(_note(title: '新标题')));
+    final container = containerFor(get, update: update);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    final notifier = container.read(noteEditorProvider('n1').notifier);
+    notifier.setTitle('新标题');
+    await notifier.flush();
+
+    expect(container.read(noteEditorProvider('n1')).value!.lastFailure, isNull);
+  });
+
   test('新建笔记 flush 走 create，并用返回的 createdAt 覆盖草稿', () async {
     final get = _MockGetNote();
     final create = _MockCreateNote();
@@ -223,6 +287,40 @@ void main() {
     final params = captured.single as CreateNoteParams;
     expect(params.title, '新标题');
     expect(params.content, isEmpty);
+  });
+
+  test('回归：/notes/new 保存后继续编辑，update 收真实 id 而非哨兵', () async {
+    final get = _MockGetNote();
+    final create = _MockCreateNote();
+    final update = _MockUpdateNote();
+    when(() => create(any())).thenAnswer(
+      (_) async => Right(_note(title: '草稿一', content: '')),
+    );
+    when(() => update(any())).thenAnswer(
+      (_) async => Right(_note(title: '草稿二', content: '')),
+    );
+    final container = containerFor(get, create: create, update: update);
+    keepAlive(container, kNewNoteId);
+    await container.read(noteEditorProvider(kNewNoteId).future);
+
+    final notifier = container.read(noteEditorProvider(kNewNoteId).notifier);
+    notifier.setTitle('草稿一');
+    await notifier.flush();
+
+    // create 已落地，`createdAt` 非空 → isNew 转 false，这次走 update
+    notifier.setTitle('草稿二');
+    await notifier.flush();
+
+    final params = verify(() => update(captureAny())).captured.single
+        as UpdateNoteParams;
+    expect(
+      params.noteId,
+      'n1',
+      reason: "必须是 create 返回的真实 id，不能是哨兵 'new' —— "
+          '否则 update 打在不存在的行上，草稿永远存不进去',
+    );
+    expect(params.title, '草稿二');
+    expect(container.read(noteEditorProvider(kNewNoteId)).value!.isDirty, isFalse);
   });
 
   test('flush 幂等：非 dirty 时不调 UseCase', () async {
@@ -271,5 +369,129 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(container.read(noteEditorProvider('n1')).value!.isDirty, isFalse);
+  });
+
+  test('既有笔记：build 把库里的背景灌进 draft 与 saved', () async {
+    final get = _MockGetNote();
+    when(
+      () => get('n1'),
+    ).thenAnswer((_) async => Right(_note(background: NoteBackground.mint)));
+    final container = containerFor(get);
+    keepAlive(container, 'n1');
+
+    final s = await container.read(noteEditorProvider('n1').future);
+
+    expect(s.draftBackground, NoteBackground.mint);
+    expect(s.savedBackground, NoteBackground.mint);
+    expect(s.isDirty, isFalse, reason: '背景不参与 isDirty');
+  });
+
+  test('既有笔记：setBackground 走窄通道即时落库，不标脏也不碰整行 update', () async {
+    final get = _MockGetNote();
+    final update = _MockUpdateNote();
+    final updateBackground = _MockUpdateNoteBackground();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => updateBackground(any()),
+    ).thenAnswer((_) async => const Right(unit));
+    final container = containerFor(
+      get,
+      update: update,
+      updateBackground: updateBackground,
+    );
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setBackground(NoteBackground.blush);
+
+    final s = container.read(noteEditorProvider('n1')).value!;
+    expect(s.draftBackground, NoteBackground.blush);
+    expect(s.savedBackground, NoteBackground.blush);
+    expect(s.isDirty, isFalse, reason: '换背景不是编辑，不该触发自动保存');
+    final params =
+        verify(() => updateBackground(captureAny())).captured.single
+            as UpdateNoteBackgroundParams;
+    expect(params.noteId, 'n1');
+    expect(params.background, NoteBackground.blush);
+    // 整行 update 会刷新 updatedAt，换背景不该走它。
+    verifyNever(() => update(any()));
+  });
+
+  test('既有笔记：清除背景（null）也即时落库', () async {
+    final get = _MockGetNote();
+    final updateBackground = _MockUpdateNoteBackground();
+    when(
+      () => get('n1'),
+    ).thenAnswer((_) async => Right(_note(background: NoteBackground.paper)));
+    when(
+      () => updateBackground(any()),
+    ).thenAnswer((_) async => const Right(unit));
+    final container = containerFor(get, updateBackground: updateBackground);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setBackground(null);
+
+    final params =
+        verify(() => updateBackground(captureAny())).captured.single
+            as UpdateNoteBackgroundParams;
+    expect(params.background, isNull);
+    expect(
+      container.read(noteEditorProvider('n1')).value!.draftBackground,
+      isNull,
+    );
+  });
+
+  test('新笔记：setBackground 只改草稿，flush 的 create 带上背景', () async {
+    final get = _MockGetNote();
+    final create = _MockCreateNote();
+    final updateBackground = _MockUpdateNoteBackground();
+    when(
+      () => create(any()),
+    ).thenAnswer((_) async => Right(_note(title: '新标题')));
+    final container = containerFor(
+      get,
+      create: create,
+      updateBackground: updateBackground,
+    );
+    keepAlive(container, kNewNoteId);
+    await container.read(noteEditorProvider(kNewNoteId).future);
+
+    final notifier = container.read(noteEditorProvider(kNewNoteId).notifier);
+    await notifier.setBackground(NoteBackground.paper);
+    // 库里还没有这一行，窄通道无从下手。
+    verifyNever(() => updateBackground(any()));
+
+    notifier.setTitle('新标题');
+    await notifier.flush();
+
+    final params =
+        verify(() => create(captureAny())).captured.single as CreateNoteParams;
+    expect(params.background, NoteBackground.paper);
+  });
+
+  test('setBackground 失败：lastFailure 带 Failure，草稿保留用户的选择', () async {
+    final get = _MockGetNote();
+    final updateBackground = _MockUpdateNoteBackground();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => updateBackground(any()),
+    ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+    final container = containerFor(get, updateBackground: updateBackground);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setBackground(NoteBackground.mint);
+
+    final s = container.read(noteEditorProvider('n1')).value!;
+    expect(s.draftBackground, NoteBackground.mint);
+    expect(s.savedBackground, isNull);
+    expect(s.lastFailure, isA<CacheFailure>());
   });
 }

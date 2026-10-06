@@ -181,6 +181,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get palette => 'Palette';
 
   @override
+  String get noteBackground => 'Background';
+
+  @override
+  String get noteBackgroundNone => 'No background';
+
+  @override
   String get more => 'More';
 
   @override
@@ -191,6 +197,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get folderName => 'Folder name';
+
+  @override
+  String get createTodo => 'New todo';
+
+  @override
+  String get todoTitle => 'Todo title';
 
   @override
   String get save => 'Save';
@@ -205,9 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String noteMetaWordCount(int count) {
     return '$count chars';
   }
-
-  @override
-  String get settingsGroupCloud => 'Cloud';
 
   @override
   String get settingsGroupNoteStyle => 'Note style';
@@ -278,6 +287,182 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLayoutList => 'List';
+
+  @override
+  String get settingsThemeMode => 'Dark mode';
+
+  @override
+  String get settingsThemeSystem => 'System';
+
+  @override
+  String get settingsThemeLight => 'Light';
+
+  @override
+  String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsSwitchOn => 'On';
+
+  @override
+  String get settingsSwitchOff => 'Off';
+
+  @override
+  String get notesSearchHint => 'Search notes';
+
+  @override
+  String get notesSearchClear => 'Clear search';
+
+  @override
+  String get deleteNote => 'Delete note';
+
+  @override
+  String get deleteNoteConfirm =>
+      'Delete this note? You can restore it from Recently deleted.';
+
+  @override
+  String get noteDeleted => 'Moved to Recently deleted';
+
+  @override
+  String get trashEmpty => 'No deleted notes';
+
+  @override
+  String get trashRestore => 'Restore';
+
+  @override
+  String get restoreDone => 'Restored';
+
+  @override
+  String get trashDeleteForever => 'Delete permanently';
+
+  @override
+  String get trashDeleteForeverConfirm =>
+      'Permanently delete? This can\'t be undone.';
+
+  @override
+  String get trashEmptyAction => 'Empty';
+
+  @override
+  String get trashEmptyConfirm =>
+      'Delete all notes in Recently deleted? This can\'t be undone.';
+
+  @override
+  String get emptyDone => 'Emptied';
+
+  @override
+  String trashDeletedAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Deleted $dateString';
+  }
+
+  @override
+  String get privacyPolicyIntro =>
+      'Notes is a fully local-first app. We take your privacy seriously — please read this policy before use.';
+
+  @override
+  String get privacyPolicyDataTitle => 'Data collection and storage';
+
+  @override
+  String get privacyPolicyDataBody =>
+      'This app does not collect or upload any personal data. All notes, todos and settings stay on your device only, and are permanently removed when you uninstall the app or delete them yourself.';
+
+  @override
+  String get privacyPolicyPermissionTitle => 'Permissions';
+
+  @override
+  String get privacyPolicyPermissionBody =>
+      'System capabilities such as notifications and sharing are only invoked when you actively use the corresponding features; the app never reads your personal information in the background.';
+
+  @override
+  String get privacyPolicySharingTitle => 'Data sharing';
+
+  @override
+  String get privacyPolicySharingBody =>
+      'This app has no cloud service, so your content is never shared with or transferred to any third party.';
+
+  @override
+  String get privacyPolicyUpdatesTitle => 'Policy updates';
+
+  @override
+  String get privacyPolicyUpdatesBody =>
+      'Material changes to this policy will be announced in the app or in release notes. Continuing to use the app after a change means you accept the updated policy.';
+
+  @override
+  String get privacyPolicyContactTitle => 'Contact us';
+
+  @override
+  String get privacyPolicyContactBody =>
+      'If you have any questions or suggestions about this policy, please contact us via the channel provided on the app store page.';
+
+  @override
+  String get userAgreementIntro =>
+      'Thank you for using Notes. Please read and understand this agreement carefully before you start.';
+
+  @override
+  String get agreementAcceptTitle => 'Acceptance of the agreement';
+
+  @override
+  String get agreementAcceptBody =>
+      'By downloading, installing or using this app, you confirm that you have read and accepted this agreement in full. If you do not agree, please stop using the app immediately.';
+
+  @override
+  String get agreementUseTitle => 'Acceptable use';
+
+  @override
+  String get agreementUseBody =>
+      'You agree not to create, store or distribute content that violates applicable laws, and not to reverse engineer, attack or otherwise interfere with the normal operation of the app.';
+
+  @override
+  String get agreementOwnershipTitle => 'Content ownership';
+
+  @override
+  String get agreementOwnershipBody =>
+      'Notes, todos and other content you create in this app belong to you. Rights in the app itself, including its interface and icons, belong to the developer.';
+
+  @override
+  String get agreementLiabilityTitle => 'Disclaimer';
+
+  @override
+  String get agreementLiabilityBody =>
+      'Data is stored locally on your device. The developer is not liable for data loss caused by device loss, system failure, uninstalling the app or accidental deletion. Please back up important content yourself.';
+
+  @override
+  String get agreementUpdatesTitle => 'Changes to the agreement';
+
+  @override
+  String get agreementUpdatesBody =>
+      'Changes to this agreement will be announced in the app. Continuing to use the app after a change means you accept the updated agreement.';
+
+  @override
+  String get editTodo => 'Edit to-do';
+
+  @override
+  String get deleteTodo => 'Delete to-do';
+
+  @override
+  String get deleteTodoConfirm => 'Delete this to-do? This can\'t be undone.';
+
+  @override
+  String get todoToggleFailed => 'Couldn\'t save the change, reverted';
+
+  @override
+  String todoDoneSection(int count) {
+    return 'Finished ($count)';
+  }
+
+  @override
+  String get clearCompletedTodos => 'Clear finished';
+
+  @override
+  String get clearCompletedTodosConfirm =>
+      'Clear all finished to-dos? This can\'t be undone.';
+
+  @override
+  String get emptyTodos => 'No to-dos yet';
+
+  @override
+  String get emptySearchResult => 'No matching notes';
 
   @override
   String last_updated(DateTime date) {

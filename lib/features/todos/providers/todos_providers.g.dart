@@ -332,3 +332,52 @@ final class DeleteTodoUseCaseProvider
 }
 
 String _$deleteTodoUseCaseHash() => r'6bf9c6e2880f1e42ec7ae50fcc3dc100c9a23904';
+
+@ProviderFor(deleteCompletedTodosUseCase)
+final deleteCompletedTodosUseCaseProvider =
+    DeleteCompletedTodosUseCaseProvider._();
+
+final class DeleteCompletedTodosUseCaseProvider
+    extends
+        $FunctionalProvider<
+          DeleteCompletedTodosUseCase,
+          DeleteCompletedTodosUseCase,
+          DeleteCompletedTodosUseCase
+        >
+    with $Provider<DeleteCompletedTodosUseCase> {
+  DeleteCompletedTodosUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'deleteCompletedTodosUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteCompletedTodosUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<DeleteCompletedTodosUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  DeleteCompletedTodosUseCase create(Ref ref) {
+    return deleteCompletedTodosUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DeleteCompletedTodosUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DeleteCompletedTodosUseCase>(value),
+    );
+  }
+}
+
+String _$deleteCompletedTodosUseCaseHash() =>
+    r'beed3956125b3839da1f7bb4f170603f1c140661';

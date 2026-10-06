@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:init/core/error/failures.dart';
+import 'package:init/core/router/app_routes.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/core/ui/ui.dart';
 import 'package:init/features/notes/domain/entities/folder_with_count.dart';
@@ -63,9 +64,13 @@ void main() {
     GoRouter router, {
     required Stream<List<Note>> notesStream,
     List<FolderWithCount>? folderItems,
+    void Function(NoteQuery query)? onWatch,
   }) {
     final noteRepo = _MockNoteRepository();
-    when(() => noteRepo.watch(any())).thenAnswer((_) => notesStream);
+    when(() => noteRepo.watch(any())).thenAnswer((invocation) {
+      onWatch?.call(invocation.positionalArguments.first as NoteQuery);
+      return notesStream;
+    });
     final folderRepo = _MockFolderRepository();
     when(() => folderRepo.watchWithCounts()).thenAnswer(
       (_) => Stream<List<FolderWithCount>>.value(
@@ -113,6 +118,10 @@ void main() {
           builder: (context, state) => const NoteListScreen(),
           routes: <RouteBase>[
             GoRoute(
+              path: 'new',
+              builder: (context, state) => const Scaffold(body: Text('新建')),
+            ),
+            GoRoute(
               path: 'folders',
               builder: (context, state) => const Scaffold(body: Text('占位·文件夹')),
             ),
@@ -146,17 +155,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('有数据：渲染全部卡片 + 大标题', (tester) async {
+  testWidgets('有数据：渲染全部卡片 + 顶栏标题', (tester) async {
     await tester.pumpWidget(
       app(routerFor('/notes'), notesStream: Stream.value(notes(4))),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('笔记'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AppTopBar),
+        matching: find.text('笔记'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(NoteCard), findsNWidgets(4));
   });
 
-  testWidgets('chip 行：全部 + 每个文件夹 + 未分类，顺序固定', (tester) async {
+  testWidgets('点 FAB：跳到 /notes/new（Q6 按「空白编辑器」落地）', (tester) async {
+    final router = routerFor('/notes');
+    await tester.pumpWidget(
+      app(router, notesStream: Stream.value(const <Note>[])),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(AppFab));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, AppRoutes.noteNew);
+  });
+
+  testWidgets('分类 tab 栏：全部 + 每个文件夹 + 未分类，顺序固定', (tester) async {
     await tester.pumpWidget(
       app(
         routerFor('/notes'),
@@ -166,13 +194,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final chips = tester.widgetList<AppFilterChip>(find.byType(AppFilterChip));
+    final tabBar = tester.widget<TabBar>(find.byType(TabBar));
+    final labels = tabBar.tabs.map((tab) => (tab as Tab).text).toList();
 
-    expect(chips.map((c) => c.label).toList(), <String>['全部', '闻声笔记', '未分类']);
-    expect(chips.first.selected, isTrue, reason: '默认选中「全部」');
+    expect(labels, <String>['全部', '闻声笔记', '未分类']);
+    expect(tabBar.controller!.index, 0, reason: '默认选中「全部」');
   });
 
-  testWidgets('点文件夹 chip：URL 变为 ?folder=<id>，选中态跟随', (tester) async {
+  testWidgets('点文件夹 tab：URL 变为 ?folder=<id>，选中态跟随', (tester) async {
     final router = routerFor('/notes');
     await tester.pumpWidget(
       app(
@@ -187,10 +216,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(router.state.uri.queryParameters['folder'], 'f1');
-    expect(
-      tester.widget<AppFilterChip>(find.byType(AppFilterChip).at(1)).selected,
-      isTrue,
-    );
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 1);
   });
 
   testWidgets('点「未分类」用哨兵字面量，点「全部」清空 query', (tester) async {
@@ -205,14 +231,30 @@ void main() {
       'uncategorized',
       reason: '哨兵字面量在 app_routes.dart 有常量，URL 上仍是该字符串',
     );
-    expect(
-      tester.widget<AppFilterChip>(find.byType(AppFilterChip).last).selected,
-      isTrue,
-    );
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 1);
 
     await tester.tap(find.text('全部'));
     await tester.pumpAndSettle();
     expect(router.state.uri.queryParameters.containsKey('folder'), isFalse);
+  });
+
+  testWidgets('左右滑动内容区：官方 TabBarView 切分类并写回 URL', (tester) async {
+    final router = routerFor('/notes');
+    await tester.pumpWidget(
+      app(
+        router,
+        notesStream: Stream.value(const <Note>[]),
+        folderItems: folders(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // 左滑一屏 → 第 2 个 tab「闻声笔记」。
+    await tester.drag(find.byType(TabBarView), const Offset(-400, 0));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.queryParameters['folder'], 'f1');
+    expect(tester.widget<TabBar>(find.byType(TabBar)).controller!.index, 1);
   });
 
   testWidgets('点卡片：跳转到 /notes/:id，参数为该笔记 id', (tester) async {
@@ -227,7 +269,7 @@ void main() {
     expect(find.text('详情 n1'), findsOneWidget);
   });
 
-  testWidgets('顶栏只有 2 个图标按钮，无搜索入口', (tester) async {
+  testWidgets('顶栏只有 2 个图标按钮（搜索在内容区，不占顶栏）', (tester) async {
     await tester.pumpWidget(
       app(routerFor('/notes'), notesStream: Stream.value(const <Note>[])),
     );
@@ -277,5 +319,91 @@ void main() {
 
     expect(find.byType(NoteCard), findsNothing);
     expect(find.text('暂无笔记'), findsNothing);
+  });
+
+  group('搜索（Q1 落地）', () {
+    const Key field = Key('note_search_field');
+
+    testWidgets('搜索框常驻在筛选 chip 上方，无内容时不显示清空按钮', (tester) async {
+      await tester.pumpWidget(
+        app(routerFor('/notes'), notesStream: Stream.value(notes(2))),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(field), findsOneWidget);
+      expect(find.text('搜索笔记'), findsOneWidget, reason: '空态显示占位符');
+
+      final fieldTop = tester.getTopLeft(find.byKey(field)).dy;
+      expect(
+        fieldTop,
+        lessThan(tester.getTopLeft(find.byType(TabBar)).dy),
+        reason: '搜索框在分类 tab 栏上方',
+      );
+      expect(find.byIcon(AppIcons.trash), findsNothing);
+    });
+
+    testWidgets('输入：查询带上 searchTerm，清空后归回 null', (tester) async {
+      final queries = <NoteQuery>[];
+      await tester.pumpWidget(
+        app(
+          routerFor('/notes'),
+          notesStream: Stream.value(const <Note>[]),
+          onWatch: queries.add,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(queries.last.searchTerm, isNull, reason: '空搜索词不传空串');
+
+      await tester.enterText(find.byKey(field), '花');
+      await tester.pumpAndSettle();
+      expect(queries.last.searchTerm, '花');
+      expect(find.byIcon(AppIcons.trash), findsOneWidget, reason: '有内容才给清空');
+
+      await tester.tap(find.byIcon(AppIcons.trash));
+      await tester.pumpAndSettle();
+      expect(queries.last.searchTerm, isNull);
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        isEmpty,
+        reason: '清空按钮要把输入框一起清掉',
+      );
+    });
+
+    testWidgets('搜索与文件夹筛选叠加，不是互斥', (tester) async {
+      final queries = <NoteQuery>[];
+      await tester.pumpWidget(
+        app(
+          routerFor('/notes?folder=f1'),
+          notesStream: Stream.value(const <Note>[]),
+          folderItems: folders(),
+          onWatch: queries.add,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(field), '花');
+      await tester.pumpAndSettle();
+
+      expect(queries.last.folder, isA<SingleFolder>());
+      expect((queries.last.folder as SingleFolder).folderId, 'f1');
+      expect(queries.last.searchTerm, '花');
+    });
+
+    testWidgets('搜索无结果：显示「没有找到相关笔记」；无搜索词的空列表不显示', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(routerFor('/notes'), notesStream: Stream.value(const <Note>[])),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('没有找到相关笔记'), findsNothing, reason: '空列表不是搜索无结果');
+
+      await tester.enterText(find.byKey(field), '绝不匹配的词');
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NoteCard), findsNothing);
+      expect(find.text('没有找到相关笔记'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

@@ -15,17 +15,23 @@ part 'todo_dao.g.dart';
 class TodoDao extends DatabaseAccessor<AppDatabase> with _$TodoDaoMixin {
   TodoDao(super.db);
 
-  /// 全量订阅，`createdAt DESC` 固定排序（D2 是平铺列表，无排序入口）。
+  /// 全量订阅，未完成置顶、同组内 `createdAt DESC`。
+  ///
+  /// `isDone ASC` 让已完成沉到列表底部（P2 的「已完成 N」折叠分组靠这条顺序免费
+  /// 得到「已完成在后」，Screen 只切分不重排）。**不加 `limit` / 搜索 / 排序参数**
+  /// —— 排序规则只有一种，给它开参数是纯仪式。
   ///
   /// 三个「不」：**不加 `WHERE`**（`todos` 无 `deleted_at`，硬删除，CONFLICT-10
   /// 方案 A）、**不加排序参数**、**不加 `limit` / `offset` / 搜索 / 筛选**。
   ///
-  /// ⚠️ 不加二级排序键：155 条数据顺序不稳定不构成问题。若将来用户抱怨，
-  /// **先加索引再加二级键**。
+  /// ⚠️ 不加索引：百级数据全表扫与现状同量级。若将来数据量让用户抱怨，
+  /// **先加 `is_done, created_at` 复合索引再加排序入口**。
   Stream<List<TodoRow>> watchAll() {
-    return (select(
-      todos,
-    )..orderBy([(t) => OrderingTerm.desc(t.createdAt)])).watch();
+    return (select(todos)..orderBy([
+          (t) => OrderingTerm.asc(t.isDone),
+          (t) => OrderingTerm.desc(t.createdAt),
+        ]))
+        .watch();
   }
 
   /// 插入。用 Companion 而非行对象：`is_done` 有默认值（false），Companion 天然
@@ -51,9 +57,16 @@ class TodoDao extends DatabaseAccessor<AppDatabase> with _$TodoDaoMixin {
   }
 
   /// 删除，返回受影响行数。**硬删除**。
-  ///
-  /// ⚠️ D2 **无删除入口**（Q21），本方法先备好能力，UI 端不接线。
   Future<int> deleteById(String todoId) {
     return (super.delete(todos)..where((t) => t.id.equals(todoId))).go();
+  }
+
+  /// 批量清除已完成，返回受影响行数。**单条 SQL / 单事务** —— 比 N 次单删快，
+  /// 且不会像「循环调 [deleteById]」那样中途失败留下删一半的不可解释状态。
+  ///
+  /// ⛔ **不抛 0 行**：没有可清的项就是「已清空」，与 [deleteById] 的
+  /// 「命中 0 行 = 该 todo 不存在」语义不同（上层据此决定要不要报错）。
+  Future<int> deleteCompleted() {
+    return (super.delete(todos)..where((t) => t.isDone.equals(true))).go();
   }
 }

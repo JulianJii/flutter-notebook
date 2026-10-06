@@ -5,6 +5,7 @@ import 'package:init/core/usecases/usecase.dart';
 import 'package:init/features/todos/domain/entities/todo.dart';
 import 'package:init/features/todos/domain/repositories/todo_repository.dart';
 import 'package:init/features/todos/domain/usecases/create_todo_use_case.dart';
+import 'package:init/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
 import 'package:init/features/todos/domain/usecases/delete_todo_use_case.dart';
 import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
 import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
@@ -215,6 +216,40 @@ void main() {
         () => repo.delete('nope'),
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'not found')));
       final result = await DeleteTodoUseCase(repo)('nope');
+      result.fold(
+        (f) => expect(f, isA<CacheFailure>()),
+        (_) => fail('应为 Left'),
+      );
+    });
+  });
+
+  group('DeleteCompletedTodosUseCase', () {
+    test('成功：原样透传删除行数', () async {
+      when(
+        () => repo.deleteCompleted(),
+      ).thenAnswer((_) async => const Right(2));
+      expect(
+        await DeleteCompletedTodosUseCase(repo)(),
+        const Right<Failure, int>(2),
+      );
+      verify(() => repo.deleteCompleted()).called(1);
+    });
+
+    test('0 行不是失败（已经清空）', () async {
+      when(
+        () => repo.deleteCompleted(),
+      ).thenAnswer((_) async => const Right(0));
+      expect(
+        await DeleteCompletedTodosUseCase(repo)(),
+        const Right<Failure, int>(0),
+      );
+    });
+
+    test('失败透传：Left 原样', () async {
+      when(
+        () => repo.deleteCompleted(),
+      ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+      final result = await DeleteCompletedTodosUseCase(repo)();
       result.fold(
         (f) => expect(f, isA<CacheFailure>()),
         (_) => fail('应为 Left'),

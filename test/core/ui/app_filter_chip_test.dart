@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_radius.dart';
 import 'package:init/core/theme/tokens/app_spacing.dart';
 import 'package:init/core/ui/app_filter_chip.dart';
 import 'package:init/core/ui/app_section_header.dart';
@@ -9,7 +8,7 @@ import 'package:material_ui/material_ui.dart';
 
 void main() {
   group('AppFilterChip', () {
-    testWidgets('高 28dp、圆角 12dp', (tester) async {
+    testWidgets('高 28dp、pill 全圆角', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -35,9 +34,9 @@ void main() {
           matching: find.byType(Material),
         ),
       );
-      final radius = (material.borderRadius as BorderRadius).topLeft.x;
-      expect(radius, AppRadius.chip);
-      expect(radius, 12);
+      expect(AppFilterChip.shape, isA<BorderRadius>());
+      expect(AppFilterChip.shape.topLeft.x, AppFilterChip.height / 2);
+      expect((material.borderRadius! as BorderRadius).topLeft.x, 14);
     });
 
     testWidgets('选中态：#EFEFEF 底 + textPrimary 字', (tester) async {
@@ -100,7 +99,7 @@ void main() {
       );
     });
 
-    testWidgets('文字样式取 text.chip（14sp / w500）且单行省略', (tester) async {
+    testWidgets('文字样式取 text.chip（13sp / w500）且单行省略', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -115,7 +114,7 @@ void main() {
       final text = tester.widget<Text>(find.text('词声笔记'));
       expect(text.maxLines, 1);
       expect(text.overflow, TextOverflow.ellipsis);
-      expect(text.style?.fontSize, 14);
+      expect(text.style?.fontSize, 13);
       expect(text.style?.fontWeight, FontWeight.w500);
     });
 

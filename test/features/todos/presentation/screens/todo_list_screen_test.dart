@@ -43,13 +43,29 @@ void main() {
     GoRouter router, {
     required Stream<List<Todo>> stream,
     Future<Either<Failure, Todo>> Function(Todo)? onUpdate,
+    Future<Either<Failure, Todo>> Function(Todo)? onCreate,
+    Future<Either<Failure, Unit>> Function(String)? onDelete,
+    Future<Either<Failure, int>> Function()? onDeleteCompleted,
   }) {
     final repo = _MockTodoRepository();
     when(() => repo.watchAll()).thenAnswer((_) => stream);
+    when(() => repo.create(any())).thenAnswer(
+      (invocation) async =>
+          onCreate?.call(invocation.positionalArguments.first as Todo) ??
+          Right<Failure, Todo>(todo('created')),
+    );
     when(() => repo.update(any())).thenAnswer(
       (invocation) async =>
           onUpdate?.call(invocation.positionalArguments.first as Todo) ??
           Right<Failure, Todo>(todo('t1', isDone: true)),
+    );
+    when(() => repo.delete(any())).thenAnswer(
+      (invocation) async =>
+          onDelete?.call(invocation.positionalArguments.first as String) ??
+          const Right<Failure, Unit>(unit),
+    );
+    when(() => repo.deleteCompleted()).thenAnswer(
+      (_) async => onDeleteCompleted?.call() ?? const Right<Failure, int>(0),
     );
 
     return ProviderScope(
@@ -106,22 +122,23 @@ void main() {
     return router;
   }
 
-  testWidgets('空列表：渲染大标题与 FAB，不崩、不显示空态文案', (tester) async {
+  testWidgets('空列表：顶栏渲染「待办」标题与 FAB，内容区显示空态文案', (tester) async {
     await tester.pumpWidget(
       app(shellRouter(), stream: Stream.value(const <Todo>[])),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(AppLargeTitle), findsOneWidget);
+    // 标题在顶栏内（形态 A'），不再另起一行大标题。
+    expect(find.byType(AppLargeTitle), findsNothing);
     expect(
       find.descendant(
-        of: find.byType(AppLargeTitle),
+        of: find.byType(AppTopBar),
         matching: find.text('待办'),
       ),
       findsOneWidget,
     );
     expect(find.byType(TodoCard), findsNothing);
-    expect(find.text('暂无待办'), findsNothing, reason: 'Q31 无稿，不建空态');
+    expect(find.text('还没有待办'), findsOneWidget);
     expect(find.byType(AppFab), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -136,14 +153,15 @@ void main() {
     expect(find.text('待办 t1'), findsOneWidget);
   });
 
-  testWidgets('顶栏只有 1 个图标（settings），无 folder 图标', (tester) async {
+  testWidgets('顶栏只有 trash + settings 两个图标，无 folder 图标', (tester) async {
     await tester.pumpWidget(
       app(shellRouter(), stream: Stream.value(const <Todo>[])),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(AppIconButton), findsOneWidget);
+    expect(find.byType(AppIconButton), findsNWidgets(2));
     expect(find.byIcon(AppIcons.settings), findsOneWidget);
+    expect(find.byIcon(AppIcons.trash), findsOneWidget);
     expect(find.byIcon(AppIcons.folder), findsNothing, reason: 'D2 顶栏无 folder');
   });
 
@@ -203,7 +221,9 @@ void main() {
     await tester.tap(find.byType(AppCheckbox));
     await tester.pump();
 
-    expect(tester.widget<AppCheckbox>(find.byType(AppCheckbox)).value, isTrue);
+    // 乐观值立即生效：卡片当场归入「已完成」分组（默认折叠 → 不再渲染），
+    // 不等落库。
+    expect(find.text('已完成 1'), findsOneWidget);
     expect(captured.single.id, 't1');
     expect(captured.single.isDone, isTrue);
     expect(captured.single.title, '待办 t1');
@@ -212,7 +232,7 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('落库失败：勾选态自动回弹，无 Snackbar', (tester) async {
+  testWidgets('落库失败：勾选态自动回弹并弹 Snackbar', (tester) async {
     await tester.pumpWidget(
       app(
         shellRouter(),
@@ -227,7 +247,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.widget<AppCheckbox>(find.byType(AppCheckbox)).value, isFalse);
-    expect(find.byType(SnackBar), findsNothing, reason: 'Q34 无稿，不弹提示');
+    expect(find.text('勾选没有保存成功，已恢复原状态'), findsOneWidget);
   });
 
   testWidgets('读库失败：内容区留白，不渲染错误页', (tester) async {
@@ -241,18 +261,88 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('点 FAB：无跳转、无弹层、不崩（Q7 无稿）', (tester) async {
+  testWidgets('点 FAB：弹新建对话框，保存后写入一条未完成待办', (tester) async {
+    final created = <Todo>[];
     final router = shellRouter();
-    await tester.pumpWidget(app(router, stream: Stream.value(const <Todo>[])));
+    await tester.pumpWidget(
+      app(
+        router,
+        stream: Stream.value(const <Todo>[]),
+        onCreate: (t) async {
+          created.add(t);
+          return Right<Failure, Todo>(t);
+        },
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(AppFab));
     await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('新建待办'), findsOneWidget);
 
+    await tester.enterText(find.byType(TextField), '  买牛奶  ');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(created.single.title, '买牛奶', reason: '标题经 use case trim');
+    expect(created.single.isDone, isFalse);
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(router.state.uri.path, AppRoutes.todos, reason: '原地新建，不跳转');
     expect(tester.takeException(), isNull);
-    expect(find.byType(BottomSheet), findsNothing);
-    expect(find.byType(Dialog), findsNothing);
-    expect(router.state.uri.path, AppRoutes.todos);
+  });
+
+  testWidgets('新建：取消 / 空标题都不写库', (tester) async {
+    final created = <Todo>[];
+    final router = shellRouter();
+    await tester.pumpWidget(
+      app(
+        router,
+        stream: Stream.value(const <Todo>[]),
+        onCreate: (t) async {
+          created.add(t);
+          return Right<Failure, Todo>(t);
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(AppFab));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('取消'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsNothing);
+
+    await tester.tap(find.byType(AppFab));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '   ');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(created, isEmpty);
+    expect(find.byType(SnackBar), findsNothing, reason: '空输入本地拦下，不算失败');
+  });
+
+  testWidgets('新建失败：弹 Snackbar 提示 failure 文案', (tester) async {
+    final router = shellRouter();
+    await tester.pumpWidget(
+      app(
+        router,
+        stream: Stream.value(const <Todo>[]),
+        onCreate: (_) async =>
+            const Left<Failure, Todo>(CacheFailure(message: 'disk full')),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(AppFab));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '买牛奶');
+    await tester.tap(find.text('保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('disk full'), findsOneWidget);
   });
 
   testWidgets('ADR 5 防回归：/todos 在 Shell 内，切 Tab 后滚动位置保持', (tester) async {
@@ -294,5 +384,319 @@ void main() {
       same(firstVisible),
       reason: '同一个 Scrollable 实例 —— /todos 被挪出 Shell 就会失效',
     );
+  });
+
+  group('Q21 编辑 / 删除入口（点卡片）', () {
+    Future<void> pumpOneTodo(
+      WidgetTester tester, {
+      required GoRouter router,
+      bool isDone = false,
+      Future<Either<Failure, Todo>> Function(Todo)? onUpdate,
+      Future<Either<Failure, Unit>> Function(String)? onDelete,
+    }) async {
+      await tester.pumpWidget(
+        app(
+          router,
+          stream: Stream.value(<Todo>[todo('t1', isDone: isDone)]),
+          onUpdate: onUpdate,
+          onDelete: onDelete,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('点卡片：弹编辑弹窗且预填当前标题', (tester) async {
+      await pumpOneTodo(tester, router: shellRouter());
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsOneWidget);
+      expect(find.text('编辑待办'), findsOneWidget);
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        '待办 t1',
+        reason: '输入框预填当前标题',
+      );
+      expect(find.text('删除待办'), findsOneWidget);
+    });
+
+    testWidgets('改标题保存：update 收到新标题，且保留 isDone', (tester) async {
+      final saved = <Todo>[];
+      await pumpOneTodo(
+        tester,
+        router: shellRouter(),
+        isDone: true,
+        onUpdate: (t) async {
+          saved.add(t);
+          return Right<Failure, Todo>(t);
+        },
+      );
+      // 已完成项默认折叠，先展开才能点到卡片。
+      await tester.tap(find.text('已完成 1'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '买牛奶');
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+
+      expect(saved.single.title, '买牛奶');
+      expect(
+        saved.single.isDone,
+        isTrue,
+        reason: 'update 是全量覆盖写，漏传 isDone 会把已完成态抹掉',
+      );
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('取消 / 空标题都不写库', (tester) async {
+      final saved = <Todo>[];
+      final router = shellRouter();
+      await pumpOneTodo(
+        tester,
+        router: router,
+        onUpdate: (t) async {
+          saved.add(t);
+          return Right<Failure, Todo>(t);
+        },
+      );
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+
+      expect(saved, isEmpty);
+      expect(find.byType(SnackBar), findsNothing, reason: '空输入本地拦下');
+    });
+
+    testWidgets('编辑失败：弹 Snackbar 提示 failure 文案', (tester) async {
+      await pumpOneTodo(
+        tester,
+        router: shellRouter(),
+        onUpdate: (_) async =>
+            const Left<Failure, Todo>(CacheFailure(message: 'disk full')),
+      );
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), '买牛奶');
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.text('disk full'), findsOneWidget);
+    });
+
+    testWidgets('删除：先二次确认，确认后 delete 收到该待办 id', (tester) async {
+      final deleted = <String>[];
+      await pumpOneTodo(
+        tester,
+        router: shellRouter(),
+        onDelete: (id) async {
+          deleted.add(id);
+          return const Right<Failure, Unit>(unit);
+        },
+      );
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('删除待办'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('确定要删除这条待办吗？此操作无法撤销。'), findsOneWidget);
+      expect(deleted, isEmpty, reason: '确认前不许写库');
+
+      await tester.tap(find.text('删除'));
+      await tester.pumpAndSettle();
+
+      expect(deleted, <String>['t1']);
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+
+    testWidgets('删除确认点取消：不写库', (tester) async {
+      final deleted = <String>[];
+      await pumpOneTodo(
+        tester,
+        router: shellRouter(),
+        onDelete: (id) async {
+          deleted.add(id);
+          return const Right<Failure, Unit>(unit);
+        },
+      );
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('删除待办'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+
+      expect(deleted, isEmpty);
+      expect(find.byType(TodoCard), findsOneWidget);
+    });
+
+    testWidgets('删除失败：弹 Snackbar', (tester) async {
+      await pumpOneTodo(
+        tester,
+        router: shellRouter(),
+        onDelete: (_) async =>
+            const Left<Failure, Unit>(CacheFailure(message: 'boom')),
+      );
+
+      await tester.tap(find.byType(TodoCard));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('删除待办'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('删除'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('boom'), findsOneWidget);
+      expect(find.byType(TodoCard), findsOneWidget);
+    });
+  });
+
+  group('Q21 已完成折叠分组 + 清除已完成', () {
+    Future<void> pumpMixed(
+      WidgetTester tester, {
+      required GoRouter router,
+      Future<Either<Failure, int>> Function()? onDeleteCompleted,
+    }) async {
+      await tester.pumpWidget(
+        app(
+          router,
+          stream: Stream.value(<Todo>[todo('t1'), todo('d1', isDone: true)]),
+          onDeleteCompleted: onDeleteCompleted,
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('默认折叠：分隔行显示计数，已完成卡片不渲染', (tester) async {
+      await pumpMixed(tester, router: shellRouter());
+
+      expect(find.text('已完成 1'), findsOneWidget);
+      expect(find.text('待办 t1'), findsOneWidget);
+      expect(find.text('待办 d1'), findsNothing);
+      expect(find.byType(TodoCard), findsOneWidget);
+    });
+
+    testWidgets('点分隔行展开：已完成卡片出现，再点收起', (tester) async {
+      await pumpMixed(tester, router: shellRouter());
+
+      await tester.tap(find.text('已完成 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('待办 d1'), findsOneWidget);
+      expect(find.byType(TodoCard), findsNWidgets(2));
+
+      await tester.tap(find.text('已完成 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('待办 d1'), findsNothing);
+    });
+
+    testWidgets('已完成项在未完成项之后（保序切分，不重排）', (tester) async {
+      await pumpMixed(tester, router: shellRouter());
+      await tester.tap(find.text('已完成 1'));
+      await tester.pumpAndSettle();
+
+      final order = tester
+          .widgetList<TodoCard>(find.byType(TodoCard))
+          .map((c) => c.title)
+          .toList();
+      expect(order, <String>['待办 t1', '待办 d1']);
+    });
+
+    testWidgets('清除已完成：二次确认 → 调 deleteCompleted → 提示已清空', (tester) async {
+      var calls = 0;
+      await pumpMixed(
+        tester,
+        router: shellRouter(),
+        onDeleteCompleted: () async {
+          calls++;
+          return const Right<Failure, int>(1);
+        },
+      );
+
+      await tester.tap(find.byIcon(AppIcons.trash));
+      await tester.pumpAndSettle();
+      expect(calls, 0, reason: '确认前不许写库');
+      expect(find.text('确定要清除全部已完成的待办吗？此操作无法撤销。'), findsOneWidget);
+
+      await tester.tap(find.text('清除已完成').last);
+      await tester.pumpAndSettle();
+
+      expect(calls, 1);
+      expect(find.text('已清空'), findsOneWidget);
+    });
+
+    testWidgets('清除已完成点取消：不写库', (tester) async {
+      var calls = 0;
+      await pumpMixed(
+        tester,
+        router: shellRouter(),
+        onDeleteCompleted: () async {
+          calls++;
+          return const Right<Failure, int>(1);
+        },
+      );
+
+      await tester.tap(find.byIcon(AppIcons.trash));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('取消'));
+      await tester.pumpAndSettle();
+
+      expect(calls, 0);
+      expect(find.text('已完成 1'), findsOneWidget);
+    });
+
+    testWidgets('清除已完成失败：弹 Snackbar', (tester) async {
+      await pumpMixed(
+        tester,
+        router: shellRouter(),
+        onDeleteCompleted: () async =>
+            const Left<Failure, int>(CacheFailure(message: 'disk full')),
+      );
+
+      await tester.tap(find.byIcon(AppIcons.trash));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('清除已完成').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('disk full'), findsOneWidget);
+    });
+
+    testWidgets('无已完成项时清除按钮禁用', (tester) async {
+      var calls = 0;
+      await tester.pumpWidget(
+        app(
+          shellRouter(),
+          stream: Stream.value(<Todo>[todo('t1')]),
+          onDeleteCompleted: () async {
+            calls++;
+            return const Right<Failure, int>(1);
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final button = tester.widget<AppIconButton>(
+        find.ancestor(
+          of: find.byIcon(AppIcons.trash),
+          matching: find.byType(AppIconButton),
+        ),
+      );
+      expect(button.onPressed, isNull);
+      expect(find.text('已完成 1'), findsNothing, reason: '空分组不画分隔行');
+      expect(calls, 0);
+    });
   });
 }

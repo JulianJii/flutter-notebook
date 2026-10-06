@@ -81,8 +81,15 @@ void main() {
         // 文件夹流也必须 override：它会一路走到真 drift，而 drift 在 stream
         // 取消时留 0 时长 `Timer.run`，fake_async zone 里每个用例都会挂在
         // 「A Timer is still pending」上（同 `AGENTS.md` §测试约定）。
+        // 必须 override：它会一路走到真 drift，而 drift 在 stream 取消时留
+        // 0 时长 `Timer.run`，fake_async zone 里每个用例都会挂在「A Timer is
+        // still pending」上。⚠️ 用 `value([])` 而**不是** `empty()`：P1 要等
+        // 文件夹流首次出值才建 `TabController`，空流永远停在 loading 会让
+        // 内容区留白。
         folderProvider.overrideWith(
-          (ref) => const Stream<List<FolderWithCount>>.empty(),
+          (ref) => Stream<List<FolderWithCount>>.value(
+            const <FolderWithCount>[],
+          ),
         ),
       ],
       child: MaterialApp.router(
@@ -138,14 +145,14 @@ void main() {
     double? sizeOf(String text) =>
         tester.widget<Text>(find.text(text)).style?.fontSize;
 
-    expect(sizeOf('标题 1'), 16, reason: 'D1 实测 cardTitle 16sp');
+    expect(sizeOf('标题 1'), 15, reason: 'cardTitle 当前基线 15sp');
 
     await tester.pumpWidget(
       app(_default.copyWith(textScale: TextScaleLevel.xLarge)),
     );
     await tester.pumpAndSettle();
 
-    expect(sizeOf('标题 1'), 20, reason: '16 x 1.25');
+    expect(sizeOf('标题 1'), 18.75, reason: '15 x 1.25');
   });
 
   testWidgets('textScale 不进 URL query（偏好不放 URL）', (tester) async {

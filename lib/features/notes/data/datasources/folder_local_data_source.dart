@@ -24,6 +24,10 @@ abstract class FolderLocalDataSource {
   /// UI 侧只会看到 `AsyncValue.error(CacheFailure)`。
   Stream<List<FolderWithCount>> watchWithCounts();
 
+  /// 「未分类」笔记数。DAO 里已经是 `COUNT(*)`，这里纯透传，不做任何 Dart 层
+  /// 计数（那需要先把全部未分类笔记的正文读进内存）。
+  Stream<int> watchUncategorizedCount();
+
   /// 插入。[NoteFolder.id] 必须已由 Repository 填好 uuid。
   Future<NoteFolder> insert(NoteFolder folder);
 
@@ -60,6 +64,9 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
           .toList(),
     );
   }
+
+  @override
+  Stream<int> watchUncategorizedCount() => _dao.watchUncategorizedCount();
 
   @override
   Future<NoteFolder> insert(NoteFolder folder) => _guard(() async {

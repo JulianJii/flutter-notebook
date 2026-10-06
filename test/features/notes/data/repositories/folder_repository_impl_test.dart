@@ -142,4 +142,11 @@ void main() {
     when(() => ds.watchWithCounts()).thenAnswer((_) => stream);
     expect(repo.watchWithCounts(), same(stream));
   });
+
+  test('watchUncategorizedCount 直接透传那个标量流（不回退成读列表）', () {
+    final stream = Stream.value(154);
+    when(() => ds.watchUncategorizedCount()).thenAnswer((_) => stream);
+    expect(repo.watchUncategorizedCount(), same(stream));
+    verifyNever(() => ds.watchWithCounts());
+  });
 }

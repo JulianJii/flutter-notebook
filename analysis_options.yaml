@@ -10,7 +10,12 @@
 include: package:flutter_lints/flutter.yaml
 
 plugins:
-  riverpod_lint: ^3.1.9
+  riverpod_lint:
+    version: ^3.1.9
+    diagnostics:
+      # 测试里 ProviderScope 只要不在 runApp/pumpWidget 直属位置就会被判定为 "scoped"，
+      # 继而要求 overrides 里每个 provider 显式声明 dependencies —— 测试不关心，全局关掉。
+      scoped_providers_should_specify_dependencies: false
 
 analyzer:
   exclude:

@@ -26,7 +26,8 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// query 参数（[selectedFolderFilter]），因此不需要任何本地 state，返回上一页
 /// 时筛选态自动恢复。
 ///
-/// ⛔ **不提供重命名 / 删除入口**：D4 无长按菜单、无多选态（Q11 / Q12 未答）。
+/// ⛔ **不提供重命名 / 删除入口**：无长按菜单、无多选态、顶栏也不画 trash
+/// （Q11 / Q12 未答，trash 语义未知已定：删掉）。
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
 class FolderManagerScreen extends ConsumerWidget {
   const FolderManagerScreen({super.key});
@@ -42,7 +43,7 @@ class FolderManagerScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final folders = ref.watch(folderProvider).value ?? const [];
     final uncategorized = ref.watch(uncategorizedCountProvider).value ?? 0;
-    // TODO(Q31/Q33): 空状态 / 加载态 / 错误态均无设计稿，不建视觉（与 P1 / P2 一致）。
+    // Q31 / Q33 → docs/OPEN-DESIGN-QUESTIONS.md（空 / 加载 / 错误态视觉无稿）
     final selected = selectedFolderFilter(
       GoRouterState.of(context).uri.queryParameters,
     );
@@ -71,16 +72,6 @@ class FolderManagerScreen extends ConsumerWidget {
               ),
               // D4 顶栏下方**无** 1dp 分隔线（同 P5，按稿关掉）。
               showDivider: false,
-              actions: <Widget>[
-                // D4 上有这个图标，但语义未知（删除选中 / 批量管理 / 无用）——
-                // 稿上有就照常画出来，点不动。
-                // TODO(Q11): 顶栏 trash 的作用未知，待设计确认。
-                AppIconButton(
-                  icon: AppIcons.trash,
-                  tooltip: l10n.delete,
-                  onPressed: null,
-                ),
-              ],
             ),
             Expanded(
               child: ListView.separated(
@@ -136,11 +127,10 @@ class FolderManagerScreen extends ConsumerWidget {
 
   /// 新建文件夹。**弹窗视觉无稿（Q13）**：用 `showDialog` + Material 默认样式，
   /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
-  /// TODO(Q13): 输入弹窗视觉无稿，补稿后替换。
+  /// Q13 / Q34 → docs/OPEN-DESIGN-QUESTIONS.md（弹窗与 Snackbar 沿用 Material 默认）
   ///
   /// 校验（空名 / 超长 / 重名）全在 `CreateFolderUseCase` 里，页面只负责把
   /// `InputFailure` 的文案弹出来。
-  // TODO(Q34): Snackbar 视觉无稿，当前用既有 `AppUtils.showSnackBar` 顶着。
   Future<void> _promptCreateFolder(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     // ⛔ 不用 `TextEditingController`：`showDialog` 的 future 在 `pop` 时就完成，

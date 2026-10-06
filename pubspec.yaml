@@ -86,11 +86,7 @@ dependencies:
   #屏幕适配
   flutter_screenutil: ^5.9.3
   #简单数据持久化
-  shared_preferences: ^2.5.5
-  #loading
-  fluttertoast: ^10.0.2
-  #webview 用于在自定义标签页中启动 URL
-  flutter_custom_tabs: ^2.6.0
+  shared_preferences: ^2.5.6
   #熄屏
   wakelock_plus: ^1.8.1
   #主题
@@ -107,12 +103,14 @@ dependencies:
   web_socket_channel: ^3.0.3
   #Stream扩展
   rxdart: ^0.28.0
-  #电话状态
-  phone_state: ^4.0.1
   #form表单
   flutter_form_builder: ^11.0.0
   #表单校验规则集
   form_builder_validators: ^11.3.0
+  #富文本编辑器（笔记正文，唯一真相源为 Quill Delta JSON）
+  flutter_quill: ^11.6.0
+  #Quill Delta 文档模型（正文编解码，domain 层要用故显式声明）
+  dart_quill_delta: ^10.8.3
 
   #gRPC 通信
   grpc: ^5.1.0
@@ -154,6 +152,8 @@ dev_dependencies:
   riverpod_lint: ^3.1.9
   #测试 mock
   mocktail: ^1.0.5
+  #Quill 官方测试扩展（QuillEditor 自研 TextInputClient，enterText 打不进去）
+  flutter_quill_test: ^11.1.0
   #图标生成
   flutter_launcher_icons: ^0.14.4
   #splash生成
@@ -178,6 +178,9 @@ flutter:
     # 语言专属资源
     - assets/images/zh/
     - assets/images/en/
+
+    # 笔记详情页背景图（palette 按钮循环切换）
+    - assets/images/backgrounds/
     
     # 字体
     - assets/fonts/

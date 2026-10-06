@@ -27,9 +27,29 @@ void main() {
 
   tearDown(() async => db.close());
 
-  test('watchAll 按 createdAt DESC（新建在上）', () async {
-    final rows = await dao.watchAll().first;
-    expect(rows.map((r) => r.id), ['t2', 't1']);
+  test('watchAll 未完成置顶，同组内 createdAt DESC（新建在上）', () async {
+    await dao.updateById(
+      TodosCompanion(id: const Value('t1'), isDone: const Value(true)),
+    );
+    await dao.insert(_row('t3', '已完成-更早', createdAt: 50));
+    await dao.updateById(
+      TodosCompanion(id: const Value('t3'), isDone: const Value(true)),
+    );
+
+    expect(
+      (await dao.watchAll().first).map((r) => r.id),
+      ['t2', 't1', 't3'],
+    );
+  });
+
+  test('deleteCompleted 只删 is_done = 1，返回受影响行数', () async {
+    await dao.updateById(
+      TodosCompanion(id: const Value('t1'), isDone: const Value(true)),
+    );
+
+    expect(await dao.deleteCompleted(), 1);
+    expect((await dao.watchAll().first).map((r) => r.id), ['t2']);
+    expect(await dao.deleteCompleted(), 0, reason: '再清一次是 0，不抛');
   });
 
   test('update 是部分写入：只改 is_done，不动 title / created_at', () async {

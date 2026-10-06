@@ -17,11 +17,12 @@
 
 | 页面 | 路由 | 能力 |
 |------|------|------|
-| 笔记列表 | `/notes` | 瀑布流卡片、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计 |
-| 笔记详情 | `/notes/:id`、`/notes/new` | 标题 + 正文编辑，自动保存，归属文件夹 |
+| 笔记列表 | `/notes` | 瀑布流卡片、按标题 / 正文搜索（无结果有空态提示）、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计 |
+| 笔记详情 | `/notes/:id`、`/notes/new` | 标题 + 正文编辑，自动保存（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认） |
 | 文件夹管理 | `/notes/folders` | 新建 / 重命名 / 删除文件夹，显示每个文件夹的笔记数 |
-| 待办 | `/todos` | 新建、编辑、勾选完成、删除 |
-| 设置 | `/settings` | 笔记字号、默认排序、列表布局、强提醒开关 |
+| 最近删除 | `/notes/trash` | 软删除笔记列表：恢复、永久删除（二次确认）、清空回收站（二次确认） |
+| 待办 | `/todos` | 新建、编辑、勾选完成（完成态灰字删除线）、删除（二次确认）；未完成置顶，已完成沉入可折叠的「已完成 N」，顶栏可一键清除全部已完成 |
+| 设置 | `/settings` | 笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、强提醒开关、最近删除入口、隐私政策 / 用户协议 |
 
 底部 `NotesShell` 用 `StatefulShellRoute.indexedStack` 承载「笔记 / 待办」两个 Tab，切换不丢列表状态；`/settings` 挂在 root navigator 上整屏覆盖。
 
@@ -164,6 +165,7 @@ Windows 用同名 `.ps1`（参数一致）；执行策略受限时：
 | [docs/ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md) | 分层与目录约定 |
 | [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | 编码规范与设计模式 |
 | [docs/FEATURES.md](docs/FEATURES.md) | 核心功能说明 |
+| [docs/OPEN-DESIGN-QUESTIONS.md](docs/OPEN-DESIGN-QUESTIONS.md) | 待设计确认清单（代码里的 `Q` 编号台账） |
 | [docs/TOOLS.md](docs/TOOLS.md) | 生成器脚本用法 |
 | [docs/CICD_GUIDE.md](docs/CICD_GUIDE.md) | CI/CD 与发布 |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献流程 |

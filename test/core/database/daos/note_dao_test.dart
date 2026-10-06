@@ -172,4 +172,24 @@ void main() {
     expect(await dao.deleteById('n4'), 0);
     expect(await dao.getById('n4'), isNull);
   });
+
+  test('updateBackgroundById 只写 background 列，不刷 updated_at', () async {
+    final before = (await dao.getById('n2'))!;
+    expect(before.background, isNull, reason: '新行默认无背景');
+
+    expect(await dao.updateBackgroundById('n2', 'mint'), isTrue);
+    final after = (await dao.getById('n2'))!;
+    expect(after.background, 'mint');
+    expect(after.title, before.title);
+    expect(
+      after.updatedAt,
+      before.updatedAt,
+      reason: '换背景不是编辑：列表排序键与卡片日期都不该跳变',
+    );
+
+    expect(await dao.updateBackgroundById('n2', null), isTrue);
+    expect((await dao.getById('n2'))!.background, isNull, reason: '可清回无背景');
+
+    expect(await dao.updateBackgroundById('nope', 'paper'), isFalse);
+  });
 }

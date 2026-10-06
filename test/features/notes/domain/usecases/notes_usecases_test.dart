@@ -4,6 +4,7 @@ import 'package:init/core/error/failures.dart';
 import 'package:init/core/usecases/usecase.dart';
 import 'package:init/features/notes/domain/entities/folder_with_count.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_folder.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 import 'package:init/features/notes/domain/repositories/folder_repository.dart';
@@ -17,6 +18,8 @@ import 'package:init/features/notes/domain/usecases/delete_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_params.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_use_case.dart';
+import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_params.dart';
 import 'package:init/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
@@ -59,6 +62,12 @@ void main() {
     );
     registerFallbackValue(const CreateFolderParams(name: 'x'));
     registerFallbackValue(const RenameFolderParams(folderId: 'f', name: 'x'));
+    registerFallbackValue(
+      const UpdateNoteBackgroundParams(
+        noteId: 'n',
+        background: NoteBackground.paper,
+      ),
+    );
     registerFallbackValue(NoParams());
   });
 
@@ -167,6 +176,22 @@ void main() {
       expect(captured.folderId, 'f1');
     });
 
+    test('成功：新笔记上先选的背景随首次落库一起写入', () async {
+      when(
+        () => notes.create(any()),
+      ).thenAnswer((_) async => Right<Failure, Note>(_note));
+      await CreateNoteUseCase(notes)(
+        const CreateNoteParams(
+          title: 't',
+          content: 'c',
+          background: NoteBackground.mint,
+        ),
+      );
+      final captured =
+          verify(() => notes.create(captureAny())).captured.single as Note;
+      expect(captured.background, NoteBackground.mint);
+    });
+
     test('失败透传：Left(CacheFailure) 原样', () async {
       when(
         () => notes.create(any()),
@@ -247,6 +272,66 @@ void main() {
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
       final result = await UpdateNoteUseCase(notes)(
         const UpdateNoteParams(noteId: 'n1', title: 't', content: 'c'),
+      );
+      result.fold(
+        (f) => expect(f, isA<CacheFailure>()),
+        (_) => fail('应为 Left'),
+      );
+    });
+  });
+
+  group('UpdateNoteBackgroundUseCase', () {
+    test('空 noteId -> InputFailure 且不调 Repository', () {
+      expectInputFailure(
+        UpdateNoteBackgroundUseCase(notes)(
+          const UpdateNoteBackgroundParams(
+            noteId: '',
+            background: NoteBackground.paper,
+          ),
+        ),
+        notes,
+      );
+    });
+
+    test('成功：走 updateBackground 窄通道，不碰整行 update', () async {
+      when(
+        () => notes.updateBackground('n1', NoteBackground.blush),
+      ).thenAnswer((_) async => const Right(unit));
+      expect(
+        await UpdateNoteBackgroundUseCase(notes)(
+          const UpdateNoteBackgroundParams(
+            noteId: 'n1',
+            background: NoteBackground.blush,
+          ),
+        ),
+        const Right<Failure, Unit>(unit),
+      );
+      verify(
+        () => notes.updateBackground('n1', NoteBackground.blush),
+      ).called(1);
+      // 整行 update 会刷新 updatedAt，换背景不该走它。
+      verifyNever(() => notes.update(any()));
+    });
+
+    test('成功：background 为 null 时清除背景', () async {
+      when(
+        () => notes.updateBackground('n1', null),
+      ).thenAnswer((_) async => const Right(unit));
+      await UpdateNoteBackgroundUseCase(notes)(
+        const UpdateNoteBackgroundParams(noteId: 'n1', background: null),
+      );
+      verify(() => notes.updateBackground('n1', null)).called(1);
+    });
+
+    test('失败透传：Left(CacheFailure) 原样', () async {
+      when(
+        () => notes.updateBackground(any(), any()),
+      ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+      final result = await UpdateNoteBackgroundUseCase(notes)(
+        const UpdateNoteBackgroundParams(
+          noteId: 'n1',
+          background: NoteBackground.paper,
+        ),
       );
       result.fold(
         (f) => expect(f, isA<CacheFailure>()),

@@ -1,6 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
-/// 字体层级单一来源。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.2（13 行表格）。
+/// 字体层级单一来源。13 级字阶。
+///
+/// ⚠️ **13 级的 size 已整体下收一档**（标题 24→20、正文 17→15、元信息 12→11
+/// 等），`height` / `weight` 保持不变 —— 用户要求「更紧凑、一屏信息更多」。
+/// 故当前取值**不再等于** `UI-IMPLEMENTATION-SPEC.md` §2.2 的实测值；字阶的
+/// 相对关系（谁比谁大、谁更粗）仍与设计稿一致，只改了绝对值。
 ///
 /// 实现为 [ThemeExtension]：`textScale`（P5 的「文字大小」，`ROADMAP.md`
 /// MVP-A 第 6 项）落地后要在这里统一乘系数。见 `ARCHITECTURE-DESIGN.md` §7.3。
@@ -26,70 +31,72 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
     required this.topBarTitle,
   });
 
-  /// 浅色模式取值。`UI-IMPLEMENTATION-SPEC.md` §2.2 原表（size/weight/height）。
+  /// 浅色模式取值。13 级字阶在此**一次性定档**（见 `AppTextStylesContext`）。
+  ///
+  /// ⛔ **不设 `fontFamily`**：设计稿未标注中文字体族（Q26）。
   const AppTextStyles.light()
     : displayTitle = const TextStyle(
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: FontWeight.w700,
         height: 1.2,
       ),
       detailTitle = const TextStyle(
-        fontSize: 22,
+        fontSize: 19,
         fontWeight: FontWeight.w500,
         height: 1.3,
       ),
       cardTitle = const TextStyle(
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         height: 1.4,
       ),
       rowTitle = const TextStyle(
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w400,
         height: 1.4,
       ),
       rowTitleStrong = const TextStyle(
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         height: 1.4,
       ),
       body = const TextStyle(
-        fontSize: 17,
+        fontSize: 15,
         fontWeight: FontWeight.w400,
         height: 1.7,
       ),
       snippet = const TextStyle(
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: FontWeight.w400,
         height: 1.5,
       ),
       value = const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        height: 1.4,
-      ),
-      subtitle = const TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w400,
         height: 1.4,
       ),
-      chip = const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        height: 1.0,
-      ),
-      meta = const TextStyle(
+      subtitle = const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w400,
         height: 1.4,
       ),
+      chip = const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        height: 1.0,
+      ),
+      meta = const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w400,
+        height: 1.4,
+      ),
       navLabel = const TextStyle(
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: FontWeight.w500,
         height: 1.0,
       ),
       topBarTitle = const TextStyle(
-        fontSize: 17,
+        fontSize: 16,
         fontWeight: FontWeight.w600,
         height: 1.2,
       );
@@ -97,45 +104,45 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   /// 深色模式取值。字阶不含颜色，light / dark 两套完全等价。
   const AppTextStyles.dark() : this.light();
 
-  /// 页面大标题「笔记」「待办」；设置页顶部大标题。24/w700/1.2。D1/D2/D5。
+  /// 页面大标题「笔记」「待办」；设置页顶部大标题。20/w700/1.2。D1/D2/D5。
   final TextStyle displayTitle;
 
-  /// 笔记详情标题（未输入时显示占位符）。22/w500/1.3。D3。
+  /// 笔记详情标题（未输入时显示占位符）。19/w500/1.3。D3。
   final TextStyle detailTitle;
 
-  /// 笔记卡片标题。16/w600/1.4。D1。
+  /// 笔记卡片标题。15/w600/1.4。D1。
   final TextStyle cardTitle;
 
-  /// 待办标题、设置项标题、文件夹名。16/w400/1.4。D2/D4/D5。
+  /// 待办标题、设置项标题、文件夹名。15/w400/1.4。D2/D4/D5。
   final TextStyle rowTitle;
 
-  /// 带副标题的强调行（强提醒）。16/w600/1.4。D5。
+  /// 带副标题的强调行（强提醒）。15/w600/1.4。D5。
   final TextStyle rowTitleStrong;
 
-  /// 笔记详情正文。17/w400/1.7 —— 13 级里唯一的 1.7，是 D3 的段落感来源。D3。
+  /// 笔记详情正文。15/w400/1.7 —— 13 级里唯一的 1.7，是 D3 的段落感来源。D3。
   final TextStyle body;
 
-  /// 笔记卡片摘要。14/w400/1.5。D1。
+  /// 笔记卡片摘要。13/w400/1.5。D1。
   final TextStyle snippet;
 
-  /// 设置项右侧当前值。14/w400/1.4。D5。
+  /// 设置项右侧当前值。13/w400/1.4。D5。
   final TextStyle value;
 
-  /// 设置项副说明。13/w400/1.4。D5。
+  /// 设置项副说明。12/w400/1.4。D5。
   final TextStyle subtitle;
 
-  /// 分类 chip。14/w500/1.0。D1。
+  /// 分类 chip。13/w500/1.0。D1。
   final TextStyle chip;
 
-  /// 卡片日期、详情页元信息。12/w400/1.4。D1/D3。
+  /// 卡片日期、详情页元信息。11/w400/1.4。D1/D3。
   final TextStyle meta;
 
-  /// 底部导航标签。12/w500/1.0。选中态 w700 由调用方
+  /// 底部导航标签。11/w500/1.0。选中态 w700 由调用方
   /// `context.textStyles.navLabel.copyWith(fontWeight: FontWeight.w700)` 派生 ——
   /// 不另设字段，选中态是「同一语义的不同 weight」，不是新语义。D1/D2。
   final TextStyle navLabel;
 
-  /// 居中顶部栏标题。17/w600/1.2。D4。
+  /// 居中顶部栏标题。16/w600/1.2。D4。
   final TextStyle topBarTitle;
 
   @override

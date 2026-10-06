@@ -12,6 +12,7 @@ class AppSwitchRow extends StatelessWidget {
     super.key,
     this.subtitle,
     this.onChanged,
+    this.dividerBefore = false,
   });
 
   /// 标题文案，由调用方传 l10n 结果。
@@ -26,6 +27,9 @@ class AppSwitchRow extends StatelessWidget {
   /// 变更回调。null → 禁用（⚠️ 禁用态无稿，Q35）。
   final ValueChanged<bool>? onChanged;
 
+  /// 行上方 1dp 分割线（同卡片内开关不是首行时传 true）。
+  final bool dividerBefore;
+
   /// 标题字重。D5「强提醒」是 `text.rowTitleStrong`（w600）。
   static const FontWeight titleWeight = FontWeight.w600;
 
@@ -39,6 +43,7 @@ class AppSwitchRow extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       titleWeight: titleWeight,
+      dividerBefore: dividerBefore,
       // ⛔ 不给 onTap：稿中只画了开关本身，行按压态无稿（Q35）。
       trailing: SizedBox(
         height: switchHeight,

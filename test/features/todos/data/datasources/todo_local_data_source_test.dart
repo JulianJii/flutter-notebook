@@ -36,10 +36,21 @@ void main() {
     expect(all.single.id, 't1');
   });
 
-  test('watchAll 按 createdAt DESC（新建在上）', () async {
-    await source.insert(_todo('t1'));
+  test('watchAll 未完成置顶，同组内 createdAt DESC', () async {
+    final older = await source.insert(_todo('t1'));
     await source.insert(_todo('t2', createdAt: _t2));
+    await source.update(older.copyWith(isDone: true));
     expect((await source.watchAll().first).map((t) => t.id), ['t2', 't1']);
+  });
+
+  test('deleteCompleted 只清已完成；无已完成时返回 0 且不抛', () async {
+    final older = await source.insert(_todo('t1'));
+    await source.insert(_todo('t2', createdAt: _t2));
+    await source.update(older.copyWith(isDone: true));
+
+    expect(await source.deleteCompleted(), 1);
+    expect((await source.watchAll().first).map((t) => t.id), ['t2']);
+    expect(await source.deleteCompleted(), 0);
   });
 
   test('update 勾选后 watchAll 反映新值，且 createdAt 不动', () async {

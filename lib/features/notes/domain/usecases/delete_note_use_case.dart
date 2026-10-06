@@ -2,14 +2,12 @@ import 'package:fpdart/fpdart.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/features/notes/domain/repositories/note_repository.dart';
 
-/// 删除笔记。
+/// 删除笔记（**软删除**：移进「最近删除」，可恢复）。
 ///
-/// 裁决点（CONFLICT-10）：本实现走 [NoteRepository.delete]，其语义由
-/// ARCHITECTURE-DESIGN.md §5.4 / ADR-7 判定的**硬删除**。
-/// 若裁决改为软删除：删除列 + 全部查询的 `deleted_at IS NULL` 过滤 +
-/// listTrashed / restore / purge + 回收站页面必须**在同一个 commit 里**加，
-/// 禁止只加列不加页面（无页面的软删除 = 用户数据静默消失，比硬删除更糟）。
-// TODO(CONFLICT-10): 删除语义待裁决，裁决后删掉本注释块并同步 ARCHITECTURE-DESIGN §5.4。
+/// 原 CONFLICT-10 的硬删除裁决已翻转为软删除，四件套（`deleted_at` 列 +
+/// 查询过滤 + restore/purge + 回收站页面）已随本 commit 落地，见
+/// `notes_table.dart` 头注。恢复走 `RestoreNoteUseCase`，永久删除走
+/// `PurgeNoteUseCase`。
 ///
 /// ⛔ **不预检存在性**：预检让「检查」与「删除」之间出现竞态窗口，且多一次查询。
 /// 找不到由 Repository 返回 `Left(CacheFailure(...))`。

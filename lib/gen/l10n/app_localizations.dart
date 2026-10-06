@@ -386,7 +386,7 @@ abstract class AppLocalizations {
   /// **'返回'**
   String get back;
 
-  /// Tooltip of the P3 top bar share icon (Q8 unresolved)
+  /// Tooltip of the P3 top bar share icon
   ///
   /// In zh, this message translates to:
   /// **'分享'**
@@ -397,6 +397,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'配色'**
   String get palette;
+
+  /// Title of the P3 background picker sheet and the accessibility label of a background thumbnail
+  ///
+  /// In zh, this message translates to:
+  /// **'背景'**
+  String get noteBackground;
+
+  /// Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'无背景'**
+  String get noteBackgroundNone;
 
   /// Tooltip of the P3 top bar overflow icon (Q9 unresolved)
   ///
@@ -422,6 +434,18 @@ abstract class AppLocalizations {
   /// **'文件夹名称'**
   String get folderName;
 
+  /// Title of the create-todo dialog opened by the P2 FAB
+  ///
+  /// In zh, this message translates to:
+  /// **'新建待办'**
+  String get createTodo;
+
+  /// Hint text of the create-todo dialog text field (P2)
+  ///
+  /// In zh, this message translates to:
+  /// **'待办标题'**
+  String get todoTitle;
+
   /// Confirm button of the create-folder dialog (P4)
   ///
   /// In zh, this message translates to:
@@ -445,12 +469,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{count}字'**
   String noteMetaWordCount(int count);
-
-  /// P5 section header: cloud services
-  ///
-  /// In zh, this message translates to:
-  /// **'云服务'**
-  String get settingsGroupCloud;
 
   /// P5 section header: note appearance
   ///
@@ -476,7 +494,7 @@ abstract class AppLocalizations {
   /// **'其他'**
   String get settingsGroupOther;
 
-  /// P5 chevron row (Q14: no second level page)
+  /// P5 chevron row leading to the trash screen, and its page title
   ///
   /// In zh, this message translates to:
   /// **'最近删除'**
@@ -589,6 +607,312 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'列表模式'**
   String get settingsLayoutList;
+
+  /// Settings row title: dark mode
+  ///
+  /// In zh, this message translates to:
+  /// **'深色模式'**
+  String get settingsThemeMode;
+
+  /// Theme mode option: follow system
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get settingsThemeSystem;
+
+  /// Theme mode option: light
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色'**
+  String get settingsThemeLight;
+
+  /// Theme mode option: dark
+  ///
+  /// In zh, this message translates to:
+  /// **'深色'**
+  String get settingsThemeDark;
+
+  /// Selected option of a two-option settings row
+  ///
+  /// In zh, this message translates to:
+  /// **'开启'**
+  String get settingsSwitchOn;
+
+  /// Unselected option of a two-option settings row
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get settingsSwitchOff;
+
+  /// Placeholder of the note search field
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索笔记'**
+  String get notesSearchHint;
+
+  /// Accessibility label of the button that clears the note search field
+  ///
+  /// In zh, this message translates to:
+  /// **'清除搜索'**
+  String get notesSearchClear;
+
+  /// Menu action that deletes the current note
+  ///
+  /// In zh, this message translates to:
+  /// **'删除笔记'**
+  String get deleteNote;
+
+  /// Body of the note deletion confirmation dialog (soft delete, recoverable)
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这篇笔记吗？删除后可在「最近删除」中恢复。'**
+  String get deleteNoteConfirm;
+
+  /// Snackbar shown after a note is soft deleted
+  ///
+  /// In zh, this message translates to:
+  /// **'已移到「最近删除」'**
+  String get noteDeleted;
+
+  /// Empty state of the trash screen
+  ///
+  /// In zh, this message translates to:
+  /// **'没有已删除的笔记'**
+  String get trashEmpty;
+
+  /// Restore action of a trash row
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复'**
+  String get trashRestore;
+
+  /// Snackbar shown after a note is restored
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复'**
+  String get restoreDone;
+
+  /// Permanent delete action of a trash row
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除'**
+  String get trashDeleteForever;
+
+  /// Body of the permanent delete confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'永久删除后无法恢复，确定要删除吗？'**
+  String get trashDeleteForeverConfirm;
+
+  /// Top bar action that empties the trash, and its confirm button
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get trashEmptyAction;
+
+  /// Body of the empty-trash confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要清空所有已删除的笔记吗？此操作无法撤销。'**
+  String get trashEmptyConfirm;
+
+  /// Snackbar shown after the trash is emptied
+  ///
+  /// In zh, this message translates to:
+  /// **'已清空'**
+  String get emptyDone;
+
+  /// Deleted date shown on a trash row
+  ///
+  /// In zh, this message translates to:
+  /// **'删除于 {date}'**
+  String trashDeletedAt(DateTime date);
+
+  /// Intro paragraph of the privacy policy page
+  ///
+  /// In zh, this message translates to:
+  /// **'「笔记」是一款纯本地应用。我们非常重视您的隐私，请在使用前仔细阅读本政策。'**
+  String get privacyPolicyIntro;
+
+  /// Privacy policy section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'数据收集与存储'**
+  String get privacyPolicyDataTitle;
+
+  /// Privacy policy section body
+  ///
+  /// In zh, this message translates to:
+  /// **'本应用不收集、不上传您的任何个人数据。全部笔记、待办与设置仅保存在您的设备本地，卸载应用或主动删除后即彻底清除。'**
+  String get privacyPolicyDataBody;
+
+  /// Privacy policy section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'权限使用'**
+  String get privacyPolicyPermissionTitle;
+
+  /// Privacy policy section body
+  ///
+  /// In zh, this message translates to:
+  /// **'仅当您主动使用通知、分享等相应功能时，应用才会调用对应系统能力，不会在后台读取您的个人信息。'**
+  String get privacyPolicyPermissionBody;
+
+  /// Privacy policy section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'数据共享'**
+  String get privacyPolicySharingTitle;
+
+  /// Privacy policy section body
+  ///
+  /// In zh, this message translates to:
+  /// **'本应用没有云端服务，不存在向任何第三方共享或传输您内容的行为。'**
+  String get privacyPolicySharingBody;
+
+  /// Privacy policy section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'政策更新'**
+  String get privacyPolicyUpdatesTitle;
+
+  /// Privacy policy section body
+  ///
+  /// In zh, this message translates to:
+  /// **'本政策如有重大变更，将在应用内或版本更新说明中公布。变更后继续使用即表示您同意更新后的政策。'**
+  String get privacyPolicyUpdatesBody;
+
+  /// Privacy policy section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'联系我们'**
+  String get privacyPolicyContactTitle;
+
+  /// Privacy policy section body
+  ///
+  /// In zh, this message translates to:
+  /// **'如您对本政策有任何疑问或建议，请通过应用商店页面提供的联系方式与我们联系。'**
+  String get privacyPolicyContactBody;
+
+  /// Intro paragraph of the user agreement page
+  ///
+  /// In zh, this message translates to:
+  /// **'欢迎您使用「笔记」。在开始使用前，请您仔细阅读并理解本协议。'**
+  String get userAgreementIntro;
+
+  /// User agreement section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'协议的接受'**
+  String get agreementAcceptTitle;
+
+  /// User agreement section body
+  ///
+  /// In zh, this message translates to:
+  /// **'您下载、安装或使用本应用，即表示您已阅读并同意本协议的全部内容。如您不同意本协议，请立即停止使用。'**
+  String get agreementAcceptBody;
+
+  /// User agreement section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'使用规范'**
+  String get agreementUseTitle;
+
+  /// User agreement section body
+  ///
+  /// In zh, this message translates to:
+  /// **'您承诺不利用本应用制作、存储或传播违反法律法规的内容，不得对应用进行反向工程、恶意攻击或其他影响正常使用的行为。'**
+  String get agreementUseBody;
+
+  /// User agreement section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'内容归属'**
+  String get agreementOwnershipTitle;
+
+  /// User agreement section body
+  ///
+  /// In zh, this message translates to:
+  /// **'您在本应用中创建的笔记、待办等内容归您本人所有。本应用的界面、图标与程序本身的权利归开发者所有。'**
+  String get agreementOwnershipBody;
+
+  /// User agreement section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'免责声明'**
+  String get agreementLiabilityTitle;
+
+  /// User agreement section body
+  ///
+  /// In zh, this message translates to:
+  /// **'本应用将数据保存在您的设备本地。因设备丢失、系统故障、卸载应用或误操作导致的数据丢失，开发者不承担责任，请自行妥善备份重要内容。'**
+  String get agreementLiabilityBody;
+
+  /// User agreement section heading
+  ///
+  /// In zh, this message translates to:
+  /// **'协议变更'**
+  String get agreementUpdatesTitle;
+
+  /// User agreement section body
+  ///
+  /// In zh, this message translates to:
+  /// **'本协议如有变更，将在应用内公布。变更后继续使用即表示您接受更新后的协议。'**
+  String get agreementUpdatesBody;
+
+  /// Title of the todo edit dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑待办'**
+  String get editTodo;
+
+  /// Action that deletes the edited todo
+  ///
+  /// In zh, this message translates to:
+  /// **'删除待办'**
+  String get deleteTodo;
+
+  /// Body of the todo deletion confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这条待办吗？此操作无法撤销。'**
+  String get deleteTodoConfirm;
+
+  /// Snackbar shown when persisting a to-do toggle fails
+  ///
+  /// In zh, this message translates to:
+  /// **'勾选没有保存成功，已恢复原状态'**
+  String get todoToggleFailed;
+
+  /// Collapsed section header of finished to-dos
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成 {count}'**
+  String todoDoneSection(int count);
+
+  /// Tooltip of the P2 top bar action that clears finished to-dos
+  ///
+  /// In zh, this message translates to:
+  /// **'清除已完成'**
+  String get clearCompletedTodos;
+
+  /// Body of the clear-completed confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要清除全部已完成的待办吗？此操作无法撤销。'**
+  String get clearCompletedTodosConfirm;
+
+  /// Empty state of the to-do list
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有待办'**
+  String get emptyTodos;
+
+  /// Empty state of the note list when a search term matches nothing
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到相关笔记'**
+  String get emptySearchResult;
 
   /// When something was last updated
   ///

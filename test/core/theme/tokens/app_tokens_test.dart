@@ -70,7 +70,7 @@ void main() {
     });
   });
 
-  group('AppTextStyles 数值与 UI-IMPLEMENTATION-SPEC §2.2 一致', () {
+  group('AppTextStyles 数值（size 已整体下收一档，weight/height 不变）', () {
     test('13 个字阶的 size / weight / height', () {
       const t = AppTextStyles.light();
 
@@ -85,19 +85,19 @@ void main() {
         expect(s.height, height, reason: 'height');
       }
 
-      expectStyle(t.displayTitle, 24, FontWeight.w700, 1.2);
-      expectStyle(t.detailTitle, 22, FontWeight.w500, 1.3);
-      expectStyle(t.cardTitle, 16, FontWeight.w600, 1.4);
-      expectStyle(t.rowTitle, 16, FontWeight.w400, 1.4);
-      expectStyle(t.rowTitleStrong, 16, FontWeight.w600, 1.4);
-      expectStyle(t.body, 17, FontWeight.w400, 1.7); // 13 级里唯一的 1.7
-      expectStyle(t.snippet, 14, FontWeight.w400, 1.5);
-      expectStyle(t.value, 14, FontWeight.w400, 1.4);
-      expectStyle(t.subtitle, 13, FontWeight.w400, 1.4);
-      expectStyle(t.chip, 14, FontWeight.w500, 1.0);
-      expectStyle(t.meta, 12, FontWeight.w400, 1.4);
-      expectStyle(t.navLabel, 12, FontWeight.w500, 1.0);
-      expectStyle(t.topBarTitle, 17, FontWeight.w600, 1.2);
+      expectStyle(t.displayTitle, 20, FontWeight.w700, 1.2);
+      expectStyle(t.detailTitle, 19, FontWeight.w500, 1.3);
+      expectStyle(t.cardTitle, 15, FontWeight.w600, 1.4);
+      expectStyle(t.rowTitle, 15, FontWeight.w400, 1.4);
+      expectStyle(t.rowTitleStrong, 15, FontWeight.w600, 1.4);
+      expectStyle(t.body, 15, FontWeight.w400, 1.7); // 13 级里唯一的 1.7
+      expectStyle(t.snippet, 13, FontWeight.w400, 1.5);
+      expectStyle(t.value, 13, FontWeight.w400, 1.4);
+      expectStyle(t.subtitle, 12, FontWeight.w400, 1.4);
+      expectStyle(t.chip, 13, FontWeight.w500, 1.0);
+      expectStyle(t.meta, 11, FontWeight.w400, 1.4);
+      expectStyle(t.navLabel, 11, FontWeight.w500, 1.0);
+      expectStyle(t.topBarTitle, 16, FontWeight.w600, 1.2);
     });
 
     test('任何字阶都不设 color 与 fontFamily', () {
@@ -143,9 +143,8 @@ void main() {
       expect(AppSpacing.bottomSafe, 34);
     });
 
-    test('4 个圆角取值与规格一致', () {
+    test('3 个圆角取值与规格一致', () {
       expect(AppRadius.card, 12);
-      expect(AppRadius.chip, 12);
       expect(AppRadius.navIcon, 8);
       expect(AppRadius.checkbox, 6);
     });

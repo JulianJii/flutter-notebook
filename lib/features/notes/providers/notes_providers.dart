@@ -9,9 +9,14 @@ import 'package:init/features/notes/domain/usecases/create_folder_use_case.dart'
 import 'package:init/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/delete_folder_use_case.dart';
 import 'package:init/features/notes/domain/usecases/delete_note_use_case.dart';
+import 'package:init/features/notes/domain/usecases/empty_trash_use_case.dart';
 import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
+import 'package:init/features/notes/domain/usecases/purge_note_use_case.dart';
+import 'package:init/features/notes/domain/usecases/restore_note_use_case.dart';
 import 'package:init/features/notes/domain/usecases/rename_folder_use_case.dart';
+import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
 import 'package:init/features/notes/domain/usecases/update_note_use_case.dart';
+import 'package:init/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
 import 'package:init/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
 import 'package:init/features/notes/domain/usecases/watch_notes_use_case.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -67,6 +72,11 @@ UpdateNoteUseCase updateNoteUseCase(Ref ref) {
 }
 
 @riverpod
+UpdateNoteBackgroundUseCase updateNoteBackgroundUseCase(Ref ref) {
+  return UpdateNoteBackgroundUseCase(ref.watch(noteRepositoryProvider));
+}
+
+@riverpod
 DeleteNoteUseCase deleteNoteUseCase(Ref ref) {
   return DeleteNoteUseCase(ref.watch(noteRepositoryProvider));
 }
@@ -89,4 +99,25 @@ RenameFolderUseCase renameFolderUseCase(Ref ref) {
 @riverpod
 DeleteFolderUseCase deleteFolderUseCase(Ref ref) {
   return DeleteFolderUseCase(ref.watch(folderRepositoryProvider));
+}
+
+// ---- 回收站（最近删除）----
+@riverpod
+WatchDeletedNotesUseCase watchDeletedNotesUseCase(Ref ref) {
+  return WatchDeletedNotesUseCase(ref.watch(noteRepositoryProvider));
+}
+
+@riverpod
+RestoreNoteUseCase restoreNoteUseCase(Ref ref) {
+  return RestoreNoteUseCase(ref.watch(noteRepositoryProvider));
+}
+
+@riverpod
+PurgeNoteUseCase purgeNoteUseCase(Ref ref) {
+  return PurgeNoteUseCase(ref.watch(noteRepositoryProvider));
+}
+
+@riverpod
+EmptyTrashUseCase emptyTrashUseCase(Ref ref) {
+  return EmptyTrashUseCase(ref.watch(noteRepositoryProvider));
 }

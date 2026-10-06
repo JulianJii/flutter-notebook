@@ -1,3 +1,4 @@
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -121,6 +122,7 @@ void main() {
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[
             ...AppLocalizations.localizationsDelegates,
             ...GlobalMaterialLocalizations.delegates,
+            FlutterQuillLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           locale: const Locale('zh'),

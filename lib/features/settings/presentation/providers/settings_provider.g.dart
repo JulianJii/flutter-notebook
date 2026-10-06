@@ -21,8 +21,7 @@ part of 'settings_provider.dart';
 /// microtask 里读一次持久化值，读到后 state 自动重建
 ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
 ///
-/// TODO(Q33): 加载 / 保存失败只记日志，不回滚、不弹 Snackbar —— 用户无法修复，
-/// 弹窗只会吓人，且错误态视觉无稿。
+/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
@@ -45,8 +44,7 @@ final settingsProvider = SettingsProvider._();
 /// microtask 里读一次持久化值，读到后 state 自动重建
 ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
 ///
-/// TODO(Q33): 加载 / 保存失败只记日志，不回滚、不弹 Snackbar —— 用户无法修复，
-/// 弹窗只会吓人，且错误态视觉无稿。
+/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
@@ -66,8 +64,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   /// microtask 里读一次持久化值，读到后 state 自动重建
   ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
   ///
-  /// TODO(Q33): 加载 / 保存失败只记日志，不回滚、不弹 Snackbar —— 用户无法修复，
-  /// 弹窗只会吓人，且错误态视觉无稿。
+  /// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
   ///
   /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
   ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
@@ -100,7 +97,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'a9e4607ddbb51f93d769d5c25bd48a42de78c856';
+String _$settingsHash() => r'3adc759ecebb533fcf1d8f436cecca491240ea36';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///
@@ -115,8 +112,7 @@ String _$settingsHash() => r'a9e4607ddbb51f93d769d5c25bd48a42de78c856';
 /// microtask 里读一次持久化值，读到后 state 自动重建
 ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
 ///
-/// TODO(Q33): 加载 / 保存失败只记日志，不回滚、不弹 Snackbar —— 用户无法修复，
-/// 弹窗只会吓人，且错误态视觉无稿。
+/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者

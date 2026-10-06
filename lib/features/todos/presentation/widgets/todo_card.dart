@@ -32,8 +32,11 @@ class TodoCard extends StatelessWidget {
   /// 勾选变更。null → 复选框禁用。
   final ValueChanged<bool>? onChanged;
 
-  /// 卡片本体点击。定义但不接线 —— D2 **无卡片按压态视觉**（Q35）、**无卡片点击
-  /// 语义**（点卡片是切换完成还是进详情？无稿），勾选框是本页唯一的交互入口。
+  /// 卡片本体点击 → 编辑弹窗（Q21 的编辑入口）。
+  ///
+  /// ⚠️ D2 **无卡片按压态视觉**（Q35），`AppCard` 只画涟漪不画按压样式。⛔ 不加
+  /// `onLongPress`：长按与「点卡片」语义冲突，且 `AppCard` 没有该参数，要加就得动
+  /// `core/ui`。
   final VoidCallback? onTap;
 
   @override
@@ -62,7 +65,11 @@ class TodoCard extends StatelessWidget {
             child: Text(
               title,
               style: context.textStyles.rowTitle.copyWith(
-                color: context.colors.textPrimary,
+                // Q21 定稿：完成态灰字 + 删除线。只改本组件，不动 Screen。
+                color: checked
+                    ? context.colors.textTertiary
+                    : context.colors.textPrimary,
+                decoration: checked ? TextDecoration.lineThrough : null,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -79,8 +86,4 @@ class TodoCard extends StatelessWidget {
   /// `AppSpacing` 没有 20 这一档，为一个组件新造 token 是纯仪式（且 20 会被 D2 的
   /// 复核结论推翻，届时改这一行比改 token + 它的 dartdoc 便宜）。
   static const double _verticalPad = AppSpacing.cardPad + AppSpacing.sm;
-
-  // TODO(Q21): 已完成态的卡片样式无稿（是否加删除线、是否变灰、是否移到列表末尾）。
-  // 当前只把 checked 透传给 AppCheckbox，沿用系统默认 checked 视觉，不自创样式。
-  // Q21 补稿后只改本组件，不动 TodoListScreen。
 }

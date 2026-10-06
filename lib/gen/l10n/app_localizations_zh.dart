@@ -176,6 +176,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get palette => '配色';
 
   @override
+  String get noteBackground => '背景';
+
+  @override
+  String get noteBackgroundNone => '无背景';
+
+  @override
   String get more => '更多';
 
   @override
@@ -186,6 +192,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get folderName => '文件夹名称';
+
+  @override
+  String get createTodo => '新建待办';
+
+  @override
+  String get todoTitle => '待办标题';
 
   @override
   String get save => '保存';
@@ -200,9 +212,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String noteMetaWordCount(int count) {
     return '$count字';
   }
-
-  @override
-  String get settingsGroupCloud => '云服务';
 
   @override
   String get settingsGroupNoteStyle => '笔记样式';
@@ -272,6 +281,174 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsLayoutList => '列表模式';
+
+  @override
+  String get settingsThemeMode => '深色模式';
+
+  @override
+  String get settingsThemeSystem => '跟随系统';
+
+  @override
+  String get settingsThemeLight => '浅色';
+
+  @override
+  String get settingsThemeDark => '深色';
+
+  @override
+  String get settingsSwitchOn => '开启';
+
+  @override
+  String get settingsSwitchOff => '关闭';
+
+  @override
+  String get notesSearchHint => '搜索笔记';
+
+  @override
+  String get notesSearchClear => '清除搜索';
+
+  @override
+  String get deleteNote => '删除笔记';
+
+  @override
+  String get deleteNoteConfirm => '确定要删除这篇笔记吗？删除后可在「最近删除」中恢复。';
+
+  @override
+  String get noteDeleted => '已移到「最近删除」';
+
+  @override
+  String get trashEmpty => '没有已删除的笔记';
+
+  @override
+  String get trashRestore => '恢复';
+
+  @override
+  String get restoreDone => '已恢复';
+
+  @override
+  String get trashDeleteForever => '永久删除';
+
+  @override
+  String get trashDeleteForeverConfirm => '永久删除后无法恢复，确定要删除吗？';
+
+  @override
+  String get trashEmptyAction => '清空';
+
+  @override
+  String get trashEmptyConfirm => '确定要清空所有已删除的笔记吗？此操作无法撤销。';
+
+  @override
+  String get emptyDone => '已清空';
+
+  @override
+  String trashDeletedAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '删除于 $dateString';
+  }
+
+  @override
+  String get privacyPolicyIntro => '「笔记」是一款纯本地应用。我们非常重视您的隐私，请在使用前仔细阅读本政策。';
+
+  @override
+  String get privacyPolicyDataTitle => '数据收集与存储';
+
+  @override
+  String get privacyPolicyDataBody =>
+      '本应用不收集、不上传您的任何个人数据。全部笔记、待办与设置仅保存在您的设备本地，卸载应用或主动删除后即彻底清除。';
+
+  @override
+  String get privacyPolicyPermissionTitle => '权限使用';
+
+  @override
+  String get privacyPolicyPermissionBody =>
+      '仅当您主动使用通知、分享等相应功能时，应用才会调用对应系统能力，不会在后台读取您的个人信息。';
+
+  @override
+  String get privacyPolicySharingTitle => '数据共享';
+
+  @override
+  String get privacyPolicySharingBody => '本应用没有云端服务，不存在向任何第三方共享或传输您内容的行为。';
+
+  @override
+  String get privacyPolicyUpdatesTitle => '政策更新';
+
+  @override
+  String get privacyPolicyUpdatesBody =>
+      '本政策如有重大变更，将在应用内或版本更新说明中公布。变更后继续使用即表示您同意更新后的政策。';
+
+  @override
+  String get privacyPolicyContactTitle => '联系我们';
+
+  @override
+  String get privacyPolicyContactBody =>
+      '如您对本政策有任何疑问或建议，请通过应用商店页面提供的联系方式与我们联系。';
+
+  @override
+  String get userAgreementIntro => '欢迎您使用「笔记」。在开始使用前，请您仔细阅读并理解本协议。';
+
+  @override
+  String get agreementAcceptTitle => '协议的接受';
+
+  @override
+  String get agreementAcceptBody =>
+      '您下载、安装或使用本应用，即表示您已阅读并同意本协议的全部内容。如您不同意本协议，请立即停止使用。';
+
+  @override
+  String get agreementUseTitle => '使用规范';
+
+  @override
+  String get agreementUseBody =>
+      '您承诺不利用本应用制作、存储或传播违反法律法规的内容，不得对应用进行反向工程、恶意攻击或其他影响正常使用的行为。';
+
+  @override
+  String get agreementOwnershipTitle => '内容归属';
+
+  @override
+  String get agreementOwnershipBody =>
+      '您在本应用中创建的笔记、待办等内容归您本人所有。本应用的界面、图标与程序本身的权利归开发者所有。';
+
+  @override
+  String get agreementLiabilityTitle => '免责声明';
+
+  @override
+  String get agreementLiabilityBody =>
+      '本应用将数据保存在您的设备本地。因设备丢失、系统故障、卸载应用或误操作导致的数据丢失，开发者不承担责任，请自行妥善备份重要内容。';
+
+  @override
+  String get agreementUpdatesTitle => '协议变更';
+
+  @override
+  String get agreementUpdatesBody => '本协议如有变更，将在应用内公布。变更后继续使用即表示您接受更新后的协议。';
+
+  @override
+  String get editTodo => '编辑待办';
+
+  @override
+  String get deleteTodo => '删除待办';
+
+  @override
+  String get deleteTodoConfirm => '确定要删除这条待办吗？此操作无法撤销。';
+
+  @override
+  String get todoToggleFailed => '勾选没有保存成功，已恢复原状态';
+
+  @override
+  String todoDoneSection(int count) {
+    return '已完成 $count';
+  }
+
+  @override
+  String get clearCompletedTodos => '清除已完成';
+
+  @override
+  String get clearCompletedTodosConfirm => '确定要清除全部已完成的待办吗？此操作无法撤销。';
+
+  @override
+  String get emptyTodos => '还没有待办';
+
+  @override
+  String get emptySearchResult => '没有找到相关笔记';
 
   @override
   String last_updated(DateTime date) {

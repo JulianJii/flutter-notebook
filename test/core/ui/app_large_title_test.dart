@@ -45,7 +45,7 @@ void main() {
     );
 
     final text = tester.widget<Text>(find.text('笔记'));
-    expect(text.style?.fontSize, 24);
+    expect(text.style?.fontSize, 20);
     expect(text.style?.fontWeight, FontWeight.w700);
     expect(text.style?.height, 1.2);
     expect(text.style?.color, const AppColors.light().textPrimary);

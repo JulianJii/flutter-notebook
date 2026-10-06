@@ -60,6 +60,17 @@ class TodoRepositoryImpl implements TodoRepository {
       return Left(CacheFailure(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, int>> deleteCompleted() async {
+    try {
+      return Right(await _localDataSource.deleteCompleted());
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
 }
 
 /// 给 [todo] 补上 id。⛔ 不用 `copyWith`：`Todo.copyWith` 刻意不带 `id`

@@ -18,4 +18,7 @@ abstract class TodoRepository {
 
   /// 删除。
   Future<Either<Failure, Unit>> delete(String todoId);
+
+  /// 批量清除已完成，返回删除行数。0 行是合法结果（已经清空），不是失败。
+  Future<Either<Failure, int>> deleteCompleted();
 }

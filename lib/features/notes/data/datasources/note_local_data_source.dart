@@ -4,6 +4,7 @@ import 'package:init/core/database/app_database.dart';
 import 'package:init/core/database/daos/note_dao.dart';
 import 'package:init/core/error/exceptions.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 
 /// 笔记的本地数据源。**SQL 的唯一调用方是 [NoteDao]**，本类只做
@@ -28,11 +29,29 @@ abstract class NoteLocalDataSource {
   /// 插入。[Note.id] 必须已由 Repository 填好 uuid —— 本类不生成 id。
   Future<Note> insert(Note note);
 
-  /// 整行更新。命中 0 行 → 抛 [CacheException]。
+  /// 整行更新（**不碰 `background` 列** —— 换背景走 [updateBackground]，
+  /// 免得自动保存把背景覆盖回旧值）。命中 0 行 → 抛 [CacheException]。
   Future<Note> update(Note note);
 
-  /// 删除。命中 0 行 → 抛 [CacheException]。
+  /// 只写背景列（null = 无背景），**不刷新 `updated_at`**。
+  /// 命中 0 行 → 抛 [CacheException]。
+  Future<void> updateBackground(String noteId, NoteBackground? background);
+
+  /// 删除（软删除：写 `deleted_at`）。命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String noteId);
+
+  /// 订阅「最近删除」（`deleted_at IS NOT NULL`，按删除时间倒序）。
+  /// 错误传播约定同 [watch]。
+  Stream<List<Note>> watchDeleted();
+
+  /// 恢复（`deleted_at` 置回 null）。命中 0 行 → 抛 [CacheException]。
+  Future<void> restore(String noteId);
+
+  /// 永久删除（物理 DELETE）。命中 0 行 → 抛 [CacheException]。
+  Future<void> purge(String noteId);
+
+  /// 清空「最近删除」（物理删除全部已软删的行）。
+  Future<void> purgeAll();
 }
 
 class NoteLocalDataSourceImpl implements NoteLocalDataSource {
@@ -75,6 +94,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
         title: Value(note.title),
         content: Value(note.content),
         folderId: Value(note.folderId),
+        background: Value(note.background?.id),
         createdAt: note.createdAt,
         updatedAt: note.updatedAt,
       ),
@@ -109,11 +129,49 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   });
 
   @override
+  Future<void> updateBackground(
+    String noteId,
+    NoteBackground? background,
+  ) => _guard(() async {
+    final hit = await _dao.updateBackgroundById(noteId, background?.id);
+    if (!hit) {
+      throw CacheException(message: 'Note not found: $noteId');
+    }
+  });
+
+  @override
   Future<void> delete(String noteId) => _guard(() async {
+    // 软删除：写 `deleted_at`，不碰 `updated_at`（删除不是编辑）。
+    final hit = await _dao.softDeleteById(noteId, DateTime.now());
+    if (!hit) {
+      throw CacheException(message: 'Note not found: $noteId');
+    }
+  });
+
+  @override
+  Stream<List<Note>> watchDeleted() {
+    return _dao.watchDeleted().map((rows) => rows.map(_toEntity).toList());
+  }
+
+  @override
+  Future<void> restore(String noteId) => _guard(() async {
+    final hit = await _dao.restoreById(noteId);
+    if (!hit) {
+      throw CacheException(message: 'Note not found: $noteId');
+    }
+  });
+
+  @override
+  Future<void> purge(String noteId) => _guard(() async {
     final removed = await _dao.deleteById(noteId);
     if (removed == 0) {
       throw CacheException(message: 'Note not found: $noteId');
     }
+  });
+
+  @override
+  Future<void> purgeAll() => _guard(() async {
+    await _dao.deleteAllDeleted();
   });
 }
 
@@ -159,6 +217,8 @@ Note _toEntity(NoteRow row) {
     title: row.title,
     content: row.content,
     folderId: row.folderId,
+    background: NoteBackground.fromId(row.background),
+    deletedAt: row.deletedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

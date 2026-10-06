@@ -23,6 +23,10 @@ abstract class TodoLocalDataSource {
 
   /// 删除。命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String todoId);
+
+  /// 批量清除已完成，返回删除行数。**命中 0 行不抛**（= 已经清空），
+  /// 与 [delete] 的 0 行抛错语义不同：批量是幂等操作，没有可清的项就是成功。
+  Future<int> deleteCompleted();
 }
 
 class TodoLocalDataSourceImpl implements TodoLocalDataSource {
@@ -84,6 +88,9 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
       throw CacheException(message: 'Todo not found: $todoId');
     }
   });
+
+  @override
+  Future<int> deleteCompleted() => _guard(() => _dao.deleteCompleted());
 
   /// 更新后回读单行。`TodoDao` 没有 `getById`，而 `createdAt` 既不写、调用方也
   /// 给不出 —— 不回读就得把一个假时间戳交给上层。用 drift DSL 单表查询，

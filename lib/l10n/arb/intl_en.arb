@@ -209,11 +209,19 @@
   },
   "share": "Share",
   "@share": {
-    "description": "Tooltip of the P3 top bar share icon (Q8 unresolved)"
+    "description": "Tooltip of the P3 top bar share icon"
   },
   "palette": "Palette",
   "@palette": {
     "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+  },
+  "noteBackground": "Background",
+  "@noteBackground": {
+    "description": "Title of the P3 background picker sheet and the accessibility label of a background thumbnail"
+  },
+  "noteBackgroundNone": "No background",
+  "@noteBackgroundNone": {
+    "description": "Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet"
   },
   "more": "More",
   "@more": {
@@ -230,6 +238,14 @@
   "folderName": "Folder name",
   "@folderName": {
     "description": "Hint text of the create-folder dialog text field (P4)"
+  },
+  "createTodo": "New todo",
+  "@createTodo": {
+    "description": "Title of the create-todo dialog opened by the P2 FAB"
+  },
+  "todoTitle": "Todo title",
+  "@todoTitle": {
+    "description": "Hint text of the create-todo dialog text field (P2)"
   },
   "save": "Save",
   "@save": {
@@ -252,10 +268,6 @@
       }
     }
   },
-  "settingsGroupCloud": "Cloud",
-  "@settingsGroupCloud": {
-    "description": "P5 section header: cloud services"
-  },
   "settingsGroupNoteStyle": "Note style",
   "@settingsGroupNoteStyle": {
     "description": "P5 section header: note appearance"
@@ -274,7 +286,7 @@
   },
   "settingsRecentDeleted": "Recently deleted",
   "@settingsRecentDeleted": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "P5 chevron row leading to the trash screen, and its page title"
   },
   "settingsQuickCapture": "Quick capture",
   "@settingsQuickCapture": {
@@ -347,6 +359,221 @@
   "settingsLayoutList": "List",
   "@settingsLayoutList": {
     "description": "Note list layout option: single column list"
+  },
+  "settingsThemeMode": "Dark mode",
+  "@settingsThemeMode": {
+    "description": "Settings row title: dark mode"
+  },
+  "settingsThemeSystem": "System",
+  "@settingsThemeSystem": {
+    "description": "Theme mode option: follow system"
+  },
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Theme mode option: light"
+  },
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Theme mode option: dark"
+  },
+  "settingsSwitchOn": "On",
+  "@settingsSwitchOn": {
+    "description": "Selected option of a two-option settings row"
+  },
+  "settingsSwitchOff": "Off",
+  "@settingsSwitchOff": {
+    "description": "Unselected option of a two-option settings row"
+  },
+  "notesSearchHint": "Search notes",
+  "@notesSearchHint": {
+    "description": "Placeholder of the note search field"
+  },
+  "notesSearchClear": "Clear search",
+  "@notesSearchClear": {
+    "description": "Accessibility label of the button that clears the note search field"
+  },
+  "deleteNote": "Delete note",
+  "@deleteNote": {
+    "description": "Menu action that deletes the current note"
+  },
+  "deleteNoteConfirm": "Delete this note? You can restore it from Recently deleted.",
+  "@deleteNoteConfirm": {
+    "description": "Body of the note deletion confirmation dialog (soft delete, recoverable)"
+  },
+  "noteDeleted": "Moved to Recently deleted",
+  "@noteDeleted": {
+    "description": "Snackbar shown after a note is soft deleted"
+  },
+  "trashEmpty": "No deleted notes",
+  "@trashEmpty": {
+    "description": "Empty state of the trash screen"
+  },
+  "trashRestore": "Restore",
+  "@trashRestore": {
+    "description": "Restore action of a trash row"
+  },
+  "restoreDone": "Restored",
+  "@restoreDone": {
+    "description": "Snackbar shown after a note is restored"
+  },
+  "trashDeleteForever": "Delete permanently",
+  "@trashDeleteForever": {
+    "description": "Permanent delete action of a trash row"
+  },
+  "trashDeleteForeverConfirm": "Permanently delete? This can't be undone.",
+  "@trashDeleteForeverConfirm": {
+    "description": "Body of the permanent delete confirmation dialog"
+  },
+  "trashEmptyAction": "Empty",
+  "@trashEmptyAction": {
+    "description": "Top bar action that empties the trash, and its confirm button"
+  },
+  "trashEmptyConfirm": "Delete all notes in Recently deleted? This can't be undone.",
+  "@trashEmptyConfirm": {
+    "description": "Body of the empty-trash confirmation dialog"
+  },
+  "emptyDone": "Emptied",
+  "@emptyDone": {
+    "description": "Snackbar shown after the trash is emptied"
+  },
+  "trashDeletedAt": "Deleted {date}",
+  "@trashDeletedAt": {
+    "description": "Deleted date shown on a trash row",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "privacyPolicyIntro": "Notes is a fully local-first app. We take your privacy seriously — please read this policy before use.",
+  "@privacyPolicyIntro": {
+    "description": "Intro paragraph of the privacy policy page"
+  },
+  "privacyPolicyDataTitle": "Data collection and storage",
+  "@privacyPolicyDataTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyDataBody": "This app does not collect or upload any personal data. All notes, todos and settings stay on your device only, and are permanently removed when you uninstall the app or delete them yourself.",
+  "@privacyPolicyDataBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyPermissionTitle": "Permissions",
+  "@privacyPolicyPermissionTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyPermissionBody": "System capabilities such as notifications and sharing are only invoked when you actively use the corresponding features; the app never reads your personal information in the background.",
+  "@privacyPolicyPermissionBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicySharingTitle": "Data sharing",
+  "@privacyPolicySharingTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicySharingBody": "This app has no cloud service, so your content is never shared with or transferred to any third party.",
+  "@privacyPolicySharingBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyUpdatesTitle": "Policy updates",
+  "@privacyPolicyUpdatesTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyUpdatesBody": "Material changes to this policy will be announced in the app or in release notes. Continuing to use the app after a change means you accept the updated policy.",
+  "@privacyPolicyUpdatesBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyContactTitle": "Contact us",
+  "@privacyPolicyContactTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyContactBody": "If you have any questions or suggestions about this policy, please contact us via the channel provided on the app store page.",
+  "@privacyPolicyContactBody": {
+    "description": "Privacy policy section body"
+  },
+  "userAgreementIntro": "Thank you for using Notes. Please read and understand this agreement carefully before you start.",
+  "@userAgreementIntro": {
+    "description": "Intro paragraph of the user agreement page"
+  },
+  "agreementAcceptTitle": "Acceptance of the agreement",
+  "@agreementAcceptTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementAcceptBody": "By downloading, installing or using this app, you confirm that you have read and accepted this agreement in full. If you do not agree, please stop using the app immediately.",
+  "@agreementAcceptBody": {
+    "description": "User agreement section body"
+  },
+  "agreementUseTitle": "Acceptable use",
+  "@agreementUseTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementUseBody": "You agree not to create, store or distribute content that violates applicable laws, and not to reverse engineer, attack or otherwise interfere with the normal operation of the app.",
+  "@agreementUseBody": {
+    "description": "User agreement section body"
+  },
+  "agreementOwnershipTitle": "Content ownership",
+  "@agreementOwnershipTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementOwnershipBody": "Notes, todos and other content you create in this app belong to you. Rights in the app itself, including its interface and icons, belong to the developer.",
+  "@agreementOwnershipBody": {
+    "description": "User agreement section body"
+  },
+  "agreementLiabilityTitle": "Disclaimer",
+  "@agreementLiabilityTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementLiabilityBody": "Data is stored locally on your device. The developer is not liable for data loss caused by device loss, system failure, uninstalling the app or accidental deletion. Please back up important content yourself.",
+  "@agreementLiabilityBody": {
+    "description": "User agreement section body"
+  },
+  "agreementUpdatesTitle": "Changes to the agreement",
+  "@agreementUpdatesTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementUpdatesBody": "Changes to this agreement will be announced in the app. Continuing to use the app after a change means you accept the updated agreement.",
+  "@agreementUpdatesBody": {
+    "description": "User agreement section body"
+  },
+  "editTodo": "Edit to-do",
+  "@editTodo": {
+    "description": "Title of the todo edit dialog"
+  },
+  "deleteTodo": "Delete to-do",
+  "@deleteTodo": {
+    "description": "Action that deletes the edited todo"
+  },
+  "deleteTodoConfirm": "Delete this to-do? This can't be undone.",
+  "@deleteTodoConfirm": {
+    "description": "Body of the todo deletion confirmation dialog"
+  },
+  "todoToggleFailed": "Couldn't save the change, reverted",
+  "@todoToggleFailed": {
+    "description": "Snackbar shown when persisting a to-do toggle fails"
+  },
+  "todoDoneSection": "Finished ({count})",
+  "@todoDoneSection": {
+    "description": "Collapsed section header of finished to-dos",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearCompletedTodos": "Clear finished",
+  "@clearCompletedTodos": {
+    "description": "Tooltip of the P2 top bar action that clears finished to-dos"
+  },
+  "clearCompletedTodosConfirm": "Clear all finished to-dos? This can't be undone.",
+  "@clearCompletedTodosConfirm": {
+    "description": "Body of the clear-completed confirmation dialog"
+  },
+  "emptyTodos": "No to-dos yet",
+  "@emptyTodos": {
+    "description": "Empty state of the to-do list"
+  },
+  "emptySearchResult": "No matching notes",
+  "@emptySearchResult": {
+    "description": "Empty state of the note list when a search term matches nothing"
   },
   "last_updated": "Last updated: {date}",
   "@last_updated": {

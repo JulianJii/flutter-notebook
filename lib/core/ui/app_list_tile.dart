@@ -61,9 +61,9 @@ class AppListTile extends StatelessWidget {
 
   /// 点击回调。null → **不包 `InkWell`**，不做水波纹。
   ///
-  /// ⚠️ D5 二级页未设计（**Q14**），稿中按压态无稿（**Q35**），
-  /// 故不可点行完全无交互反馈。`ROADMAP.md` §4.3 要求二级页保持不可点 +
-  /// `TODO(Q14)`。
+  /// ⚠️ D5 二级页未设计（**Q14**），稿中按压态无稿（**Q35**）——
+  /// `docs/OPEN-DESIGN-QUESTIONS.md`，
+  /// 故不可点行完全无交互反馈。
   final VoidCallback? onTap;
 
   /// 行上方 1dp 分割线（D5 同卡片内多行）。

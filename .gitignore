@@ -29,3 +29,5 @@ android/key.properties
 .codebuddy/
 AGENTS.md
 specs/
+# Widget Preview related
+.widget_preview/

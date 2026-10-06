@@ -12,8 +12,9 @@ part 'app_database.g.dart';
 
 /// 全 App 唯一的 SQLite 出入口。不是 feature，不含业务语义。
 ///
-/// `schemaVersion = 1`，v1 无历史数据 → **不写 `onUpgrade`**
-/// （第一次 schema 变更时再建，且必须同时加迁移测试）。
+/// `schemaVersion = 3`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
+/// `notes_table.dart` 头注）；v2 → v3 加 `background` 列（笔记纸张背景，
+/// 可空 = 无背景）。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///
 /// 三张表（`notes` / `note_folders` / `todos`）在 `@DriftDatabase` 注解里声明，
@@ -27,10 +28,22 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      // v1 → v2：`notes` 加软删除列。老数据的 `deleted_at` 为 null =
+      // 正常笔记，无需回填。
+      if (from < 2) {
+        await m.addColumn(notes, notes.deletedAt);
+      }
+      // v2 → v3：`notes` 加背景列。老数据的 `background` 为 null = 无背景，
+      // 无需回填。
+      if (from < 3) {
+        await m.addColumn(notes, notes.background);
+      }
+    },
     beforeOpen: (details) async {
       // SQLite 默认关闭外键强制。不开这个，notes.folder_id 的
       // ON DELETE SET NULL 不生效（删文件夹会失败或留下悬挂引用）。

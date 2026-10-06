@@ -28,6 +28,11 @@ class FolderRepositoryImpl implements FolderRepository {
   }
 
   @override
+  Stream<int> watchUncategorizedCount() {
+    return _localDataSource.watchUncategorizedCount();
+  }
+
+  @override
   Future<Either<Failure, NoteFolder>> create(NoteFolder folder) async {
     try {
       final toSave = folder.id.isEmpty ? _withId(folder, _uuid.v4()) : folder;

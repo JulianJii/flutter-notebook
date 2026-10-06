@@ -7,15 +7,17 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// 3 种形态由参数组合表达（`DEVELOPMENT-GUIDELINES.md` §8：不用布尔开关）：
 /// - A 右对齐图标组：`AppTopBar(actions: [...])`
+/// - A' 左对齐页面标题 + 右对齐图标组：`AppTopBar(title: ..., actions: [...])`  ← D1/D2
 /// - B 居中标题 + 右侧图标：`AppTopBar(leading: ..., centerTitle: ..., actions: [...])`  ← D4
 /// - C 仅返回：`AppTopBar(leading: ...)`  ← D5
 ///
 /// 取值来自 `UI-IMPLEMENTATION-SPEC.md` §0（高 56dp）、§4 P1~P5（各页 AppBar）。
-// TODO(Q28): SafeArea 按「非 edge-to-edge」实现，待设计确认
+// Q28 → docs/OPEN-DESIGN-QUESTIONS.md
 class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,
     this.leading,
+    this.title,
     this.centerTitle,
     this.actions = const <Widget>[],
     this.showDivider = true,
@@ -23,6 +25,11 @@ class AppTopBar extends StatelessWidget {
 
   /// 左侧控件，通常是 `AppIconButton`（TASK-010）。null → 左侧留空（形态 A）。
   final Widget? leading;
+
+  /// 左对齐的页面标题（形态 A'），通常是 `Text`。null → 不渲染标题（形态 A / C）。
+  ///
+  /// 与 [centerTitle] 互斥：两者同时给时 [centerTitle] 生效（居中形态优先，D4）。
+  final Widget? title;
 
   /// 居中标题，通常是 `Text`。null → 不渲染标题（形态 A / C）。
   final Widget? centerTitle;
@@ -71,11 +78,15 @@ class AppTopBar extends StatelessWidget {
             child: Row(
               children: <Widget>[
                 ?leading,
-                // 标题占满剩余空间并居中；无标题时留空。
+                // 标题占满剩余空间：`centerTitle` 居中（形态 B），`title` 左对齐
+                // （形态 A'）；两者都无时留空（形态 A / C）。
                 Expanded(
-                  child: centerTitle == null
-                      ? const SizedBox.shrink()
-                      : Center(child: centerTitle),
+                  child: centerTitle != null
+                      ? Center(child: centerTitle)
+                      : Align(
+                          alignment: Alignment.centerLeft,
+                          child: title,
+                        ),
                 ),
                 for (var i = 0; i < actions.length; i++) ...<Widget>[
                   if (i > 0) const SizedBox(width: _actionGap),

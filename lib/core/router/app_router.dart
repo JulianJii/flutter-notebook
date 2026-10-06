@@ -7,6 +7,8 @@ import 'package:init/features/notes/presentation/providers/note_editor_provider.
 import 'package:init/features/notes/presentation/screens/folder_manager_screen.dart';
 import 'package:init/features/notes/presentation/screens/note_detail_screen.dart';
 import 'package:init/features/notes/presentation/screens/note_list_screen.dart';
+import 'package:init/features/notes/presentation/screens/recently_deleted_screen.dart';
+import 'package:init/features/settings/presentation/screens/legal_screens.dart';
 import 'package:init/features/settings/presentation/screens/settings_screen.dart';
 import 'package:init/features/todos/presentation/screens/todo_list_screen.dart';
 import 'package:material_ui/material_ui.dart';
@@ -31,27 +33,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[
+              // ⚠️ Shell 只承载两个 Tab 的根页面。二级页面（详情 / 文件夹 /
+              // 回收站 / 新建）一律注册在 root 层，见下方 `_rootNavigatorKey`。
               GoRoute(
                 path: AppRoutes.notes,
                 builder: (context, state) => const NoteListScreen(),
-                routes: <RouteBase>[
-                  // ⚠️ 顺序不可调换：`folders` 与 `new` 都必须先于 `:id` 注册，
-                  // 否则 'folders' / 'new' 会被当作笔记 id。
-                  GoRoute(
-                    path: 'new',
-                    builder: (context, state) =>
-                        const NoteDetailScreen(noteId: kNewNoteId),
-                  ),
-                  GoRoute(
-                    path: 'folders',
-                    builder: (context, state) => const FolderManagerScreen(),
-                  ),
-                  GoRoute(
-                    path: ':id',
-                    builder: (context, state) =>
-                        NoteDetailScreen(noteId: state.pathParameters['id']!),
-                  ),
-                ],
               ),
             ],
           ),
@@ -65,10 +51,43 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // ⚠️ 顺序不可调换：`folders` / `trash` / `new` 都必须先于 `:id` 注册，
+      // 否则 'folders' / 'trash' / 'new' 会被当作笔记 id。
+      GoRoute(
+        path: AppRoutes.noteNew,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NoteDetailScreen(noteId: kNewNoteId),
+      ),
+      GoRoute(
+        path: AppRoutes.noteFolders,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const FolderManagerScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.noteTrash,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RecentlyDeletedScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.noteDetail,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) =>
+            NoteDetailScreen(noteId: state.pathParameters['id']!),
+      ),
       GoRoute(
         path: AppRoutes.settings,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.privacyPolicy,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.userAgreement,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const UserAgreementScreen(),
       ),
     ],
     // 404 是路由层诊断页，不是产品错误页（`COMPONENT-INVENTORY.md` §2 不含

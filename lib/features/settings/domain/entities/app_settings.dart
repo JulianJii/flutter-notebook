@@ -19,8 +19,7 @@ enum NoteLayout { grid, list }
 /// 主题模式。默认 `system`。
 ///
 /// ⚠️ **不是 Flutter 的 `ThemeMode`**：domain 是纯 Dart 层，⛔ 不 import Flutter。
-/// `main.dart` 的 `themeModeProvider` 读的是 Flutter 那个，映射在 presentation
-/// 层（`TASK-045`）。
+/// 映射成 `ThemeMode` 在 `main.dart` 的 `MyApp` 里（3↔3 一一对应）。
 enum AppThemeMode { system, light, dark }
 
 /// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：

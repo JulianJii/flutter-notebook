@@ -71,7 +71,8 @@ void main() {
     final folderRepo = MockFolderRepository();
     when(
       () => folderRepo.watchWithCounts(),
-    ).thenAnswer((_) => const Stream<List<FolderWithCount>>.empty());
+      // `value([])` 而不是 `empty()`：P1 等文件夹流首次出值才建 TabController。
+    ).thenAnswer((_) => Stream<List<FolderWithCount>>.value(const []));
     final todoRepo = MockTodoRepository();
     when(
       () => todoRepo.watchAll(),
@@ -304,14 +305,35 @@ void main() {
       expect(navTop, greaterThan(0));
     });
 
-    testWidgets('P3 是二级 Push 页：底部导航仍在 Shell 上，详情页不自带', (tester) async {
+    testWidgets('P3 是 root 层二级页：底部导航只在 Tab 主页出现', (tester) async {
       final router = await pumpApp(tester);
 
       router.go('/notes/some-id');
       await tester.pumpAndSettle();
 
       expect(find.byType(NoteDetailScreen), findsOneWidget);
+      expect(find.byType(AppBottomNav), findsNothing);
+
+      // 返回 Tab 主页后底部导航恢复。
+      router.go(AppRoutes.notes);
+      await tester.pumpAndSettle();
       expect(find.byType(AppBottomNav), findsOneWidget);
+    });
+
+    testWidgets('二级页返回：详情页 pop 回 P1，不抛 nothing to pop', (tester) async {
+      final router = await pumpApp(tester);
+
+      // 列表进入详情走 `push`（见 `note_list_screen.dart` 的 `openNote`），
+      // 栈里有下层才能 pop —— `go` 会替换整条栈导致返回炸掉。
+      router.push(AppRoutes.noteDetailPath('some-id'));
+      await tester.pumpAndSettle();
+      expect(find.byType(NoteDetailScreen), findsOneWidget);
+
+      await tester.tap(find.byIcon(AppIcons.back));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(NoteListScreen), findsOneWidget);
     });
   });
 }

@@ -4,7 +4,7 @@ import 'package:init/core/theme/tokens/app_radius.dart';
 import 'package:init/core/theme/tokens/app_text_styles.dart';
 import 'package:material_ui/material_ui.dart';
 
-// TODO(Q35): 底部导航项的按压/禁用态无稿，当前用 InkWell 默认涟漪
+// Q35 → docs/OPEN-DESIGN-QUESTIONS.md
 /// 底部标签栏（2 项）。**纯视觉组件：只管画，不管导航。**
 ///
 /// 导航由调用方（`NotesShell`）通过 [onTap] 回调处理 —— 见

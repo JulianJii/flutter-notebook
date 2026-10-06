@@ -29,7 +29,7 @@ class NoteMasonryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notes.isEmpty) {
-      // TODO(Q31): 空状态无设计稿，不建视觉。
+      // Q31 → docs/OPEN-DESIGN-QUESTIONS.md（空状态无稿，不建视觉）
       return const SizedBox.shrink();
     }
 
@@ -69,6 +69,4 @@ class NoteMasonryGrid extends StatelessWidget {
   }
 }
 
-// TODO(Q19b): 分列算法无稿。当前用 MasonryGridView 默认的「更短列优先」——零代码
-// 且左右两列总高接近 D1 观感。Q19b 若答「按序左右交替」，换 SliverList 两列 Row，
-// 对外签名不变。
+// Q19b → docs/OPEN-DESIGN-QUESTIONS.md（用 MasonryGridView 默认的更短列优先）

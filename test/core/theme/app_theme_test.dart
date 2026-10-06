@@ -81,7 +81,7 @@ void main() {
         ),
       );
       expect(readColors.accent, light.accent);
-      expect(readTextStyles.displayTitle.fontSize, 24);
+      expect(readTextStyles.displayTitle.fontSize, 20);
     });
 
     testWidgets('未挂载 extension 时降级为 light 值而不抛异常', (tester) async {
@@ -99,7 +99,7 @@ void main() {
         ),
       );
       expect(readColors.accent, light.accent);
-      expect(readTextStyles.body.fontSize, 17);
+      expect(readTextStyles.body.fontSize, 15);
     });
   });
 }

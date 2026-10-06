@@ -38,13 +38,13 @@ void main() {
       expect(find.text('155'), findsOneWidget);
     });
 
-    testWidgets('计数右对齐、14sp；名称 16sp', (tester) async {
+    testWidgets('计数右对齐、13sp；名称 15sp', (tester) async {
       await tester.pumpWidget(
         _wrap(const FolderRow(name: '闻声笔记', count: 1, isSelected: true)),
       );
 
-      expect(tester.widget<Text>(find.text('1')).style?.fontSize, 14);
-      expect(tester.widget<Text>(find.text('闻声笔记')).style?.fontSize, 16);
+      expect(tester.widget<Text>(find.text('1')).style?.fontSize, 13);
+      expect(tester.widget<Text>(find.text('闻声笔记')).style?.fontSize, 15);
       expect(
         tester.getTopRight(find.text('1')).dx,
         greaterThan(tester.getTopRight(find.text('闻声笔记')).dx),
@@ -75,8 +75,8 @@ void main() {
         _wrap(const FolderRow(name: '闻声笔记', count: 1, isSelected: true)),
       );
 
-      // 16sp x 1.4 + 16x2 = 54.4（D4 实测 ~60，未写死）。
-      expect(tester.getSize(find.byType(FolderRow)).height, closeTo(54.4, 1));
+      // 15sp x 1.4 + 16x2 = 53（D4 实测 ~60，未写死）。
+      expect(tester.getSize(find.byType(FolderRow)).height, closeTo(53.0, 1));
       expect(find.byType(AppCard), findsOneWidget);
     });
   });

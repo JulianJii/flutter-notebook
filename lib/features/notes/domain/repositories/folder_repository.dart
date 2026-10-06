@@ -13,6 +13,12 @@ abstract class FolderRepository {
   /// UI 侧只会看到 `AsyncValue.error(CacheFailure)`。
   Stream<List<FolderWithCount>> watchWithCounts();
 
+  /// 「未分类」笔记数（`folder_id IS NULL`）。D4 的「未分类 154」就是它。
+  ///
+  /// ⛔ 单独一条 `COUNT(*)` 而不是「取列表再 `.length`」：后者会把全部未分类
+  /// 笔记的正文（Quill Delta JSON）读进内存只为拿一个整数。
+  Stream<int> watchUncategorizedCount();
+
   /// [NoteFolder.name] 有 UNIQUE 约束，冲突 → `Left(InputFailure)`。
   Future<Either<Failure, NoteFolder>> create(NoteFolder folder);
 

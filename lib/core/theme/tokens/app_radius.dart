@@ -5,9 +5,6 @@ abstract final class AppRadius {
   /// 所有卡片（笔记卡、待办卡、文件夹行、设置分组卡）。12dp。D1/D2/D4/D5。
   static const double card = 12;
 
-  /// 分类 chip。12dp `[推导]`。D1。
-  static const double chip = 12;
-
   /// 底部导航「笔记」图标黑底圆角方块。8dp `[推导]`。D1。
   static const double navIcon = 8;
 

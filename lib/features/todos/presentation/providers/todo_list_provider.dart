@@ -45,9 +45,8 @@ class TodoOverrides extends _$TodoOverrides {
     if (result.isLeft()) {
       // 回滚：草稿（乐观值）丢弃，UI 立即回到 stream 的权威值。
       state = previous;
-      // TODO(Q34): 失败反馈无稿（Snackbar / Toast / Dialog 整类缺失）。现阶段
-      // 只回滚 + 记日志，返回 false 供调用方判断；Q34 补稿后落点是 Screen 层
-      // `ref.listen` 提示，**不改本 provider**。
+      // 失败提示落在 Screen 层（`todo_list_screen._toggle` 收到 false 弹 Snackbar），
+      // **不改本 provider** —— 它不碰 BuildContext。
       // ⚠️ 日志不记 todo 的 title（隐私，`DEVELOPMENT-GUIDELINES.md` §4）。
       ref
           .read(taggedLoggerProvider('todos'))
@@ -56,6 +55,20 @@ class TodoOverrides extends _$TodoOverrides {
     }
     return true;
   }
+}
+
+/// 「已完成 N」折叠分组的展开态。默认折叠 —— 已完成项是低频内容，不该默认占屏。
+///
+/// 折叠态是**纯 UI 状态**，与列表数据无关，故不进 `TodoOverrides`，也不需要 invalidate。
+@riverpod
+class TodoDoneSection extends _$TodoDoneSection {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+
+  /// 清除已完成后调用：已空的分隔行不该留在展开态。
+  void collapse() => state = false;
 }
 
 /// 把覆盖层叠加到 stream 的权威列表上。Screen 与测试共用这一份实现。
@@ -72,9 +85,9 @@ List<Todo> applyTodoOverrides(
     },
 ];
 
-// ⛔ 不排序：排序键 `created_at DESC` 已在 `TodoDao` 的 SQL 里排完
-// （`DEVELOPMENT-GUIDELINES.md` §4「DAO 排 SQL」）。「已完成排到后面」无稿（Q21）。
-// ⛔ 不实现 create / update / delete：
-// TODO(Q7): D2 无新建落地页（FAB 新建待办如何输入无稿）。
-// TODO(Q21): D2 无编辑 / 删除入口。
-// Q7 / Q21 答了之后在**本文件**补齐，与已实现的 toggle 共用同一个 stream。
+// ⛔ 不排序：排序键 `is_done ASC, created_at DESC` 已在 `TodoDao` 的 SQL 里排完
+// （`DEVELOPMENT-GUIDELINES.md` §4「DAO 排 SQL」）。折叠分组只做保序切分、不重排。
+// ⛔ 本 provider 不管 create：写操作只有 toggle 需要乐观覆盖（它能失败并回滚），
+// create 直接由 Screen 调 `createTodoUseCaseProvider`，新行同样由下面的 stream 推出。
+// Q21 已接线：编辑 / 删除同样不进覆盖层 —— 它们没有「乐观」可言（弹窗关掉就没有
+// 乐观态可回滚），失败走 Snackbar 即可。

@@ -168,3 +168,69 @@ abstract class _$TodoOverrides extends $Notifier<Map<String, bool>> {
     return element.handleCreate(ref, build);
   }
 }
+
+/// 「已完成 N」折叠分组的展开态。默认折叠 —— 已完成项是低频内容，不该默认占屏。
+///
+/// 折叠态是**纯 UI 状态**，与列表数据无关，故不进 `TodoOverrides`，也不需要 invalidate。
+
+@ProviderFor(TodoDoneSection)
+final todoDoneSectionProvider = TodoDoneSectionProvider._();
+
+/// 「已完成 N」折叠分组的展开态。默认折叠 —— 已完成项是低频内容，不该默认占屏。
+///
+/// 折叠态是**纯 UI 状态**，与列表数据无关，故不进 `TodoOverrides`，也不需要 invalidate。
+final class TodoDoneSectionProvider
+    extends $NotifierProvider<TodoDoneSection, bool> {
+  /// 「已完成 N」折叠分组的展开态。默认折叠 —— 已完成项是低频内容，不该默认占屏。
+  ///
+  /// 折叠态是**纯 UI 状态**，与列表数据无关，故不进 `TodoOverrides`，也不需要 invalidate。
+  TodoDoneSectionProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'todoDoneSectionProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$todoDoneSectionHash();
+
+  @$internal
+  @override
+  TodoDoneSection create() => TodoDoneSection();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$todoDoneSectionHash() => r'335315f9bc7a9c25411b1844649a2aad974dfde1';
+
+/// 「已完成 N」折叠分组的展开态。默认折叠 —— 已完成项是低频内容，不该默认占屏。
+///
+/// 折叠态是**纯 UI 状态**，与列表数据无关，故不进 `TodoOverrides`，也不需要 invalidate。
+
+abstract class _$TodoDoneSection extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}

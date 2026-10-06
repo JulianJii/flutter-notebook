@@ -3,11 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/features/notes/domain/entities/folder_with_count.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
 import 'package:init/features/notes/domain/entities/note_folder.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
 import 'package:init/features/notes/domain/repositories/folder_repository.dart';
-import 'package:init/features/notes/presentation/providers/note_list_provider.dart';
 import 'package:init/features/notes/presentation/screens/folder_manager_screen.dart';
 import 'package:init/features/notes/presentation/widgets/create_folder_row.dart';
 import 'package:init/features/notes/presentation/widgets/folder_row.dart';
@@ -24,17 +21,8 @@ final NoteFolder _f1 = NoteFolder(
   createdAt: DateTime(2026, 1, 1),
   updatedAt: DateTime(2026, 1, 1),
 );
-final Note _note = Note(
-  id: 'n1',
-  title: '标题',
-  content: '正文',
-  createdAt: DateTime(2026, 8, 25),
-  updatedAt: DateTime(2026, 8, 25),
-);
-
 void main() {
   setUpAll(() {
-    registerFallbackValue(const NoteQuery());
     registerFallbackValue(
       NoteFolder(
         id: '',
@@ -77,19 +65,14 @@ void main() {
         FolderWithCount(folder: _f1, count: 1),
       ]),
     );
+    // 「未分类」走 DAO 的 `COUNT(*)` 透传，不再是「取笔记列表再 .length」——
+    // 所以这里 stub 的是一个标量流，不是一批假笔记。
+    when(repo.watchUncategorizedCount).thenAnswer(
+      (_) => Stream<int>.value(uncategorized),
+    );
     folderRepo = repo;
     return ProviderScope(
-      overrides: [
-        folderRepositoryProvider.overrideWithValue(repo),
-        noteListProvider.overrideWith(
-          (ref, query) => Stream<List<Note>>.value(
-            List<Note>.filled(
-              query.folder is UncategorizedNotes ? uncategorized : 1,
-              _note,
-            ),
-          ),
-        ),
-      ],
+      overrides: [folderRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,
         routerConfig: router,
@@ -187,15 +170,11 @@ void main() {
     expect(find.text('notes:all'), findsOneWidget);
   });
 
-  testWidgets('顶栏 trash 不可点：点击不发生任何导航', (tester) async {
+  testWidgets('顶栏无删除图标', (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.delete_outline), warnIfMissed: false);
-    await tester.pumpAndSettle();
-
-    expect(find.byType(FolderManagerScreen), findsOneWidget);
+    expect(find.byIcon(Icons.delete_outline), findsNothing);
   });
 
   testWidgets('新建文件夹弹窗可输入、可取消，取消不提交', (tester) async {

@@ -75,9 +75,6 @@ class NotificationDeepLinkHandler extends Notifier<String?> {
     return null;
   }
 
-  /// 获取待处理的深层链接（如果有）
-  String? get pendingDeepLink => state;
-
   /// 清除待处理的深层链接
   void clearPendingDeepLink() {
     state = null;

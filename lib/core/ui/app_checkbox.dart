@@ -40,8 +40,7 @@ class AppCheckbox extends StatelessWidget {
       // 视觉边长 —— 稿上量的是**方框**边长不是命中区。
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
-      // TODO(Q21): D2 只画了 unchecked 态；checked 态沿用 Material 默认
-      // （琥珀 accent 填充），等设计确认后只改 AppTheme.checkboxTheme 一处。
+      // Q21 → docs/OPEN-DESIGN-QUESTIONS.md（checked 态沿用 Material 默认）
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
       ),

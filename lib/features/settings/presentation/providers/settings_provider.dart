@@ -19,8 +19,7 @@ part 'settings_provider.g.dart';
 /// microtask 里读一次持久化值，读到后 state 自动重建
 ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
 ///
-/// TODO(Q33): 加载 / 保存失败只记日志，不回滚、不弹 Snackbar —— 用户无法修复，
-/// 弹窗只会吓人，且错误态视觉无稿。
+/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
@@ -67,9 +66,16 @@ class Settings extends _$Settings {
   void setStrongReminder(bool value) =>
       _write(state.copyWith(strongReminder: value));
 
-  // ⛔ **不建 `setLocale` / `setThemeMode`**：D5 上既没有语言行也没有主题行
-  // （`TASK-046` 的 Out of Scope）。为不存在的入口建 setter 是每天都要付的税。
-  // P5 真出现这两行时再加。
+  /// 主题模式。P5「深色模式」行的唯一写入口。
+  ///
+  /// 之前主题读的是 `main.dart` 的 `themeModeProvider`（`build()` 写死 `system`
+  /// 且不落盘），用户的选择一重建就没了。现统一从 [AppSettings.themeMode] 走，
+  /// 与其余偏好共用 [_write] 的落盘、首帧竞态防护与「失败不回滚」。
+  void setThemeMode(AppThemeMode value) =>
+      _write(state.copyWith(themeMode: value));
+
+  // ⛔ **仍不建 `setLocale`**：语言有独立的 `persistentLocaleProvider`（它自己写盘），
+  // 在这里再存一份就成了双真相源。要在 P5 加语言行时先决定谁是真源。
 
   /// 先同步改 state（UI 立即响应），再 fire-and-forget 落盘。
   void _write(AppSettings next) {
@@ -102,8 +108,7 @@ class Settings extends _$Settings {
 @Riverpod(keepAlive: true)
 double textScaleFactor(Ref ref) =>
     switch (ref.watch(settingsProvider).textScale) {
-      // TODO(Q14): 4 档文字大小的具体倍率无稿（D5 只标了「文字大小（默认）」），
-      // 当前取线性值 0.875 / 1.0 / 1.125 / 1.25 待设计确认。
+      // Q14 → docs/OPEN-DESIGN-QUESTIONS.md（4 档倍率无稿，暂取线性值）
       TextScaleLevel.small => 0.875,
       TextScaleLevel.normal => 1.0,
       TextScaleLevel.large => 1.125,

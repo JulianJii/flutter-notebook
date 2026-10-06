@@ -33,8 +33,7 @@ class AppSectionHeader extends StatelessWidget {
       ),
       child: Align(
         alignment: Alignment.centerLeft,
-        // ⚠️ TODO(Q-§2.2): §2.2 的 13 个字阶里没有「分组标题」这一级，
-        // 暂取最接近的 `text.subtitle`（13sp / w400）。按 D5 量取后修正此行。
+        // Q-§2.2 → docs/OPEN-DESIGN-QUESTIONS.md（暂取最接近的 `text.subtitle`）
         child: Text(
           text,
           style: context.textStyles.subtitle.copyWith(

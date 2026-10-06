@@ -3,6 +3,7 @@ import 'package:init/core/error/exceptions.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/features/notes/data/datasources/note_local_data_source.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 import 'package:init/features/notes/domain/repositories/note_repository.dart';
 import 'package:uuid/uuid.dart';
@@ -69,17 +70,67 @@ class NoteRepositoryImpl implements NoteRepository {
     }
   }
 
-  /// ⚠️ **裁决点（CONFLICT-10）**：删除语义由 `ARCHITECTURE-DESIGN.md` §5.4 /
-  /// ADR-7 判定的**硬删除**决定。若裁决改为软删除，datasource 的
-  /// `deleteById` 要换成一次 `UPDATE ... SET deleted_at`，并且**必须在同一个
-  /// commit** 里加：`deleted_at` 列 + 全部查询的 `deleted_at IS NULL` 过滤 +
-  /// `listTrashed` / `restore` / `purge` + 回收站页面（Q14）。
-  /// 禁止只加列不加页面 —— 无页面的软删除 = 用户数据静默消失，比硬删除更糟。
-  // TODO(CONFLICT-10): 删除语义待产品裁决；裁决后删掉本注释块并同步 §5.4。
+  /// 只改背景：**不**刷新 `updatedAt`（换背景不是编辑，排序键不该跳变）。
+  @override
+  Future<Either<Failure, Unit>> updateBackground(
+    String noteId,
+    NoteBackground? background,
+  ) async {
+    try {
+      await _localDataSource.updateBackground(noteId, background);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  /// 软删除：进「最近删除」。`deleted_at` 由 datasource 写 `now()`，
+  /// **不**刷新 `updatedAt`（删除不是编辑，列表排序键不该因删除而跳变）。
   @override
   Future<Either<Failure, Unit>> delete(String noteId) async {
     try {
       await _localDataSource.delete(noteId);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Stream<List<Note>> watchDeleted() => _localDataSource.watchDeleted();
+
+  @override
+  Future<Either<Failure, Unit>> restore(String noteId) async {
+    try {
+      await _localDataSource.restore(noteId);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> purge(String noteId) async {
+    try {
+      await _localDataSource.purge(noteId);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> purgeAll() async {
+    try {
+      await _localDataSource.purgeAll();
       return const Right(unit);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));
@@ -99,6 +150,7 @@ Note _withId(Note note, String id) {
     title: note.title,
     content: note.content,
     folderId: note.folderId,
+    background: note.background,
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
   );

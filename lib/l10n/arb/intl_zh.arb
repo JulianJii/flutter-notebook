@@ -206,11 +206,19 @@
   },
   "share": "分享",
   "@share": {
-    "description": "Tooltip of the P3 top bar share icon (Q8 unresolved)"
+    "description": "Tooltip of the P3 top bar share icon"
   },
   "palette": "配色",
   "@palette": {
     "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+  },
+  "noteBackground": "背景",
+  "@noteBackground": {
+    "description": "Title of the P3 background picker sheet and the accessibility label of a background thumbnail"
+  },
+  "noteBackgroundNone": "无背景",
+  "@noteBackgroundNone": {
+    "description": "Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet"
   },
   "more": "更多",
   "@more": {
@@ -227,6 +235,14 @@
   "folderName": "文件夹名称",
   "@folderName": {
     "description": "Hint text of the create-folder dialog text field (P4)"
+  },
+  "createTodo": "新建待办",
+  "@createTodo": {
+    "description": "Title of the create-todo dialog opened by the P2 FAB"
+  },
+  "todoTitle": "待办标题",
+  "@todoTitle": {
+    "description": "Hint text of the create-todo dialog text field (P2)"
   },
   "save": "保存",
   "@save": {
@@ -249,10 +265,6 @@
       }
     }
   },
-  "settingsGroupCloud": "云服务",
-  "@settingsGroupCloud": {
-    "description": "P5 section header: cloud services"
-  },
   "settingsGroupNoteStyle": "笔记样式",
   "@settingsGroupNoteStyle": {
     "description": "P5 section header: note appearance"
@@ -271,7 +283,7 @@
   },
   "settingsRecentDeleted": "最近删除",
   "@settingsRecentDeleted": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "P5 chevron row leading to the trash screen, and its page title"
   },
   "settingsQuickCapture": "速记",
   "@settingsQuickCapture": {
@@ -344,6 +356,221 @@
   "settingsLayoutList": "列表模式",
   "@settingsLayoutList": {
     "description": "Note list layout option: single column list"
+  },
+  "settingsThemeMode": "深色模式",
+  "@settingsThemeMode": {
+    "description": "Settings row title: dark mode"
+  },
+  "settingsThemeSystem": "跟随系统",
+  "@settingsThemeSystem": {
+    "description": "Theme mode option: follow system"
+  },
+  "settingsThemeLight": "浅色",
+  "@settingsThemeLight": {
+    "description": "Theme mode option: light"
+  },
+  "settingsThemeDark": "深色",
+  "@settingsThemeDark": {
+    "description": "Theme mode option: dark"
+  },
+  "settingsSwitchOn": "开启",
+  "@settingsSwitchOn": {
+    "description": "Selected option of a two-option settings row"
+  },
+  "settingsSwitchOff": "关闭",
+  "@settingsSwitchOff": {
+    "description": "Unselected option of a two-option settings row"
+  },
+  "notesSearchHint": "搜索笔记",
+  "@notesSearchHint": {
+    "description": "Placeholder of the note search field"
+  },
+  "notesSearchClear": "清除搜索",
+  "@notesSearchClear": {
+    "description": "Accessibility label of the button that clears the note search field"
+  },
+  "deleteNote": "删除笔记",
+  "@deleteNote": {
+    "description": "Menu action that deletes the current note"
+  },
+  "deleteNoteConfirm": "确定要删除这篇笔记吗？删除后可在「最近删除」中恢复。",
+  "@deleteNoteConfirm": {
+    "description": "Body of the note deletion confirmation dialog (soft delete, recoverable)"
+  },
+  "noteDeleted": "已移到「最近删除」",
+  "@noteDeleted": {
+    "description": "Snackbar shown after a note is soft deleted"
+  },
+  "trashEmpty": "没有已删除的笔记",
+  "@trashEmpty": {
+    "description": "Empty state of the trash screen"
+  },
+  "trashRestore": "恢复",
+  "@trashRestore": {
+    "description": "Restore action of a trash row"
+  },
+  "restoreDone": "已恢复",
+  "@restoreDone": {
+    "description": "Snackbar shown after a note is restored"
+  },
+  "trashDeleteForever": "永久删除",
+  "@trashDeleteForever": {
+    "description": "Permanent delete action of a trash row"
+  },
+  "trashDeleteForeverConfirm": "永久删除后无法恢复，确定要删除吗？",
+  "@trashDeleteForeverConfirm": {
+    "description": "Body of the permanent delete confirmation dialog"
+  },
+  "trashEmptyAction": "清空",
+  "@trashEmptyAction": {
+    "description": "Top bar action that empties the trash, and its confirm button"
+  },
+  "trashEmptyConfirm": "确定要清空所有已删除的笔记吗？此操作无法撤销。",
+  "@trashEmptyConfirm": {
+    "description": "Body of the empty-trash confirmation dialog"
+  },
+  "emptyDone": "已清空",
+  "@emptyDone": {
+    "description": "Snackbar shown after the trash is emptied"
+  },
+  "trashDeletedAt": "删除于 {date}",
+  "@trashDeletedAt": {
+    "description": "Deleted date shown on a trash row",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "privacyPolicyIntro": "「笔记」是一款纯本地应用。我们非常重视您的隐私，请在使用前仔细阅读本政策。",
+  "@privacyPolicyIntro": {
+    "description": "Intro paragraph of the privacy policy page"
+  },
+  "privacyPolicyDataTitle": "数据收集与存储",
+  "@privacyPolicyDataTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyDataBody": "本应用不收集、不上传您的任何个人数据。全部笔记、待办与设置仅保存在您的设备本地，卸载应用或主动删除后即彻底清除。",
+  "@privacyPolicyDataBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyPermissionTitle": "权限使用",
+  "@privacyPolicyPermissionTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyPermissionBody": "仅当您主动使用通知、分享等相应功能时，应用才会调用对应系统能力，不会在后台读取您的个人信息。",
+  "@privacyPolicyPermissionBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicySharingTitle": "数据共享",
+  "@privacyPolicySharingTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicySharingBody": "本应用没有云端服务，不存在向任何第三方共享或传输您内容的行为。",
+  "@privacyPolicySharingBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyUpdatesTitle": "政策更新",
+  "@privacyPolicyUpdatesTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyUpdatesBody": "本政策如有重大变更，将在应用内或版本更新说明中公布。变更后继续使用即表示您同意更新后的政策。",
+  "@privacyPolicyUpdatesBody": {
+    "description": "Privacy policy section body"
+  },
+  "privacyPolicyContactTitle": "联系我们",
+  "@privacyPolicyContactTitle": {
+    "description": "Privacy policy section heading"
+  },
+  "privacyPolicyContactBody": "如您对本政策有任何疑问或建议，请通过应用商店页面提供的联系方式与我们联系。",
+  "@privacyPolicyContactBody": {
+    "description": "Privacy policy section body"
+  },
+  "userAgreementIntro": "欢迎您使用「笔记」。在开始使用前，请您仔细阅读并理解本协议。",
+  "@userAgreementIntro": {
+    "description": "Intro paragraph of the user agreement page"
+  },
+  "agreementAcceptTitle": "协议的接受",
+  "@agreementAcceptTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementAcceptBody": "您下载、安装或使用本应用，即表示您已阅读并同意本协议的全部内容。如您不同意本协议，请立即停止使用。",
+  "@agreementAcceptBody": {
+    "description": "User agreement section body"
+  },
+  "agreementUseTitle": "使用规范",
+  "@agreementUseTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementUseBody": "您承诺不利用本应用制作、存储或传播违反法律法规的内容，不得对应用进行反向工程、恶意攻击或其他影响正常使用的行为。",
+  "@agreementUseBody": {
+    "description": "User agreement section body"
+  },
+  "agreementOwnershipTitle": "内容归属",
+  "@agreementOwnershipTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementOwnershipBody": "您在本应用中创建的笔记、待办等内容归您本人所有。本应用的界面、图标与程序本身的权利归开发者所有。",
+  "@agreementOwnershipBody": {
+    "description": "User agreement section body"
+  },
+  "agreementLiabilityTitle": "免责声明",
+  "@agreementLiabilityTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementLiabilityBody": "本应用将数据保存在您的设备本地。因设备丢失、系统故障、卸载应用或误操作导致的数据丢失，开发者不承担责任，请自行妥善备份重要内容。",
+  "@agreementLiabilityBody": {
+    "description": "User agreement section body"
+  },
+  "agreementUpdatesTitle": "协议变更",
+  "@agreementUpdatesTitle": {
+    "description": "User agreement section heading"
+  },
+  "agreementUpdatesBody": "本协议如有变更，将在应用内公布。变更后继续使用即表示您接受更新后的协议。",
+  "@agreementUpdatesBody": {
+    "description": "User agreement section body"
+  },
+  "editTodo": "编辑待办",
+  "@editTodo": {
+    "description": "Title of the todo edit dialog"
+  },
+  "deleteTodo": "删除待办",
+  "@deleteTodo": {
+    "description": "Action that deletes the edited todo"
+  },
+  "deleteTodoConfirm": "确定要删除这条待办吗？此操作无法撤销。",
+  "@deleteTodoConfirm": {
+    "description": "Body of the todo deletion confirmation dialog"
+  },
+  "todoToggleFailed": "勾选没有保存成功，已恢复原状态",
+  "@todoToggleFailed": {
+    "description": "Snackbar shown when persisting a to-do toggle fails"
+  },
+  "todoDoneSection": "已完成 {count}",
+  "@todoDoneSection": {
+    "description": "Collapsed section header of finished to-dos",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearCompletedTodos": "清除已完成",
+  "@clearCompletedTodos": {
+    "description": "Tooltip of the P2 top bar action that clears finished to-dos"
+  },
+  "clearCompletedTodosConfirm": "确定要清除全部已完成的待办吗？此操作无法撤销。",
+  "@clearCompletedTodosConfirm": {
+    "description": "Body of the clear-completed confirmation dialog"
+  },
+  "emptyTodos": "还没有待办",
+  "@emptyTodos": {
+    "description": "Empty state of the to-do list"
+  },
+  "emptySearchResult": "没有找到相关笔记",
+  "@emptySearchResult": {
+    "description": "Empty state of the note list when a search term matches nothing"
   },
   "last_updated": "最后更新：{date}",
   "@last_updated": {

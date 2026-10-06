@@ -11,6 +11,11 @@ part of 'settings_providers.dart';
 /// ⛔ **不自己 new `LocalStorageService`**：必须走 [localStorageServiceProvider]
 /// → `sharedPreferencesProvider` 这条既有 provider 链，测试才能替换依赖
 /// （`main.dart` 在 `overrides` 里替换的就是 `sharedPreferencesProvider`）。
+///
+/// `keepAlive: true`：这三个 provider 是 `settingsProvider`（全局 keepAlive 状态）
+/// 的依赖链。keepAlive 的 provider 不允许 read/watch autoDispose 的 provider
+/// （`only_use_keep_alive_inside_keep_alive`），故整条链一起常驻。三者都是无状态
+/// 薄壳，keepAlive 无副作用。
 
 @ProviderFor(settingsRepository)
 final settingsRepositoryProvider = SettingsRepositoryProvider._();
@@ -18,6 +23,11 @@ final settingsRepositoryProvider = SettingsRepositoryProvider._();
 /// ⛔ **不自己 new `LocalStorageService`**：必须走 [localStorageServiceProvider]
 /// → `sharedPreferencesProvider` 这条既有 provider 链，测试才能替换依赖
 /// （`main.dart` 在 `overrides` 里替换的就是 `sharedPreferencesProvider`）。
+///
+/// `keepAlive: true`：这三个 provider 是 `settingsProvider`（全局 keepAlive 状态）
+/// 的依赖链。keepAlive 的 provider 不允许 read/watch autoDispose 的 provider
+/// （`only_use_keep_alive_inside_keep_alive`），故整条链一起常驻。三者都是无状态
+/// 薄壳，keepAlive 无副作用。
 
 final class SettingsRepositoryProvider
     extends
@@ -30,13 +40,18 @@ final class SettingsRepositoryProvider
   /// ⛔ **不自己 new `LocalStorageService`**：必须走 [localStorageServiceProvider]
   /// → `sharedPreferencesProvider` 这条既有 provider 链，测试才能替换依赖
   /// （`main.dart` 在 `overrides` 里替换的就是 `sharedPreferencesProvider`）。
+  ///
+  /// `keepAlive: true`：这三个 provider 是 `settingsProvider`（全局 keepAlive 状态）
+  /// 的依赖链。keepAlive 的 provider 不允许 read/watch autoDispose 的 provider
+  /// （`only_use_keep_alive_inside_keep_alive`），故整条链一起常驻。三者都是无状态
+  /// 薄壳，keepAlive 无副作用。
   SettingsRepositoryProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'settingsRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -65,7 +80,7 @@ final class SettingsRepositoryProvider
 }
 
 String _$settingsRepositoryHash() =>
-    r'57fc8432e00c8ddc3b82b56bc58fb529d54cc06a';
+    r'81a0008a42959f2dbddbcc36c2eb19f610a85579';
 
 @ProviderFor(getSettingsUseCase)
 final getSettingsUseCaseProvider = GetSettingsUseCaseProvider._();
@@ -84,7 +99,7 @@ final class GetSettingsUseCaseProvider
         argument: null,
         retry: null,
         name: r'getSettingsUseCaseProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -113,7 +128,7 @@ final class GetSettingsUseCaseProvider
 }
 
 String _$getSettingsUseCaseHash() =>
-    r'09c503ca87f7a3fdda8750ca6f256cd5ef800f73';
+    r'bf3ab3420993942a7c9585499120b437be8e305e';
 
 @ProviderFor(saveSettingsUseCase)
 final saveSettingsUseCaseProvider = SaveSettingsUseCaseProvider._();
@@ -132,7 +147,7 @@ final class SaveSettingsUseCaseProvider
         argument: null,
         retry: null,
         name: r'saveSettingsUseCaseProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -161,4 +176,4 @@ final class SaveSettingsUseCaseProvider
 }
 
 String _$saveSettingsUseCaseHash() =>
-    r'deebc3301db604f50375ca72b371f0ca2bdd8f89';
+    r'cbc9eaafc06e74165d3c3342d9bf2f649424a38c';

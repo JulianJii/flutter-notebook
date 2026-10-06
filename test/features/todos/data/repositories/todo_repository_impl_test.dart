@@ -98,8 +98,27 @@ void main() {
     );
   });
 
-  test('watchAll 直接透传 Repository 那个流实例', () {
-    final stream = Stream.value([_todo()]);
+  test('deleteCompleted: 成功 -> Right(删除行数)', () async {
+    when(() => ds.deleteCompleted()).thenAnswer((_) async => 3);
+    expect(await repo.deleteCompleted(), const Right<Failure, int>(3));
+  });
+
+  test('deleteCompleted: 0 行是合法结果（已清空），不是失败', () async {
+    when(() => ds.deleteCompleted()).thenAnswer((_) async => 0);
+    expect(await repo.deleteCompleted(), const Right<Failure, int>(0));
+  });
+
+  test('deleteCompleted: CacheException -> CacheFailure', () async {
+    when(
+      () => ds.deleteCompleted(),
+    ).thenThrow(CacheException(message: 'disk full'));
+    expect(
+      await repo.deleteCompleted(),
+      const Left<Failure, int>(CacheFailure(message: 'disk full')),
+    );
+  });
+
+  test('watchAll 直接透传 Repository 那个流实例', () {    final stream = Stream.value([_todo()]);
     when(() => ds.watchAll()).thenAnswer((_) => stream);
     expect(repo.watchAll(), same(stream));
   });

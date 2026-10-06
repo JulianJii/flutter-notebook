@@ -60,6 +60,9 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
 
     final query = select(notes);
 
+    // 软删除过滤：列表永远是「未删除」视图，回收站走 [watchDeleted]。
+    query.where((t) => t.deletedAt.isNull());
+
     if (uncategorizedOnly) {
       query.where((t) => t.folderId.isNull());
     } else if (folderId != null) {
@@ -85,8 +88,21 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
   }
 
   /// 读单条。不存在返回 `null`（**不抛异常**）—— 是「转成什么」由 datasource 决定。
+  ///
+  /// ⚠️ 不过滤 `deleted_at`：回收站里的笔记仍可按 id 读到（详情数据源一致）。
   Future<NoteRow?> getById(String noteId) {
     return (select(notes)..where((t) => t.id.equals(noteId))).getSingleOrNull();
+  }
+
+  /// 订阅「最近删除」：`deleted_at IS NOT NULL`，按删除时间倒序。
+  /// 回收站页面的唯一查询入口。
+  Stream<List<NoteRow>> watchDeleted() {
+    return (select(notes)
+          ..where((t) => t.deletedAt.isNotNull())
+          ..orderBy(<OrderClauseGenerator<$NotesTable>>[
+            (t) => OrderingTerm.desc(t.deletedAt),
+          ]))
+        .watch();
   }
 
   /// 插入。用 Companion 而非行对象：`title` / `content` 有默认值、主键无自增，
@@ -111,12 +127,45 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
         .then((count) => count > 0);
   }
 
-  /// 删除，返回受影响行数。**硬删除**（CONFLICT-10 方案 A，无 `deleted_at`）。
+  /// 软删除：写 `deleted_at`（**不**刷新 `updated_at` —— 删除不是编辑）。
+  /// 返回是否命中行。
+  Future<bool> softDeleteById(String noteId, DateTime deletedAt) {
+    return (super.update(notes)..where((t) => t.id.equals(noteId)))
+        .write(NotesCompanion(deletedAt: Value(deletedAt)))
+        .then((count) => count > 0);
+  }
+
+  /// 恢复（`deleted_at` 置回 null）。返回是否命中行。
+  Future<bool> restoreById(String noteId) {
+    return (super.update(notes)..where((t) => t.id.equals(noteId)))
+        .write(const NotesCompanion(deletedAt: Value(null)))
+        .then((count) => count > 0);
+  }
+
+  /// 只写 `background` 列（null = 无背景），**不刷 `updated_at`** ——
+  /// 换背景只改外观，不算一次编辑（列表 `editedDesc` 排序与卡片日期不受影响）。
+  /// 返回是否命中行。
+  Future<bool> updateBackgroundById(String noteId, String? background) {
+    return (super.update(notes)..where((t) => t.id.equals(noteId)))
+        .write(NotesCompanion(background: Value(background)))
+        .then((count) => count > 0);
+  }
+
+  /// 删除，返回受影响行数。**物理删除**：只用于回收站的「永久删除」。
   ///
   /// ⚠️ 名字带 `ById`：同上，`delete<T>(TableInfo<T, D>)` 与 `delete(String)`
   /// 不能同名。
   Future<int> deleteById(String noteId) {
     return (super.delete(notes)..where((t) => t.id.equals(noteId))).go();
+  }
+
+  /// 清空回收站：物理删除全部 `deleted_at IS NOT NULL` 的行。
+  /// 返回受影响行数。
+  Future<int> deleteAllDeleted() {
+    return (super
+            .delete(notes)
+          ..where((t) => t.deletedAt.isNotNull()))
+        .go();
   }
 
   /// 穷尽 4 个枚举值，无 `default` —— 新增枚举值时编译失败。

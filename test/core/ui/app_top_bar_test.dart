@@ -86,6 +86,25 @@ void main() {
     expect(title.center.dx, closeTo(bar.center.dx, 1.0));
   });
 
+  testWidgets('形态 A\'：title 左对齐，与右侧 actions 同行', (tester) async {
+    await tester.pumpWidget(
+      wrap(
+        const AppTopBar(
+          title: Text('笔记'),
+          actions: <Widget>[Icon(Icons.settings)],
+        ),
+      ),
+    );
+
+    final bar = tester.getRect(find.byType(AppTopBar));
+    final title = tester.getRect(find.text('笔记'));
+    final action = tester.getRect(find.byIcon(Icons.settings));
+    // 左对齐：与顶栏内容区左边缘之间只剩 12dp 页面内边距（无 leading）
+    expect(title.left - bar.left, closeTo(AppSpacing.pageH, 0.5));
+    expect(title.right, lessThan(action.left), reason: '标题与图标不重叠');
+    expect(title.center.dy, closeTo(action.center.dy, 1.0), reason: '同一行');
+  });
+
   testWidgets('形态 A：无 centerTitle 时 actions 仍靠右', (tester) async {
     await tester.pumpWidget(
       wrap(

@@ -3,6 +3,10 @@
 /// 此 Dart 文件可以编程方式用于生成新 feature
 /// 它镜像了 generate_feature.sh 脚本的功能
 /// 但允许与 IDE 插件或 Flutter 工具进行更复杂的集成。
+///
+/// ⚠️ 本文件里的 `// TODO: 实现 …` 是**生成器模板/脚手架的占位**（产出给新 feature
+/// 的骨架代码），不是本应用的待办，刻意保留 —— 待设计确认清单见
+/// `docs/OPEN-DESIGN-QUESTIONS.md`。
 library;
 
 import 'dart:io';

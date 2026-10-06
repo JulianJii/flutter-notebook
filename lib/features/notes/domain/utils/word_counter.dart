@@ -9,10 +9,8 @@
 /// ⛔ **不建 UseCase**（`DEVELOPMENT-GUIDELINES.md` §5）：纯函数不过 Repository。
 /// ⛔ 不做记忆化 / 缓存：单次 O(n)，正文规模下耗时不可测，而缓存要引入失效逻辑。
 /// ⛔ 不加 `countWords` / `countCharacters` 等备用 API：第二个调用点出现前不加。
-// TODO(Q23): 「35字」的统计规则无稿。当前口径由 D3 反推：剔除所有空白后按
-// code point 计数，标点计入。不选「英文按词」是因为那需要引入分词规则而设计稿
-// 无法验证；不选「剔除标点」是因为 D3 正文恰好无标点、同样无法验证，而少算
-// 用户明确写下的字符是更糟的默认。Q23 答了之后只改这一个方法 + 对应单测。
+// Q23 → docs/OPEN-DESIGN-QUESTIONS.md（口径：剔除所有空白后按 code point 计数，
+// 标点计入）
 abstract final class WordCounter {
   const WordCounter._();
 

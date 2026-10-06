@@ -25,6 +25,11 @@ abstract final class AppRoutes {
   /// P4 文件夹管理。`/notes` branch 的子路由，返回键回到 P1。
   static const String noteFolders = '/notes/folders';
 
+  /// 「最近删除」回收站。`/notes` branch 的子路由（P5 设置进入）。
+  ///
+  /// ⚠️ 与 `folders` / `new` 同理，**必须**注册在 `/notes/:id` 之前。
+  static const String noteTrash = '/notes/trash';
+
   /// P3 笔记详情 / 编辑。`/notes` branch 的子路由。路径参数：`id`。
   static const String noteDetail = '/notes/:id';
 
@@ -38,6 +43,12 @@ abstract final class AppRoutes {
 
   /// P5 设置。从 P1 或 P2 push 进入，返回目标为 P1。
   static const String settings = '/settings';
+
+  /// 隐私政策。`/settings` 的兄弟路由（root navigator，整页覆盖）。
+  static const String privacyPolicy = '/settings/privacy-policy';
+
+  /// 用户协议。`/settings` 的兄弟路由（root navigator，整页覆盖）。
+  static const String userAgreement = '/settings/user-agreement';
 
   /// 文件夹筛选的 query 参数名。`/notes?folder=<id>`。
   ///

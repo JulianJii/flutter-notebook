@@ -4,14 +4,14 @@ import 'note_folders_table.dart';
 
 /// 笔记表。实体见 `features/notes/domain/entities/note.dart`。
 ///
-/// ⚠️ 删除语义（CONFLICT-10 裁决）：**硬删除，无 `deleted_at` 列**。
-/// 若后续翻转为软删，必须在**同一个 commit** 里完成：
-///   1. 加 `deleted_at` 列 + `schemaVersion` 1 → 2 + `MigrationStrategy`；
-///   2. `NoteDao.watch` / `getById`、`FolderDao.watchWithCounts` 的计数、
-///      `TodoDao.watchAll` 全部加 `deleted_at IS NULL`；
-///   3. 加 `listTrashed` / `restore` / `purge`；
-///   4. 上线回收站页面（**Q14** 补稿）。
-/// 漏掉任何一条都会造成「删了还在列表里」或「回收站看不到」的数据不一致。
+/// ⚠️ 删除语义（原 CONFLICT-10 裁决已翻转为软删除，本 commit 一次性落地全部四条）：
+///   1. `deleted_at` 列 + `schemaVersion` 1 → 2 + `MigrationStrategy`（`app_database.dart`）；
+///   2. `NoteDao.watch` 与 `FolderDao.watchWithCounts` / `watchUncategorizedCount`
+///      全部加 `deleted_at IS NULL`；
+///   3. `NoteDao.watchDeleted` / `softDeleteById` / `restoreById` +
+///      Repository 的 `watchDeleted` / `restore` / `purge`；
+///   4. 回收站页面（`RecentlyDeletedScreen`，入口在 P5 设置）。
+/// 漏掉任何一条都会造成「删了还在列表里」或「最近删除看不到」的数据不一致。
 ///
 /// ⚠️ `PRAGMA foreign_keys = ON` **必须在 `AppDatabase.beforeOpen` 里执行**
 /// 才生效（SQLite 默认关闭外键强制）。本文件只声明 `ON DELETE SET NULL` 规则，
@@ -50,4 +50,13 @@ class Notes extends Table {
 
   /// 默认排序键（P5「按编辑日期」）。
   DateTimeColumn get updatedAt => dateTime()();
+
+  /// 软删除时刻。null = 正常笔记；非 null = 已进「最近删除」。
+  /// 恢复即置回 null，永久删除才物理 DELETE（`NoteDao.deleteById`）。
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// 纸张背景的稳定 id（`NoteBackground.id`）。null = 无背景（白底）。
+  /// 存 id 而非下标：资源列表顺序变化不会让老数据错位，未知值降级为「无背景」。
+  /// 只由 `NoteDao.updateBackgroundById` 写，整行 `update` 不碰这一列。
+  TextColumn get background => text().nullable()();
 }

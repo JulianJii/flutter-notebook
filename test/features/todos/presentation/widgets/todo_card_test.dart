@@ -98,16 +98,21 @@ void main() {
     expect(tester.getRect(find.byType(AppCard)).width, 360);
   });
 
-  testWidgets('checked 原样透传给 AppCheckbox，无自定义勾选视觉', (tester) async {
+  testWidgets('Q21 完成态：勾选透传 + 标题删除线且变灰', (tester) async {
     await tester.pumpWidget(
       wrap(const TodoCard(title: '测试', checked: true, onChanged: _noop)),
     );
 
     expect(tester.widget<AppCheckbox>(find.byType(AppCheckbox)).value, isTrue);
-    // Q21 无稿 → 标题不加删除线 / 不变灰：文本样式就是 rowTitle 原样。
-    final text = tester.widget<Text>(find.text('测试'));
-    expect(text.style?.decoration, isNull);
-    expect(text.style?.color, isNot(const Color(0xFF9E9E9E)));
+    final done = tester.widget<Text>(find.text('测试'));
+    expect(done.style?.decoration, TextDecoration.lineThrough);
+    expect(done.style?.color, isNot(const Color(0xFF1F1F1F)));
+
+    await tester.pumpWidget(
+      wrap(const TodoCard(title: '测试', checked: false, onChanged: _noop)),
+    );
+    final active = tester.widget<Text>(find.text('测试'));
+    expect(active.style?.decoration, isNull);
   });
 
   testWidgets('点复选框：回调携带目标值（true / false）', (tester) async {
@@ -184,13 +189,13 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('标题样式为 rowTitle(16sp w400) + textPrimary', (tester) async {
+  testWidgets('标题样式为 rowTitle(15sp w400) + textPrimary', (tester) async {
     await tester.pumpWidget(
       wrap(const TodoCard(title: '测试', checked: false, onChanged: _noop)),
     );
 
     final style = tester.widget<Text>(find.text('测试')).style!;
-    expect(style.fontSize, 16);
+    expect(style.fontSize, 15);
     expect(style.fontWeight, FontWeight.w400);
     expect(style.height, 1.4);
     expect(style.color, const Color(0xFF1A1A1A));

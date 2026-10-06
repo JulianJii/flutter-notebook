@@ -49,7 +49,7 @@ class AppIconButton extends StatelessWidget {
         minHeight: minTapSize,
       ),
       padding: EdgeInsets.zero,
-      // TODO(Q35): 按压/禁用态无稿，当前用 IconButton 默认样式
+      // Q35 → docs/OPEN-DESIGN-QUESTIONS.md
     );
   }
 }

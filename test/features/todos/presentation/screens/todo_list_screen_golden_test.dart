@@ -104,4 +104,46 @@ void main() {
       testEnvironments: <TestEnvironment>[goldenEnv],
     );
   });
+
+  /// 锁住本轮新增的两处视觉：顶栏的「清除已完成」入口 + 「已完成 N」折叠分隔行。
+  /// 默认折叠态（`todoDoneSectionProvider.build() => false`）—— 已完成卡片不渲染，
+  /// 它的删除线样式由 `todo_card_test` 的样式断言守。
+  testGoldenWidgets('P2 待办列表 — 已完成折叠分组（分隔行 + 清除入口）', (tester) async {
+    final repo = _MockTodoRepository();
+    when(() => repo.watchAll()).thenAnswer(
+      (_) => Stream<List<Todo>>.value(<Todo>[
+        _d2Todo,
+        Todo(
+          id: 't2',
+          title: '已完成',
+          isDone: true,
+          createdAt: DateTime(2026, 10, 2),
+          updatedAt: DateTime(2026, 10, 2),
+        ),
+      ]),
+    );
+    when(
+      () => repo.update(any()),
+    ).thenAnswer((_) async => Right<Failure, Todo>(_d2Todo));
+
+    await expectMatchTestEnvironments(
+      'todo_list_screen_done_section',
+      tester: tester,
+      widget: ProviderScope(
+        overrides: [todoRepositoryProvider.overrideWithValue(repo)],
+        child: MaterialApp.router(
+          theme: AppTheme.lightTheme,
+          routerConfig: _router(),
+          localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            ...AppLocalizations.localizationsDelegates,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          locale: const Locale('zh'),
+          debugShowCheckedModeBanner: false,
+        ),
+      ),
+      testEnvironments: <TestEnvironment>[goldenEnv],
+    );
+  });
 }

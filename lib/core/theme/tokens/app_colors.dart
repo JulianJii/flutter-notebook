@@ -41,8 +41,7 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// 深色模式取值。
   ///
-  // TODO(Q29): 深色模式配色表无设计稿，当前整体回落为浅色值。
-  /// 拿到 Q29 答案后只改这一个构造器，其余代码零改动。
+  // Q29 → docs/OPEN-DESIGN-QUESTIONS.md（深色表无稿，整体回落浅色值）
   const AppColors.dark() : this.light();
 
   /// 页面底色（列表页 / 设置页）。D1/D2/D4/D5 卡片外区域。

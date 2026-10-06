@@ -15,8 +15,8 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// ⛔ **无重命名 / 删除入口**：D4 无长按菜单、无多选、无行内编辑
 /// （`UI-IMPLEMENTATION-SPEC.md` §4 P4段「本页无」）。
-// TODO(Q11): D4 无重命名 / 删除入口（顶栏 trash 语义未知），待设计补稿。
-/// `RenameFolderUseCase` / `DeleteFolderUseCase` 的 UI 待Q11 / Q12 回答后接线。
+// 重命名 / 删除入口在 P4（`FolderManagerScreen`）落地；顶栏 trash 语义见
+// docs/OPEN-DESIGN-QUESTIONS.md（Q11）。
 class FolderRow extends StatelessWidget {
   const FolderRow({
     required this.name,
@@ -33,8 +33,7 @@ class FolderRow extends StatelessWidget {
   final int count;
 
   /// 选中态。D4 中**仅**通过左侧琥珀勾区分，无底色高亮。
-  // TODO(Q25c): 选中行是否需要底色高亮无稿 —— D4 中「全部」纯白、其余行极浅灰，
-  //             无法判定是选中态还是 JPEG 压缩噪声。当前只用琥珀勾区分。
+  // Q25c → docs/OPEN-DESIGN-QUESTIONS.md（选中态只用琥珀勾区分，不加底色）
   final bool isSelected;
 
   /// 点击回调。null → 不可点（不包 `InkWell`，无水波纹）。
@@ -48,9 +47,7 @@ class FolderRow extends StatelessWidget {
       padding: EdgeInsets.zero,
       onTap: onTap,
       child: AppListTile(
-        // TODO(Q25b): D4 未选中行**没有** leading 图标，导致「全部」行的名称
-        //             比其余行右移 24dp、三行名称互不对齐。当前按设计稿原样
-        //             实现（不加占位图标），待设计确认是否补占位。
+        // Q25b → docs/OPEN-DESIGN-QUESTIONS.md（未选中行按稿不加占位图标）
         leading: isSelected
             ? SizedBox(
                 width: AppSpacing.rowLeadingSlot,

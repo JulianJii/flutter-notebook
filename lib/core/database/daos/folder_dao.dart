@@ -22,15 +22,21 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   /// `?? 0` 兜底不可省。
   ///
   /// ⚠️ 结果里**不含**「全部」与「未分类」两行（§5.3：不是表里的行）。
-  /// `// TODO(Q18): 若产品判定「未分类」是真实文件夹，插入一条系统行并在 UI
-  /// 层映射，业务层不动。`
+  /// Q18 → docs/OPEN-DESIGN-QUESTIONS.md（「未分类」当前是筛选哨兵，非系统行）
   ///
   /// 排序固定 `createdAt ASC`（设计稿无排序入口）。
   Stream<List<FolderWithCountRow>> watchWithCounts() {
     final count = notes.id.count();
     final query =
         select(noteFolders).join([
-            leftOuterJoin(notes, notes.folderId.equalsExp(noteFolders.id)),
+            // 软删除过滤：回收站里的笔记不计入文件夹数（与列表同一视图）。
+            leftOuterJoin(
+              notes,
+              Expression.and([
+                notes.folderId.equalsExp(noteFolders.id),
+                notes.deletedAt.isNull(),
+              ]),
+            ),
           ])
           ..addColumns([count])
           ..groupBy([noteFolders.id])
@@ -56,7 +62,8 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
     final count = notes.id.count();
     return (selectOnly(notes)
           ..addColumns([count])
-          ..where(notes.folderId.isNull()))
+          ..where(notes.folderId.isNull())
+          ..where(notes.deletedAt.isNull()))
         .map((row) => row.read(count) ?? 0)
         .watchSingle();
   }

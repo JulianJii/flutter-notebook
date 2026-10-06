@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:init/core/error/failures.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 
 /// 笔记的领域抽象。实现在 data 层（`TASK-022`）。
@@ -20,11 +21,27 @@ abstract class NoteRepository {
   /// 更新。实现内部刷新 `updatedAt`。
   Future<Either<Failure, Note>> update(Note note);
 
-  /// 删除。
-  ///
-  /// ⚠️ 语义取决于 CONFLICT-10 裁决（软删 vs 硬删），两种实现的签名完全相同，
-  /// 只是内部不同。当前裁决为**硬删除、无 `deleted_at`**，迁移清单见
-  /// `specs/tasks/TASK-015-drift-tables.md` 的 Context 与
-  /// `specs/docs/PROJECT-STATUS.md` §6。
+  /// 只改纸张背景（null = 无背景）。实现内部**不刷新 `updatedAt`** ——
+  /// 换背景只改外观，不算一次编辑。
+  Future<Either<Failure, Unit>> updateBackground(
+    String noteId,
+    NoteBackground? background,
+  );
+
+  /// 删除（**软删除**）：把笔记移进「最近删除」，不物理删除。
+  /// 实现内部写 `deleted_at = now()`，不刷新 `updatedAt`。
   Future<Either<Failure, Unit>> delete(String noteId);
+
+  /// 订阅「最近删除」列表，按删除时间倒序。流错误以
+  /// `Stream.error(CacheException)` 传播（与 [watch] 同约定）。
+  Stream<List<Note>> watchDeleted();
+
+  /// 从「最近删除」恢复（`deleted_at` 置回 null）。
+  Future<Either<Failure, Unit>> restore(String noteId);
+
+  /// 永久删除（物理 DELETE，不可恢复）。
+  Future<Either<Failure, Unit>> purge(String noteId);
+
+  /// 清空「最近删除」（物理删除全部已软删的行）。
+  Future<Either<Failure, Unit>> purgeAll();
 }

@@ -5,6 +5,7 @@ import 'package:init/core/error/failures.dart';
 import 'package:init/features/notes/data/datasources/note_local_data_source.dart';
 import 'package:init/features/notes/data/repositories/note_repository_impl.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:uuid/uuid.dart';
@@ -137,6 +138,50 @@ void main() {
       expect(
         await repo.update(_note()),
         const Left<Failure, Note>(CacheFailure(message: 'disk full')),
+      );
+    });
+  });
+
+  group('updateBackground', () {
+    test('成功 -> Right(unit)，且只走窄通道（不碰整行 update）', () async {
+      when(
+        () => ds.updateBackground(any(), any()),
+      ).thenAnswer((_) async {});
+      expect(
+        await repo.updateBackground('n1', NoteBackground.mint),
+        const Right<Failure, Unit>(unit),
+      );
+      verify(() => ds.updateBackground('n1', NoteBackground.mint)).called(1);
+      // 整行 update 会刷新 updatedAt，换背景不该走它。
+      verifyNever(() => ds.update(any()));
+    });
+
+    test('清除背景（null）原样透传', () async {
+      when(() => ds.updateBackground('n1', null)).thenAnswer((_) async {});
+      expect(
+        await repo.updateBackground('n1', null),
+        const Right<Failure, Unit>(unit),
+      );
+    });
+
+    test('CacheException -> CacheFailure', () async {
+      when(
+        () => ds.updateBackground(any(), any()),
+      ).thenThrow(CacheException(message: 'Note not found: nope'));
+      expect(
+        await repo.updateBackground('nope', NoteBackground.paper),
+        const Left<Failure, Unit>(CacheFailure(message: 'Note not found: nope')),
+      );
+    });
+
+    test('未知异常 -> CacheFailure，且不 rethrow', () async {
+      when(
+        () => ds.updateBackground(any(), any()),
+      ).thenThrow(StateError('boom'));
+      final result = await repo.updateBackground('n1', NoteBackground.paper);
+      result.fold(
+        (f) => expect(f, isA<CacheFailure>()),
+        (_) => fail('应为 Left'),
       );
     });
   });

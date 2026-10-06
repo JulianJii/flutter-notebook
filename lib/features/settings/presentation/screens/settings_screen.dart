@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:init/core/router/app_routes.dart';
 import 'package:init/core/theme/tokens/app_colors.dart';
 import 'package:init/core/theme/tokens/app_spacing.dart';
+import 'package:init/core/theme/tokens/app_text_styles.dart';
 import 'package:init/core/ui/ui.dart';
 import 'package:init/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -12,21 +13,27 @@ import '../providers/settings_provider.dart';
 
 /// P5 设置（D5）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **8 行 = 4 可写 + 4 不可点**，一一对应 D5 的 6 个区块：
+/// **9 行 = 5 可写 + 4 chevron**，一一对应 D5 的 5 个区块：
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
-/// | 云服务 | 最近删除 | chevron，**不可点**（Q14） |
-/// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | stepper，点一下循环到下一个枚举值 |
+/// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
+/// | 笔记样式 | 深色模式 | 选择器，跟随系统 / 浅色 / 深色 三选一 |
 /// | 快捷功能 | 速记 | chevron，**不可点**（Q14） |
-/// | 提醒 | 强提醒 | 开关，写回 `settingsProvider` |
-/// | 其他 | 隐私政策 / 用户协议 | chevron，**不可点**（Q14） |
+/// | 提醒 | 强提醒 | 选择器，开启 / 关闭 二选一 |
+/// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
+///
+/// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
+/// 「最近删除」并入「其他」（回收站页 = `RecentlyDeletedScreen`）。
+///
+/// 「深色模式」是 D5 稿之后补的一行（D5 无主题行，见 `TASK-046` 的 Out of Scope）：
+/// 不给入口，`AppSettings.themeMode` 就只是个永远读不到第二值的字段。
 ///
 /// ⛔ **不渲染 `AppBottomNav`**：P5 是 root 层的顶层路由（`parentNavigatorKey`），
 /// 整个盖住 Shell，稿上（D5）底部也没有 Tab。
 /// ⛔ **不直接 watch Repository / UseCase**：数据链路固定为
 /// Screen → `settingsProvider` → UseCase → Repository。
-/// ⛔ **不建二级页 / 不建选择器弹层**（Q14 / Q25 未答，见 Out of Scope）。
+/// ⛔ **不建二级页**：值的选择走底部弹层（`_pickOption`），不跳页（Q14 / Q25 未答）。
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -49,20 +56,23 @@ class SettingsScreen extends ConsumerWidget {
                 // 浅灰（`PROJECT-STATUS.md` §3.10 待办 #2：待按截图统一裁定）。
                 // 这里按稿传色，不改 `core/ui`。
                 color: context.colors.textPrimary,
-                // `go` 而非 `pop`：`/settings` 是 root 层的顶层路由，栈里没有下层
-                // 页面可 pop（`app_routes.dart` 已写明「返回目标为 P1」）。
-                onPressed: () => context.go(AppRoutes.notes),
+                // `pop` 走 Navigator 的返回动画，与 `push` 进入成对；仅当直达
+                // `/settings`（栈里没有下层页，如深链）pop 不掉时，才 `go` 回 P1。
+                onPressed: () => context.canPop()
+                    ? context.pop()
+                    : context.go(AppRoutes.notes),
+              ),
+              // 标题居中（形态 B），与 P4 / 回收站 / 协议页同一形态；文案复用底栏
+              // 的 `settings` key，不新增同义 key。
+              centerTitle: Text(
+                l10n.settings,
+                style: context.textStyles.topBarTitle,
               ),
               // D5 顶栏下方**无** 1dp 分隔线（`AppTopBar` 默认画）。
               // 按 §3.9 待办 #2「各页按实际稿传值」关掉。⚠️ P1 / P2 仍是默认的 true
               // （D1 / D2 上同样没有这条线），统一收敛归 TASK-051。
               showDivider: false,
             ),
-            // D5 的大标题就是「笔记」，与 P1 / 底栏同一个词 → 复用 `notes` 这个 key，
-            // 不新增第 2 个同义 key（新增即两份可能漂移的文案）。
-            // `textScale: 1` —— 同 P2：P5 的行用 `AppListTile`，D5 上没有
-            // 「文字大小」这一行的消费方（`ARCHITECTURE-DESIGN.md` §4）。
-            AppLargeTitle(text: l10n.notes, textScale: 1),
             Expanded(
               child: ListView(
                 // 卡片左右边距由 [_Group] 自己加（分组标题要落在 28dp 绝对缩进上，
@@ -70,48 +80,54 @@ class SettingsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
                 children: <Widget>[
                   _Group(
-                    key: const Key('section_cloud'),
-                    title: l10n.settingsGroupCloud,
-                    children: <Widget>[
-                      _chevronTile(
-                        context,
-                        key: const Key('chevron_recent_deleted'),
-                        title: l10n.settingsRecentDeleted,
-                      ),
-                    ],
-                  ),
-                  _Group(
                     key: const Key('section_note_style'),
                     title: l10n.settingsGroupNoteStyle,
                     children: <Widget>[
-                      _stepperTile(
+                      _selectTile<TextScaleLevel>(
                         context,
-                        key: const Key('stepper_text_scale'),
+                        key: const Key('select_text_scale'),
                         title: l10n.settingsTextScale,
                         valueText: _textScaleLabel(l10n, settings.textScale),
-                        onStep: () => notifier.setTextScale(
-                          _cycle(TextScaleLevel.values, settings.textScale),
-                        ),
+                        options: TextScaleLevel.values,
+                        current: settings.textScale,
+                        labelOf: (level) => _textScaleLabel(l10n, level),
+                        onSelected: notifier.setTextScale,
                       ),
-                      _stepperTile(
+                      _selectTile<AppNoteSort>(
                         context,
-                        key: const Key('stepper_note_sort'),
+                        key: const Key('select_note_sort'),
                         title: l10n.settingsNoteSort,
                         valueText: _noteSortLabel(l10n, settings.noteSort),
+                        options: AppNoteSort.values,
+                        current: settings.noteSort,
+                        labelOf: (sort) => _noteSortLabel(l10n, sort),
+                        onSelected: notifier.setNoteSort,
                         dividerBefore: true,
-                        onStep: () => notifier.setNoteSort(
-                          _cycle(AppNoteSort.values, settings.noteSort),
-                        ),
                       ),
-                      _stepperTile(
+                      _selectTile<NoteLayout>(
                         context,
-                        key: const Key('stepper_note_layout'),
+                        key: const Key('select_note_layout'),
                         title: l10n.settingsNoteLayout,
                         valueText: _noteLayoutLabel(l10n, settings.noteLayout),
+                        options: NoteLayout.values,
+                        current: settings.noteLayout,
+                        labelOf: (layout) => _noteLayoutLabel(l10n, layout),
+                        onSelected: notifier.setNoteLayout,
                         dividerBefore: true,
-                        onStep: () => notifier.setNoteLayout(
-                          _cycle(NoteLayout.values, settings.noteLayout),
-                        ),
+                      ),
+                      // 主题模式：读 `AppSettings.themeMode` 并落盘。三档
+                      // （跟随系统 / 浅色 / 深色）用**选择器**而不是开关 ——
+                      // 开关只有两态，`system` 档会变成不可达的死值。
+                      _selectTile<AppThemeMode>(
+                        context,
+                        key: const Key('select_theme_mode'),
+                        title: l10n.settingsThemeMode,
+                        valueText: _themeModeLabel(l10n, settings.themeMode),
+                        options: AppThemeMode.values,
+                        current: settings.themeMode,
+                        labelOf: (mode) => _themeModeLabel(l10n, mode),
+                        onSelected: notifier.setThemeMode,
+                        dividerBefore: true,
                       ),
                     ],
                   ),
@@ -130,12 +146,19 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('section_reminder'),
                     title: l10n.settingsGroupReminder,
                     children: <Widget>[
-                      AppSwitchRow(
-                        key: const Key('switch_strong_reminder'),
+                      _selectTile<bool>(
+                        context,
+                        key: const Key('select_strong_reminder'),
                         title: l10n.settingsStrongReminder,
                         subtitle: l10n.settingsStrongReminderDesc,
-                        value: settings.strongReminder,
-                        onChanged: notifier.setStrongReminder,
+                        valueText: _onOffLabel(
+                          l10n,
+                          settings.strongReminder,
+                        ),
+                        options: const <bool>[false, true],
+                        current: settings.strongReminder,
+                        labelOf: (value) => _onOffLabel(l10n, value),
+                        onSelected: notifier.setStrongReminder,
                       ),
                     ],
                   ),
@@ -145,14 +168,23 @@ class SettingsScreen extends ConsumerWidget {
                     children: <Widget>[
                       _chevronTile(
                         context,
+                        key: const Key('chevron_recent_deleted'),
+                        title: l10n.settingsRecentDeleted,
+                        onTap: () => context.push(AppRoutes.noteTrash),
+                      ),
+                      _chevronTile(
+                        context,
                         key: const Key('chevron_privacy_policy'),
                         title: l10n.settingsPrivacyPolicy,
+                        dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.privacyPolicy),
                       ),
                       _chevronTile(
                         context,
                         key: const Key('chevron_user_agreement'),
                         title: l10n.settingsUserAgreement,
                         dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.userAgreement),
                       ),
                     ],
                   ),
@@ -165,12 +197,13 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  /// Q14：D5 的 chevron 行二级页全部无稿 → 保持不可点，但右箭头照常画出来。
+  /// chevron 行。[onTap] 为 null 时保持不可点（只剩「速记」，Q14 二级页无稿）。
   Widget _chevronTile(
     BuildContext context, {
     required String title,
     Key? key,
     bool dividerBefore = false,
+    VoidCallback? onTap,
   }) {
     return AppListTile(
       key: key,
@@ -181,38 +214,50 @@ class SettingsScreen extends ConsumerWidget {
         color: context.colors.textSecondary,
       ),
       dividerBefore: dividerBefore,
-      onTap: null, // ← 关键：不可点
-      // TODO(Q14): 该行的二级页未设计（最近删除 / 速记 / 隐私政策 / 用户协议），
-      // 补稿后接线。
+      onTap: onTap,
     );
   }
 
-  /// 右侧「当前值 + 上下双箭头」行。
+  /// 右侧「当前值 + 右箭头」行：点一下**弹出选项单**，选中即写回。
   ///
-  /// TODO(Q14): 点击是「弹选择器」还是「循环切换」待设计确认 —— 本页按「循环切换」
-  /// 实现（零新增组件、零凭空视觉，见 `TASK-046` §3 的三方案裁决）。
-  Widget _stepperTile(
+  /// 「深色模式」/「强提醒」两行原是 `AppSwitchRow`、文字大小 / 排序 / 布局三行原是
+  /// stepper（点一下翻转或循环到下一个值）：开关只有两态，`AppThemeMode.system`
+  /// 因此永不可达；循环切换则看不见全部可选项。这里统一成选择器 ——
+  /// 值由 [options] 全量列出，`current` 只决定勾。
+  Widget _selectTile<T>(
     BuildContext context, {
     required String title,
     required String valueText,
-    required VoidCallback onStep,
+    required List<T> options,
+    required T current,
+    required String Function(T value) labelOf,
+    required ValueChanged<T> onSelected,
     Key? key,
+    String? subtitle,
     bool dividerBefore = false,
   }) {
     return AppListTile(
       key: key,
       title: title,
+      subtitle: subtitle,
+      // 「强提醒」在稿上是 w600，主题行不是（与 `AppSwitchRow.titleWeight` 同源）。
+      titleWeight: subtitle == null ? null : AppSwitchRow.titleWeight,
       trailingValue: valueText,
-      // TODO(Q25): 稿上是「上下双箭头」。`AppIcons.stepper`(`Icons.swap_vert`) 是
-      // TASK-010 已有的最接近语义（⛔ 不为对齐这一个字形去改 `core/ui`），
-      // 形态待设计校准。
       trailing: AppIcon(
-        icon: AppIcons.stepper,
+        icon: AppIcons.chevronRight,
         size: _kRowTrailingIconSize,
         color: context.colors.textSecondary,
       ),
       dividerBefore: dividerBefore,
-      onTap: onStep,
+      onTap: () async {
+        final picked = await _pickOption<T>(
+          context,
+          options: options,
+          current: current,
+          labelOf: labelOf,
+        );
+        if (picked != null && picked != current) onSelected(picked);
+      },
     );
   }
 }
@@ -259,13 +304,6 @@ class _Group extends StatelessWidget {
 /// 提成文件内私有常量而不是散落 8 个字面量（⛔ 不改 `core/theme/tokens/`）。
 const double _kRowTrailingIconSize = 20;
 
-/// 循环到下一个枚举值（3 个 stepper 行共用）。
-///
-/// TODO(Q14): 若设计改判为「弹选择器」，删掉本函数与 3 处 `onStep` 的循环体，
-/// 改为打开对应选择页 —— 届时才需要弹层视觉。
-T _cycle<T extends Enum>(List<T> values, T current) =>
-    values[(current.index + 1) % values.length];
-
 /// 文字大小 → 当前值文案。
 ///
 /// ⛔ **不直接上屏 `TextScaleLevel.name`**：那会显示英文 `xLarge`。
@@ -294,3 +332,51 @@ String _noteLayoutLabel(AppLocalizations l10n, NoteLayout layout) =>
       NoteLayout.grid => l10n.settingsLayoutGrid,
       NoteLayout.list => l10n.settingsLayoutList,
     };
+
+/// 选项单：底部弹层，当前项打勾。选中即 `pop(value)`，取消即 `pop(null)`。
+///
+/// ⛔ 不引第二套选项控件：Material 的 `showModalBottomSheet` + 现成的 `AppListTile`
+/// 已能表达，且字阶 / 内边距与页面内其他行同源（⛔ 不凭空造视觉）。
+/// Q14 → docs/OPEN-DESIGN-QUESTIONS.md（弹层视觉无稿，沿用 Material 默认）。
+Future<T?> _pickOption<T>(
+  BuildContext context, {
+  required List<T> options,
+  required T current,
+  required String Function(T value) labelOf,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    builder: (sheetContext) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          for (final option in options)
+            AppListTile(
+              title: labelOf(option),
+              titleWeight: option == current ? FontWeight.w600 : null,
+              trailing: option == current
+                  ? AppIcon(
+                      icon: AppIcons.check,
+                      size: _kRowTrailingIconSize,
+                      color: context.colors.accent,
+                    )
+                  : null,
+              onTap: () => Navigator.of(sheetContext).pop(option),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
+/// 主题模式 → 当前值文案。3 值穷尽 `switch`，无 `default`（新增枚举值编译失败）。
+String _themeModeLabel(AppLocalizations l10n, AppThemeMode mode) =>
+    switch (mode) {
+      AppThemeMode.system => l10n.settingsThemeSystem,
+      AppThemeMode.light => l10n.settingsThemeLight,
+      AppThemeMode.dark => l10n.settingsThemeDark,
+    };
+
+/// 布尔偏好 → 开 / 关文案。
+String _onOffLabel(AppLocalizations l10n, bool value) =>
+    value ? l10n.settingsSwitchOn : l10n.settingsSwitchOff;

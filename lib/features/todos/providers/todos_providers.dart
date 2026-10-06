@@ -3,6 +3,7 @@ import 'package:init/features/todos/data/datasources/todo_local_data_source.dart
 import 'package:init/features/todos/data/repositories/todo_repository_impl.dart';
 import 'package:init/features/todos/domain/repositories/todo_repository.dart';
 import 'package:init/features/todos/domain/usecases/create_todo_use_case.dart';
+import 'package:init/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
 import 'package:init/features/todos/domain/usecases/delete_todo_use_case.dart';
 import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
 import 'package:init/features/todos/domain/usecases/update_todo_use_case.dart';
@@ -50,4 +51,9 @@ UpdateTodoUseCase updateTodoUseCase(Ref ref) {
 @riverpod
 DeleteTodoUseCase deleteTodoUseCase(Ref ref) {
   return DeleteTodoUseCase(ref.watch(todoRepositoryProvider));
+}
+
+@riverpod
+DeleteCompletedTodosUseCase deleteCompletedTodosUseCase(Ref ref) {
+  return DeleteCompletedTodosUseCase(ref.watch(todoRepositoryProvider));
 }

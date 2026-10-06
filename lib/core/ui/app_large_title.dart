@@ -5,7 +5,8 @@ import 'package:material_ui/material_ui.dart';
 
 /// 页面大标题（替代 AppBar 标题）。
 ///
-/// 出现于 P1 / P2 / P5（`COMPONENT-INVENTORY.md` §2 #2）。
+/// 出现于 P5（`COMPONENT-INVENTORY.md` §2 #2）。⚠️ P1 / P2 的「笔记」「待办」
+/// 已移进 `AppTopBar` 的 `title`（标题归顶栏），这里只剩设置页。
 /// 取值来自 `UI-IMPLEMENTATION-SPEC.md` §4 P1「LargeTitle」：
 /// 文案 24sp w700，左边距 12dp，上边距 16dp，下边距 12dp。
 class AppLargeTitle extends StatelessWidget {

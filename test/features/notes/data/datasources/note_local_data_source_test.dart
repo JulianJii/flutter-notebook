@@ -6,6 +6,7 @@ import 'package:init/core/database/daos/note_dao.dart';
 import 'package:init/core/error/exceptions.dart';
 import 'package:init/features/notes/data/datasources/note_local_data_source.dart';
 import 'package:init/features/notes/domain/entities/note.dart';
+import 'package:init/features/notes/domain/entities/note_background.dart';
 import 'package:init/features/notes/domain/entities/note_query.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -196,8 +197,26 @@ void main() {
       );
     });
 
-    test('delete 未命中 -> CacheException', () async {
-      when(() => dao.deleteById('nope')).thenAnswer((_) async => 0);
+    test('updateBackground 未命中 -> CacheException（且枚举已译成 id 字符串）', () async {
+      when(
+        () => dao.updateBackgroundById('nope', 'mint'),
+      ).thenAnswer((_) async => false);
+      await expectLater(
+        source.updateBackground('nope', NoteBackground.mint),
+        throwsA(
+          isA<CacheException>().having(
+            (e) => e.message,
+            'message',
+            contains('nope'),
+          ),
+        ),
+      );
+    });
+
+    test('delete（软删除）未命中 -> CacheException', () async {
+      when(
+        () => dao.softDeleteById('nope', any()),
+      ).thenAnswer((_) async => false);
       await expectLater(source.delete('nope'), throwsA(isA<CacheException>()));
     });
 
@@ -224,7 +243,7 @@ void main() {
 
     test('已经是 CacheException 的不再二次包装（rethrow）', () async {
       when(
-        () => dao.deleteById('n1'),
+        () => dao.softDeleteById('n1', any()),
       ).thenThrow(CacheException(message: 'Cache Error: inner'));
       await expectLater(
         source.delete('n1'),
@@ -278,6 +297,53 @@ void main() {
       expect(updated.updatedAt, _t2);
     });
 
+    test('背景全链路：insert 落库、整行 update 不覆盖、updateBackground 改 / 清', () async {
+      final inserted = await source.insert(
+        Note(
+          id: 'n1',
+          title: '带背景',
+          content: '正文',
+          background: NoteBackground.mint,
+          createdAt: _t1,
+          updatedAt: _t1,
+        ),
+      );
+      expect(inserted.background, NoteBackground.mint);
+      expect((await source.getById('n1')).background, NoteBackground.mint);
+
+      await source.update(
+        Note(id: 'n1', title: '改标题', createdAt: _t1, updatedAt: _t2),
+      );
+      expect(
+        (await source.getById('n1')).background,
+        NoteBackground.mint,
+        reason: '整行 update 不写 background 列：自动保存不会把背景冲掉',
+      );
+
+      await source.updateBackground('n1', NoteBackground.blush);
+      final changed = await source.getById('n1');
+      expect(changed.background, NoteBackground.blush);
+      expect(changed.title, '改标题', reason: '只写一列，别的字段不动');
+      expect(changed.updatedAt, _t2, reason: '换背景不刷 updatedAt');
+
+      await source.updateBackground('n1', null);
+      expect((await source.getById('n1')).background, isNull);
+
+      await expectLater(
+        source.updateBackground('nope', NoteBackground.paper),
+        throwsA(isA<CacheException>()),
+      );
+    });
+
+    test('库里未知的 background id 降级为无背景（不崩页面）', () async {
+      await db.customStatement(
+        'INSERT INTO notes (id, title, content, background, created_at, updated_at) '
+        'VALUES (?,?,?,?,?,?)',
+        ['n1', '老数据', 'c', '未来版本的背景', 100, 100],
+      );
+      expect((await source.getById('n1')).background, isNull);
+    });
+
     test('三态翻译在真实 SQL 上可观察：全部 / 未分类 / 单文件夹', () async {
       await db.customStatement(
         'INSERT INTO note_folders (id, name, created_at, updated_at) VALUES (?,?,?,?)',
@@ -305,6 +371,61 @@ void main() {
       expect((await source.watch(NoteQuery.of('f1')).first).map((n) => n.id), [
         'n1',
       ]);
+    });
+
+    test('软删除全链路：watch/搜索不含已删；watchDeleted 含；restore 后回来', () async {
+      await source.insert(
+        Note(
+          id: 'n1',
+          title: '会被搜到',
+          content: '关键词alpha',
+          createdAt: _t1,
+          updatedAt: _t1,
+        ),
+      );
+
+      // 搜索命中。
+      expect(
+        (await source.watch(const NoteQuery(searchTerm: 'alpha')).first),
+        hasLength(1),
+      );
+
+      await source.delete('n1');
+
+      // 列表与搜索都不再含已删笔记（deleted_at IS NULL 过滤在搜索条件之前）。
+      expect(await source.watch(const NoteQuery()).first, isEmpty);
+      expect(
+        (await source.watch(const NoteQuery(searchTerm: 'alpha')).first),
+        isEmpty,
+      );
+      // 回收站含，且带 deletedAt。
+      final trashed = await source.watchDeleted().first;
+      expect(trashed.single.id, 'n1');
+      expect(trashed.single.deletedAt, isNotNull);
+
+      // 恢复后回到列表。
+      await source.restore('n1');
+      expect(
+        (await source.watch(const NoteQuery()).first).single.id,
+        'n1',
+      );
+      expect(await source.watchDeleted().first, isEmpty);
+    });
+
+    test('purge 物理删除已软删的笔记；purgeAll 清空回收站', () async {
+      for (final id in ['n1', 'n2']) {
+        await source.insert(
+          Note(id: id, title: id, createdAt: _t1, updatedAt: _t1),
+        );
+        await source.delete(id);
+      }
+      await source.purge('n1');
+      expect((await source.watchDeleted().first).map((n) => n.id), ['n2']);
+
+      await source.purgeAll();
+      expect(await source.watchDeleted().first, isEmpty);
+      // 物理删除后 getById 抛 not found。
+      await expectLater(source.getById('n1'), throwsA(isA<CacheException>()));
     });
   });
 }

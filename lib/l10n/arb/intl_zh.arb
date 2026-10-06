@@ -619,5 +619,205 @@
         "format": "yMMMd"
       }
     }
+  },
+  "settingsDataManagement": "数据与同步",
+  "@settingsDataManagement": {
+    "description": "P5 row that opens the data and sync page"
+  },
+  "dataTitle": "数据与同步",
+  "@dataTitle": {
+    "description": "Title of the data management screen"
+  },
+  "dataGroupExport": "导出",
+  "@dataGroupExport": {
+    "description": "Section header of the export group"
+  },
+  "dataExport": "导出数据",
+  "@dataExport": {
+    "description": "Row that exports a JSON snapshot"
+  },
+  "dataExportDesc": "把全部笔记、文件夹与待办存成一份 JSON 快照文件",
+  "@dataExportDesc": {
+    "description": "Subtitle of the export row"
+  },
+  "dataGroupImport": "导入",
+  "@dataGroupImport": {
+    "description": "Section header of the import group"
+  },
+  "dataImport": "导入数据",
+  "@dataImport": {
+    "description": "Row that imports a JSON snapshot"
+  },
+  "dataImportDesc": "从 JSON 快照合并进来，同一条记录保留更新时间更晚的那份",
+  "@dataImportDesc": {
+    "description": "Subtitle of the import row"
+  },
+  "dataGroupWebDav": "WebDAV 同步",
+  "@dataGroupWebDav": {
+    "description": "Section header of the WebDAV group"
+  },
+  "dataWebDavServer": "服务器",
+  "@dataWebDavServer": {
+    "description": "Row that opens the WebDAV config screen"
+  },
+  "dataWebDavNotConfigured": "未配置",
+  "@dataWebDavNotConfigured": {
+    "description": "Value shown when no WebDAV server is configured"
+  },
+  "dataSyncNow": "立即同步",
+  "@dataSyncNow": {
+    "description": "Row that syncs with the WebDAV server right away"
+  },
+  "dataSyncAutoOnStart": "启动时自动同步",
+  "@dataSyncAutoOnStart": {
+    "description": "Switch row that enables syncing on app start"
+  },
+  "dataSyncAutoOnStartDesc": "打开后每次启动应用会自动同步一次",
+  "@dataSyncAutoOnStartDesc": {
+    "description": "Subtitle of the auto-sync switch row"
+  },
+  "dataLastSyncNever": "尚未同步",
+  "@dataLastSyncNever": {
+    "description": "Footer shown when the app never synced"
+  },
+  "dataLastSyncAt": "上次同步：{date}",
+  "@dataLastSyncAt": {
+    "description": "Footer showing when the last sync happened",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "dataExportDone": "已导出 {count} 条记录",
+  "@dataExportDone": {
+    "description": "Snackbar shown after an export",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataImportDone": "已导入：新增 {inserted} 条，更新 {updated} 条",
+  "@dataImportDone": {
+    "description": "Snackbar shown after an import",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "dataSyncDone": "同步完成：新增 {inserted} 条，更新 {updated} 条",
+  "@dataSyncDone": {
+    "description": "Snackbar shown after a sync that changed something",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "dataSyncNoChange": "两端数据一致，无需同步",
+  "@dataSyncNoChange": {
+    "description": "Snackbar shown after a sync that changed nothing"
+  },
+  "dataSkippedSuffix": "，跳过 {skipped} 条",
+  "@dataSkippedSuffix": {
+    "description": "Suffix appended to the import result when rows were skipped",
+    "placeholders": {
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "dataErrorNetwork": "连不上服务器，请检查网络",
+  "@dataErrorNetwork": {
+    "description": "Snackbar shown when the server can't be reached"
+  },
+  "dataErrorTimeout": "连接超时，请稍后重试",
+  "@dataErrorTimeout": {
+    "description": "Snackbar shown when a sync times out"
+  },
+  "dataErrorAuth": "用户名或密码不对",
+  "@dataErrorAuth": {
+    "description": "Snackbar shown when WebDAV rejects the credentials"
+  },
+  "dataErrorServer": "服务器拒绝了这次请求",
+  "@dataErrorServer": {
+    "description": "Snackbar shown when the server returns an error"
+  },
+  "dataErrorInvalidFile": "这个文件不是本应用导出的数据",
+  "@dataErrorInvalidFile": {
+    "description": "Snackbar shown when the picked file is not a snapshot"
+  },
+  "dataErrorNotConfigured": "还没有配置 WebDAV 服务器",
+  "@dataErrorNotConfigured": {
+    "description": "Snackbar shown when syncing without a configured server"
+  },
+  "dataErrorUnknown": "操作失败，请重试",
+  "@dataErrorUnknown": {
+    "description": "Snackbar shown for any other backup failure"
+  },
+  "webDavTitle": "WebDAV",
+  "@webDavTitle": {
+    "description": "Title of the WebDAV config screen"
+  },
+  "webDavSave": "保存",
+  "@webDavSave": {
+    "description": "Top bar action that saves the config"
+  },
+  "webDavSaved": "已保存",
+  "@webDavSaved": {
+    "description": "Snackbar shown after the config is saved"
+  },
+  "webDavGroupAccount": "服务器",
+  "@webDavGroupAccount": {
+    "description": "Section header of the WebDAV credential form"
+  },
+  "webDavUrl": "服务器地址",
+  "@webDavUrl": {
+    "description": "Label of the server address field"
+  },
+  "webDavUsername": "用户名",
+  "@webDavUsername": {
+    "description": "Label of the username field"
+  },
+  "webDavPassword": "密码",
+  "@webDavPassword": {
+    "description": "Label of the password field"
+  },
+  "webDavPasswordToggle": "显示密码",
+  "@webDavPasswordToggle": {
+    "description": "Tooltip of the button that reveals the password"
+  },
+  "webDavRemoteFile": "远端文件名",
+  "@webDavRemoteFile": {
+    "description": "Label of the remote file name field"
+  },
+  "webDavGroupAction": "连接",
+  "@webDavGroupAction": {
+    "description": "Section header of the WebDAV test connection group"
+  },
+  "webDavTest": "测试连接",
+  "@webDavTest": {
+    "description": "Row that tests the connection"
+  },
+  "webDavTestOk": "连接成功",
+  "@webDavTestOk": {
+    "description": "Inline result shown when the connection test succeeds"
+  },
+  "webDavTestFailed": "连接失败",
+  "@webDavTestFailed": {
+    "description": "Inline result shown when the connection test fails"
+  },
+  "webDavNote": "数据以单个 JSON 快照文件存放在服务器上。同步是双向合并，不会删除任何一端的数据。",
+  "@webDavNote": {
+    "description": "Footer explaining how WebDAV sync works"
   }
 }

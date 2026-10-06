@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:init/core/router/app_routes.dart';
 import 'package:init/core/shell/notes_shell.dart';
 import 'package:init/core/theme/tokens/app_spacing.dart';
+import 'package:init/features/backup/presentation/screens/data_management_screen.dart';
+import 'package:init/features/backup/presentation/screens/webdav_config_screen.dart';
 import 'package:init/features/notes/presentation/providers/note_editor_provider.dart';
 import 'package:init/features/notes/presentation/screens/folder_manager_screen.dart';
 import 'package:init/features/notes/presentation/screens/note_detail_screen.dart';
@@ -84,6 +86,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.theme,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ThemeScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.dataManagement,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const DataManagementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.webDav,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const WebDavConfigScreen(),
       ),
       GoRoute(
         path: AppRoutes.privacyPolicy,

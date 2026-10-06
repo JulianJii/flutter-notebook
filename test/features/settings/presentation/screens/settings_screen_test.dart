@@ -158,22 +158,22 @@ void main() {
       );
     });
 
-    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 5 条）', (tester) async {
+    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 6 条）', (tester) async {
       await pumpP5(tester);
 
-      // 笔记样式 4 行 → 3 条，其他 3 行 → 2 条。
-      expect(find.byType(AppDivider), findsNWidgets(5));
+      // 笔记样式 4 行 → 3 条，其他 4 行（含「数据与同步」）→ 3 条。
+      expect(find.byType(AppDivider), findsNWidgets(6));
     });
 
-    testWidgets('4 张分组卡，9 行', (tester) async {
+    testWidgets('4 张分组卡，10 行', (tester) async {
       await pumpP5(tester);
 
       expect(find.byType(AppCard), findsNWidgets(4));
-      expect(find.byType(AppListTile), findsNWidgets(9));
+      expect(find.byType(AppListTile), findsNWidgets(10));
       expect(find.byType(Switch), findsNothing, reason: '开关已改为选择器行');
-      // 5 个 chevron 行（速记 / 主题 / 最近删除 / 隐私政策 / 用户协议）
+      // 6 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议）
       // + 4 个选择器行（文字大小 / 排序 / 布局 / 强提醒）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(9));
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
     });
   });
 
@@ -386,7 +386,7 @@ void main() {
       );
     });
 
-    test('P5 只用 `_` 前缀的页面内私有组件', () {
+    test('P5 不再自带分组 Widget，改用 core/ui 的 AppSettingsGroup', () {
       final source = File(
         'lib/features/settings/presentation/screens/settings_screen.dart',
       ).readAsStringSync();
@@ -395,12 +395,10 @@ void main() {
         multiLine: true,
       ).allMatches(source).map((m) => m.group(1)!).toList();
 
-      expect(privateWidgets, containsAll(<String>['_Group']));
-      expect(
-        privateWidgets.where((name) => !name.startsWith('_')),
-        isEmpty,
-        reason: '出现了非 `_` 前缀的私有 Widget',
-      );
+      // 分组原本是页面内私有的 `_Group`，四个设置页各抄一份；现已收进
+      // `core/ui/app_settings_group.dart`。
+      expect(privateWidgets, isEmpty);
+      expect(source, contains('AppSettingsGroup'));
     });
 
     test('页面不直接依赖 data 层（只经 provider）', () {

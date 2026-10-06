@@ -7,6 +7,7 @@ import 'package:init/core/providers/storage_providers.dart';
 import 'package:init/core/router/app_router.dart';
 import 'package:init/core/theme/app_theme.dart';
 import 'package:init/core/updates/update_providers.dart';
+import 'package:init/features/backup/presentation/providers/startup_sync_provider.dart';
 import 'package:init/features/settings/domain/entities/app_settings.dart';
 import 'package:init/features/settings/presentation/providers/settings_provider.dart';
 import 'package:init/gen/l10n/app_localizations.dart';
@@ -62,6 +63,10 @@ class MyApp extends ConsumerWidget {
 
     // 监听持久化语言环境
     final locale = ref.watch(persistentLocaleProvider);
+
+    // 挂载启动自动同步：`AsyncNotifier` 的 build 只在首次监听时跑一次，
+    // 开关没开时它立刻返回。失败静默（用户此刻可能在任何页面）。
+    ref.watch(startupSyncProvider);
 
     return UpdateChecker(
       autoPrompt: true,

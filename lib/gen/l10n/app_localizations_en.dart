@@ -494,4 +494,148 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return 'Last updated: $dateString';
   }
+
+  @override
+  String get settingsDataManagement => 'Data & Sync';
+
+  @override
+  String get dataTitle => 'Data & Sync';
+
+  @override
+  String get dataGroupExport => 'Export';
+
+  @override
+  String get dataExport => 'Export data';
+
+  @override
+  String get dataExportDesc =>
+      'Save all notes, folders and to-dos into one JSON snapshot file';
+
+  @override
+  String get dataGroupImport => 'Import';
+
+  @override
+  String get dataImport => 'Import data';
+
+  @override
+  String get dataImportDesc =>
+      'Merge a JSON snapshot in; the newer copy wins for each record';
+
+  @override
+  String get dataGroupWebDav => 'WebDAV Sync';
+
+  @override
+  String get dataWebDavServer => 'Server';
+
+  @override
+  String get dataWebDavNotConfigured => 'Not set';
+
+  @override
+  String get dataSyncNow => 'Sync now';
+
+  @override
+  String get dataSyncAutoOnStart => 'Sync when app starts';
+
+  @override
+  String get dataSyncAutoOnStartDesc => 'Syncs once every time the app starts';
+
+  @override
+  String get dataLastSyncNever => 'Never synced';
+
+  @override
+  String dataLastSyncAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Last synced: $dateString';
+  }
+
+  @override
+  String dataExportDone(int count) {
+    return 'Exported $count records';
+  }
+
+  @override
+  String dataImportDone(int inserted, int updated) {
+    return 'Imported: $inserted added, $updated updated';
+  }
+
+  @override
+  String dataSyncDone(int inserted, int updated) {
+    return 'Synced: $inserted added, $updated updated';
+  }
+
+  @override
+  String get dataSyncNoChange => 'Both sides are already in sync';
+
+  @override
+  String dataSkippedSuffix(int skipped) {
+    return ', $skipped skipped';
+  }
+
+  @override
+  String get dataErrorNetwork =>
+      'Can\'t reach the server — check your connection';
+
+  @override
+  String get dataErrorTimeout => 'Connection timed out. Try again later';
+
+  @override
+  String get dataErrorAuth => 'Wrong username or password';
+
+  @override
+  String get dataErrorServer => 'The server rejected the request';
+
+  @override
+  String get dataErrorInvalidFile =>
+      'This file isn\'t a snapshot exported by this app';
+
+  @override
+  String get dataErrorNotConfigured => 'No WebDAV server configured yet';
+
+  @override
+  String get dataErrorUnknown => 'Something went wrong. Try again';
+
+  @override
+  String get webDavTitle => 'WebDAV';
+
+  @override
+  String get webDavSave => 'Save';
+
+  @override
+  String get webDavSaved => 'Saved';
+
+  @override
+  String get webDavGroupAccount => 'Server';
+
+  @override
+  String get webDavUrl => 'Server address';
+
+  @override
+  String get webDavUsername => 'Username';
+
+  @override
+  String get webDavPassword => 'Password';
+
+  @override
+  String get webDavPasswordToggle => 'Show password';
+
+  @override
+  String get webDavRemoteFile => 'Remote file name';
+
+  @override
+  String get webDavGroupAction => 'Connection';
+
+  @override
+  String get webDavTest => 'Test connection';
+
+  @override
+  String get webDavTestOk => 'Connected';
+
+  @override
+  String get webDavTestFailed => 'Couldn\'t connect';
+
+  @override
+  String get webDavNote =>
+      'Data is stored on the server as a single JSON snapshot. Syncing merges both ways and never deletes data from either side.';
 }

@@ -961,6 +961,258 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'最后更新：{date}'**
   String last_updated(DateTime date);
+
+  /// P5 row that opens the data and sync page
+  ///
+  /// In zh, this message translates to:
+  /// **'数据与同步'**
+  String get settingsDataManagement;
+
+  /// Title of the data management screen
+  ///
+  /// In zh, this message translates to:
+  /// **'数据与同步'**
+  String get dataTitle;
+
+  /// Section header of the export group
+  ///
+  /// In zh, this message translates to:
+  /// **'导出'**
+  String get dataGroupExport;
+
+  /// Row that exports a JSON snapshot
+  ///
+  /// In zh, this message translates to:
+  /// **'导出数据'**
+  String get dataExport;
+
+  /// Subtitle of the export row
+  ///
+  /// In zh, this message translates to:
+  /// **'把全部笔记、文件夹与待办存成一份 JSON 快照文件'**
+  String get dataExportDesc;
+
+  /// Section header of the import group
+  ///
+  /// In zh, this message translates to:
+  /// **'导入'**
+  String get dataGroupImport;
+
+  /// Row that imports a JSON snapshot
+  ///
+  /// In zh, this message translates to:
+  /// **'导入数据'**
+  String get dataImport;
+
+  /// Subtitle of the import row
+  ///
+  /// In zh, this message translates to:
+  /// **'从 JSON 快照合并进来，同一条记录保留更新时间更晚的那份'**
+  String get dataImportDesc;
+
+  /// Section header of the WebDAV group
+  ///
+  /// In zh, this message translates to:
+  /// **'WebDAV 同步'**
+  String get dataGroupWebDav;
+
+  /// Row that opens the WebDAV config screen
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器'**
+  String get dataWebDavServer;
+
+  /// Value shown when no WebDAV server is configured
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置'**
+  String get dataWebDavNotConfigured;
+
+  /// Row that syncs with the WebDAV server right away
+  ///
+  /// In zh, this message translates to:
+  /// **'立即同步'**
+  String get dataSyncNow;
+
+  /// Switch row that enables syncing on app start
+  ///
+  /// In zh, this message translates to:
+  /// **'启动时自动同步'**
+  String get dataSyncAutoOnStart;
+
+  /// Subtitle of the auto-sync switch row
+  ///
+  /// In zh, this message translates to:
+  /// **'打开后每次启动应用会自动同步一次'**
+  String get dataSyncAutoOnStartDesc;
+
+  /// Footer shown when the app never synced
+  ///
+  /// In zh, this message translates to:
+  /// **'尚未同步'**
+  String get dataLastSyncNever;
+
+  /// Footer showing when the last sync happened
+  ///
+  /// In zh, this message translates to:
+  /// **'上次同步：{date}'**
+  String dataLastSyncAt(DateTime date);
+
+  /// Snackbar shown after an export
+  ///
+  /// In zh, this message translates to:
+  /// **'已导出 {count} 条记录'**
+  String dataExportDone(int count);
+
+  /// Snackbar shown after an import
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入：新增 {inserted} 条，更新 {updated} 条'**
+  String dataImportDone(int inserted, int updated);
+
+  /// Snackbar shown after a sync that changed something
+  ///
+  /// In zh, this message translates to:
+  /// **'同步完成：新增 {inserted} 条，更新 {updated} 条'**
+  String dataSyncDone(int inserted, int updated);
+
+  /// Snackbar shown after a sync that changed nothing
+  ///
+  /// In zh, this message translates to:
+  /// **'两端数据一致，无需同步'**
+  String get dataSyncNoChange;
+
+  /// Suffix appended to the import result when rows were skipped
+  ///
+  /// In zh, this message translates to:
+  /// **'，跳过 {skipped} 条'**
+  String dataSkippedSuffix(int skipped);
+
+  /// Snackbar shown when the server can't be reached
+  ///
+  /// In zh, this message translates to:
+  /// **'连不上服务器，请检查网络'**
+  String get dataErrorNetwork;
+
+  /// Snackbar shown when a sync times out
+  ///
+  /// In zh, this message translates to:
+  /// **'连接超时，请稍后重试'**
+  String get dataErrorTimeout;
+
+  /// Snackbar shown when WebDAV rejects the credentials
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名或密码不对'**
+  String get dataErrorAuth;
+
+  /// Snackbar shown when the server returns an error
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器拒绝了这次请求'**
+  String get dataErrorServer;
+
+  /// Snackbar shown when the picked file is not a snapshot
+  ///
+  /// In zh, this message translates to:
+  /// **'这个文件不是本应用导出的数据'**
+  String get dataErrorInvalidFile;
+
+  /// Snackbar shown when syncing without a configured server
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有配置 WebDAV 服务器'**
+  String get dataErrorNotConfigured;
+
+  /// Snackbar shown for any other backup failure
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败，请重试'**
+  String get dataErrorUnknown;
+
+  /// Title of the WebDAV config screen
+  ///
+  /// In zh, this message translates to:
+  /// **'WebDAV'**
+  String get webDavTitle;
+
+  /// Top bar action that saves the config
+  ///
+  /// In zh, this message translates to:
+  /// **'保存'**
+  String get webDavSave;
+
+  /// Snackbar shown after the config is saved
+  ///
+  /// In zh, this message translates to:
+  /// **'已保存'**
+  String get webDavSaved;
+
+  /// Section header of the WebDAV credential form
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器'**
+  String get webDavGroupAccount;
+
+  /// Label of the server address field
+  ///
+  /// In zh, this message translates to:
+  /// **'服务器地址'**
+  String get webDavUrl;
+
+  /// Label of the username field
+  ///
+  /// In zh, this message translates to:
+  /// **'用户名'**
+  String get webDavUsername;
+
+  /// Label of the password field
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get webDavPassword;
+
+  /// Tooltip of the button that reveals the password
+  ///
+  /// In zh, this message translates to:
+  /// **'显示密码'**
+  String get webDavPasswordToggle;
+
+  /// Label of the remote file name field
+  ///
+  /// In zh, this message translates to:
+  /// **'远端文件名'**
+  String get webDavRemoteFile;
+
+  /// Section header of the WebDAV test connection group
+  ///
+  /// In zh, this message translates to:
+  /// **'连接'**
+  String get webDavGroupAction;
+
+  /// Row that tests the connection
+  ///
+  /// In zh, this message translates to:
+  /// **'测试连接'**
+  String get webDavTest;
+
+  /// Inline result shown when the connection test succeeds
+  ///
+  /// In zh, this message translates to:
+  /// **'连接成功'**
+  String get webDavTestOk;
+
+  /// Inline result shown when the connection test fails
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败'**
+  String get webDavTestFailed;
+
+  /// Footer explaining how WebDAV sync works
+  ///
+  /// In zh, this message translates to:
+  /// **'数据以单个 JSON 快照文件存放在服务器上。同步是双向合并，不会删除任何一端的数据。'**
+  String get webDavNote;
 }
 
 class _AppLocalizationsDelegate

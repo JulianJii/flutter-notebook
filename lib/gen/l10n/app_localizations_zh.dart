@@ -480,4 +480,143 @@ class AppLocalizationsZh extends AppLocalizations {
 
     return '最后更新：$dateString';
   }
+
+  @override
+  String get settingsDataManagement => '数据与同步';
+
+  @override
+  String get dataTitle => '数据与同步';
+
+  @override
+  String get dataGroupExport => '导出';
+
+  @override
+  String get dataExport => '导出数据';
+
+  @override
+  String get dataExportDesc => '把全部笔记、文件夹与待办存成一份 JSON 快照文件';
+
+  @override
+  String get dataGroupImport => '导入';
+
+  @override
+  String get dataImport => '导入数据';
+
+  @override
+  String get dataImportDesc => '从 JSON 快照合并进来，同一条记录保留更新时间更晚的那份';
+
+  @override
+  String get dataGroupWebDav => 'WebDAV 同步';
+
+  @override
+  String get dataWebDavServer => '服务器';
+
+  @override
+  String get dataWebDavNotConfigured => '未配置';
+
+  @override
+  String get dataSyncNow => '立即同步';
+
+  @override
+  String get dataSyncAutoOnStart => '启动时自动同步';
+
+  @override
+  String get dataSyncAutoOnStartDesc => '打开后每次启动应用会自动同步一次';
+
+  @override
+  String get dataLastSyncNever => '尚未同步';
+
+  @override
+  String dataLastSyncAt(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '上次同步：$dateString';
+  }
+
+  @override
+  String dataExportDone(int count) {
+    return '已导出 $count 条记录';
+  }
+
+  @override
+  String dataImportDone(int inserted, int updated) {
+    return '已导入：新增 $inserted 条，更新 $updated 条';
+  }
+
+  @override
+  String dataSyncDone(int inserted, int updated) {
+    return '同步完成：新增 $inserted 条，更新 $updated 条';
+  }
+
+  @override
+  String get dataSyncNoChange => '两端数据一致，无需同步';
+
+  @override
+  String dataSkippedSuffix(int skipped) {
+    return '，跳过 $skipped 条';
+  }
+
+  @override
+  String get dataErrorNetwork => '连不上服务器，请检查网络';
+
+  @override
+  String get dataErrorTimeout => '连接超时，请稍后重试';
+
+  @override
+  String get dataErrorAuth => '用户名或密码不对';
+
+  @override
+  String get dataErrorServer => '服务器拒绝了这次请求';
+
+  @override
+  String get dataErrorInvalidFile => '这个文件不是本应用导出的数据';
+
+  @override
+  String get dataErrorNotConfigured => '还没有配置 WebDAV 服务器';
+
+  @override
+  String get dataErrorUnknown => '操作失败，请重试';
+
+  @override
+  String get webDavTitle => 'WebDAV';
+
+  @override
+  String get webDavSave => '保存';
+
+  @override
+  String get webDavSaved => '已保存';
+
+  @override
+  String get webDavGroupAccount => '服务器';
+
+  @override
+  String get webDavUrl => '服务器地址';
+
+  @override
+  String get webDavUsername => '用户名';
+
+  @override
+  String get webDavPassword => '密码';
+
+  @override
+  String get webDavPasswordToggle => '显示密码';
+
+  @override
+  String get webDavRemoteFile => '远端文件名';
+
+  @override
+  String get webDavGroupAction => '连接';
+
+  @override
+  String get webDavTest => '测试连接';
+
+  @override
+  String get webDavTestOk => '连接成功';
+
+  @override
+  String get webDavTestFailed => '连接失败';
+
+  @override
+  String get webDavNote => '数据以单个 JSON 快照文件存放在服务器上。同步是双向合并，不会删除任何一端的数据。';
 }

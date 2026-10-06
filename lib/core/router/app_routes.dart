@@ -49,6 +49,12 @@ abstract final class AppRoutes {
   /// ⚠️ 路径前缀是 `/settings`，与隐私政策 / 用户协议同层（root navigator）。
   static const String theme = '/settings/theme';
 
+  /// 数据与同步（导出 / 导入 / WebDAV）。`/settings` 的兄弟路由。
+  static const String dataManagement = '/settings/data';
+
+  /// WebDAV 服务器配置。从 [dataManagement] 进入。
+  static const String webDav = '/settings/webdav';
+
   /// 隐私政策。`/settings` 的兄弟路由（root navigator，整页覆盖）。
   static const String privacyPolicy = '/settings/privacy-policy';
 

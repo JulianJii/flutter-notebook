@@ -622,5 +622,205 @@
         "format": "yMMMd"
       }
     }
+  },
+  "settingsDataManagement": "Data & Sync",
+  "@settingsDataManagement": {
+    "description": "P5 row that opens the data and sync page"
+  },
+  "dataTitle": "Data & Sync",
+  "@dataTitle": {
+    "description": "Title of the data management screen"
+  },
+  "dataGroupExport": "Export",
+  "@dataGroupExport": {
+    "description": "Section header of the export group"
+  },
+  "dataExport": "Export data",
+  "@dataExport": {
+    "description": "Row that exports a JSON snapshot"
+  },
+  "dataExportDesc": "Save all notes, folders and to-dos into one JSON snapshot file",
+  "@dataExportDesc": {
+    "description": "Subtitle of the export row"
+  },
+  "dataGroupImport": "Import",
+  "@dataGroupImport": {
+    "description": "Section header of the import group"
+  },
+  "dataImport": "Import data",
+  "@dataImport": {
+    "description": "Row that imports a JSON snapshot"
+  },
+  "dataImportDesc": "Merge a JSON snapshot in; the newer copy wins for each record",
+  "@dataImportDesc": {
+    "description": "Subtitle of the import row"
+  },
+  "dataGroupWebDav": "WebDAV Sync",
+  "@dataGroupWebDav": {
+    "description": "Section header of the WebDAV group"
+  },
+  "dataWebDavServer": "Server",
+  "@dataWebDavServer": {
+    "description": "Row that opens the WebDAV config screen"
+  },
+  "dataWebDavNotConfigured": "Not set",
+  "@dataWebDavNotConfigured": {
+    "description": "Value shown when no WebDAV server is configured"
+  },
+  "dataSyncNow": "Sync now",
+  "@dataSyncNow": {
+    "description": "Row that syncs with the WebDAV server right away"
+  },
+  "dataSyncAutoOnStart": "Sync when app starts",
+  "@dataSyncAutoOnStart": {
+    "description": "Switch row that enables syncing on app start"
+  },
+  "dataSyncAutoOnStartDesc": "Syncs once every time the app starts",
+  "@dataSyncAutoOnStartDesc": {
+    "description": "Subtitle of the auto-sync switch row"
+  },
+  "dataLastSyncNever": "Never synced",
+  "@dataLastSyncNever": {
+    "description": "Footer shown when the app never synced"
+  },
+  "dataLastSyncAt": "Last synced: {date}",
+  "@dataLastSyncAt": {
+    "description": "Footer showing when the last sync happened",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "dataExportDone": "Exported {count} records",
+  "@dataExportDone": {
+    "description": "Snackbar shown after an export",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataImportDone": "Imported: {inserted} added, {updated} updated",
+  "@dataImportDone": {
+    "description": "Snackbar shown after an import",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "dataSyncDone": "Synced: {inserted} added, {updated} updated",
+  "@dataSyncDone": {
+    "description": "Snackbar shown after a sync that changed something",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
+  },
+  "dataSyncNoChange": "Both sides are already in sync",
+  "@dataSyncNoChange": {
+    "description": "Snackbar shown after a sync that changed nothing"
+  },
+  "dataSkippedSuffix": ", {skipped} skipped",
+  "@dataSkippedSuffix": {
+    "description": "Suffix appended to the import result when rows were skipped",
+    "placeholders": {
+      "skipped": {
+        "type": "int"
+      }
+    }
+  },
+  "dataErrorNetwork": "Can't reach the server — check your connection",
+  "@dataErrorNetwork": {
+    "description": "Snackbar shown when the server can't be reached"
+  },
+  "dataErrorTimeout": "Connection timed out. Try again later",
+  "@dataErrorTimeout": {
+    "description": "Snackbar shown when a sync times out"
+  },
+  "dataErrorAuth": "Wrong username or password",
+  "@dataErrorAuth": {
+    "description": "Snackbar shown when WebDAV rejects the credentials"
+  },
+  "dataErrorServer": "The server rejected the request",
+  "@dataErrorServer": {
+    "description": "Snackbar shown when the server returns an error"
+  },
+  "dataErrorInvalidFile": "This file isn't a snapshot exported by this app",
+  "@dataErrorInvalidFile": {
+    "description": "Snackbar shown when the picked file is not a snapshot"
+  },
+  "dataErrorNotConfigured": "No WebDAV server configured yet",
+  "@dataErrorNotConfigured": {
+    "description": "Snackbar shown when syncing without a configured server"
+  },
+  "dataErrorUnknown": "Something went wrong. Try again",
+  "@dataErrorUnknown": {
+    "description": "Snackbar shown for any other backup failure"
+  },
+  "webDavTitle": "WebDAV",
+  "@webDavTitle": {
+    "description": "Title of the WebDAV config screen"
+  },
+  "webDavSave": "Save",
+  "@webDavSave": {
+    "description": "Top bar action that saves the config"
+  },
+  "webDavSaved": "Saved",
+  "@webDavSaved": {
+    "description": "Snackbar shown after the config is saved"
+  },
+  "webDavGroupAccount": "Server",
+  "@webDavGroupAccount": {
+    "description": "Section header of the WebDAV credential form"
+  },
+  "webDavUrl": "Server address",
+  "@webDavUrl": {
+    "description": "Label of the server address field"
+  },
+  "webDavUsername": "Username",
+  "@webDavUsername": {
+    "description": "Label of the username field"
+  },
+  "webDavPassword": "Password",
+  "@webDavPassword": {
+    "description": "Label of the password field"
+  },
+  "webDavPasswordToggle": "Show password",
+  "@webDavPasswordToggle": {
+    "description": "Tooltip of the button that reveals the password"
+  },
+  "webDavRemoteFile": "Remote file name",
+  "@webDavRemoteFile": {
+    "description": "Label of the remote file name field"
+  },
+  "webDavGroupAction": "Connection",
+  "@webDavGroupAction": {
+    "description": "Section header of the WebDAV test connection group"
+  },
+  "webDavTest": "Test connection",
+  "@webDavTest": {
+    "description": "Row that tests the connection"
+  },
+  "webDavTestOk": "Connected",
+  "@webDavTestOk": {
+    "description": "Inline result shown when the connection test succeeds"
+  },
+  "webDavTestFailed": "Couldn't connect",
+  "@webDavTestFailed": {
+    "description": "Inline result shown when the connection test fails"
+  },
+  "webDavNote": "Data is stored on the server as a single JSON snapshot. Syncing merges both ways and never deletes data from either side.",
+  "@webDavNote": {
+    "description": "Footer explaining how WebDAV sync works"
   }
 }

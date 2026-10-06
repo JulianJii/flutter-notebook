@@ -58,7 +58,7 @@ class ThemeScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
                 children: <Widget>[
-                  _Group(
+                  AppSettingsGroup(
                     title: l10n.themeSectionBrightness,
                     children: <Widget>[
                       Padding(
@@ -70,7 +70,7 @@ class ThemeScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  _Group(
+                  AppSettingsGroup(
                     title: l10n.themeSectionPalette,
                     children: <Widget>[
                       for (final scheme in AppColorScheme.values)
@@ -187,35 +187,6 @@ class _PaletteDot extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: context.colors.divider),
       ),
-    );
-  }
-}
-
-/// 一个分组 = 标题 + 一张白卡。与 P5 的 `_Group` 同排版（页面内私有组件）。
-class _Group extends StatelessWidget {
-  const _Group({required this.title, required this.children});
-
-  final String title;
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        AppSectionHeader(text: title),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageH),
-          child: AppCard(
-            padding: EdgeInsets.zero,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -27,6 +27,25 @@ title: Features
 
 笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、强提醒开关、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
 
+「数据与同步」行是进入 `features/backup/` 的跳转入口（见下节），不把 WebDAV 配置并进 `AppSettings` —— 那是「App 长什么样」的偏好，凭据是另一回事。
+
+### 数据与同步（`lib/features/backup/`）
+
+导出 / 导入 / WebDAV 三个动作共用**同一份快照模型** `BackupSnapshot`（`notes` + `note_folders` + `todos` 三表全量，含回收站里的软删除笔记）：
+
+| 动作 | 链路 |
+|---|---|
+| 导出 | 读全量 → JSON → 写临时文件 → 系统分享面板（存到哪由用户自己选） |
+| 导入 | 文件选择器选 `.json` → 按 id 合并进本地 |
+| 同步 | `GET` 远端快照 → 与本地合并 → `PUT` 回去 → 合并结果落本地 |
+
+**合并规则只有一条**：逐条比 `max(updatedAt, deletedAt ?? 0)`，新的赢，一样新保留本地（避免无意义写库）。只新增不删除 —— 符合「永不丢数据」，且软删除靠 `deletedAt` 也能跨设备传播，不会被一条更晚的编辑复活。
+
+- 同步是**单文件快照**，不是增量队列：`GET` 到 404 就当「远端还没文件」，等价于首次推送。因此不需要冲突状态机，`core/network/offline_sync_service.dart` 那套变更队列**不接线**。
+- 快照有自己的 `version`（当前 1），高于它的直接拒绝导入，不静默降级解析。
+- WebDAV 客户端是 **dio 手搓**的（`GET` / `PUT` / `MKCOL` / `PROPFIND` + Basic Auth），不引第三方包；该 Dio 实例独立（`webDavDioProvider`），不加 `LogInterceptor` —— 请求头里有密码。
+- ⛔ 待办是硬删除、无墓碑 —— **Q40**；密码明文落本地 —— **Q41**（均见 `docs/OPEN-DESIGN-QUESTIONS.md`）。
+
 ---
 
 ## 工程能力
@@ -87,7 +106,7 @@ if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
 
 ### 路由
 
-`core/router/app_router.dart` 是唯一的 `routerProvider`：`StatefulShellRoute.indexedStack` + `NotesShell` 承载 `/notes`、`/todos` 两个 Tab（切 Tab 不丢列表状态），二级页（`/notes/new`、`/notes/folders`、`/notes/trash`、`/notes/:id`、`/settings`、隐私政策、用户协议）一律挂 `_rootNavigatorKey` 整屏覆盖。
+`core/router/app_router.dart` 是唯一的 `routerProvider`：`StatefulShellRoute.indexedStack` + `NotesShell` 承载 `/notes`、`/todos` 两个 Tab（切 Tab 不丢列表状态），二级页（`/notes/new`、`/notes/folders`、`/notes/trash`、`/notes/:id`、`/settings`、`/settings/theme`、`/settings/data`、`/settings/webdav`、隐私政策、用户协议）一律挂 `_rootNavigatorKey` 整屏覆盖。
 
 > ⚠️ **注册顺序是硬约束**：`new` / `folders` / `trash` 必须注册在 `:id` 之前，否则会被当作笔记 id 吃掉。
 > 路径常量只在 `AppRoutes`（唯一 SoT，`initial = '/notes'`）。router 里**不 watch** `persistentLocaleProvider`——会重建 GoRouter 并清空导航栈，语言由 `main.dart` 的 `MaterialApp.locale` 负责。
@@ -95,6 +114,8 @@ if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
 ### 本地持久化
 
 `drift`（SQLite：笔记 / 文件夹 / 待办）通过 `appDatabaseProvider`（`core/providers/database_providers.dart`）注入；设置偏好用 `shared_preferences`。**改表后必须跑 build_runner**。
+
+导出 / 导入 / 同步**不改表、不动 schemaVersion** —— 快照是应用层的 JSON，它的 `version` 与数据库的 `schemaVersion` 是两件事。
 
 ### 高级图片处理
 

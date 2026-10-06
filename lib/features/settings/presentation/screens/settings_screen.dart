@@ -80,7 +80,7 @@ class SettingsScreen extends ConsumerWidget {
                 // 若在这里加 12dp 内边距，标题会变成 40dp）。
                 padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
                 children: <Widget>[
-                  _Group(
+                  AppSettingsGroup(
                     key: const Key('section_note_style'),
                     title: l10n.settingsGroupNoteStyle,
                     children: <Widget>[
@@ -127,7 +127,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  _Group(
+                  AppSettingsGroup(
                     key: const Key('section_quick'),
                     title: l10n.settingsGroupQuick,
                     children: <Widget>[
@@ -138,7 +138,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  _Group(
+                  AppSettingsGroup(
                     key: const Key('section_reminder'),
                     title: l10n.settingsGroupReminder,
                     children: <Widget>[
@@ -158,14 +158,21 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  _Group(
+                  AppSettingsGroup(
                     key: const Key('section_other'),
                     title: l10n.settingsGroupOther,
                     children: <Widget>[
                       _chevronTile(
                         context,
+                        key: const Key('chevron_data_management'),
+                        title: l10n.settingsDataManagement,
+                        onTap: () => context.push(AppRoutes.dataManagement),
+                      ),
+                      _chevronTile(
+                        context,
                         key: const Key('chevron_recent_deleted'),
                         title: l10n.settingsRecentDeleted,
+                        dividerBefore: true,
                         onTap: () => context.push(AppRoutes.noteTrash),
                       ),
                       _chevronTile(
@@ -254,42 +261,6 @@ class SettingsScreen extends ConsumerWidget {
         );
         if (picked != null && picked != current) onSelected(picked);
       },
-    );
-  }
-}
-
-/// 一个分组 = 标题 + 一张白卡。页面内私有组件（`DEVELOPMENT-GUIDELINES.md` §7.2）。
-///
-/// ⛔ **不加新组件**：`AppSectionHeader`（TASK-011）+ `AppCard`（TASK-011）已能表达
-/// D5 的分组结构，本类只做「标题在卡外、左右边距只给卡」的排版。
-class _Group extends StatelessWidget {
-  const _Group({required this.title, required this.children, super.key});
-
-  final String title;
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        // 分组标题在卡外侧：它的 28dp 左缩进是**页面绝对**缩进（= 12 页面边距 +
-        // 16 行内边距），所以不能被卡片的 12dp 包裹。
-        AppSectionHeader(text: title),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageH),
-          child: AppCard(
-            // 卡内不加内边距：行的左右 16dp 由 `AppListTile` 提供（D5 实测
-            // 卡片左边界 → 行文字 16dp）。加了会出现 12 + 16 = 28dp 的双重缩进。
-            padding: EdgeInsets.zero,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: children,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

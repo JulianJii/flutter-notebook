@@ -35,6 +35,8 @@
 | Q-§2.2 | §2.2 的 13 个字阶里没有「分组标题」这一级 | `AppSectionHeader` 暂取最接近的 `text.subtitle`（13sp / w400），按 D5 量取后修正该行 |
 | Q-新 | 待办排序覆盖 D2 稿「本页无排序入口」 | 用户已确认覆盖：`TodoDao.watchAll` 的 `ORDER BY is_done ASC, created_at DESC`（未完成置顶 + 同组创建时间倒序），「已完成 N」折叠分组复用这条顺序 |
 | Q-新2 | 文件夹拖拽排序覆盖 D4 稿「本页无排序入口」 | 用户已要求：新增 `note_folders.sort_index`（schemaVersion 4）+ `FolderDao.updateSortIndexes`；P4 真实文件夹行右侧的计数换成拖动图标（`AppIcons.drag`），「全部」/「未分类」不可拖、仍显示计数 |
+| Q40 | 待办是**硬删除、无墓碑列**，A 机删掉一条后 B 机的同一条会在下次同步被带回来 | 现状接受：合并是「并集」，只有 `notes` 有 `deleted_at` 能传播删除。要修需给 `todos` 加 `deleted_at` 列（schemaVersion 5）+ 待办的回收站视图；在那之前，删待办请在同一台设备上删完再同步 |
+| Q41 | WebDAV 密码明文存 SharedPreferences | 现状接受：App 无账号体系、无后端，设备沙箱已隔离，为它接 keychain / Keystore 是给一个本地 App 上锁自己的门。真出现「多人共用同一台设备」的场景再改 |
 
 ## 已定稿（本轮落地）
 

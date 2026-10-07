@@ -1,12 +1,14 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart' show SqliteException;
 import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/backup/domain/entities/backup_snapshot.dart';
 
 /// 三张表 ↔ [BackupSnapshot] 的双向通道。
 ///
 /// ⛔ 不 import Flutter、不做 Exception → Failure（那是 Repository 的活）。
-/// 读失败让 drift 的异常原样冒泡。
+/// drift 的 `SqliteException` / `DriftWrappedException` 在出口处包成
+/// `CacheException`（与另三个 datasource 同约定：SQL 细节不往外漏）。
 ///
 /// 写入顺序**必须是 folders → notes → todos**：`notes.folder_id` 有外键且
 /// `PRAGMA foreign_keys = ON`，快照里指向本地不存在文件夹的 `folderId` 会在
@@ -18,7 +20,7 @@ class BackupLocalDataSource {
 
   /// 全量读。**含回收站里的软删除笔记** —— 删除也是数据，不同步过去的话，
   /// 换台设备就会看到「删掉的笔记又回来了」。
-  Future<BackupSnapshot> read() async {
+  Future<BackupSnapshot> read() => _guard(() async {
     final notes = await _db.select(_db.notes).get();
     final folders = await _db.select(_db.noteFolders).get();
     final todos = await _db.select(_db.todos).get();
@@ -59,7 +61,7 @@ class BackupLocalDataSource {
           ),
       ],
     );
-  }
+  });
 
   /// 写回一份**已合并**的快照，返回因文件夹重名而跳过的条数。
   ///
@@ -69,7 +71,7 @@ class BackupLocalDataSource {
   /// 全量写、不做逐行 diff：写入的值与库里相同时 SQLite 只是重写一遍同样的
   /// 字节，`updated_at` 不变，列表排序不会抖。为省这点 IO 去读一遍全部行做
   /// 比较，是拿复杂度换零收益。
-  Future<int> write(BackupSnapshot snapshot) async {
+  Future<int> write(BackupSnapshot snapshot) => _guard(() async {
     var skipped = 0;
     await _db.transaction(() async {
       skipped = await _writeFolders(snapshot.folders);
@@ -78,7 +80,7 @@ class BackupLocalDataSource {
       await _writeTodos(snapshot.todos);
     });
     return skipped;
-  }
+  });
 
   /// 文件夹逐条写，不用 batch：`name` 是 UNIQUE，跨设备各自新建同名文件夹会
   /// 撞约束，得逐条改名重试（batch 里拿不到「哪一条撞了」）。
@@ -179,5 +181,24 @@ class BackupLocalDataSource {
         );
       }
     });
+  }
+
+  /// 读库失败的统一出口：`SqliteException` / `DriftWrappedException` →
+  /// `CacheException`。与另三个 datasource 的 `_guard` 同形。
+  ///
+  /// ⚠️ 不消化 UNIQUE 冲突：那由 [_tryWriteFolder] 就地判成 `false`（重名改名，
+  /// 不是失败），走到这里的异常都是真的读写失败。
+  Future<T> _guard<T>(Future<T> Function() body) async {
+    try {
+      return await body();
+    } on CacheException {
+      rethrow;
+    } on SqliteException catch (e) {
+      throw CacheException(message: e.message);
+    } on DriftWrappedException catch (e) {
+      throw CacheException(message: e.message);
+    } on Exception catch (e) {
+      throw CacheException(message: e.toString());
+    }
   }
 }

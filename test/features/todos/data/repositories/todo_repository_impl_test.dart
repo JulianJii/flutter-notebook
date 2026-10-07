@@ -118,8 +118,18 @@ void main() {
     );
   });
 
-  test('watchAll 直接透传 Repository 那个流实例', () {    final stream = Stream.value([_todo()]);
-    when(() => ds.watchAll()).thenAnswer((_) => stream);
-    expect(repo.watchAll(), same(stream));
+  test('watchAll 透传数据源的流，并把流错误映射成 CacheFailure', () async {
+    when(() => ds.watchAll()).thenAnswer((_) => Stream.value([_todo()]));
+    await expectLater(repo.watchAll(), emits(<Todo>[_todo()]));
+
+    when(() => ds.watchAll()).thenAnswer(
+      (_) => Stream<List<Todo>>.error(CacheException(message: 'disk full')),
+    );
+    await expectLater(
+      repo.watchAll(),
+      emitsError(
+        isA<CacheFailure>().having((f) => f.message, 'message', 'disk full'),
+      ),
+    );
   });
 }

@@ -21,15 +21,16 @@ class FolderRepositoryImpl implements FolderRepository {
   final FolderLocalDataSource _localDataSource;
   final Uuid _uuid;
 
-  /// 直接透传，不包 `Either`（流有成败用 `AsyncValue` 表达），也不加 try。
+  /// 不包 `Either`（流有成败用 `AsyncValue` 表达），也不加 try —— 流错误由
+  /// `handleError` 映射成 `CacheFailure`（见 [_toFailure]）。
   @override
   Stream<List<FolderWithCount>> watchWithCounts() {
-    return _localDataSource.watchWithCounts();
+    return _localDataSource.watchWithCounts().handleError(_toFailure);
   }
 
   @override
   Stream<int> watchUncategorizedCount() {
-    return _localDataSource.watchUncategorizedCount();
+    return _localDataSource.watchUncategorizedCount().handleError(_toFailure);
   }
 
   @override
@@ -91,6 +92,14 @@ class FolderRepositoryImpl implements FolderRepository {
         ? Left(InputFailure(message: message))
         : Left(CacheFailure(message: message));
   }
+
+  /// 流错误 → `CacheFailure`：流是异步的，`try/catch` 抓不到，只能 `handleError`。
+  /// 两个 watch 都是读，撞不到 UNIQUE，所以不走 [_mapFailure]。
+  ///
+  /// ⚠️ `handleError` 不恢复订阅：错误发出后流即关闭，与「读库失败」的语义一致。
+  Never _toFailure(Object e) => throw e is CacheException
+      ? CacheFailure(message: e.message)
+      : CacheFailure(message: e.toString());
 }
 
 /// 给 [folder] 补上 id。⛔ 不用 `copyWith`：`NoteFolder.copyWith` 刻意不带 `id`

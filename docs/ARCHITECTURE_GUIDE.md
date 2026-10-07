@@ -137,6 +137,13 @@ NoteRepository noteRepository(Ref ref) {
   );
   ```
 
+### 订阅型方法（Stream）不包 `Either`
+`watch*` 系列返回 `Stream<List<T>>`，成败由 UI 的 `AsyncValue` 表达。错误**仍要**
+分两级映射，只是出口不同：DataSource 在流上 `handleError` 把 drift 的
+`SqliteException` 包成 `CacheException`，Repository 再把它映射成 `CacheFailure`。
+所以 UI 的 `AsyncValue.error` 里始终是 `Failure`，不会是 `SqliteException`；
+⚠️ `try/catch` 抓不到流错误，别在流方法上写假的 try。
+
 ### 框架无关性
 为保持 Data 层的可测试性，我们避免 `flutter` 导入。
 - **日志**：使用 `core/logging` 的 `Logger`/`loggerProvider`，而非 `debugPrint`（`avoid_print` lint 会拦）。

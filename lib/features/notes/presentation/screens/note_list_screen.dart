@@ -6,7 +6,6 @@ import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
-import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,6 +14,7 @@ import '../../domain/entities/note.dart';
 import '../../domain/entities/note_query.dart';
 import '../providers/folder_provider.dart';
 import '../providers/note_list_provider.dart';
+import '../providers/note_prefs_provider.dart';
 import '../providers/note_search_provider.dart';
 import '../widgets/note_card.dart';
 import '../widgets/note_masonry_grid.dart';
@@ -107,11 +107,10 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
     final queryParameters = GoRouterState.of(context).uri.queryParameters;
     final filter = selectedFolderFilter(queryParameters);
     // 只取本页真正用到的两个字段：watch 整个 `AppSettings` 会让改 `themeMode` /
-    // `textScale` / `locale` 等无关偏好时整页（含所有可见 NoteCard）跟着重建。
-    final (noteSort, noteLayout) = ref.watch(
-      settingsProvider.select((s) => (s.noteSort, s.noteLayout)),
-    );
-    final textScale = ref.watch(textScaleFactorProvider);
+    // `locale` 等无关偏好时整页（含所有可见 NoteCard）跟着重建 —— `select` 写在
+    // [noteListPrefsProvider] 内部，这里不必再管。
+    final (:sort, :layout) = ref.watch(noteListPrefsProvider);
+    final textScale = ref.watch(noteTextScaleProvider);
     // 搜索 + 筛选 + 排序三者叠加进同一个 [NoteQuery]（`props` 已覆盖
     // 三个字段，任一变化都会重新订阅）。
     final search = ref.watch(noteSearchProvider);
@@ -165,8 +164,8 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
                               _CategoryPage(
                                 key: ValueKey<String>(filter ?? 'all'),
                                 filter: filter,
-                                noteSort: noteSort,
-                                noteLayout: noteLayout,
+                                noteSort: sort,
+                                noteLayout: layout,
                                 searchTerm: searchTerm,
                                 textScale: textScale,
                               ),
@@ -214,7 +213,7 @@ class _CategoryPage extends ConsumerWidget {
   /// 分类筛选值，语义同 [selectedFolderFilter]。
   final String? filter;
 
-  final AppNoteSort noteSort;
+  final NoteSort noteSort;
 
   final NoteLayout noteLayout;
 
@@ -226,7 +225,7 @@ class _CategoryPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(
       noteListProvider(
-        withAppNoteSort(noteQueryFor(filter, searchTerm: searchTerm), noteSort),
+        noteQueryFor(filter, searchTerm: searchTerm).copyWith(sort: noteSort),
       ),
     );
     final items = notes.value ?? const <Note>[];

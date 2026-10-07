@@ -11,7 +11,6 @@ import 'package:mynote/core/utils/app_utils.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
 import 'package:mynote/features/notes/domain/utils/note_delta.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
-import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 // `BackgroundPickerSheet` 收 `AssetGenImage`，本页不再直接引用 `Assets.*`。
 import 'package:mynote/gen/assets.gen.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
@@ -20,6 +19,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../providers/note_editor_provider.dart';
+import '../providers/note_prefs_provider.dart';
 import '../widgets/note_background_image.dart';
 
 /// 笔记详情 / 编辑。
@@ -257,7 +257,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
     // 设置「文字大小」：标题区 / 元信息行 / 正文区三处同步放大
     // （`ARCHITECTURE-DESIGN.md` §4 的取值来源表）。
-    final textScale = ref.watch(textScaleFactorProvider);
+    final textScale = ref.watch(noteTextScaleProvider);
     // 背景单独 select：只有真正换背景时才重建本页，不随每次按键。
     final background = ref.watch(
       noteEditorProvider(

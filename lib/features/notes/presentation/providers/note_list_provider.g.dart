@@ -11,10 +11,10 @@ part of 'note_list_provider.dart';
 /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
 /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
 ///
-/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
-/// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
-/// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
-/// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
+/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）把偏好的
+/// 排序填进 `NoteQuery.sort` 再传进来。理由有二：一是本 provider 保持零偏好依赖
+/// （Phase 4 的东西不因 Phase 7 变质），二是「哪个 query 在看」由页面决定，
+/// provider 无从判断该不该改排序。
 ///
 /// 文件夹筛选来自 URL（`?folder=xxx`）而不是全局 state
 /// （`ARCHITECTURE-DESIGN.md` §8.2 / §8.5）：存成内存 state 会让 chip 高亮态
@@ -27,10 +27,10 @@ final noteListProvider = NoteListFamily._();
 /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
 /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
 ///
-/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
-/// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
-/// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
-/// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
+/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）把偏好的
+/// 排序填进 `NoteQuery.sort` 再传进来。理由有二：一是本 provider 保持零偏好依赖
+/// （Phase 4 的东西不因 Phase 7 变质），二是「哪个 query 在看」由页面决定，
+/// provider 无从判断该不该改排序。
 ///
 /// 文件夹筛选来自 URL（`?folder=xxx`）而不是全局 state
 /// （`ARCHITECTURE-DESIGN.md` §8.2 / §8.5）：存成内存 state 会让 chip 高亮态
@@ -48,10 +48,10 @@ final class NoteListProvider
   /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
   /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
   ///
-  /// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
-  /// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
-  /// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
-  /// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
+  /// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）把偏好的
+  /// 排序填进 `NoteQuery.sort` 再传进来。理由有二：一是本 provider 保持零偏好依赖
+  /// （Phase 4 的东西不因 Phase 7 变质），二是「哪个 query 在看」由页面决定，
+  /// provider 无从判断该不该改排序。
   ///
   /// 文件夹筛选来自 URL（`?folder=xxx`）而不是全局 state
   /// （`ARCHITECTURE-DESIGN.md` §8.2 / §8.5）：存成内存 state 会让 chip 高亮态
@@ -105,10 +105,10 @@ String _$noteListHash() => r'2c8b40fb4317254c0765d2a71adb3e0165bcf3de';
 /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
 /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
 ///
-/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
-/// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
-/// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
-/// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
+/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）把偏好的
+/// 排序填进 `NoteQuery.sort` 再传进来。理由有二：一是本 provider 保持零偏好依赖
+/// （Phase 4 的东西不因 Phase 7 变质），二是「哪个 query 在看」由页面决定，
+/// provider 无从判断该不该改排序。
 ///
 /// 文件夹筛选来自 URL（`?folder=xxx`）而不是全局 state
 /// （`ARCHITECTURE-DESIGN.md` §8.2 / §8.5）：存成内存 state 会让 chip 高亮态
@@ -129,10 +129,10 @@ final class NoteListFamily extends $Family
   /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
   /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
   ///
-  /// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
-  /// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
-  /// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
-  /// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
+  /// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）把偏好的
+  /// 排序填进 `NoteQuery.sort` 再传进来。理由有二：一是本 provider 保持零偏好依赖
+  /// （Phase 4 的东西不因 Phase 7 变质），二是「哪个 query 在看」由页面决定，
+  /// provider 无从判断该不该改排序。
   ///
   /// 文件夹筛选来自 URL（`?folder=xxx`）而不是全局 state
   /// （`ARCHITECTURE-DESIGN.md` §8.2 / §8.5）：存成内存 state 会让 chip 高亮态

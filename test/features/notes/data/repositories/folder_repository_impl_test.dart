@@ -160,16 +160,26 @@ void main() {
     });
   });
 
-  test('watchWithCounts 直接透传 Repository 那个流实例', () {
-    final stream = Stream.value([FolderWithCount(folder: _folder(), count: 1)]);
-    when(() => ds.watchWithCounts()).thenAnswer((_) => stream);
-    expect(repo.watchWithCounts(), same(stream));
+  test('watchWithCounts 透传数据源的流，并把流错误映射成 CacheFailure', () async {
+    final row = FolderWithCount(folder: _folder(), count: 1);
+    when(() => ds.watchWithCounts()).thenAnswer((_) => Stream.value([row]));
+    await expectLater(repo.watchWithCounts(), emits(<FolderWithCount>[row]));
+
+    when(() => ds.watchWithCounts()).thenAnswer(
+      (_) =>
+          Stream<List<FolderWithCount>>.error(CacheException(message: 'disk full')),
+    );
+    await expectLater(
+      repo.watchWithCounts(),
+      emitsError(
+        isA<CacheFailure>().having((f) => f.message, 'message', 'disk full'),
+      ),
+    );
   });
 
-  test('watchUncategorizedCount 直接透传那个标量流（不回退成读列表）', () {
-    final stream = Stream.value(154);
-    when(() => ds.watchUncategorizedCount()).thenAnswer((_) => stream);
-    expect(repo.watchUncategorizedCount(), same(stream));
+  test('watchUncategorizedCount 透传那个标量流（不回退成读列表）', () async {
+    when(() => ds.watchUncategorizedCount()).thenAnswer((_) => Stream.value(154));
+    await expectLater(repo.watchUncategorizedCount(), emits(154));
     verifyNever(() => ds.watchWithCounts());
   });
 }

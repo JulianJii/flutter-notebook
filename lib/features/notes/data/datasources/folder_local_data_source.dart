@@ -57,20 +57,23 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
 
   @override
   Stream<List<FolderWithCount>> watchWithCounts() {
-    return _dao.watchWithCounts().map(
-      (rows) => rows
-          .map(
-            (row) => FolderWithCount(
-              folder: _toEntity(row.folder),
-              count: row.count,
-            ),
-          )
-          .toList(),
+    return _guardStream(
+      _dao.watchWithCounts().map(
+        (rows) => rows
+            .map(
+              (row) => FolderWithCount(
+                folder: _toEntity(row.folder),
+                count: row.count,
+              ),
+            )
+            .toList(),
+      ),
     );
   }
 
   @override
-  Stream<int> watchUncategorizedCount() => _dao.watchUncategorizedCount();
+  Stream<int> watchUncategorizedCount() =>
+      _guardStream(_dao.watchUncategorizedCount());
 
   @override
   Future<NoteFolder> insert(NoteFolder folder) => _guard(() async {
@@ -163,6 +166,18 @@ Future<T> _guard<T>(Future<T> Function() body) async {
   } on Exception catch (e) {
     throw CacheException(message: e.toString());
   }
+}
+
+/// 流版本的 [_guard]：drift 的 `watch` 只在**流里**报错，`try/catch` 抓不到。
+/// 映射规则与 [_guard] 一致（含 UNIQUE 前缀判定）；错误发出后流即关闭
+/// （[Stream.handleError] 不恢复订阅）—— 读库失败是终态。
+Stream<T> _guardStream<T>(Stream<T> source) {
+  return source.handleError((Object e) {
+    if (e is CacheException) throw e;
+    if (e is SqliteException) throw CacheException(message: e.message);
+    if (e is DriftWrappedException) throw CacheException(message: e.message);
+    throw CacheException(message: e.toString());
+  });
 }
 
 /// SQLite 的 `SQLITE_CONSTRAINT_UNIQUE` 扩展结果码（`19 | (8 << 8) = 2067`）。

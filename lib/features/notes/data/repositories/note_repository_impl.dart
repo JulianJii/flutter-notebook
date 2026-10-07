@@ -22,12 +22,14 @@ class NoteRepositoryImpl implements NoteRepository {
   final NoteLocalDataSource _localDataSource;
   final Uuid _uuid;
 
-  /// 直接透传，**不加 try**：流是异步的，`try/catch` 捕不到流错误，加了是假防护。
+  /// **不加 try**：流是异步的，`try/catch` 捕不到流错误，加了是假防护 —— 流错误
+  /// 走 `handleError`（见 [_toFailure]）。
   ///
-  /// 错误由 datasource 以 `Stream.error(CacheException)` 抛出 —— UI 侧只会看到
-  /// `AsyncValue.error(CacheFailure)`（`ARCHITECTURE-DESIGN.md` §6.4）。
+  /// 错误由 datasource 以 `Stream.error(CacheException)` 抛出，在这一层映射成
+  /// `CacheFailure`：UI 侧只会看到 `AsyncValue.error(CacheFailure)`。
   @override
-  Stream<List<Note>> watch(NoteQuery query) => _localDataSource.watch(query);
+  Stream<List<Note>> watch(NoteQuery query) =>
+      _localDataSource.watch(query).handleError(_toFailure);
 
   @override
   Future<Either<Failure, Note>> getById(String noteId) async {
@@ -101,7 +103,8 @@ class NoteRepositoryImpl implements NoteRepository {
   }
 
   @override
-  Stream<List<Note>> watchDeleted() => _localDataSource.watchDeleted();
+  Stream<List<Note>> watchDeleted() =>
+      _localDataSource.watchDeleted().handleError(_toFailure);
 
   @override
   Future<Either<Failure, Unit>> restore(String noteId) async {
@@ -155,3 +158,12 @@ Note _withId(Note note, String id) {
     updatedAt: note.updatedAt,
   );
 }
+
+/// 流错误 → `CacheFailure`：流是异步的，`try/catch` 抓不到，只能 `handleError`。
+/// datasource 已保证抛上来的只有 `CacheException`（drift 的原始异常不越那一层），
+/// 所以这里不必再认 SQL 错误类型。
+///
+/// ⚠️ `handleError` 不恢复订阅：错误发出后流即关闭，与「读库失败」的语义一致。
+Never _toFailure(Object e) => throw e is CacheException
+    ? CacheFailure(message: e.message)
+    : CacheFailure(message: e.toString());

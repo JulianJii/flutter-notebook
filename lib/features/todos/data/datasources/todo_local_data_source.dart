@@ -40,7 +40,9 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
 
   @override
   Stream<List<Todo>> watchAll() {
-    return _dao.watchAll().map((rows) => rows.map(_toEntity).toList());
+    return _guardStream(
+      _dao.watchAll().map((rows) => rows.map(_toEntity).toList()),
+    );
   }
 
   @override
@@ -131,4 +133,16 @@ Future<T> _guard<T>(Future<T> Function() body) async {
   } on Exception catch (e) {
     throw CacheException(message: e.toString());
   }
+}
+
+/// 流版本的 [_guard]：drift 的 `watch` 只在**流里**报错，`try/catch` 抓不到。
+/// 映射规则与 [_guard] 一致；错误发出后流即关闭（[Stream.handleError] 不恢复
+/// 订阅）—— 读库失败是终态，不假装还能继续推数据。
+Stream<T> _guardStream<T>(Stream<T> source) {
+  return source.handleError((Object e) {
+    if (e is CacheException) throw e;
+    if (e is SqliteException) throw CacheException(message: e.message);
+    if (e is DriftWrappedException) throw CacheException(message: e.message);
+    throw CacheException(message: e.toString());
+  });
 }

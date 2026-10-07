@@ -18,9 +18,11 @@ class TodoRepositoryImpl implements TodoRepository {
   final TodoLocalDataSource _localDataSource;
   final Uuid _uuid;
 
-  /// 直接透传，不包 `Either`，不加 try（流错误由 `AsyncValue` 表达）。
+  /// 不包 `Either`（流有成败用 `AsyncValue` 表达），不加 try —— 流错误由
+  /// `handleError` 映射成 `CacheFailure`（见 [_toFailure]）。
   @override
-  Stream<List<Todo>> watchAll() => _localDataSource.watchAll();
+  Stream<List<Todo>> watchAll() =>
+      _localDataSource.watchAll().handleError(_toFailure);
 
   @override
   Future<Either<Failure, Todo>> create(Todo todo) async {
@@ -85,3 +87,11 @@ Todo _withId(Todo todo, String id) {
     updatedAt: todo.updatedAt,
   );
 }
+
+/// 流错误 → `CacheFailure`：流是异步的，`try/catch` 抓不到，只能 `handleError`。
+/// datasource 已保证抛上来的只有 `CacheException`（drift 的原始异常不越那一层）。
+///
+/// ⚠️ `handleError` 不恢复订阅：错误发出后流即关闭，与「读库失败」的语义一致。
+Never _toFailure(Object e) => throw e is CacheException
+    ? CacheFailure(message: e.message)
+    : CacheFailure(message: e.toString());

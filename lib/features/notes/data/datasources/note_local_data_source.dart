@@ -65,16 +65,18 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   @override
   Stream<List<Note>> watch(NoteQuery query) {
     final args = _toArgs(query.folder);
-    return _dao
-        .watch(
-          folderId: args.folderId,
-          uncategorizedOnly: args.uncategorizedOnly,
-          searchTerm: _normalizeTerm(query.searchTerm),
-          order: _toOrder(query.sort),
-          limit: query.limit,
-          offset: query.offset,
-        )
-        .map((rows) => rows.map(_toEntity).toList());
+    return _guardStream(
+      _dao
+          .watch(
+            folderId: args.folderId,
+            uncategorizedOnly: args.uncategorizedOnly,
+            searchTerm: _normalizeTerm(query.searchTerm),
+            order: _toOrder(query.sort),
+            limit: query.limit,
+            offset: query.offset,
+          )
+          .map((rows) => rows.map(_toEntity).toList()),
+    );
   }
 
   @override
@@ -150,7 +152,9 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
 
   @override
   Stream<List<Note>> watchDeleted() {
-    return _dao.watchDeleted().map((rows) => rows.map(_toEntity).toList());
+    return _guardStream(
+      _dao.watchDeleted().map((rows) => rows.map(_toEntity).toList()),
+    );
   }
 
   @override
@@ -241,4 +245,18 @@ Future<T> _guard<T>(Future<T> Function() body) async {
   } on Exception catch (e) {
     throw CacheException(message: e.toString());
   }
+}
+
+/// 流版本的 [_guard]：drift 的 `watch` 只在**流里**报错，`try/catch` 抓不到，
+/// 所以订阅型的读库失败要靠 `handleError` 兜。映射规则与 [_guard] 一致。
+///
+/// ⚠️ [Stream.handleError] 不恢复订阅：错误发出后流即关闭。读库失败是终态
+/// （不是「重试一下就好」），不假装还能继续推数据。
+Stream<T> _guardStream<T>(Stream<T> source) {
+  return source.handleError((Object e) {
+    if (e is CacheException) throw e;
+    if (e is SqliteException) throw CacheException(message: e.message);
+    if (e is DriftWrappedException) throw CacheException(message: e.message);
+    throw CacheException(message: e.toString());
+  });
 }

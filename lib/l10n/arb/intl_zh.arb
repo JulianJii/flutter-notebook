@@ -293,6 +293,90 @@
   "@settingsUserAgreement": {
     "description": "Settings chevron row"
   },
+  "settingsAbout": "关于",
+  "@settingsAbout": {
+    "description": "Settings chevron row leading to the about screen, and its page title"
+  },
+  "aboutSectionVersion": "版本",
+  "@aboutSectionVersion": {
+    "description": "About screen section header: app version and update check"
+  },
+  "aboutCurrentVersion": "当前版本",
+  "@aboutCurrentVersion": {
+    "description": "About row showing the installed version"
+  },
+  "aboutCheckUpdate": "检测更新",
+  "@aboutCheckUpdate": {
+    "description": "About screen button: check GitHub releases for a newer version"
+  },
+  "aboutChecking": "正在检查更新…",
+  "@aboutChecking": {
+    "description": "About screen status text while the update check is running"
+  },
+  "aboutUpToDate": "已是最新版本",
+  "@aboutUpToDate": {
+    "description": "About screen status text: no update available"
+  },
+  "aboutUpdateFound": "发现新版本 {version}",
+  "@aboutUpdateFound": {
+    "description": "About screen status text: a newer release exists",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.1.0"
+      }
+    }
+  },
+  "aboutCheckFailed": "检查更新失败，请检查网络后重试",
+  "@aboutCheckFailed": {
+    "description": "About screen status text: the update check failed"
+  },
+  "aboutOpenRelease": "前往下载",
+  "@aboutOpenRelease": {
+    "description": "About screen button opening the GitHub release page"
+  },
+  "aboutSectionLinks": "相关",
+  "@aboutSectionLinks": {
+    "description": "About screen section header: repository and license"
+  },
+  "aboutRepository": "GitHub 仓库",
+  "@aboutRepository": {
+    "description": "About row opening the GitHub repository"
+  },
+  "aboutLicense": "开源许可",
+  "@aboutLicense": {
+    "description": "About row showing the open-source license name"
+  },
+  "aboutIntro": "MyNote 是一款本地优先的笔记本：笔记、待办与设置全部保存在本机，无需登录，也不上传任何数据。",
+  "@aboutIntro": {
+    "description": "About screen intro paragraph"
+  },
+  "updateDialogTitle": "发现新版本",
+  "@updateDialogTitle": {
+    "description": "Update prompt dialog title"
+  },
+  "updateDialogBody": "新版本 {version} 已发布，建议更新。",
+  "@updateDialogBody": {
+    "description": "Update prompt dialog body",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.1.0"
+      }
+    }
+  },
+  "updateDialogReleaseNotes": "更新内容",
+  "@updateDialogReleaseNotes": {
+    "description": "Update prompt dialog label above the release notes"
+  },
+  "updateDialogLater": "稍后",
+  "@updateDialogLater": {
+    "description": "Update prompt dialog: dismiss"
+  },
+  "updateDialogUpdate": "立即更新",
+  "@updateDialogUpdate": {
+    "description": "Update prompt dialog: open the release page"
+  },
   "settingsTextScale": "文字大小",
   "@settingsTextScale": {
     "description": "Settings stepper row title: font size"

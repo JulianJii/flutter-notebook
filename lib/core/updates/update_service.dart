@@ -1,8 +1,13 @@
-import 'dart:io';
-
+import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../constants/app_constants.dart';
+
+/// 展示用版本号：Release tag 常写成 `v1.2.0`，UI 上去掉前缀。
+String displayVersion(String version) =>
+    version.replaceFirst(RegExp(r'^[vV]'), '');
 
 /// 应用版本检查的结果
 enum UpdateCheckResult {
@@ -78,8 +83,11 @@ abstract class UpdateService {
   /// 打开应用商店以更新应用
   Future<bool> openUpdateUrl();
 
-  /// 初始化更新服务
+  /// 初始化更新服务。幂等，重复调用不再读 `PackageInfo`。
   Future<void> init();
+
+  /// 当前安装的版本号（如 `1.0.0`）。未初始化时回退到 `AppConstants.appVersion`。
+  String get currentVersion;
 
   /// 比较版本字符串以判断是否需要更新
   bool isUpdateNeeded(String currentVersion, String latestVersion);
@@ -88,29 +96,32 @@ abstract class UpdateService {
   bool isCriticalUpdate(String currentVersion, String minimumRequired);
 }
 
-/// 更新服务的基础实现
+/// 更新服务实现：最新版本读 GitHub Release（`.../releases/latest`）。
+///
+/// 应用未上架任何应用商店，故没有商店版本号可比对；Release 的 `html_url`
+/// 就是下载页，用户自行取用安装包。
 class BasicUpdateService implements UpdateService {
-  final String _androidPackageName;
-  final String _iOSAppId;
+  final Dio _dio;
 
   PackageInfo? _packageInfo;
   UpdateInfo? _updateInfo;
 
-  /// 创建基础更新服务
-  BasicUpdateService({
-    required String androidPackageName,
-    required String iOSAppId,
-  }) : _androidPackageName = androidPackageName,
-       _iOSAppId = iOSAppId;
+  /// [installedPackageInfo] 供测试注入，生产不传（走 `PackageInfo.fromPlatform`）。
+  BasicUpdateService({required Dio dio, PackageInfo? installedPackageInfo})
+    : _dio = dio,
+      _packageInfo = installedPackageInfo;
 
   @override
   Future<void> init() async {
-    // 获取包信息
+    if (_packageInfo != null) return;
     _packageInfo = await PackageInfo.fromPlatform();
     debugPrint(
       '⬆️ Update service initialized: v${_packageInfo?.version}+${_packageInfo?.buildNumber}',
     );
   }
+
+  @override
+  String get currentVersion => _packageInfo?.version ?? AppConstants.appVersion;
 
   @override
   Future<UpdateCheckResult> checkForUpdates() async {
@@ -120,11 +131,6 @@ class BasicUpdateService implements UpdateService {
         await init();
       }
 
-      // 在真实实现中，这里会发起网络请求来检查更新
-      // 在本示例中，我们仅用一些示例数据进行模拟
-      await Future.delayed(const Duration(seconds: 1));
-
-      // 模拟从服务器获取更新信息
       _updateInfo = await _fetchUpdateInfo();
 
       // 检查是否需要更新
@@ -182,23 +188,10 @@ class BasicUpdateService implements UpdateService {
   Future<bool> openUpdateUrl() async {
     try {
       final updateInfo = await getUpdateInfo();
-      if (updateInfo?.updateUrl != null) {
-        // 如有则打开更新 URL
-        return await _launchUrl(updateInfo!.updateUrl!);
-      }
-
-      // 根据平台回退到商店 URL
-      String url;
-      if (Platform.isAndroid) {
-        url =
-            'https://play.google.com/store/apps/details?id=$_androidPackageName';
-      } else if (Platform.isIOS) {
-        url = 'https://apps.apple.com/app/id$_iOSAppId';
-      } else {
-        return false;
-      }
-
-      return await _launchUrl(url);
+      // 没有 release 信息时退到仓库的 Release 列表页。
+      return await _launchUrl(
+        updateInfo?.updateUrl ?? '${AppConstants.githubRepoUrl}/releases',
+      );
     } catch (e) {
       debugPrint('⬆️ Failed to open update URL: $e');
       return false;
@@ -249,13 +242,13 @@ class BasicUpdateService implements UpdateService {
     }
   }
 
-  // 辅助方法：将类似 "1.2.3" 的版本字符串解析为整数列表 [1, 2, 3]
+  // 辅助方法：将 "1.2.3" / "v1.2.3" / "1.2" 解析为整数列表 [1, 2, 3]
   List<int> _parseVersion(String version) {
-    final parts = version.split('.');
-
-    if (parts.length < 3) {
-      // 如果部分少于 3 个，则用 0 补齐
-      parts.addAll(List.filled(3 - parts.length, '0'));
+    // Release tag 通常带 `v` 前缀，不剥掉会被下面的取数正则读成 0。
+    final parts = version.trim().replaceFirst(RegExp(r'^[vV]'), '').split('.');
+    // 不足三段补 0（`1.2` → `1.2.0`）；超过三段的部分不参与比较。
+    while (parts.length < 3) {
+      parts.add('0');
     }
 
     return parts.take(3).map((part) {
@@ -274,25 +267,41 @@ class BasicUpdateService implements UpdateService {
     return false;
   }
 
-  // 模拟从服务器获取更新信息
+  /// 从 GitHub 拉最新 Release。`tag_name` 是版本号真源，`html_url` 是下载页。
+  ///
+  /// 未认证调用限 60 次/小时/IP，超限（403/429）由 Dio 抛错，
+  /// `checkForUpdates` 统一兜成 [UpdateCheckResult.checkFailed]。
   Future<UpdateInfo> _fetchUpdateInfo() async {
-    // 在真实实现中，这会从 API 或 appcast 获取
-    // 这只是一个基于当前应用版本的示例
-    final currentVersion = _packageInfo?.version ?? '1.0.0';
+    final response = await _dio.get<dynamic>(
+      AppConstants.githubLatestReleaseApiUrl,
+      options: Options(
+        headers: <String, String>{
+          // GitHub API 要求带 User-Agent，否则 403。
+          'User-Agent': AppConstants.appName,
+          'Accept': 'application/vnd.github+json',
+        },
+      ),
+    );
 
-    // 出于演示目的，始终返回比当前高一个版本的更新
-    final current = _parseVersion(currentVersion);
-    final nextVersion = '${current[0]}.${current[1]}.${current[2] + 1}';
-    final minRequired = '${current[0]}.${current[1]}.0';
+    final data = response.data;
+    if (data is! Map) {
+      throw const FormatException('Release payload is not a map');
+    }
+
+    final latest = data['tag_name'] as String? ?? '';
+    if (latest.isEmpty) {
+      throw const FormatException('Release has no tag_name');
+    }
 
     return UpdateInfo(
-      latestVersion: nextVersion,
-      minimumRequiredVersion: minRequired,
+      latestVersion: latest,
+      // GitHub Release 没有「最低要求版本」概念：填当前版本让
+      // `isCriticalUpdate` 恒为 false（填 latest 会让它恒为 true，
+      // 有新版时反而永远走 `criticalUpdateRequired`）。
+      minimumRequiredVersion: currentVersion,
       isCritical: false,
-      releaseNotes: 'Bug fixes and performance improvements.',
-      updateUrl: Platform.isAndroid
-          ? 'https://play.google.com/store/apps/details?id=$_androidPackageName'
-          : 'https://apps.apple.com/app/id$_iOSAppId',
+      releaseNotes: data['body'] as String?,
+      updateUrl: data['html_url'] as String?,
     );
   }
 }

@@ -65,7 +65,6 @@ class MyApp extends ConsumerWidget {
 
     return UpdateChecker(
       autoPrompt: true,
-      enforceCriticalUpdates: true,
       child: MaterialApp.router(
         title: AppConstants.appName,
         theme: AppTheme.light(colorScheme),

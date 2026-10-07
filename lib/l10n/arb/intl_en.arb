@@ -296,6 +296,90 @@
   "@settingsUserAgreement": {
     "description": "Settings chevron row"
   },
+  "settingsAbout": "About",
+  "@settingsAbout": {
+    "description": "Settings chevron row leading to the about screen, and its page title"
+  },
+  "aboutSectionVersion": "Version",
+  "@aboutSectionVersion": {
+    "description": "About screen section header: app version and update check"
+  },
+  "aboutCurrentVersion": "Current version",
+  "@aboutCurrentVersion": {
+    "description": "About row showing the installed version"
+  },
+  "aboutCheckUpdate": "Check for updates",
+  "@aboutCheckUpdate": {
+    "description": "About screen button: check GitHub releases for a newer version"
+  },
+  "aboutChecking": "Checking for updates…",
+  "@aboutChecking": {
+    "description": "About screen status text while the update check is running"
+  },
+  "aboutUpToDate": "You're on the latest version",
+  "@aboutUpToDate": {
+    "description": "About screen status text: no update available"
+  },
+  "aboutUpdateFound": "New version {version} is available",
+  "@aboutUpdateFound": {
+    "description": "About screen status text: a newer release exists",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.1.0"
+      }
+    }
+  },
+  "aboutCheckFailed": "Couldn't check for updates. Check your connection and try again.",
+  "@aboutCheckFailed": {
+    "description": "About screen status text: the update check failed"
+  },
+  "aboutOpenRelease": "Go to download",
+  "@aboutOpenRelease": {
+    "description": "About screen button opening the GitHub release page"
+  },
+  "aboutSectionLinks": "Related",
+  "@aboutSectionLinks": {
+    "description": "About screen section header: repository and license"
+  },
+  "aboutRepository": "GitHub repository",
+  "@aboutRepository": {
+    "description": "About row opening the GitHub repository"
+  },
+  "aboutLicense": "License",
+  "@aboutLicense": {
+    "description": "About row showing the open-source license name"
+  },
+  "aboutIntro": "MyNote is a local-first notebook: notes, todos and settings all stay on your device — no sign-in, nothing uploaded.",
+  "@aboutIntro": {
+    "description": "About screen intro paragraph"
+  },
+  "updateDialogTitle": "New version available",
+  "@updateDialogTitle": {
+    "description": "Update prompt dialog title"
+  },
+  "updateDialogBody": "Version {version} is out. Updating is recommended.",
+  "@updateDialogBody": {
+    "description": "Update prompt dialog body",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.1.0"
+      }
+    }
+  },
+  "updateDialogReleaseNotes": "What's new",
+  "@updateDialogReleaseNotes": {
+    "description": "Update prompt dialog label above the release notes"
+  },
+  "updateDialogLater": "Later",
+  "@updateDialogLater": {
+    "description": "Update prompt dialog: dismiss"
+  },
+  "updateDialogUpdate": "Update now",
+  "@updateDialogUpdate": {
+    "description": "Update prompt dialog: open the release page"
+  },
   "settingsTextScale": "Font size",
   "@settingsTextScale": {
     "description": "Settings stepper row title: font size"

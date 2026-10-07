@@ -10,6 +10,7 @@ import 'package:mynote/features/notes/presentation/screens/folder_manager_screen
 import 'package:mynote/features/notes/presentation/screens/note_detail_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/note_list_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/recently_deleted_screen.dart';
+import 'package:mynote/features/settings/presentation/screens/about_screen.dart';
 import 'package:mynote/features/settings/presentation/screens/legal_screens.dart';
 import 'package:mynote/features/settings/presentation/screens/settings_screen.dart';
 import 'package:mynote/features/settings/presentation/screens/theme_screen.dart';
@@ -18,7 +19,10 @@ import 'package:material_ui/material_ui.dart';
 
 /// 全局 navigator key，供顶层（非 branch 内）路由使用。
 /// `/settings` 需要覆盖整个 Shell 显示，因此挂在 root 上。
-final _rootNavigatorKey = GlobalKey<NavigatorState>();
+///
+/// 对外可见：`UpdateChecker` 在 `MaterialApp` **之上**监听更新结果，拿不到
+/// Navigator 的 context，弹窗要用 `rootNavigatorKey.currentContext`。
+final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// 唯一 routerProvider（`DEVELOPMENT-GUIDELINES.md` §13 规则 1）。
 ///
@@ -27,7 +31,7 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 /// 负责，在此 watch 会让语言切换重建 GoRouter 并丢失导航栈。
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    navigatorKey: _rootNavigatorKey,
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.initial,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
@@ -37,7 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               // ⚠️ Shell 只承载两个 Tab 的根页面。二级页面（详情 / 文件夹 /
-              // 回收站 / 新建）一律注册在 root 层，见下方 `_rootNavigatorKey`。
+              // 回收站 / 新建）一律注册在 root 层，见下方 `rootNavigatorKey`。
               GoRoute(
                 path: AppRoutes.notes,
                 builder: (context, state) => const NoteListScreen(),
@@ -58,7 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // 否则 'folders' / 'trash' / 'new' 会被当作笔记 id。
       GoRoute(
         path: AppRoutes.noteNew,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => NoteDetailScreen(
           noteId: kNewNoteId,
           // 分类页带下来的归属：`/notes/new?folder=<id>`。不带就是未分类。
@@ -67,49 +71,54 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.noteFolders,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const FolderManagerScreen(),
       ),
       GoRoute(
         path: AppRoutes.noteTrash,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const RecentlyDeletedScreen(),
       ),
       GoRoute(
         path: AppRoutes.noteDetail,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) =>
             NoteDetailScreen(noteId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoutes.settings,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: AppRoutes.theme,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const ThemeScreen(),
       ),
       GoRoute(
         path: AppRoutes.dataManagement,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const DataManagementScreen(),
       ),
       GoRoute(
         path: AppRoutes.webDav,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WebDavConfigScreen(),
       ),
       GoRoute(
         path: AppRoutes.privacyPolicy,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
         path: AppRoutes.userAgreement,
-        parentNavigatorKey: _rootNavigatorKey,
+        parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const UserAgreementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.about,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const AboutScreen(),
       ),
     ],
     // 404 是路由层诊断页，不是产品错误页（`COMPONENT-INVENTORY.md` §2 不含

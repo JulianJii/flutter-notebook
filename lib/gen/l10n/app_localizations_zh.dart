@@ -75,6 +75,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get language_explanation => '所选语言将应用于整个应用';
 
   @override
+  String get localization_assets_demo => '本地化与资源演示';
+
+  @override
   String get current_language => '当前语言';
 
   @override
@@ -230,6 +233,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsUserAgreement => '用户协议';
+
+  @override
+  String get settingsAbout => '关于';
+
+  @override
+  String get aboutSectionVersion => '版本';
+
+  @override
+  String get aboutCurrentVersion => '当前版本';
+
+  @override
+  String get aboutCheckUpdate => '检测更新';
+
+  @override
+  String get aboutChecking => '正在检查更新…';
+
+  @override
+  String get aboutUpToDate => '已是最新版本';
+
+  @override
+  String aboutUpdateFound(String version) {
+    return '发现新版本 $version';
+  }
+
+  @override
+  String get aboutCheckFailed => '检查更新失败，请检查网络后重试';
+
+  @override
+  String get aboutOpenRelease => '前往下载';
+
+  @override
+  String get aboutSectionLinks => '相关';
+
+  @override
+  String get aboutRepository => 'GitHub 仓库';
+
+  @override
+  String get aboutLicense => '开源许可';
+
+  @override
+  String get aboutIntro => 'MyNote 是一款本地优先的笔记本：笔记、待办与设置全部保存在本机，无需登录，也不上传任何数据。';
+
+  @override
+  String get updateDialogTitle => '发现新版本';
+
+  @override
+  String updateDialogBody(String version) {
+    return '新版本 $version 已发布，建议更新。';
+  }
+
+  @override
+  String get updateDialogReleaseNotes => '更新内容';
+
+  @override
+  String get updateDialogLater => '稍后';
+
+  @override
+  String get updateDialogUpdate => '立即更新';
 
   @override
   String get settingsTextScale => '文字大小';

@@ -35,7 +35,7 @@ title: Features
 
 ### 设置（`lib/features/settings/`）
 
-笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
+笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、最近删除入口、隐私政策 / 用户协议、**关于**（`/settings/about`：版本号 + 检测更新 + 仓库主页 + 开源许可）。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
 
 「数据与同步」行是进入 `features/backup/` 的跳转入口（见下节），不把 WebDAV 配置并进 `AppSettings` —— 那是「App 长什么样」的偏好，凭据是另一回事。
 
@@ -176,4 +176,17 @@ return MaterialApp(
 
 ### 应用更新
 
-`updateServiceProvider` 检查更新与强制更新，`main.dart` 中 `UpdateChecker` 包裹 `MaterialApp.router`。
+最新版本来自 **GitHub Release**：`updateServiceProvider` → `UpdateService` 拉
+`.../repos/{owner}/{repo}/releases/latest`，用 Release 的 `tag_name`（剥掉 `v` 前缀）
+和 `PackageInfo.version` 比大小，下载页是 Release 的 `html_url`（`url_launcher` 交给浏览器）。
+仓库地址在 `AppConstants.githubOwner` / `githubRepo`（当前 `JulianJii/flutter-notebook`）。
+
+| 入口 | 行为 |
+|---|---|
+| 启动 | `main.dart` 的 `UpdateChecker` 查一次，有新版才弹窗（`autoPrompt`） |
+| 关于页 | 设置 → 其他 →「关于」→ 点「检测更新」手动查，结果显示在按钮下方 |
+
+> ⚠️ 弹窗用 `rootNavigatorKey.currentContext`：`UpdateChecker` 在 `MaterialApp` **之上**，自己的 context 没有 Navigator 也没有 Localizations。
+> ⚠️ 未认证的 GitHub API 限 60 次/小时/IP，超限按「检查失败」处理，不做缓存。
+> ⚠️ 版本号真源是 `pubspec.yaml`，发版时它必须和 Release tag 对得上，否则会一直提示更新。
+> ⚠️ 应用没上架商店、无自建分发，因此**没有强制更新**（`criticalUpdateRequired` 不会出现）。

@@ -78,6 +78,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'The selected language will be applied across the entire application';
 
   @override
+  String get localization_assets_demo => 'Localization & Assets Demo';
+
+  @override
   String get current_language => 'Current Language';
 
   @override
@@ -235,6 +238,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsUserAgreement => 'User agreement';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get aboutSectionVersion => 'Version';
+
+  @override
+  String get aboutCurrentVersion => 'Current version';
+
+  @override
+  String get aboutCheckUpdate => 'Check for updates';
+
+  @override
+  String get aboutChecking => 'Checking for updates…';
+
+  @override
+  String get aboutUpToDate => 'You\'re on the latest version';
+
+  @override
+  String aboutUpdateFound(String version) {
+    return 'New version $version is available';
+  }
+
+  @override
+  String get aboutCheckFailed =>
+      'Couldn\'t check for updates. Check your connection and try again.';
+
+  @override
+  String get aboutOpenRelease => 'Go to download';
+
+  @override
+  String get aboutSectionLinks => 'Related';
+
+  @override
+  String get aboutRepository => 'GitHub repository';
+
+  @override
+  String get aboutLicense => 'License';
+
+  @override
+  String get aboutIntro =>
+      'MyNote is a local-first notebook: notes, todos and settings all stay on your device — no sign-in, nothing uploaded.';
+
+  @override
+  String get updateDialogTitle => 'New version available';
+
+  @override
+  String updateDialogBody(String version) {
+    return 'Version $version is out. Updating is recommended.';
+  }
+
+  @override
+  String get updateDialogReleaseNotes => 'What\'s new';
+
+  @override
+  String get updateDialogLater => 'Later';
+
+  @override
+  String get updateDialogUpdate => 'Update now';
 
   @override
   String get settingsTextScale => 'Font size';

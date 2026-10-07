@@ -68,6 +68,10 @@ abstract final class AppRoutes {
   /// 用户协议。`/settings` 的兄弟路由（root navigator，整页覆盖）。
   static const String userAgreement = '/settings/user-agreement';
 
+  /// 关于。`/settings` 的兄弟路由（root navigator，整页覆盖）。
+  /// 版本号 + 检测更新（比对 GitHub 最新 Release）。
+  static const String about = '/settings/about';
+
   /// 文件夹筛选的 query 参数名。`/notes?folder=<id>`。
   ///
   /// 文件夹管理稿点文件夹行与笔记列表稿的筛选 chip 共用这一个参数，

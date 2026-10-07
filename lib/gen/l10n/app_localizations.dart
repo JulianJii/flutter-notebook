@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'所选语言将应用于整个应用'**
   String get language_explanation;
 
+  /// Title for the localization assets demo screen
+  ///
+  /// In zh, this message translates to:
+  /// **'本地化与资源演示'**
+  String get localization_assets_demo;
+
   /// Label for displaying current language info
   ///
   /// In zh, this message translates to:
@@ -505,6 +511,114 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'用户协议'**
   String get settingsUserAgreement;
+
+  /// Settings chevron row leading to the about screen, and its page title
+  ///
+  /// In zh, this message translates to:
+  /// **'关于'**
+  String get settingsAbout;
+
+  /// About screen section header: app version and update check
+  ///
+  /// In zh, this message translates to:
+  /// **'版本'**
+  String get aboutSectionVersion;
+
+  /// About row showing the installed version
+  ///
+  /// In zh, this message translates to:
+  /// **'当前版本'**
+  String get aboutCurrentVersion;
+
+  /// About screen button: check GitHub releases for a newer version
+  ///
+  /// In zh, this message translates to:
+  /// **'检测更新'**
+  String get aboutCheckUpdate;
+
+  /// About screen status text while the update check is running
+  ///
+  /// In zh, this message translates to:
+  /// **'正在检查更新…'**
+  String get aboutChecking;
+
+  /// About screen status text: no update available
+  ///
+  /// In zh, this message translates to:
+  /// **'已是最新版本'**
+  String get aboutUpToDate;
+
+  /// About screen status text: a newer release exists
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新版本 {version}'**
+  String aboutUpdateFound(String version);
+
+  /// About screen status text: the update check failed
+  ///
+  /// In zh, this message translates to:
+  /// **'检查更新失败，请检查网络后重试'**
+  String get aboutCheckFailed;
+
+  /// About screen button opening the GitHub release page
+  ///
+  /// In zh, this message translates to:
+  /// **'前往下载'**
+  String get aboutOpenRelease;
+
+  /// About screen section header: repository and license
+  ///
+  /// In zh, this message translates to:
+  /// **'相关'**
+  String get aboutSectionLinks;
+
+  /// About row opening the GitHub repository
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 仓库'**
+  String get aboutRepository;
+
+  /// About row showing the open-source license name
+  ///
+  /// In zh, this message translates to:
+  /// **'开源许可'**
+  String get aboutLicense;
+
+  /// About screen intro paragraph
+  ///
+  /// In zh, this message translates to:
+  /// **'MyNote 是一款本地优先的笔记本：笔记、待办与设置全部保存在本机，无需登录，也不上传任何数据。'**
+  String get aboutIntro;
+
+  /// Update prompt dialog title
+  ///
+  /// In zh, this message translates to:
+  /// **'发现新版本'**
+  String get updateDialogTitle;
+
+  /// Update prompt dialog body
+  ///
+  /// In zh, this message translates to:
+  /// **'新版本 {version} 已发布，建议更新。'**
+  String updateDialogBody(String version);
+
+  /// Update prompt dialog label above the release notes
+  ///
+  /// In zh, this message translates to:
+  /// **'更新内容'**
+  String get updateDialogReleaseNotes;
+
+  /// Update prompt dialog: dismiss
+  ///
+  /// In zh, this message translates to:
+  /// **'稍后'**
+  String get updateDialogLater;
+
+  /// Update prompt dialog: open the release page
+  ///
+  /// In zh, this message translates to:
+  /// **'立即更新'**
+  String get updateDialogUpdate;
 
   /// Settings stepper row title: font size
   ///

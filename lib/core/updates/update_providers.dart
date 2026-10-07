@@ -1,14 +1,20 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynote/core/constants/app_constants.dart';
+import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/updates/update_service.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 
 /// 更新服务的 Provider
 final updateServiceProvider = Provider<UpdateService>((ref) {
-  return BasicUpdateService(
-    androidPackageName: AppConstants.packageName,
-    iOSAppId: AppConstants.iOSAppId,
-  );
+  return BasicUpdateService(dio: Dio());
+});
+
+/// 当前安装的版本号（`PackageInfo.version`）。
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final service = ref.watch(updateServiceProvider);
+  await service.init();
+  return service.currentVersion;
 });
 
 /// 用于检查是否有可用更新的 Provider
@@ -82,16 +88,8 @@ class UpdateChecker extends ConsumerWidget {
   /// 是否自动提示更新
   final bool autoPrompt;
 
-  /// 是否强制更新（阻止关闭关键更新）
-  final bool enforceCriticalUpdates;
-
   /// 创建更新检查器
-  const UpdateChecker({
-    super.key,
-    required this.child,
-    this.autoPrompt = true,
-    this.enforceCriticalUpdates = true,
-  });
+  const UpdateChecker({super.key, required this.child, this.autoPrompt = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,10 +98,8 @@ class UpdateChecker extends ConsumerWidget {
       state,
     ) {
       state.whenData((result) {
-        if (autoPrompt &&
-            (result == UpdateCheckResult.updateAvailable ||
-                result == UpdateCheckResult.criticalUpdateRequired)) {
-          _showUpdateDialog(context, ref, result);
+        if (autoPrompt && result == UpdateCheckResult.updateAvailable) {
+          _showUpdateDialog(ref);
         }
       });
     });
@@ -111,23 +107,18 @@ class UpdateChecker extends ConsumerWidget {
     return child;
   }
 
-  void _showUpdateDialog(
-    BuildContext context,
-    WidgetRef ref,
-    UpdateCheckResult result,
-  ) async {
+  Future<void> _showUpdateDialog(WidgetRef ref) async {
     final updateController = ref.read(updateControllerProvider.notifier);
     final updateInfo = await updateController.getUpdateInfo();
 
-    if (updateInfo == null || !context.mounted) return;
-
-    final isCritical = result == UpdateCheckResult.criticalUpdateRequired;
+    // ⚠️ 弹窗必须用 root navigator 的 context：本 widget 位于 `MaterialApp`
+    // **之上**，它自己的 context 既没有 Navigator 也没有 Localizations。
+    final navContext = rootNavigatorKey.currentContext;
+    if (updateInfo == null || navContext == null || !navContext.mounted) return;
 
     showDialog(
-      context: context,
-      barrierDismissible: !isCritical,
-      builder: (context) =>
-          UpdateDialog(updateInfo: updateInfo, isCritical: isCritical),
+      context: navContext,
+      builder: (context) => UpdateDialog(updateInfo: updateInfo),
     );
   }
 }
@@ -137,59 +128,50 @@ class UpdateDialog extends ConsumerWidget {
   /// 更新相关信息
   final UpdateInfo updateInfo;
 
-  /// 该更新是否关键
-  final bool isCritical;
-
   /// 创建更新对话框
-  const UpdateDialog({
-    super.key,
-    required this.updateInfo,
-    this.isCritical = false,
-  });
+  const UpdateDialog({super.key, required this.updateInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return PopScope(
-      canPop: !isCritical,
-      child: AlertDialog(
-        title: Text(isCritical ? 'Required Update' : 'Update Available'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                isCritical
-                    ? 'A critical update (version ${updateInfo.latestVersion}) is required to continue using this app.'
-                    : 'A new version (${updateInfo.latestVersion}) is available.',
-                style: theme.textTheme.bodyLarge,
-              ),
-              if (updateInfo.releaseNotes != null) ...[
-                const SizedBox(height: 16),
-                Text('What\'s new:', style: theme.textTheme.titleSmall),
-                const SizedBox(height: 4),
-                Text(updateInfo.releaseNotes!),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          if (!isCritical)
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Later'),
+    return AlertDialog(
+      title: Text(l10n.updateDialogTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.updateDialogBody(displayVersion(updateInfo.latestVersion)),
+              style: theme.textTheme.bodyLarge,
             ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref.read(updateControllerProvider.notifier).openUpdateUrl();
-            },
-            child: Text(isCritical ? 'Update Now' : 'Update'),
-          ),
-        ],
+            if (updateInfo.releaseNotes != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                l10n.updateDialogReleaseNotes,
+                style: theme.textTheme.titleSmall,
+              ),
+              const SizedBox(height: 4),
+              Text(updateInfo.releaseNotes!),
+            ],
+          ],
+        ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.updateDialogLater),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            ref.read(updateControllerProvider.notifier).openUpdateUrl();
+          },
+          child: Text(l10n.updateDialogUpdate),
+        ),
+      ],
     );
   }
 }

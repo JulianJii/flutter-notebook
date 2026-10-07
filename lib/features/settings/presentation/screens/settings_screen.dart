@@ -191,6 +191,13 @@ class SettingsScreen extends ConsumerWidget {
                         dividerBefore: true,
                         onTap: () => context.push(AppRoutes.userAgreement),
                       ),
+                      _chevronTile(
+                        context,
+                        key: const Key('chevron_about'),
+                        title: l10n.settingsAbout,
+                        dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.about),
+                      ),
                     ],
                   ),
                 ],
@@ -315,8 +322,9 @@ final List<String?> _languageOptions = <String?>[
 ///
 /// 语言名用 `core` 现成的母语名映射（中文 / English），⛔ 不另加语言名文案 ——
 /// 那样加一门语言要同时改 ARB 和映射表两处。
-String _languageLabel(AppLocalizations l10n, String? code) =>
-    code == null ? l10n.settingsLanguageSystem : localeDisplayName(Locale(code));
+String _languageLabel(AppLocalizations l10n, String? code) => code == null
+    ? l10n.settingsLanguageSystem
+    : localeDisplayName(Locale(code));
 
 /// 选项单：底部弹层，当前项打勾。选中即 `pop(value)`，取消即 `pop(null)`。
 ///

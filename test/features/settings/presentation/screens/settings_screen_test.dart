@@ -93,7 +93,10 @@ void main() {
     await tester.tap(find.byKey(Key(rowKey)));
     await tester.pumpAndSettle();
     await tester.tap(
-      find.descendant(of: find.byType(BottomSheet), matching: find.text(option)),
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text(option),
+      ),
     );
     await tester.pumpAndSettle();
   }
@@ -129,10 +132,7 @@ void main() {
       expect(topBar.showDivider, isFalse, reason: '顶栏下无 1dp 分隔线');
       expect(find.byIcon(AppIcons.back), findsOneWidget);
       expect(
-        find.descendant(
-          of: find.byType(AppTopBar),
-          matching: find.text('设置'),
-        ),
+        find.descendant(of: find.byType(AppTopBar), matching: find.text('设置')),
         findsOneWidget,
       );
     });
@@ -169,23 +169,23 @@ void main() {
       );
     });
 
-    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 7 条）', (tester) async {
+    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 8 条）', (tester) async {
       await pumpP5(tester);
 
-      // 笔记样式 4 行 → 3 条，其他 5 行（语言 + 数据与同步 + 最近删除 +
-      // 隐私政策 + 用户协议）→ 4 条。
-      expect(find.byType(AppDivider), findsNWidgets(7));
+      // 笔记样式 4 行 → 3 条，其他 6 行（语言 + 数据与同步 + 最近删除 +
+      // 隐私政策 + 用户协议 + 关于）→ 5 条。
+      expect(find.byType(AppDivider), findsNWidgets(8));
     });
 
-    testWidgets('3 张分组卡，10 行', (tester) async {
+    testWidgets('3 张分组卡，11 行', (tester) async {
       await pumpP5(tester);
 
       expect(find.byType(AppCard), findsNWidgets(3));
-      expect(find.byType(AppListTile), findsNWidgets(10));
+      expect(find.byType(AppListTile), findsNWidgets(11));
       expect(find.byType(Switch), findsNothing, reason: '开关已改为选择器行');
-      // 6 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议）
-      // + 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
+      // 7 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 /
+      // 用户协议 / 关于）+ 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(11));
     });
   });
 
@@ -238,9 +238,9 @@ void main() {
     testWidgets('3 个选择器行各自只改自己的字段，且各落盘一次', (tester) async {
       await pumpP5(tester);
 
-      await pick(tester,'select_text_scale', '大');
-      await pick(tester,'select_note_sort', '按编辑日期（最早）');
-      await pick(tester,'select_note_layout', '列表模式');
+      await pick(tester, 'select_text_scale', '大');
+      await pick(tester, 'select_note_sort', '按编辑日期（最早）');
+      await pick(tester, 'select_note_layout', '列表模式');
 
       final settings = container.read(settingsProvider);
       expect(settings.textScale, TextScaleLevel.large);
@@ -254,7 +254,7 @@ void main() {
 
     testWidgets('新值走 provider 而非本地 state：离开页面再进入仍是新值', (tester) async {
       await pumpP5(tester);
-      await pick(tester,'select_text_scale', '大');
+      await pick(tester, 'select_text_scale', '大');
 
       // 销毁整个页面再重建（provider 是 keepAlive，state 不该被丢弃）
       await tester.pumpWidget(const SizedBox.shrink());

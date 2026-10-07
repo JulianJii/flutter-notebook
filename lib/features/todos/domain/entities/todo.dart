@@ -1,13 +1,12 @@
 import 'package:equatable/equatable.dart';
 
-/// 一条待办（D2 的一行）。
+/// 一条待办（待办稿的一行）。
 ///
-/// ⛔ **不加** `dueDate` / `priority`：D2「无日期、无优先级」，「强提醒」是
-/// `AppSettings` 的全局开关，**不是待办字段**。
+/// ⛔ **不加** `dueDate` / `priority`：待办稿「无日期、无优先级」。
 /// ⚠️ **`reminderAt` 是提醒的时刻，不是截止日期** —— 命名上刻意避开 `dueAt`，
-/// 免得被当成 D2 明确否掉的「截止日」重新长回实体里。
-/// ⛔ **不加** `sortIndex`（P2 无排序入口，排序固定 `createdAt DESC`，在 DAO 做）。
-/// ⛔ **不加** `folderId`：待办与笔记无关联，D2 没有任何「关联笔记」入口。
+/// 免得被当成待办稿明确否掉的「截止日」重新长回实体里。
+/// ⛔ **不加** `sortIndex`（待办无排序入口，排序固定 `createdAt DESC`，在 DAO 做）。
+/// ⛔ **不加** `folderId`：待办与笔记无关联，待办稿没有任何「关联笔记」入口。
 /// ⛔ **不加** `deletedAt`（§5.4 末行「`Todo` 同理不加」）。
 class Todo extends Equatable {
   const Todo({
@@ -23,7 +22,7 @@ class Todo extends Equatable {
 
   final String title;
 
-  /// D2 唯一的二元状态。
+  /// 待办稿唯一的二元状态。
   final bool isDone;
 
   /// 提醒时刻，null = 没设提醒。

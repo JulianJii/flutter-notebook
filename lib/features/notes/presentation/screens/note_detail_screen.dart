@@ -22,27 +22,33 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/note_editor_provider.dart';
 import '../widgets/note_background_image.dart';
 
-/// P3 笔记详情 / 编辑（D3）。
+/// 笔记详情 / 编辑。
 ///
-/// **单态编辑页**（Q22）：D3 呈现的就是编辑态（空标题 + 有正文 + 灰色占位符）。
+/// **单态编辑页**：笔记详情稿呈现的就是编辑态（空标题 + 有正文 + 灰色占位符）。
 /// 做「阅读态 / 编辑态切换」就要自造一个无稿的只读态，并多维护一个 `isEditing`
 /// 状态字段 —— 为无稿问题加状态违反 §9「能派生的不存 / 无稿不自造」。
 ///
-/// ⛔ **不建 `AppTextField`**（`ARCHITECTURE-DESIGN.md` §7.2：解锁条件是
-/// Q10 / Q22 未定）。若最终形态就是「无边框纯文本 + 灰色占位符」，它只是一条
+/// ⛔ **不建 `AppTextField`**（`ARCHITECTURE-DESIGN.md` §7.2）。若最终形态
+/// 就是「无边框纯文本 + 灰色占位符」，它只是一条
 /// `InputDecoration` 样式，不值得单独建组件。
 class NoteDetailScreen extends ConsumerStatefulWidget {
-  const NoteDetailScreen({required this.noteId, super.key});
+  const NoteDetailScreen({required this.noteId, this.folderId, super.key});
 
   /// 真实 uuid，或 [kNewNoteId]。
   final String noteId;
+
+  /// 新笔记的落地分类（`/notes/new?folder=<id>`）。null = 未分类。
+  ///
+  /// 已有笔记不看它：归属从库里读。⛔ 它是 [noteEditorProvider] 的 family 参数，
+  /// 漏传会拿到另一个 provider 实例（多一次读库 + 草稿不同步）。
+  final String? folderId;
 
   @override
   ConsumerState<NoteDetailScreen> createState() => _NoteDetailScreenState();
 }
 
 class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
-  // controller 是草稿的**权威来源**（`ARCHITECTURE-DESIGN.md` §8.1 P3 行：
+  // controller 是草稿的**权威来源**（`ARCHITECTURE-DESIGN.md` §8.1 笔记详情行：
   // 4 个 Local State）。provider 的 `draft*` 只用于 `isDirty` 与字数。
   late final TextEditingController _titleController;
   late final QuillController _contentController;
@@ -81,7 +87,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   void _onContentChanged() {
     if (_hydrating) return;
     ref
-        .read(noteEditorProvider(widget.noteId).notifier)
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier)
         .setContent(NoteDelta.encode(_contentController.document.toDelta()));
   }
 
@@ -92,20 +98,20 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     _hydrating = false;
   }
 
-  /// 返回前若仍脏就立即落库 —— **零成本兜底**：不询问、不弹窗（Q24 / Q34 无稿），
+  /// 返回前若仍脏就立即落库 —— **零成本兜底**：不询问、不弹窗，
   /// `flush()` 内部对非 dirty 直接返回。
   ///
   /// `PopScope` 必接：漏掉系统返回键 / 手势返回等于数据丢失。
   /// `canPop: false` 会同时拦下手势与代码里的 `pop()`，故用 `_allowPop` 放行，
   /// 并等一帧让 `PopScope` 读到新值。
   Future<void> _leave() async {
-    await ref.read(noteEditorProvider(widget.noteId).notifier).flush();
+    await ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).flush();
     if (!mounted) return;
     setState(() => _allowPop = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       // 深链直达（栈里没有下层）时 `pop` 会抛 "There is nothing to pop"，
-      // 与 P4 / P5 / 回收站 / 法务页同一写法：退不回就回 P1。
+      // 与文件夹管理 / 设置 / 回收站 / 法务页同一写法：退不回就回笔记列表。
       if (context.canPop()) {
         context.pop();
       } else {
@@ -122,7 +128,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   /// ⛔ **成功后用 `go` 而非 `pop`**：`pop` 会退回上一页（可能正是这条笔记的详情
   /// 入口），留下一张读不到数据的空壳页。
   ///
-  /// Q34 → docs/OPEN-DESIGN-QUESTIONS.md（确认弹窗与 Snackbar 沿用 Material 默认形态）
+  /// 确认弹窗与 Snackbar 沿用 Material 默认形态。
   Future<void> _delete() async {
     final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
@@ -154,18 +160,18 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
   }
 
-  /// palette：弹出底部滑动弹层选背景（D3）。选中即 `pop(index)`，取消不改。
+  /// palette：弹出底部滑动弹层选背景（笔记详情稿）。选中即 `pop(index)`，取消不改。
   ///
   /// 弹层的下标语义（0 = 无背景，1..n = 纹理）在这里与 [NoteBackground] 互转；
   /// 落库交给 `NoteEditor.setBackground`（已有笔记只写背景列、不刷 `updatedAt`）。
   Future<void> _pickBackground() async {
     final current = ref
-        .read(noteEditorProvider(widget.noteId))
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
         .value
         ?.draftBackground;
     final picked = await showModalBottomSheet<int>(
       context: context,
-      // 弹层无底色（D3）：只留一条浅色顶边，纸纹直接浮在页面背景上。
+      // 弹层无底色（笔记详情稿）：只留一条浅色顶边，纸纹直接浮在页面背景上。
       backgroundColor: Colors.transparent,
       // 抬升阴影是给有底色的弹层用的；无底色时它只剩一道污渍。
       elevation: 0,
@@ -176,18 +182,18 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
     if (picked == null || !mounted) return;
     await ref
-        .read(noteEditorProvider(widget.noteId).notifier)
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier)
         .setBackground(picked == 0 ? null : NoteBackground.values[picked - 1]);
   }
 
-  /// 分享当前草稿到系统分享面板（Q8）。
+  /// 分享当前草稿到系统分享面板。
   ///
   /// 分享的是**草稿**不是库里那份：用户看到什么就分享什么，因此不先 `flush`。
   /// 标题与正文都空时直接返回 —— share_plus 对空 text 抛 `ArgumentError`。
   ///
   /// `sharePositionOrigin` 不是可选美化：iPad 上缺它系统面板没锚点、直接抛错。
   Future<void> _share() async {
-    final state = ref.read(noteEditorProvider(widget.noteId)).value;
+    final state = ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId)).value;
     if (state == null) return;
     final title = state.draftTitle.trim();
     final text = <String>[
@@ -219,14 +225,14 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     // controller → provider 一个方向；provider 的 `saved*` 变化不再回灌，
     // 否则 debounce 保存后会触发一次 `onChanged`，把「保存」误判为「编辑」，
     // `isDirty` 反复翻转。
-    ref.listen<AsyncValue<NoteEditorState>>(noteEditorProvider(widget.noteId), (
+    ref.listen<AsyncValue<NoteEditorState>>(noteEditorProvider(widget.noteId, folderId: widget.folderId), (
       prev,
       next,
     ) {
       final loaded = next.value;
       if (loaded == null) return;
       // 自动保存失败：弹一句就清状态（否则 debounce 期间会反复弹）。
-      // Q33 / Q34：Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`。
+      // Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`。
       final failure = loaded.lastFailure;
       if (failure != null) {
         // post-frame：listener 是在 provider 通知里同步跑的，那一刻可能正处于
@@ -235,7 +241,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           if (!mounted) return;
           AppUtils.showSnackBar(context, message: failure.message);
         });
-        ref.read(noteEditorProvider(widget.noteId).notifier).clearFailure();
+        ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).clearFailure();
       }
       if (prev?.value != null) return;
       _titleController.text = loaded.draftTitle;
@@ -247,20 +253,21 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     // 都重建含 `QuillEditor` 的整棵子树；字数行自己订阅 `wordCount`（见
     // [_NoteMetaSlot]）。
     final createdAt = ref.watch(
-      noteEditorProvider(widget.noteId).select((s) => s.value?.createdAt),
+      noteEditorProvider(widget.noteId, folderId: widget.folderId).select((s) => s.value?.createdAt),
     );
-    // P5「文字大小」：标题区 / 元信息行 / 正文区三处同步放大
+    // 设置「文字大小」：标题区 / 元信息行 / 正文区三处同步放大
     // （`ARCHITECTURE-DESIGN.md` §4 的取值来源表）。
     final textScale = ref.watch(textScaleFactorProvider);
     // 背景单独 select：只有真正换背景时才重建本页，不随每次按键。
     final background = ref.watch(
       noteEditorProvider(
         widget.noteId,
+        folderId: widget.folderId,
       ).select((s) => s.value?.draftBackground),
     );
     final backgroundImage = noteBackgroundImageOrNull(background);
 
-    // Q32 / Q33 → docs/OPEN-DESIGN-QUESTIONS.md（首屏读库的 Loading / Error 视觉无稿）
+    // 首屏读库的 Loading / Error 视觉无稿，由 `AsyncValue` 承载，不画骨架屏。
     return PopScope<Object?>(
       canPop: _allowPop,
       onPopInvokedWithResult: (didPop, _) {
@@ -268,7 +275,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         _leave();
       },
       child: Scaffold(
-        // 白底（D3）—— 与 P1/P2 的 `bg` 不同。
+        // 白底（笔记详情稿）—— 与笔记列表/待办的 `bg` 不同。
         backgroundColor: context.colors.surface,
         body: Stack(
           fit: StackFit.expand,
@@ -311,6 +318,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                             if (createdAt != null)
                               _NoteMetaSlot(
                                 noteId: widget.noteId,
+                                folderId: widget.folderId,
                                 createdAt: createdAt,
                                 textScale: textScale,
                               ),
@@ -336,8 +344,8 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     return TextField(
       controller: _titleController,
       focusNode: _titleFocus,
-      onChanged: ref.read(noteEditorProvider(widget.noteId).notifier).setTitle,
-      // D3 无输入框视觉：边框、下划线、光标样式均无稿，不自造。
+      onChanged: ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).setTitle,
+      // 笔记详情稿无输入框视觉：边框、下划线、光标样式均无稿，不自造。
       style: context.textStyles.detailTitle
           .scaled(textScale)
           .copyWith(color: context.colors.textPrimary),
@@ -352,7 +360,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   }
 
   Widget _contentField(BuildContext context, double textScale) {
-    // 段落间距**不额外实现**：D3 的段落间距 = 2×行距，是正文内容里本来就有
+    // 段落间距**不额外实现**：笔记详情稿的段落间距 = 2×行距，是正文内容里本来就有
     // 的 `\n\n`。手写 `ParagraphStyle` 插空行会与用户输入的换行叠加成双倍空行。
     //
     // `DefaultTextStyle` 是把 Design Token 的正文样式喂给 Quill 的唯一入口：
@@ -382,7 +390,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 ///
 /// 按钮集是**裁剪过的**：Quill 默认全量（字体 / 字号 / 对齐 / 颜色 / 代码块 /
 /// 上下标 / 缩进 / 剪贴板 / 搜索）一行滑不完，找按钮要一直横向拖。
-/// 关掉的每一项下面都写了理由 —— Q9（溢出菜单）/ Q10（配色）出稿后再加回。
+/// 关掉的每一项下面都写了理由 —— 等溢出菜单 / 配色的稿再评估加回。
 class _EditorToolbar extends StatelessWidget {
   const _EditorToolbar({required this.controller});
 
@@ -420,12 +428,12 @@ class _EditorToolbar extends StatelessWidget {
             showQuote: true,
             showLink: true,
             showClearFormat: true,
-            // 字体 / 字号：P5「文字大小」已是页面级设置，正文里再插一套会打架。
+            // 字体 / 字号：设置「文字大小」已是页面级设置，正文里再插一套会打架。
             showFontFamily: false,
             showFontSize: false,
             showSmallButton: false,
             showLineHeightButton: false,
-            // 颜色 / 背景色：Q10「配色 / 样式」无稿，`palette` 按钮暂占该语义。
+            // 颜色 / 背景色：「配色 / 样式」无稿，`palette` 按钮暂占该语义。
             showColorButton: false,
             showBackgroundColorButton: false,
             // H1/H2：页面顶部已有独立标题输入框，正文再给标题层级与之重复。
@@ -447,13 +455,12 @@ class _EditorToolbar extends StatelessWidget {
   }
 }
 
-/// D3 的顶栏：左 `back` + 右 3 图标，无标题。
+/// 笔记详情稿的顶栏：左 `back` + 右 3 图标，无标题。
 ///
 /// palette 接了「切换正文背景图」（循环：无背景 ↔ 3 张纸张纹理，见
-/// [noteBackgroundImages]）。Q10 原本的「配色 / 样式」语义
-/// 尚无稿，先以背景切换落地，出稿后再扩展。
-/// share 接了系统分享（Q8）；overflow 接了「删除」——它是 Q9 未定稿菜单里唯一
-/// 有确定语义的一项（`DeleteNoteUseCase` 已就绪）。待 Q9 出稿再改成真正的菜单。
+/// [noteBackgroundImages]）。「配色 / 样式」的语义尚无稿，先以背景切换落地。
+/// share 接了系统分享；overflow 接了「删除」——它是溢出菜单里唯一
+/// 有确定语义的一项（`DeleteNoteUseCase` 已就绪）。
 class _TopBar extends ConsumerWidget {
   const _TopBar({
     required this.onBack,
@@ -512,11 +519,15 @@ class _TopBar extends ConsumerWidget {
 class _NoteMetaSlot extends ConsumerWidget {
   const _NoteMetaSlot({
     required this.noteId,
+    required this.folderId,
     required this.createdAt,
     required this.textScale,
   });
 
   final String noteId;
+
+  /// 必须与页面传的一致，否则命中另一个 provider 实例（多一次读库）。
+  final String? folderId;
 
   /// 父级已判非空（落库成功后才有），这里只透传，不重复订阅。
   final DateTime createdAt;
@@ -525,7 +536,9 @@ class _NoteMetaSlot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordCount = ref.watch(
-      noteEditorProvider(noteId).select((s) => s.value?.wordCount),
+      noteEditorProvider(noteId, folderId: folderId).select(
+        (s) => s.value?.wordCount,
+      ),
     );
     return NoteMetaLine(
       createdAt: createdAt,
@@ -537,7 +550,7 @@ class _NoteMetaSlot extends ConsumerWidget {
 
 /// 详情页元信息行：`10月3日 6:40 | 35字`。
 ///
-/// T3 页面内组件，语义与 P3 绑定，不上提为 `core/ui`、不单独建文件
+/// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
 /// （`DEVELOPMENT-GUIDELINES.md` §7.3「1 个页面 + 语义与页面绑定 → 页面内」）。
 /// 类名不加 `_` 前缀是为了 widget 测试能直接引用它。
 class NoteMetaLine extends StatelessWidget {
@@ -553,14 +566,14 @@ class NoteMetaLine extends StatelessWidget {
   /// 已由 `WordCounter` 算好的字数。本组件**不调** `WordCounter`（保持纯展示）。
   final int wordCount;
 
-  /// P5「文字大小」的排版系数，由 `NoteDetailScreen` 透传。⛔ 必填无默认。
+  /// 设置「文字大小」的排版系数，由 `NoteDetailScreen` 透传。⛔ 必填无默认。
   final double textScale;
 
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).toString();
     final date = DateFormat.MMMd(locale).format(createdAt);
-    // ⚠️ 刻意用 `h:mm` 而不是 `DateFormat.jm`：D3 显示「6:40」**无 AM/PM**，
+    // ⚠️ 刻意用 `h:mm` 而不是 `DateFormat.jm`：笔记详情稿显示「6:40」**无 AM/PM**，
     // 而 `jm` 在 zh locale 下输出「上午6:40」。12/24 小时制偏好待设计补稿。
     final time = DateFormat('h:mm', locale).format(createdAt);
 
@@ -568,7 +581,7 @@ class NoteMetaLine extends StatelessWidget {
       TextSpan(
         children: <InlineSpan>[
           TextSpan(text: '$date $time'),
-          // 分隔符两侧各留约 6dp（12sp 下一个空格 ≈3dp，两个 ≈6dp）。§4 P3 `[推导]`。
+          // 分隔符两侧各留约 6dp（12sp 下一个空格 ≈3dp，两个 ≈6dp）。§4 笔记详情 `[推导]`。
           const TextSpan(text: '  |  '),
           TextSpan(
             text: AppLocalizations.of(context).noteMetaWordCount(wordCount),
@@ -582,13 +595,13 @@ class NoteMetaLine extends StatelessWidget {
   }
 }
 
-/// 背景选择弹层（D3）：横向滑动的纸张缩略图，选中项描琥珀边（D3 实测）。
+/// 背景选择弹层：横向滑动的纸张缩略图，选中项描琥珀边（笔记详情稿实测）。
 ///
 /// 下标语义：0 = 无背景（白底 + 示意横线），1..n = [backgrounds]。
 /// 调用方负责与 `NoteBackground` 互转（下标 `index - 1` → `values[index - 1]`）。
 /// 选中即 `Navigator.pop(index)`，取消（下滑 / 点遮罩）返回 null = 不改。
 ///
-/// T3 页面内组件，语义与 P3 绑定，不上提为 `core/ui`、不单独建文件
+/// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
 /// （`DEVELOPMENT-GUIDELINES.md` §7.3）。类名不加 `_` 前缀是为了 widget 测试能引用它。
 class BackgroundPickerSheet extends StatelessWidget {
   const BackgroundPickerSheet({
@@ -603,14 +616,14 @@ class BackgroundPickerSheet extends StatelessWidget {
   /// 当前选中下标（0 = 无背景）。
   final int selected;
 
-  /// 缩略图尺寸。稿上约 100×135，按屏宽比例取整到 88×120（D3 `[推导]`）。
+  /// 缩略图尺寸。稿上约 100×135，按屏宽比例取整到 88×120（笔记详情稿 `[推导]`）。
   static const double _tileWidth = 88;
   static const double _tileHeight = 120;
 
   /// 圆角与描边（选中 2dp 琥珀，未选中 1dp 分隔色）。
   static const double _radius = 12;
 
-  /// 「无背景」缩略图里的示意横线宽度，稿上四条不等长（D3 实测）。
+  /// 「无背景」缩略图里的示意横线宽度，稿上四条不等长（笔记详情稿实测）。
   static const List<double> _blankLines = <double>[56, 72, 64, 48];
 
   @override

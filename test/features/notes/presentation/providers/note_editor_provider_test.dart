@@ -28,11 +28,13 @@ Note _note({
   String title = '标题',
   String content = '正文',
   NoteBackground? background,
+  String? folderId,
 }) => Note(
   id: 'n1',
   title: title,
   content: content,
   background: background,
+  folderId: folderId,
   createdAt: DateTime(2026, 10, 3, 6, 40),
   updatedAt: DateTime(2026, 10, 3, 6, 40),
 );
@@ -220,7 +222,6 @@ void main() {
     expect(s.draftTitle, '新标题');
     expect(s.savedTitle, '标题');
     expect(s.isDirty, isTrue);
-    expect(s.isSaving, isFalse);
   });
 
   test('保存失败：lastFailure 带 Failure，clearFailure 后清空', () async {
@@ -321,6 +322,62 @@ void main() {
     );
     expect(params.title, '草稿二');
     expect(container.read(noteEditorProvider(kNewNoteId)).value!.isDirty, isFalse);
+  });
+
+  test('回归：分类页新建的笔记落在当前分类，后续 update 不把它搬回未分类', () async {
+    const folderId = 'f1';
+    final get = _MockGetNote();
+    final create = _MockCreateNote();
+    final update = _MockUpdateNote();
+    when(() => create(any())).thenAnswer(
+      (_) async => Right(_note(title: '草稿一', content: '', folderId: folderId)),
+    );
+    when(() => update(any())).thenAnswer(
+      (_) async => Right(_note(title: '草稿二', content: '', folderId: folderId)),
+    );
+    final container = containerFor(get, create: create, update: update);
+    final provider = noteEditorProvider(kNewNoteId, folderId: folderId);
+    final sub = container.listen<AsyncValue<NoteEditorState>>(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(sub.close);
+    await container.read(provider.future);
+
+    final notifier = container.read(provider.notifier);
+    notifier.setTitle('草稿一');
+    await notifier.flush();
+
+    final created =
+        verify(() => create(captureAny())).captured.single as CreateNoteParams;
+    expect(created.folderId, folderId);
+
+    notifier.setTitle('草稿二');
+    await notifier.flush();
+
+    final updated =
+        verify(() => update(captureAny())).captured.single as UpdateNoteParams;
+    expect(updated.folderId, folderId, reason: '不传会被当成「移回未分类」');
+  });
+
+  test('回归：编辑已有笔记不会把它搬出原分类', () async {
+    final get = _MockGetNote();
+    final update = _MockUpdateNote();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note(folderId: 'f1')));
+    when(
+      () => update(any()),
+    ).thenAnswer((_) async => Right(_note(title: '新标题', folderId: 'f1')));
+    final container = containerFor(get, update: update);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    container.read(noteEditorProvider('n1').notifier).setTitle('新标题');
+    await container.read(noteEditorProvider('n1').notifier).flush();
+
+    final params =
+        verify(() => update(captureAny())).captured.single as UpdateNoteParams;
+    expect(params.folderId, 'f1');
   });
 
   test('flush 幂等：非 dirty 时不调 UseCase', () async {

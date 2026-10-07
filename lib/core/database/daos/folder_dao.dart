@@ -10,7 +10,7 @@ part 'folder_dao.g.dart';
 ///
 /// ⛔ 不得 import `package:init/features/**`（`REPOSITORY-MAP.md` §5.3 的 R1）。
 /// 返回行对象与标量；`FolderWithCount` 的组装在 datasource（`TASK-021`）。
-/// ⚠️ **不 import `note_dao.dart`** —— 两个 DAO 之间不耦合，P4 的改动不能影响 P1。
+/// ⚠️ **不 import `note_dao.dart`** —— 两个 DAO 之间不耦合，文件夹管理的改动不能影响笔记列表。
 @DriftAccessor(tables: [NoteFolders, Notes])
 class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   FolderDao(super.db);
@@ -21,10 +21,13 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   /// 用户新建的文件夹在列表里看不到，极难排查。故 [TypedResult.read] 的
   /// `?? 0` 兜底不可省。
   ///
-  /// ⚠️ 结果里**不含**「全部」与「未分类」两行（§5.3：不是表里的行）。
-  /// Q18 → docs/OPEN-DESIGN-QUESTIONS.md（「未分类」当前是筛选哨兵，非系统行）
+  /// ⚠️ 结果里**不含**「全部」与「未分类」两行（§5.3：不是表里的行）；
+  /// 「未分类」是筛选哨兵（`kFolderFilterUncategorized`），不是系统行。
   ///
-  /// 排序 `sortIndex ASC, createdAt ASC`（P4 拖拽排序；`createdAt` 只作同值兜底，
+  /// ⚠️ 分类 tab 的顺序真相源就在下面的 `ORDER BY`：全部恒首位、未分类恒最后，
+  /// 中间的文件夹按 `sortIndex / createdAt` 排。改顺序只改这里。
+  ///
+  /// 排序 `sortIndex ASC, createdAt ASC`（文件夹管理拖拽排序；`createdAt` 只作同值兜底，
   /// 让迁移后全是默认 0 的老数据保持原顺序）。
   Stream<List<FolderWithCountRow>> watchWithCounts() {
     final count = notes.id.count();
@@ -58,10 +61,10 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
     );
   }
 
-  /// 「未分类」计数（`folder_id IS NULL`）。D4 的「未分类 154」就是它。
+  /// 「未分类」计数（`folder_id IS NULL`）。文件夹管理稿的「未分类 154」就是它。
   ///
   /// ⛔ **不提供 `watchTotalCount()`**：`全部 = sum(各文件夹) + 未分类` 是恒等式，
-  /// P4 的 provider 里 1 行求和即可，多发一条 SQL 换可推导的值是纯浪费。
+  /// 文件夹管理的 provider 里 1 行求和即可，多发一条 SQL 换可推导的值是纯浪费。
   Stream<int> watchUncategorizedCount() {
     final count = notes.id.count();
     return (selectOnly(notes)
@@ -135,7 +138,7 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   /// 把某文件夹下全部笔记的 `folder_id` 置 NULL。
   ///
   /// 与 [deleteById] 的外键 `ON DELETE SET NULL` 冗余但**显式**：不把原子性寄托
-  /// 在某个 drift / SQLite 版本的外键行为上（Q37 问的正是这个）。
+  /// 在某个 drift / SQLite 版本的外键行为上。
   Future<int> nullOutFolder(String folderId) {
     return (super.update(notes)..where((t) => t.folderId.equals(folderId)))
         .write(const NotesCompanion(folderId: Value(null)))

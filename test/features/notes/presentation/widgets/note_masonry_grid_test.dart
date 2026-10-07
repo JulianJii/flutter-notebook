@@ -10,7 +10,7 @@ import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:zoloto/zoloto.dart';
 
-/// D1 基准视口（1080px = 360dp）。全项目 P1 / P3 / P2 三份基线共用同一个，
+/// 笔记列表稿基准视口（1080px = 360dp）。全项目笔记列表 / 笔记详情 / 待办三份基线共用同一个，
 /// 便于横向比对；`pixelRatio = 1.0` 让 1 dp = 1 物理像素。见 TASK-035 §2。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
@@ -105,7 +105,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('宽屏下两列仍等宽（Q27 无稿，不加断点）', (tester) async {
+  testWidgets('宽屏下两列仍等宽（宽屏断点无稿，不加）', (tester) async {
     await tester.pumpWidget(
       wrap(NoteMasonryGrid(notes: <Note>[note('1'), note('2')], textScale: 1)),
     );

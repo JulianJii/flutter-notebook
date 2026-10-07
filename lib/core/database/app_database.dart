@@ -14,7 +14,7 @@ part 'app_database.g.dart';
 ///
 /// `schemaVersion = 5`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
 /// `notes_table.dart` 头注）；v2 → v3 加 `background` 列（笔记纸张背景，
-/// 可空 = 无背景）；v3 → v4 给 `note_folders` 加 `sort_index` 列（P4 拖拽排序）；
+/// 可空 = 无背景）；v3 → v4 给 `note_folders` 加 `sort_index` 列（文件夹管理拖拽排序）；
 /// v4 → v5 给 `todos` 加 `reminder_at` 列（待办提醒时刻，可空 = 无提醒）。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///

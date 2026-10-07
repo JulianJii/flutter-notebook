@@ -12,7 +12,7 @@ part 'note_dao.g.dart';
 /// ⚠️ 放库级而非 `NoteDao` 内：仓库里的 `riverpod_generator` 遇到「类内 enum」
 /// 会直接崩（`Enums can't be declared inside classes`），生成链断掉。
 enum NoteDaoOrder {
-  /// `updated_at DESC` —— 默认（P5「按编辑日期」）。
+  /// `updated_at DESC` —— 默认（设置「按编辑日期」）。
   editedDesc,
 
   /// `updated_at ASC`。
@@ -43,7 +43,7 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
   /// ⚠️ **无二级排序键**：155 条数据排序不稳定不构成问题。若用户抱怨「同一时刻
   /// 编辑的笔记顺序乱跳」，**先加索引再加二级键**。
   ///
-  /// ⚠️ 搜索走参数化 `LIKE`，**不是 FTS5**（搜索入口无稿，Q1）。FTS5 落地时
+  /// ⚠️ 搜索走参数化 `LIKE`，**不是 FTS5**。FTS5 落地时
   /// 只改本方法内部，`NoteQuery` 接口与上层零改动。
   Stream<List<NoteRow>> watch({
     String? folderId,

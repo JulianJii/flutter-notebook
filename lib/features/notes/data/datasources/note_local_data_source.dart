@@ -228,7 +228,7 @@ Note _toEntity(NoteRow row) {
 ///
 /// - `CacheException` 走 `rethrow`，不二次包装；
 /// - **不**转成 `Failure`（那是 Repository 的活），也**不**把原始 `SqliteException`
-///   透出去（UI 永不接触原始 Exception）。
+///  透出去（UI 永不接触原始 Exception）。
 Future<T> _guard<T>(Future<T> Function() body) async {
   try {
     return await body();

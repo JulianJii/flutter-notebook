@@ -189,11 +189,11 @@
   },
   "notes": "Notes",
   "@notes": {
-    "description": "P1 page large title and bottom navigation tab label"
+    "description": "Note list page large title and bottom navigation tab label"
   },
   "todos": "Todos",
   "@todos": {
-    "description": "P2 page large title and bottom navigation tab label"
+    "description": "To-do list page large title and bottom navigation tab label"
   },
   "all": "All",
   "@all": {
@@ -205,63 +205,63 @@
   },
   "back": "Back",
   "@back": {
-    "description": "Tooltip of the P3 top bar back button"
+    "description": "Tooltip of the note detail top bar back button"
   },
   "share": "Share",
   "@share": {
-    "description": "Tooltip of the P3 top bar share icon"
+    "description": "Tooltip of the note detail top bar share icon"
   },
   "palette": "Palette",
   "@palette": {
-    "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+    "description": "Tooltip of the note detail top bar palette icon"
   },
   "noteBackground": "Background",
   "@noteBackground": {
-    "description": "Title of the P3 background picker sheet and the accessibility label of a background thumbnail"
+    "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
   },
   "noteBackgroundNone": "No background",
   "@noteBackgroundNone": {
-    "description": "Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet"
+    "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"
   },
   "more": "More",
   "@more": {
-    "description": "Tooltip of the P3 top bar overflow icon (Q9 unresolved)"
+    "description": "Tooltip of the note detail top bar overflow icon"
   },
   "folders": "Folders",
   "@folders": {
-    "description": "P4 folder manager screen large title and the P1 top bar folder icon tooltip"
+    "description": "Folder manager folder manager screen large title and the note list top bar folder icon tooltip"
   },
   "createFolder": "New folder",
   "@createFolder": {
-    "description": "Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog"
+    "description": "Label of the create-folder action row at the end of the folder manager folder list, and the title of the create-folder dialog"
   },
   "folderName": "Folder name",
   "@folderName": {
-    "description": "Hint text of the create-folder dialog text field (P4)"
+    "description": "Hint text of the create-folder dialog text field (folder manager)"
   },
   "createTodo": "New todo",
   "@createTodo": {
-    "description": "Title of the create-todo dialog opened by the P2 FAB"
+    "description": "Title of the create-todo dialog opened by the to-do list FAB"
   },
   "todoTitle": "Todo title",
   "@todoTitle": {
-    "description": "Hint text of the create-todo dialog text field (P2)"
+    "description": "Hint text of the create-todo dialog text field (to-do list)"
   },
   "save": "Save",
   "@save": {
-    "description": "Confirm button of the create-folder dialog (P4)"
+    "description": "Confirm button of the create-folder dialog (folder manager)"
   },
   "delete": "Delete",
   "@delete": {
-    "description": "Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)"
+    "description": "Tooltip of the folder manager top bar trash icon"
   },
   "noteTitleHint": "Title",
   "@noteTitleHint": {
-    "description": "Placeholder shown in the P3 note title field when it is empty"
+    "description": "Placeholder shown in the note detail note title field when it is empty"
   },
   "noteMetaWordCount": "{count} chars",
   "@noteMetaWordCount": {
-    "description": "Word count shown in the P3 note meta line",
+    "description": "Word count shown in the note detail note meta line",
     "placeholders": {
       "count": {
         "type": "int"
@@ -270,55 +270,43 @@
   },
   "settingsGroupNoteStyle": "Note style",
   "@settingsGroupNoteStyle": {
-    "description": "P5 section header: note appearance"
+    "description": "Settings section header: note appearance"
   },
   "settingsGroupQuick": "Quick actions",
   "@settingsGroupQuick": {
-    "description": "P5 section header: quick actions"
-  },
-  "settingsGroupReminder": "Reminders",
-  "@settingsGroupReminder": {
-    "description": "P5 section header: reminders"
+    "description": "Settings section header: quick actions"
   },
   "settingsGroupOther": "Other",
   "@settingsGroupOther": {
-    "description": "P5 section header: misc"
+    "description": "Settings section header: misc"
   },
   "settingsRecentDeleted": "Recently deleted",
   "@settingsRecentDeleted": {
-    "description": "P5 chevron row leading to the trash screen, and its page title"
+    "description": "Settings chevron row leading to the trash screen, and its page title"
   },
   "settingsQuickCapture": "Quick capture",
   "@settingsQuickCapture": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsPrivacyPolicy": "Privacy policy",
   "@settingsPrivacyPolicy": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsUserAgreement": "User agreement",
   "@settingsUserAgreement": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsTextScale": "Font size",
   "@settingsTextScale": {
-    "description": "P5 stepper row title: font size"
+    "description": "Settings stepper row title: font size"
   },
   "settingsNoteSort": "Sort by",
   "@settingsNoteSort": {
-    "description": "P5 stepper row title: note sort order"
+    "description": "Settings stepper row title: note sort order"
   },
   "settingsNoteLayout": "Note list layout",
   "@settingsNoteLayout": {
-    "description": "P5 stepper row title: note list layout"
-  },
-  "settingsStrongReminder": "Strong reminder",
-  "@settingsStrongReminder": {
-    "description": "P5 switch row title"
-  },
-  "settingsStrongReminderDesc": "Keeps ringing even when silent or do not disturb is on",
-  "@settingsStrongReminderDesc": {
-    "description": "P5 switch row subtitle"
+    "description": "Settings stepper row title: note list layout"
   },
   "settingsTextScaleSmall": "Small",
   "@settingsTextScaleSmall": {
@@ -413,14 +401,6 @@
   "settingsThemeDark": "Dark",
   "@settingsThemeDark": {
     "description": "Theme mode option: dark"
-  },
-  "settingsSwitchOn": "On",
-  "@settingsSwitchOn": {
-    "description": "Selected option of a two-option settings row"
-  },
-  "settingsSwitchOff": "Off",
-  "@settingsSwitchOff": {
-    "description": "Unselected option of a two-option settings row"
   },
   "notesSearchHint": "Search notes",
   "@notesSearchHint": {
@@ -599,7 +579,7 @@
   },
   "clearCompletedTodos": "Clear finished",
   "@clearCompletedTodos": {
-    "description": "Tooltip of the P2 top bar action that clears finished to-dos"
+    "description": "Tooltip of the to-do list top bar action that clears finished to-dos"
   },
   "clearCompletedTodosConfirm": "Clear all finished to-dos? This can't be undone.",
   "@clearCompletedTodosConfirm": {
@@ -685,7 +665,7 @@
   },
   "settingsDataManagement": "Data & Sync",
   "@settingsDataManagement": {
-    "description": "P5 row that opens the data and sync page"
+    "description": "Settings row that opens the data and sync page"
   },
   "dataTitle": "Data & Sync",
   "@dataTitle": {

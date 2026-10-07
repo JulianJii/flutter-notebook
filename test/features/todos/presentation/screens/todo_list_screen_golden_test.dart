@@ -17,7 +17,7 @@ import 'package:zoloto/zoloto.dart';
 
 class _MockTodoRepository extends Mock implements TodoRepository {}
 
-/// D2 基准视口（1080px = 360dp）。P1 / P3 / P2 三份基线共用同一个，便于横向
+/// 待办稿基准视口（1080px = 360dp）。笔记列表 / 笔记详情 / 待办三份基线共用同一个，便于横向
 /// 横向比对；`pixelRatio = 1.0` 让 1 dp = 1 物理像素。见 TASK-035 §2。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
@@ -26,7 +26,7 @@ const TestEnvironment goldenEnv = TestEnvironment(
   platform: TargetPlatform.android,
 );
 
-/// D2 原样：1 张未勾选的卡。⚠️ 时间字段是常量 —— `DateTime.now()` 会让基线
+/// 待办稿原样：1 张未勾选的卡。⚠️ 时间字段是常量 —— `DateTime.now()` 会让基线
 /// 每天都不一样（即使本页不显示日期）。
 final Todo _d2Todo = Todo(
   id: 't1',
@@ -37,7 +37,7 @@ final Todo _d2Todo = Todo(
 );
 
 /// 复刻 `app_router.dart` 的 `StatefulShellRoute` 结构（**不复用 `routerProvider`** ——
-/// 它带全局 override，是 golden 噪声）。必须套 `NotesShell`：D2 的底部 2 Tab 是
+/// 它带全局 override，是 golden 噪声）。必须套 `NotesShell`：待办稿的底部 2 Tab 是
 /// 稿的一部分（不套就丢），且底部导航是 FAB 定位的参照物。
 GoRouter _router() => GoRouter(
   initialLocation: AppRoutes.todos,
@@ -48,8 +48,8 @@ GoRouter _router() => GoRouter(
       branches: <StatefulShellBranch>[
         StatefulShellBranch(
           routes: <RouteBase>[
-            // 极简占位即可：P2 基线不关心笔记列表，用真 `NoteListScreen` 会把基线
-            // 绑到 P1 的数据上，多一处失败点。
+            // 极简占位即可：待办基线不关心笔记列表，用真 `NoteListScreen` 会把基线
+            // 绑到笔记列表的数据上，多一处失败点。
             GoRoute(
               path: AppRoutes.notes,
               builder: (context, state) => const Scaffold(body: Text('notes')),
@@ -72,7 +72,7 @@ GoRouter _router() => GoRouter(
 void main() {
   setUpAll(() => registerFallbackValue(_d2Todo));
 
-  testGoldenWidgets('P2 待办列表 — D2 原样形态（1 张未勾选卡）', (tester) async {
+  testGoldenWidgets('待办列表 —待办稿原样形态（1 张未勾选卡）', (tester) async {
     final repo = _MockTodoRepository();
     when(
       () => repo.watchAll(),
@@ -108,7 +108,7 @@ void main() {
   /// 锁住本轮新增的两处视觉：顶栏的「清除已完成」入口 + 「已完成 N」折叠分隔行。
   /// 默认折叠态（`todoDoneSectionProvider.build() => false`）—— 已完成卡片不渲染，
   /// 它的删除线样式由 `todo_card_test` 的样式断言守。
-  testGoldenWidgets('P2 待办列表 — 已完成折叠分组（分隔行 + 清除入口）', (tester) async {
+  testGoldenWidgets('待办列表 — 已完成折叠分组（分隔行 + 清除入口）', (tester) async {
     final repo = _MockTodoRepository();
     when(() => repo.watchAll()).thenAnswer(
       (_) => Stream<List<Todo>>.value(<Todo>[

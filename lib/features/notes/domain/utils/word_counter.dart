@@ -1,16 +1,14 @@
 /// 笔记正文的「字数」统计。**不落库**（`ARCHITECTURE-DESIGN.md` §5.2
 /// 「不存储的派生字段」）—— 派生值落库 = 同步 bug 来源。
 ///
-/// 口径由 D3 反推：正文「三花聚顶本是幻 / 脚下腾云亦非真 / 人若不为形所累 /
+/// 口径由笔记详情稿反推：正文「三花聚顶本是幻 / 脚下腾云亦非真 / 人若不为形所累 /
 /// 眼前便是大罗天 / 一九玄关显秘论」共 5 段 × 7 字 = **35** 个非空白字符，
-/// 而 D3 元信息行显示「35字」。故规则是：**剔除所有空白字符后按 code point 计数**
+/// 而笔记详情稿元信息行显示「35字」。故规则是：**剔除所有空白字符后按 code point 计数**
 /// （标点计入）。
 ///
 /// ⛔ **不建 UseCase**（`DEVELOPMENT-GUIDELINES.md` §5）：纯函数不过 Repository。
 /// ⛔ 不做记忆化 / 缓存：单次 O(n)，正文规模下耗时不可测，而缓存要引入失效逻辑。
 /// ⛔ 不加 `countWords` / `countCharacters` 等备用 API：第二个调用点出现前不加。
-// Q23 → docs/OPEN-DESIGN-QUESTIONS.md（口径：剔除所有空白后按 code point 计数，
-// 标点计入）
 abstract final class WordCounter {
   const WordCounter._();
 

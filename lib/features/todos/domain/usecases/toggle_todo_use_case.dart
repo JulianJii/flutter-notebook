@@ -6,7 +6,7 @@ import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
 
 /// 勾选 / 取消勾选。传**目标值**（[ToggleTodoParams.isDone]）而不是「翻转」。
 ///
-/// ⚠️ 为什么不是翻转：P2 的勾选是**乐观更新**的 —— UI 先改本地状态再落库，
+/// ⚠️ 为什么不是翻转：待办的勾选是**乐观更新**的 —— UI 先改本地状态再落库，
 /// 失败要回滚（再写一次旧值）。翻转语义下「重试」会二次翻转，最终状态是反的。
 ///
 /// ⛔ **回滚不在这一层**：回滚是 UI 的时间概念（`ARCHITECTURE-DESIGN.md` §6.2），

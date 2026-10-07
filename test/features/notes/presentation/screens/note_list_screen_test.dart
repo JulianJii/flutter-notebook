@@ -77,9 +77,9 @@ void main() {
         folderItems ?? const <FolderWithCount>[],
       ),
     );
-    // P1 从 `settingsProvider` 读排序 / 布局 / 文字大小（TASK-047），而它经
+    // 笔记列表从 `settingsProvider` 读排序 / 布局 / 文字大小（TASK-047），而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
-    // **Repository** 层 override（同 `settings_screen_test`）。默认值即 D1 对照态。
+    // **Repository** 层 override（同 `settings_screen_test`）。默认值即笔记列表稿对照态。
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),
@@ -150,7 +150,7 @@ void main() {
 
     expect(find.byType(NoteMasonryGrid), findsOneWidget);
     expect(find.byType(NoteCard), findsNothing);
-    expect(find.text('暂无笔记'), findsNothing, reason: 'Q31 无稿，不建空态');
+    expect(find.text('暂无笔记'), findsNothing, reason: '空态无稿，不建空态');
     expect(find.byType(AppFab), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -171,7 +171,7 @@ void main() {
     expect(find.byType(NoteCard), findsNWidgets(4));
   });
 
-  testWidgets('点 FAB：跳到 /notes/new（Q6 按「空白编辑器」落地）', (tester) async {
+  testWidgets('点 FAB：跳到 /notes/new（落地页是空白编辑器）', (tester) async {
     final router = routerFor('/notes');
     await tester.pumpWidget(
       app(router, notesStream: Stream.value(const <Note>[])),
@@ -321,7 +321,7 @@ void main() {
     expect(find.text('暂无笔记'), findsNothing);
   });
 
-  group('搜索（Q1 落地）', () {
+  group('搜索', () {
     const Key field = Key('note_search_field');
 
     testWidgets('搜索框常驻在筛选 chip 上方，无内容时不显示清空按钮', (tester) async {

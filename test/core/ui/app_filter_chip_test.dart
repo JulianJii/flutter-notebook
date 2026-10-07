@@ -118,7 +118,7 @@ void main() {
       expect(text.style?.fontWeight, FontWeight.w500);
     });
 
-    testWidgets('无勾选标记（D1 未提勾）', (tester) async {
+    testWidgets('无勾选标记（笔记列表稿未提勾）', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light(),

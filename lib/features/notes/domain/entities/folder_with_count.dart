@@ -5,7 +5,7 @@ import 'note_folder.dart';
 /// 文件夹 + 其下笔记数。数据层的只读视图对象，**不是数据库表**，不落库。
 ///
 /// 「全部 155」「未分类 154」**不是**本类型的实例（§5.3：不是表里的行）。
-/// 那两行由 presentation 层（P4）组合；Q18 见 docs/OPEN-DESIGN-QUESTIONS.md。
+/// 那两行由 presentation 层（文件夹管理）组合（「未分类」是筛选哨兵，不是系统行）。
 class FolderWithCount extends Equatable {
   const FolderWithCount({required this.folder, required this.count});
 

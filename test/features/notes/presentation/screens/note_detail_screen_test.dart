@@ -126,7 +126,7 @@ void main() {
       when(() => updateBg(any())).thenAnswer((_) async => const Right(unit));
     }
 
-    // P3 从 `settingsProvider` 读「文字大小」（TASK-047），而它经
+    // 笔记详情从 `settingsProvider` 读「文字大小」（TASK-047），而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
     // **Repository** 层 override（同 `settings_screen_test`）。
     final settingsRepo = _MockSettingsRepository();
@@ -185,10 +185,10 @@ void main() {
     expect(find.byIcon(AppIcons.share), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
-    expect(find.byType(AppBottomNav), findsNothing, reason: 'P3 是二级 Push 页');
+    expect(find.byType(AppBottomNav), findsNothing, reason: '笔记详情是二级 Push 页');
   });
 
-  testWidgets('页面底色为白（surface），与 P1 的灰底不同', (tester) async {
+  testWidgets('页面底色为白（surface），与笔记列表的灰底不同', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
@@ -263,7 +263,7 @@ void main() {
     expect(find.byType(NoteMetaLine), findsNothing);
   });
 
-  testWidgets('点 share：标题 + 正文纯文本交给系统分享面板（Q8）', (tester) async {
+  testWidgets('点 share：标题 + 正文纯文本交给系统分享面板', (tester) async {
     // 测试环境没有插件实现，拦掉 share_plus 的 MethodChannel 拿真正发出去的参数
     // （比 mock 一层 provider 更贴近真实链路）。
     const channel = MethodChannel('dev.fluttercommunity.plus/share');

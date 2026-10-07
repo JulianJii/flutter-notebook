@@ -4,8 +4,9 @@ import 'package:mynote/core/ui/app_icon.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 笔记 App 的 Shell 容器。P1/P2 两个 Tab 由它承载，切换时各自保状态。
-// Q28 → docs/OPEN-DESIGN-QUESTIONS.md
+/// 笔记 App 的 Shell 容器。笔记列表/待办两个 Tab 由它承载，切换时各自保状态。
+///
+/// 非 edge-to-edge：安全区由本组件自己包。
 class NotesShell extends StatelessWidget {
   const NotesShell({required this.navigationShell, super.key});
 

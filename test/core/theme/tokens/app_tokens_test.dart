@@ -28,7 +28,7 @@ void main() {
     test('5 个灰阶互不相同，且按亮度排序严格递增（没被压成 2~3 档）', () {
       const c = AppColors.light();
       // ⚠️ 不能按声明顺序断言：`textSectionHeader` #A0A0A0 比
-      // `textSecondary` #999999 **浅**，规格 §2.1 原表就是这样（实测 D5 亦然）。
+      // `textSecondary` #999999 **浅**，规格 §2.1 原表就是这样（实测设置稿亦然）。
       // 真正的性质是「5 个互不相同的灰阶」，排序后才谈得上递进。
       final greys = <int>[
         c.textPrimary.toARGB32(),

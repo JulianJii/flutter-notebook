@@ -4,9 +4,9 @@ import 'package:material_ui/material_ui.dart';
 /// 顶栏图标按钮。48dp 触控区 / 24dp 图形。
 ///
 /// 度量来自 `UI-IMPLEMENTATION-SPEC.md` §2.5 尾注：「触控区 ≥48dp」。
-/// 出现在 5/5 页（D1~D5 顶栏）。
+/// 出现在 5/5 页（笔记列表稿~设置稿顶栏）。
 ///
-/// ⚠️ 顶栏 8 个图标的 `tooltip` 是**无障碍必需**，不是可选装饰 —— D1~D5 的稿上
+/// ⚠️ 顶栏 8 个图标的 `tooltip` 是**无障碍必需**，不是可选装饰 ——笔记列表稿~设置稿的稿上
 /// 没有文字标签，不传 tooltip 等于给屏幕阅读器用户一个无名按钮。
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
@@ -21,7 +21,7 @@ class AppIconButton extends StatelessWidget {
   /// 图标字形。取值来自 [AppIcons]。
   final IconData icon;
 
-  /// 点击回调。null → 按钮禁用（⚠️ 禁用态无稿，见 Q35）。
+  /// 点击回调。null → 按钮禁用（⚠️ 禁用态沿用 Material 默认）。
   final VoidCallback? onPressed;
 
   /// 长按提示，由调用方传 l10n 结果。
@@ -49,7 +49,6 @@ class AppIconButton extends StatelessWidget {
         minHeight: minTapSize,
       ),
       padding: EdgeInsets.zero,
-      // Q35 → docs/OPEN-DESIGN-QUESTIONS.md
     );
   }
 }

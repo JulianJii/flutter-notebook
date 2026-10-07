@@ -59,7 +59,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.noteNew,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const NoteDetailScreen(noteId: kNewNoteId),
+        builder: (context, state) => NoteDetailScreen(
+          noteId: kNewNoteId,
+          // 分类页带下来的归属：`/notes/new?folder=<id>`。不带就是未分类。
+          folderId: state.uri.queryParameters[AppRoutes.folderQueryKey],
+        ),
       ),
       GoRoute(
         path: AppRoutes.noteFolders,

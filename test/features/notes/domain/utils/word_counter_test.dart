@@ -15,7 +15,7 @@ void main() {
       expect(WordCounter.count('三花聚顶本是幻'), 7);
     });
 
-    test('纯英文按字符计（Q23 若改按词则此条要改）', () {
+    test('纯英文按字符计（口径若改按词则此条要改）', () {
       expect(WordCounter.count('hello'), 5);
     });
 
@@ -23,7 +23,7 @@ void main() {
       expect(WordCounter.count('你好，world！'), 9);
     });
 
-    test('D3 正文实测为 35 字（与设计稿元信息行一致）', () {
+    test('笔记详情稿正文实测为 35 字（与设计稿元信息行一致）', () {
       const d3 = '三花聚顶本是幻\n\n脚下腾云亦非真\n\n人若不为形所累\n\n眼前便是大罗天\n\n一九玄关显秘论';
       expect(WordCounter.count(d3), 35);
     });

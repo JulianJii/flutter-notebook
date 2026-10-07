@@ -237,7 +237,7 @@ void main() {
     });
   });
 
-  group('「全部」行的可求和性（D4: 1 + 154 = 155）', () {
+  group('「全部」行的可求和性（文件夹管理稿: 1 + 154 = 155）', () {
     test('Σ 各文件夹 count + 未分类 = 全部', () async {
       final id = await folderId('闻声笔记');
       await note(folderId: id);

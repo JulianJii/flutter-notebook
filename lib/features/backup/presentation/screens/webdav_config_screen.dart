@@ -13,7 +13,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// WebDAV 服务器配置页（`/settings/webdav`）。
 ///
-/// 四个字段 + 一次探活 + 保存。与 P5 / 主题页同形态（root 层二级页）。
+/// 四个字段 + 一次探活 + 保存。与设置 / 主题页同形态（root 层二级页）。
 ///
 /// ⚠️ 表单状态用 `TextEditingController` 而不是塞进 Riverpod：这是**一屏内的
 /// 草稿**，离开即弃；为它建一个 Notifier 等于把「还没保存的文本」变成 App 级状态。

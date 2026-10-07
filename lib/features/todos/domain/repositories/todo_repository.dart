@@ -4,7 +4,7 @@ import 'package:mynote/features/todos/domain/entities/todo.dart';
 
 /// 待办的领域抽象。实现在 data 层（`TASK-022`）。
 abstract class TodoRepository {
-  /// 无筛选、无搜索、无分页（D2 就是一张平铺列表）。
+  /// 无筛选、无搜索、无分页（待办稿就是一张平铺列表）。
   ///
   /// 流错误：Repository 实现负责把 `CacheException` 映射为 `CacheFailure`，
   /// UI 侧只会看到 `AsyncValue.error(CacheFailure)`。

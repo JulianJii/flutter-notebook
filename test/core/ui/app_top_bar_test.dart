@@ -70,7 +70,7 @@ void main() {
 
   testWidgets('形态 B：centerTitle 存在时居中，leading 在左', (tester) async {
     // leading / action 同为 48dp 触控区（TASK-010 的 AppIconButton）时，
-    // Expanded 的中线与顶栏中线重合 —— 这就是设计稿 D4 的居中标题。
+    // Expanded 的中线与顶栏中线重合 —— 这就是设计稿文件夹管理稿的居中标题。
     await tester.pumpWidget(
       wrap(
         const AppTopBar(

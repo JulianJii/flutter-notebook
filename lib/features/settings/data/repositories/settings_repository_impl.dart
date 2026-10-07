@@ -13,7 +13,7 @@ const String settingsStorageKey = 'app_settings';
 /// 不可能出现「数据在、版本标记丢了」的不一致。
 ///
 /// ⚠️ 读的时候**不据此拒绝**：比当前高的版本走逐字段回落（认识的字段照读，
-/// 不认识的忽略），不删 key、不整份重置 —— 整份重置会静默清掉用户的强提醒开关。
+/// 不认识的忽略），不删 key、不整份重置 —— 整份重置会静默清掉用户的主题选择。
 const int settingsSchemaVersion = 1;
 
 /// `SettingsRepository` 的唯一实现。⛔ **不注入 logger**：Repository 没有 `Ref`，
@@ -62,7 +62,6 @@ Map<String, Object?> _toJson(AppSettings s) {
     'textScale': s.textScale.name,
     'noteSort': s.noteSort.name,
     'noteLayout': s.noteLayout.name,
-    'strongReminder': s.strongReminder,
     'locale': s.locale,
     'themeMode': s.themeMode.name,
     'colorScheme': s.colorScheme.name,
@@ -70,7 +69,7 @@ Map<String, Object?> _toJson(AppSettings s) {
 }
 
 /// **逐字段**回落：单个字段类型错（`textScale: 123`、enum 名不存在、
-/// `strongReminder: "yes"`）只让**该字段**回默认值，其余字段正常读出。
+/// `themeMode: true`）只让**该字段**回默认值，其余字段正常读出。
 /// 绝不整份回落到 `defaults` —— 那会把用户其他正确的偏好一起清掉。
 /// 未知的 key 一律忽略（老版本残留 / 未来版本写入 / 人手加的）。
 AppSettings _fromJson(Map<String, Object?> json) {
@@ -79,10 +78,6 @@ AppSettings _fromJson(Map<String, Object?> json) {
     textScale: _byName(TextScaleLevel.values, json['textScale']) ?? d.textScale,
     noteSort: _byName(AppNoteSort.values, json['noteSort']) ?? d.noteSort,
     noteLayout: _byName(NoteLayout.values, json['noteLayout']) ?? d.noteLayout,
-    strongReminder: switch (json['strongReminder']) {
-      final bool v => v,
-      _ => d.strongReminder,
-    },
     locale: switch (json['locale']) {
       // 空串不是合法的语言码：null 才是「跟系统」的语义。库里存进 `''` 只可能来自
       // 手改或旧版本 bug，构造 `Locale('')` 会得到一个匹配不到任何语言的实例。

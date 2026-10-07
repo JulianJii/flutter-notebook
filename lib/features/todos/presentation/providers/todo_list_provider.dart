@@ -10,7 +10,7 @@ part 'todo_list_provider.g.dart';
 /// 订阅待办列表。**零逻辑**：一个 `ref.watch` + 一个 `call()`。
 ///
 /// `AsyncValue` 天然覆盖 loading / ready / error，`empty` 是 `value.isEmpty` 的
-/// **派生**而非状态字段（`ARCHITECTURE-DESIGN.md` §6.2 P2 + §11 ADR 3）。
+/// **派生**而非状态字段（`ARCHITECTURE-DESIGN.md` §6.2 待办 + §11 ADR 3）。
 /// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推（§8.4）。
 @riverpod
 Stream<List<Todo>> todoList(Ref ref) {
@@ -21,8 +21,8 @@ Stream<List<Todo>> todoList(Ref ref) {
 ///
 /// **为什么不自持列表**（照抄 `TasksNotifier.toggleTask` 的写法）：它把列表 copy
 /// 进 Notifier state，与 ADR 4「数据不进 Notifier，列表由 data 层 stream 持有」
-/// 冲突，同一份数据两处写必然不一致；且 P1 的 `noteListProvider` 已确立
-/// 「StreamProvider + AsyncValue」范式，P2 必须与之一致。
+/// 冲突，同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
+/// 「StreamProvider + AsyncValue」范式，待办必须与之一致。
 ///
 /// 核心洞察：**覆盖值等于 stream 值时覆盖就是无效的**（视觉完全一致），一旦不等
 /// 它就是权威的。于是「何时清除覆盖」这个问题自动消失 —— 不需要 timer、不需要
@@ -95,5 +95,5 @@ List<Todo> applyTodoOverrides(
 // （`DEVELOPMENT-GUIDELINES.md` §4「DAO 排 SQL」）。折叠分组只做保序切分、不重排。
 // ⛔ 本 provider 不管 create：写操作只有 toggle 需要乐观覆盖（它能失败并回滚），
 // create 直接由 Screen 调 `createTodoUseCaseProvider`，新行同样由下面的 stream 推出。
-// Q21 已接线：编辑 / 删除同样不进覆盖层 —— 它们没有「乐观」可言（弹窗关掉就没有
+// 编辑 / 删除同样不进覆盖层 —— 它们没有「乐观」可言（弹窗关掉就没有
 // 乐观态可回滚），失败走 Snackbar 即可。

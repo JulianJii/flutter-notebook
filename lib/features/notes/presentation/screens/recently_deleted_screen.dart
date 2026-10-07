@@ -14,7 +14,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../providers/deleted_note_list_provider.dart';
 
-/// 「最近删除」回收站（P5 设置入口，`/notes/trash`）。
+/// 「最近删除」回收站（设置入口，`/notes/trash`）。
 ///
 /// 数据链路与其他页一致：Screen → `deletedNoteListProvider` →
 /// `WatchDeletedNotesUseCase` → Repository。恢复 / 永久删除直接
@@ -23,7 +23,7 @@ import '../providers/deleted_note_list_provider.dart';
 ///
 /// ⛔ **行不可点**：回收站里不提供编辑入口 —— 软删除的内容不是编辑对象，
 /// 要编辑先恢复。两行操作（恢复 / 永久删除）就是本页全部语义。
-/// ⛔ **不渲染 `AppBottomNav`**：与 P4 / P5 同理，是 `/notes` 的 push 子页。
+/// ⛔ **不渲染 `AppBottomNav`**：与文件夹管理 / 设置同理，是 `/notes` 的 push 子页。
 class RecentlyDeletedScreen extends ConsumerWidget {
   const RecentlyDeletedScreen({super.key});
 
@@ -108,7 +108,7 @@ class RecentlyDeletedScreen extends ConsumerWidget {
     );
   }
 
-  /// 永久删除：二次确认（弹窗视觉无稿，同 P3/P4 的 Material 默认形态）。
+  /// 永久删除：二次确认（弹窗视觉无稿，同笔记详情/文件夹管理的 Material 默认形态）。
   Future<void> _purge(BuildContext context, WidgetRef ref, Note note) async {
     final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(

@@ -7,7 +7,7 @@ import 'package:mynote/features/notes/domain/repositories/folder_repository.dart
 /// ⛔ **事务不在这一层**：它由 datasource 的 `db.transaction()` 包住
 /// 「删文件夹行 + 其下笔记 `folderId` 置 NULL」（`REPOSITORY-MAP.md` §2.2）。
 /// UseCase 碰 `db` 就等于让 domain 依赖 drift。
-/// ⛔ 不预检存在性；不加二次确认（`AppDialog` 无稿，Q13 / Q34）。
+/// ⛔ 不预检存在性；不加二次确认（弹窗无稿）。
 class DeleteFolderUseCase {
   const DeleteFolderUseCase(this._repository);
 

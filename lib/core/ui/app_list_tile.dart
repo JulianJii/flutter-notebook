@@ -4,7 +4,7 @@ import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/app_divider.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 设置 / 文件夹 / 待办的通用行。P2 / P4 / P5 三页共用一个组件。
+/// 设置 / 文件夹 / 待办的通用行。待办 / 文件夹管理 / 设置三页共用一个组件。
 ///
 /// 6 种形态由 5 个可选参数的**组合**表达（`ARCHITECTURE-DESIGN.md` §7.6：
 /// 布尔开关是「设计失败的味道」）：
@@ -12,25 +12,25 @@ import 'package:material_ui/material_ui.dart';
 /// | 形态 | 参数组合 | 稿 |
 /// |---|---|---|
 /// | 纯文字 | `title` | — |
-/// | 前置复选框 | `leading` + `title` | D2 |
-/// | 前置勾 + 右侧计数 | `leading` + `title` + `trailingValue` | D4 |
-/// | 右箭头 | `title` + `trailing` | D5 |
-/// | 右值 + 右图标 | `title` + `trailingValue` + `trailing` | D5 |
-/// | 副标题 + 开关 | `title` + `subtitle` + `titleWeight` + `trailing` | D5 |
+/// | 前置复选框 | `leading` + `title` | 待办稿 |
+/// | 前置勾 + 右侧计数 | `leading` + `title` + `trailingValue` | 文件夹管理稿 |
+/// | 右箭头 | `title` + `trailing` | 设置稿 |
+/// | 右值 + 右图标 | `title` + `trailingValue` + `trailing` | 设置稿 |
+/// | 副标题 + 开关 | `title` + `subtitle` + `titleWeight` + `trailing` | 设置稿 |
 ///
-/// ⛔ **无 `height` 参数**：D5 chevron 行 56dp / switch 行 72dp / D4 行 ≈60dp
-/// / D2 行 ≈60dp 四个稿值不同。行高由 [AppTextStyles.rowTitle] + 上下
+/// ⛔ **无 `height` 参数**：设置稿 chevron 行 56dp / switch 行 72dp / 文件夹管理稿行 ≈60dp
+/// / 待办稿行 ≈60dp 四个稿值不同。行高由 [AppTextStyles.rowTitle] + 上下
 /// [AppSpacing.rowPadH] 自然得出，一份代码覆盖全部四值。
 ///
-/// ⛔ **不管 `leading` 宽度**：D4 的 32dp 对齐槽位（选中项显示 20dp 琥珀勾、
-/// 未选中留空，导致名称左边界右移 24dp 不对齐 —— **Q25b**）由 `FolderRow`
+/// ⛔ **不管 `leading` 宽度**：文件夹管理稿的 32dp 对齐槽位（选中项显示 20dp 琥珀勾、
+/// 未选中留空，名称左边界因此互不对齐 —— 稿如此）由 `FolderRow`
 /// 负责，见 `TASK-049`。
 ///
 /// ⛔ **不含业务语义**：本组件不认识「笔记 / 待办 / 文件夹」，`title` /
 /// `subtitle` 是中性文案参数。
 ///
-/// ⚠️ **无稿项**：D5 只画了 Switch 的 off 态（**Q26b**）、D2 只有 unchecked
-/// 复选框（**Q21**）、全稿无按压态（**Q35**）。本组件只负责行骨架。
+/// ⚠️ **稿未覆盖的三态沿用 Material 默认**：Switch 的 on 态、复选框的
+/// checked 态、行按压态。本组件只负责行骨架。
 class AppListTile extends StatelessWidget {
   const AppListTile({
     required this.title,
@@ -47,41 +47,39 @@ class AppListTile extends StatelessWidget {
   /// 主文案，由调用方传 l10n 结果。§2.2 `text.rowTitle`（16sp / w400）。
   final String title;
 
-  /// 副文案（D5「强提醒」）。非 null 时渲染第二行，字阶 `text.subtitle`。
+  /// 副文案（设置稿「强提醒」）。非 null 时渲染第二行，字阶 `text.subtitle`。
   final String? subtitle;
 
-  /// 左侧插槽。调用方自选尺寸并负责对齐（D4 的 32dp 槽位见 Q25b）。
+  /// 左侧插槽。调用方自选尺寸并负责对齐（文件夹管理稿的 32dp 槽位由 `FolderRow` 管）。
   final Widget? leading;
 
   /// 右侧插槽。chevron 图标 / stepper 图标 / 开关。
   final Widget? trailing;
 
-  /// 右端当前值（D4 计数、D5 stepper 行的「默认」）。字阶 `text.value`。
+  /// 右端当前值（文件夹管理稿计数、设置稿 stepper 行的「默认」）。字阶 `text.value`。
   final String? trailingValue;
 
   /// 点击回调。null → **不包 `InkWell`**，不做水波纹。
   ///
-  /// ⚠️ D5 二级页未设计（**Q14**），稿中按压态无稿（**Q35**）——
-  /// `docs/OPEN-DESIGN-QUESTIONS.md`，
-  /// 故不可点行完全无交互反馈。
+  /// ⚠️ 二级页未设计、稿中也无按压态，故不可点行完全无交互反馈。
   final VoidCallback? onTap;
 
-  /// 行上方 1dp 分割线（D5 同卡片内多行）。
+  /// 行上方 1dp 分割线（设置稿同卡片内多行）。
   final bool dividerBefore;
 
-  /// 标题字重。null → `text.rowTitle` 的 w400；D5「强提醒」传 w600。
+  /// 标题字重。null → `text.rowTitle` 的 w400；设置稿「强提醒」传 w600。
   final FontWeight? titleWeight;
 
-  /// `trailingValue` 与相邻元素的间距（D5 stepper 行左右间距 8dp `[推导]`）。
+  /// `trailingValue` 与相邻元素的间距（设置稿 stepper 行左右间距 8dp `[推导]`）。
   static const double gap = AppSpacing.chipGap;
 
-  /// `subtitle` 与 `title` 的间距（D5 强提醒行实测 4dp）。
+  /// `subtitle` 与 `title` 的间距（设置稿强提醒行实测 4dp）。
   static const double subtitleGap = 4;
 
   /// 分割线左缩进，与行文字左边界对齐。
   ///
-  /// 16dp 卡片内边距 = D5 实测的「28dp」= 页面 12 + 卡片 16。⚠️ 传了非 null
-  /// `leading` 时本组件**测不到**它的宽度（组件保持哑的，见 Q25b），故缩进
+  /// 16dp 卡片内边距 = 设置稿实测的「28dp」= 页面 12 + 卡片 16。⚠️ 传了非 null
+  /// `leading` 时本组件**测不到**它的宽度（组件保持哑的），故缩进
   /// 仍是 16dp 而非「leading 宽 + 16dp」；带 leading 的分割线对齐由调用方
   /// （`FolderRow`）用 `AppDivider` 自行处理。
   static const double indent = AppSpacing.rowPadH;

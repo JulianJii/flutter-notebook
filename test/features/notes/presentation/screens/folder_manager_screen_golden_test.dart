@@ -13,7 +13,7 @@ import 'package:zoloto/zoloto.dart';
 
 class _MockFolderRepository extends Mock implements FolderRepository {}
 
-/// 与 P1 / P2 / P3 三份基线同一视口（`test/features/notes/.../note_list_screen_golden_test.dart`），
+/// 与笔记列表 / 待办 / 笔记详情三份基线同一视口（`test/features/notes/.../note_list_screen_golden_test.dart`），
 /// 便于四张基线横向比对。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
@@ -22,7 +22,7 @@ const TestEnvironment goldenEnv = TestEnvironment(
   platform: TargetPlatform.android,
 );
 
-/// D4 实测的三个数：`全部 155 = 闻声笔记 1 + 未分类 154`。
+/// 文件夹管理稿实测的三个数：`全部 155 = 闻声笔记 1 + 未分类 154`。
 /// ⚠️ 全部常量 —— `DateTime.now()` 会让基线每天都不一样。
 final List<FolderWithCount> _folders = <FolderWithCount>[
   FolderWithCount(
@@ -36,7 +36,7 @@ final List<FolderWithCount> _folders = <FolderWithCount>[
   ),
 ];
 
-/// P4 自己不渲染笔记卡，只用得到「未分类」的**计数**。计数走 DAO 的
+/// 文件夹管理自己不渲染笔记卡，只用得到「未分类」的**计数**。计数走 DAO 的
 /// `COUNT(*)` 透传，所以这里连一条假笔记都不需要。
 const int _uncategorized = 154;
 
@@ -57,7 +57,7 @@ GoRouter _router() => GoRouter(
 );
 
 void main() {
-  testGoldenWidgets('P4 文件夹管理 — 全部 155 / 闻声笔记 1 / 未分类 154', (tester) async {
+  testGoldenWidgets('文件夹管理 — 全部 155 / 闻声笔记 1 / 未分类 154', (tester) async {
     final folderRepo = _MockFolderRepository();
     when(
       () => folderRepo.watchWithCounts(),

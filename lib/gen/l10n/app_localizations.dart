@@ -356,13 +356,13 @@ abstract class AppLocalizations {
   /// **'无附加文案'**
   String get noteSnippetPlaceholder;
 
-  /// P1 page large title and bottom navigation tab label
+  /// Note list page large title and bottom navigation tab label
   ///
   /// In zh, this message translates to:
   /// **'笔记'**
   String get notes;
 
-  /// P2 page large title and bottom navigation tab label
+  /// To-do list page large title and bottom navigation tab label
   ///
   /// In zh, this message translates to:
   /// **'待办'**
@@ -380,173 +380,155 @@ abstract class AppLocalizations {
   /// **'未分类'**
   String get uncategorized;
 
-  /// Tooltip of the P3 top bar back button
+  /// Tooltip of the note detail top bar back button
   ///
   /// In zh, this message translates to:
   /// **'返回'**
   String get back;
 
-  /// Tooltip of the P3 top bar share icon
+  /// Tooltip of the note detail top bar share icon
   ///
   /// In zh, this message translates to:
   /// **'分享'**
   String get share;
 
-  /// Tooltip of the P3 top bar palette icon (Q10 unresolved)
+  /// Tooltip of the note detail top bar palette icon
   ///
   /// In zh, this message translates to:
   /// **'配色'**
   String get palette;
 
-  /// Title of the P3 background picker sheet and the accessibility label of a background thumbnail
+  /// Title of the note detail background picker sheet and the accessibility label of a background thumbnail
   ///
   /// In zh, this message translates to:
   /// **'背景'**
   String get noteBackground;
 
-  /// Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet
+  /// Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet
   ///
   /// In zh, this message translates to:
   /// **'无背景'**
   String get noteBackgroundNone;
 
-  /// Tooltip of the P3 top bar overflow icon (Q9 unresolved)
+  /// Tooltip of the note detail top bar overflow icon
   ///
   /// In zh, this message translates to:
   /// **'更多'**
   String get more;
 
-  /// P4 folder manager screen large title and the P1 top bar folder icon tooltip
+  /// Folder manager folder manager screen large title and the note list top bar folder icon tooltip
   ///
   /// In zh, this message translates to:
   /// **'文件夹'**
   String get folders;
 
-  /// Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog
+  /// Label of the create-folder action row at the end of the folder manager folder list, and the title of the create-folder dialog
   ///
   /// In zh, this message translates to:
   /// **'新建文件夹'**
   String get createFolder;
 
-  /// Hint text of the create-folder dialog text field (P4)
+  /// Hint text of the create-folder dialog text field (folder manager)
   ///
   /// In zh, this message translates to:
   /// **'文件夹名称'**
   String get folderName;
 
-  /// Title of the create-todo dialog opened by the P2 FAB
+  /// Title of the create-todo dialog opened by the to-do list FAB
   ///
   /// In zh, this message translates to:
   /// **'新建待办'**
   String get createTodo;
 
-  /// Hint text of the create-todo dialog text field (P2)
+  /// Hint text of the create-todo dialog text field (to-do list)
   ///
   /// In zh, this message translates to:
   /// **'待办标题'**
   String get todoTitle;
 
-  /// Confirm button of the create-folder dialog (P4)
+  /// Confirm button of the create-folder dialog (folder manager)
   ///
   /// In zh, this message translates to:
   /// **'保存'**
   String get save;
 
-  /// Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)
+  /// Tooltip of the folder manager top bar trash icon
   ///
   /// In zh, this message translates to:
   /// **'删除'**
   String get delete;
 
-  /// Placeholder shown in the P3 note title field when it is empty
+  /// Placeholder shown in the note detail note title field when it is empty
   ///
   /// In zh, this message translates to:
   /// **'标题'**
   String get noteTitleHint;
 
-  /// Word count shown in the P3 note meta line
+  /// Word count shown in the note detail note meta line
   ///
   /// In zh, this message translates to:
   /// **'{count}字'**
   String noteMetaWordCount(int count);
 
-  /// P5 section header: note appearance
+  /// Settings section header: note appearance
   ///
   /// In zh, this message translates to:
   /// **'笔记样式'**
   String get settingsGroupNoteStyle;
 
-  /// P5 section header: quick actions
+  /// Settings section header: quick actions
   ///
   /// In zh, this message translates to:
   /// **'快捷功能'**
   String get settingsGroupQuick;
 
-  /// P5 section header: reminders
-  ///
-  /// In zh, this message translates to:
-  /// **'提醒'**
-  String get settingsGroupReminder;
-
-  /// P5 section header: misc
+  /// Settings section header: misc
   ///
   /// In zh, this message translates to:
   /// **'其他'**
   String get settingsGroupOther;
 
-  /// P5 chevron row leading to the trash screen, and its page title
+  /// Settings chevron row leading to the trash screen, and its page title
   ///
   /// In zh, this message translates to:
   /// **'最近删除'**
   String get settingsRecentDeleted;
 
-  /// P5 chevron row (Q14: no second level page)
+  /// Settings chevron row
   ///
   /// In zh, this message translates to:
   /// **'速记'**
   String get settingsQuickCapture;
 
-  /// P5 chevron row (Q14: no second level page)
+  /// Settings chevron row
   ///
   /// In zh, this message translates to:
   /// **'隐私政策'**
   String get settingsPrivacyPolicy;
 
-  /// P5 chevron row (Q14: no second level page)
+  /// Settings chevron row
   ///
   /// In zh, this message translates to:
   /// **'用户协议'**
   String get settingsUserAgreement;
 
-  /// P5 stepper row title: font size
+  /// Settings stepper row title: font size
   ///
   /// In zh, this message translates to:
   /// **'文字大小'**
   String get settingsTextScale;
 
-  /// P5 stepper row title: note sort order
+  /// Settings stepper row title: note sort order
   ///
   /// In zh, this message translates to:
   /// **'选择排序方式'**
   String get settingsNoteSort;
 
-  /// P5 stepper row title: note list layout
+  /// Settings stepper row title: note list layout
   ///
   /// In zh, this message translates to:
   /// **'笔记列表布局'**
   String get settingsNoteLayout;
-
-  /// P5 switch row title
-  ///
-  /// In zh, this message translates to:
-  /// **'强提醒'**
-  String get settingsStrongReminder;
-
-  /// P5 switch row subtitle
-  ///
-  /// In zh, this message translates to:
-  /// **'持续响铃且静音和勿扰状态下仍有效'**
-  String get settingsStrongReminderDesc;
 
   /// Font size option: small
   ///
@@ -673,18 +655,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'深色'**
   String get settingsThemeDark;
-
-  /// Selected option of a two-option settings row
-  ///
-  /// In zh, this message translates to:
-  /// **'开启'**
-  String get settingsSwitchOn;
-
-  /// Unselected option of a two-option settings row
-  ///
-  /// In zh, this message translates to:
-  /// **'关闭'**
-  String get settingsSwitchOff;
 
   /// Placeholder of the note search field
   ///
@@ -932,7 +902,7 @@ abstract class AppLocalizations {
   /// **'已完成 {count}'**
   String todoDoneSection(int count);
 
-  /// Tooltip of the P2 top bar action that clears finished to-dos
+  /// Tooltip of the to-do list top bar action that clears finished to-dos
   ///
   /// In zh, this message translates to:
   /// **'清除已完成'**
@@ -1052,7 +1022,7 @@ abstract class AppLocalizations {
   /// **'最后更新：{date}'**
   String last_updated(DateTime date);
 
-  /// P5 row that opens the data and sync page
+  /// Settings row that opens the data and sync page
   ///
   /// In zh, this message translates to:
   /// **'数据与同步'**

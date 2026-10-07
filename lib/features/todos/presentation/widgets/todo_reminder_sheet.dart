@@ -19,8 +19,8 @@ typedef SetReminderResult = ({DateTime? at, bool clear});
 /// 点待办卡片弹出的小窗：只读标题 + 提醒时间 + 完成。
 ///
 /// ⛔ 不抽 `AppBottomSheet`（§8「不建」清单）：Material 默认形态 + 现有的
-/// `AppListTile` / `AppIconButton` 已经够，且字阶与间距跟页面内其他行同源。
-/// Q14 → docs/OPEN-DESIGN-QUESTIONS.md（弹层视觉无稿，沿用 Material 默认）。
+/// `AppListTile` / `AppIconButton` 已经够，且字阶与间距跟页面内其他行同源
+/// （弹层视觉无稿，沿用 Material 默认）。
 ///
 /// ⚠️ **标题只读**：改标题 / 删除仍走原来的 `AlertDialog`（[onEditTitle] 由页面
 /// 传入），本窗不复制第二条能改同一字段的路径。
@@ -194,7 +194,7 @@ class _TodoReminderSheetState extends ConsumerState<_TodoReminderSheet> {
   }
 }
 
-/// 「设置提醒时间」：日期 + 时间两行，内置选择器（Q14：弹层沿用 Material 默认）。
+/// 「设置提醒时间」：日期 + 时间两行，内置选择器（弹层沿用 Material 默认）。
 ///
 /// 返回 null = 取消；否则 `(at: 时刻, clear: 是否点了清除)`。
 Future<SetReminderResult?> showSetReminderSheet({

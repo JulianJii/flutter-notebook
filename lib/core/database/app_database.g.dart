@@ -164,7 +164,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /// P4 拖拽排序位。越小越靠前，**同值按 [createdAt] 兜底** ——
+  /// 文件夹管理拖拽排序位。越小越靠前，**同值按 [createdAt] 兜底** ——
   /// 迁移前的老数据全是默认值 0，兜底保证了升级后列表顺序与升级前一致。
   ///
   /// 写入只有两条路径：新建时取 `MAX+1`（排末尾），拖拽时整表写成 `0..n-1`
@@ -599,7 +599,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
   final String? folderId;
   final DateTime createdAt;
 
-  /// 默认排序键（P5「按编辑日期」）。
+  /// 默认排序键（设置「按编辑日期」）。
   final DateTime updatedAt;
 
   /// 软删除时刻。null = 正常笔记；非 null = 已进「最近删除」。

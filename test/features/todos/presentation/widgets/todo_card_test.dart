@@ -7,7 +7,7 @@ import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:zoloto/zoloto.dart';
 
-/// 与 P1 / P3 三份基线同视口（1080px = 360dp），便于横向比对（TASK-035 §2）。
+/// 与笔记列表 / 笔记详情三份基线同视口（1080px = 360dp），便于横向比对（TASK-035 §2）。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
   size: Size(360, 778),
@@ -47,7 +47,7 @@ void main() {
     expect(find.byType(InkWell), findsNothing, reason: 'onTap 为 null → 静态卡片');
   });
 
-  testWidgets('D2 实测：卡高 ≈60dp；行内复选框与标题垂直居中', (tester) async {
+  testWidgets('待办稿实测：卡高 ≈60dp；行内复选框与标题垂直居中', (tester) async {
     await tester.pumpWidget(
       wrap(const TodoCard(title: '测试', checked: false, onChanged: _noop)),
     );
@@ -56,7 +56,7 @@ void main() {
       tester.getSize(find.byType(AppCard)).height,
       closeTo(60, 3),
       reason:
-          'D2 实测 ≈60dp。残差来自 16sp × 1.4 的 22.4dp 行高（排版由内容决定，'
+          '待办稿实测 ≈60dp。残差来自 16sp × 1.4 的 22.4dp 行高（排版由内容决定，'
           '不写死高度）；上下内边距按稿 = (60 − 20) / 2 = 20dp',
     );
 
@@ -98,7 +98,7 @@ void main() {
     expect(tester.getRect(find.byType(AppCard)).width, 360);
   });
 
-  testWidgets('Q21 完成态：勾选透传 + 标题删除线且变灰', (tester) async {
+  testWidgets('完成态：勾选透传 + 标题删除线且变灰', (tester) async {
     await tester.pumpWidget(
       wrap(const TodoCard(title: '测试', checked: true, onChanged: _noop)),
     );
@@ -140,7 +140,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('onTap 传 null：点卡片无涟漪、无异常（Q35 / Q21 无稿）', (tester) async {
+  testWidgets('onTap 传 null：点卡片无涟漪、无异常', (tester) async {
     await tester.pumpWidget(
       wrap(const TodoCard(title: '测试', checked: false, onChanged: _noop)),
     );

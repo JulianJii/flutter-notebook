@@ -10,7 +10,7 @@ import '../../domain/entities/note.dart';
 import '../../domain/utils/note_delta.dart';
 import 'note_background_image.dart';
 
-/// D1 的笔记卡：标题 → 摘要 → 日期 三段竖排。
+/// 笔记列表稿的笔记卡：标题 → 摘要 → 日期 三段竖排。
 ///
 /// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（`UI-IMPLEMENTATION-SPEC.md`
 /// §2.4：12dp 圆角、`elevation.card` = 0），不许在这里自绘 `Container`。
@@ -29,15 +29,15 @@ class NoteCard extends StatelessWidget {
 
   final Note note;
 
-  /// P5「文字大小」的排版系数，由 `NoteMasonryGrid` 透传。⛔ 必填无默认。
+  /// 设置「文字大小」的排版系数，由 `NoteMasonryGrid` 透传。⛔ 必填无默认。
   final double textScale;
 
   /// 摘要最大行数。**卡片高度就是瀑布流的错落来源**：上限卡在 2 行时短正文
   /// 与长正文的卡片几乎等高，两列排下来观感退化成等高网格。放宽到 6 行后
-  /// 短笔记 1 行、长笔记占满 6 行，高度差才撑得起 D1 的错落。
+  /// 短笔记 1 行、长笔记占满 6 行，高度差才撑得起笔记列表稿的错落。
   static const int _kSnippetMaxLines = 6;
 
-  /// null → 静态卡片（按压态无稿，见 Q35）。
+  /// null → 静态卡片（按压态沿用 Material 默认）。
   final VoidCallback? onTap;
 
   @override
@@ -86,8 +86,8 @@ class NoteCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  // 取 updatedAt：P1 默认排序键就是 editedDesc，卡片日期与排序依据
-                  // 一致，用户不会看到「排在最前但日期最旧」。D1 只显示 `M月D日`，
+                  // 取 updatedAt：笔记列表默认排序键就是 editedDesc，卡片日期与排序依据
+                  // 一致，用户不会看到「排在最前但日期最旧」。笔记列表稿只显示 `M月D日`，
                   // 无法区分 created / updated，此处取前者是成本最低的一致解。
                   DateFormat.MMMd(
                     Localizations.localeOf(context).toString(),
@@ -104,7 +104,7 @@ class NoteCard extends StatelessWidget {
     );
   }
 
-  // Q20 → docs/OPEN-DESIGN-QUESTIONS.md（「无附加文案」当前按占位文案处理）
+  /// 正文为空时显示占位文案（`noteSnippetPlaceholder`），不是用户数据。
   String _snippetOf(BuildContext context, String content) {
     // `content` 是 Quill Delta JSON，卡片只取纯文本 —— 摘要规则里的「空」判定
     // 依据是「用户没写正文」，而不是「文档结构为空」。

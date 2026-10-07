@@ -17,7 +17,7 @@ void main() {
     expect(divider.color, const AppColors.light().divider);
   });
 
-  testWidgets('P5 的缩进 28dp / 右缩进 16dp 生效', (tester) async {
+  testWidgets('设置的缩进 28dp / 右缩进 16dp 生效', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(

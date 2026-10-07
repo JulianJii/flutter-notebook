@@ -13,7 +13,7 @@ abstract class FolderRepository {
   /// UI 侧只会看到 `AsyncValue.error(CacheFailure)`。
   Stream<List<FolderWithCount>> watchWithCounts();
 
-  /// 「未分类」笔记数（`folder_id IS NULL`）。D4 的「未分类 154」就是它。
+  /// 「未分类」笔记数（`folder_id IS NULL`）。文件夹管理稿的「未分类 154」就是它。
   ///
   /// ⛔ 单独一条 `COUNT(*)` 而不是「取列表再 `.length`」：后者会把全部未分类
   /// 笔记的正文（Quill Delta JSON）读进内存只为拿一个整数。
@@ -31,7 +31,7 @@ abstract class FolderRepository {
   /// 同时生效，故实现内部必须走事务（仓库里唯一需要显式 `transaction()` 的方法）。
   Future<Either<Failure, Unit>> delete(String folderId);
 
-  /// 按 [orderedFolderIds] 的顺序重排（P4 拖拽）。传入的是**完整顺序**，
+  /// 按 [orderedFolderIds] 的顺序重排（文件夹管理拖拽）。传入的是**完整顺序**，
   /// 不是增量交换；`watchWithCounts` 会在写完后推出新顺序。
   Future<Either<Failure, Unit>> reorder(List<String> orderedFolderIds);
 }

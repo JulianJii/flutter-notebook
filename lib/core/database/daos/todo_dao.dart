@@ -17,7 +17,7 @@ class TodoDao extends DatabaseAccessor<AppDatabase> with _$TodoDaoMixin {
 
   /// 全量订阅，未完成置顶、同组内 `createdAt DESC`。
   ///
-  /// `isDone ASC` 让已完成沉到列表底部（P2 的「已完成 N」折叠分组靠这条顺序免费
+  /// `isDone ASC` 让已完成沉到列表底部（待办的「已完成 N」折叠分组靠这条顺序免费
   /// 得到「已完成在后」，Screen 只切分不重排）。**不加 `limit` / 搜索 / 排序参数**
   /// —— 排序规则只有一种，给它开参数是纯仪式。
   ///

@@ -30,7 +30,7 @@ class _MockCreateNote extends Mock implements CreateNoteUseCase {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// 与 P1 基线**完全一致**的视口，全项目统一（见 TASK-035 §2）。
+/// 与笔记列表基线**完全一致**的视口，全项目统一（见 TASK-035 §2）。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
   size: Size(360, 778),
@@ -38,10 +38,10 @@ const TestEnvironment goldenEnv = TestEnvironment(
   platform: TargetPlatform.android,
 );
 
-/// ⚠️ 固定常量 —— `DateTime.now()` 会让基线每天都不一样。D3 的「10月3日 6:40」。
+/// ⚠️ 固定常量 —— `DateTime.now()` 会让基线每天都不一样。笔记详情稿的「10月3日 6:40」。
 final DateTime _fixed = DateTime(2026, 10, 3, 6, 40);
 
-/// D3 原样形态：**空标题 + 有正文**（5 段 = 35 字）。
+/// 笔记详情稿原样形态：**空标题 + 有正文**（5 段 = 35 字）。
 final Note _d3Note = Note(
   id: 'n1',
   title: '',
@@ -52,7 +52,7 @@ final Note _d3Note = Note(
 
 /// 复刻 `app_router.dart` 的 `/notes` 分支（**不复用 `routerProvider`**）。
 /// 套一层 `/notes` 父路由是为了让 `context.pop()` 有上一页可退。
-/// ⚠️ 不套 `NotesShell` / `AppBottomNav`：P3 是二级 Push 页，D3 无底部导航。
+/// ⚠️ 不套 `NotesShell` / `AppBottomNav`：笔记详情是二级 Push 页，笔记详情稿无底部导航。
 GoRouter _router() => GoRouter(
   initialLocation: '/notes/n1',
   routes: <RouteBase>[
@@ -85,17 +85,17 @@ void main() {
     registerFallbackValue(const AppSettings.defaults());
   });
 
-  testGoldenWidgets('P3 笔记详情 — D3 原样形态（空标题 + 有正文）', (tester) async {
+  testGoldenWidgets('笔记详情 —笔记详情稿原样形态（空标题 + 有正文）', (tester) async {
     final get = _MockGetNote();
     when(() => get('n1')).thenAnswer((_) async => Right(_d3Note));
     final update = _MockUpdateNote();
     when(() => update(any())).thenAnswer((_) async => Right(_d3Note));
     final create = _MockCreateNote();
     when(() => create(any())).thenAnswer((_) async => Right(_d3Note));
-    // P3 读 `settingsProvider` 的「文字大小」（TASK-047）→ 必须 override 到
+    // 笔记详情读 `settingsProvider` 的「文字大小」（TASK-047）→ 必须 override 到
     // Repository，否则会撞上测试环境里未实现的 `sharedPreferencesProvider`。
     // 基线锁的是**默认档**（`textScale = normal` → 系数 1.0），故此处的
-    // `AppSettings.defaults()` 就是 D3 的对照值。
+    // `AppSettings.defaults()` 就是笔记详情稿的对照值。
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),

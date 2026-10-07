@@ -51,7 +51,7 @@ void main() {
       );
     });
 
-    testWidgets('count 为 null 时不画计数（P4 把这一位换成了拖动图标）', (tester) async {
+    testWidgets('count 为 null 时不画计数（文件夹管理把这一位换成了拖动图标）', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const FolderRow(
@@ -93,7 +93,7 @@ void main() {
         _wrap(const FolderRow(name: '闻声笔记', count: 1, isSelected: true)),
       );
 
-      // 15sp x 1.4 + 16x2 = 53（D4 实测 ~60，未写死）。
+      // 15sp x 1.4 + 16x2 = 53（文件夹管理稿实测 ~60，未写死）。
       expect(tester.getSize(find.byType(FolderRow)).height, closeTo(53.0, 1));
       expect(find.byType(AppCard), findsOneWidget);
     });

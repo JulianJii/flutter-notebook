@@ -72,7 +72,7 @@ void main() {
     final folderRepo = MockFolderRepository();
     when(
       () => folderRepo.watchWithCounts(),
-      // `value([])` 而不是 `empty()`：P1 等文件夹流首次出值才建 TabController。
+      // `value([])` 而不是 `empty()`：笔记列表等文件夹流首次出值才建 TabController。
     ).thenAnswer((_) => Stream<List<FolderWithCount>>.value(const []));
     final todoRepo = MockTodoRepository();
     when(
@@ -164,8 +164,8 @@ void main() {
     expect(shell.branches, hasLength(2));
   });
 
-  group('P5 路由接线（TASK-046）', () {
-    test('ADR A8：P5 只在一条路径下注册（无 /notes/settings 双注册）', () {
+  group('设置路由接线（TASK-046）', () {
+    test('ADR A8：设置只在一条路径下注册（无 /notes/settings 双注册）', () {
       final router = newContainer().read(routerProvider);
       // 顶层 GoRoute（root navigator）
       expect(
@@ -175,7 +175,7 @@ void main() {
             .length,
         1,
       );
-      // 递归扫进 Shell 的子路由，确保没有第二处把 P5 挂到别的路径
+      // 递归扫进 Shell 的子路由，确保没有第二处把设置挂到别的路径
       final paths = <String>[];
       void walk(List<RouteBase> routes) {
         for (final route in routes) {
@@ -190,7 +190,7 @@ void main() {
       expect(paths.where((p) => p.endsWith('settings')), <String>['/settings']);
     });
 
-    testWidgets('/settings 渲染真实 P5，而非占位页', (tester) async {
+    testWidgets('/settings 渲染真实设置，而非占位页', (tester) async {
       final router = newContainer().read(routerProvider);
       await tester.pumpWidget(app(router));
       await tester.pumpAndSettle();
@@ -203,7 +203,7 @@ void main() {
       expect(find.text('/settings'), findsNothing);
     });
 
-    testWidgets('P5 点返回回到 P1（返回目标是 /notes，不是 pop 空栈）', (tester) async {
+    testWidgets('设置点返回回到笔记列表（返回目标是 /notes，不是 pop 空栈）', (tester) async {
       final router = newContainer().read(routerProvider);
       await tester.pumpWidget(app(router));
       await tester.pumpAndSettle();
@@ -246,7 +246,7 @@ void main() {
       return router;
     }
 
-    testWidgets('启动即笔记 Shell：真实 P1 Screen + 底部 2 Tab', (tester) async {
+    testWidgets('启动即笔记 Shell：真实笔记列表 Screen + 底部 2 Tab', (tester) async {
       await pumpApp(tester);
 
       expect(find.byType(NotesShell), findsOneWidget);
@@ -273,7 +273,7 @@ void main() {
     });
     testWidgets('底部导航切 Tab：选中态跟随，点已选中的 Tab 不跳回', (tester) async {
       final router = await pumpApp(tester);
-      // 按标签定位而不是按 InkWell 下标：P1 真实 Screen 自己也含多个 InkWell。
+      // 按标签定位而不是按 InkWell 下标：笔记列表真实 Screen 自己也含多个 InkWell。
       final todoTab = find.descendant(
         of: find.byType(AppBottomNav),
         matching: find.text('待办'),
@@ -308,7 +308,7 @@ void main() {
       expect(navTop, greaterThan(0));
     });
 
-    testWidgets('P3 是 root 层二级页：底部导航只在 Tab 主页出现', (tester) async {
+    testWidgets('笔记详情是 root 层二级页：底部导航只在 Tab 主页出现', (tester) async {
       final router = await pumpApp(tester);
 
       router.go('/notes/some-id');
@@ -323,7 +323,7 @@ void main() {
       expect(find.byType(AppBottomNav), findsOneWidget);
     });
 
-    testWidgets('二级页返回：详情页 pop 回 P1，不抛 nothing to pop', (tester) async {
+    testWidgets('二级页返回：详情页 pop 回笔记列表，不抛 nothing to pop', (tester) async {
       final router = await pumpApp(tester);
 
       // 列表进入详情走 `push`（见 `note_list_screen.dart` 的 `openNote`），

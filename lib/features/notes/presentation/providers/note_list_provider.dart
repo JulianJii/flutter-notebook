@@ -10,7 +10,7 @@ part 'note_list_provider.g.dart';
 /// 订阅笔记列表。参数族按 [NoteQuery] 定位：相同 query 复用同一个 stream，
 /// 不同 query 各自独立（依赖 `NoteQuery` 的值相等，见 `note_query.dart`）。
 ///
-/// 排序**不在 provider 里注入**：调用方（P1，`NoteListScreen`）用
+/// 排序**不在 provider 里注入**：调用方（笔记列表，`NoteListScreen`）用
 /// [withAppNoteSort] 把偏好的排序填进 `NoteQuery.sort` 再传进来。理由有二：
 /// 一是本 provider 保持零偏好依赖（Phase 4 的东西不因 Phase 7 变质），
 /// 二是「哪个 query 在看」由页面决定，provider 无从判断该不该改排序。
@@ -24,7 +24,7 @@ Stream<List<Note>> noteList(Ref ref, NoteQuery query) {
   return ref.watch(watchNotesUseCaseProvider).call(query);
 }
 
-/// P5「选择排序方式」→ `NoteQuery.sort`。
+/// 设置「选择排序方式」→ `NoteQuery.sort`。
 ///
 /// ⚠️ **两个 feature 各有一个同名 `NoteSort`**（`AppNoteSort` 在 `settings`，
 /// `NoteSort` 在 `notes`）：features 之间零互相 import（`R2`），而 `NoteSort`

@@ -7,7 +7,7 @@ import 'package:mynote/features/todos/domain/usecases/update_todo_params.dart';
 /// 更新待办（改标题或勾选状态）。业务规则：`todoId` 非空、标题 trim 后非空。
 ///
 /// 校验用 `trim()`，**存回 trim 后的值**。
-/// ⛔ **不校验标题长度**（与 `CreateTodoUseCase` 同理，D2 是单行卡片）。
+/// ⛔ **不校验标题长度**（与 `CreateTodoUseCase` 同理，待办稿是单行卡片）。
 class UpdateTodoUseCase {
   const UpdateTodoUseCase(this._repository);
 

@@ -5,7 +5,7 @@ import 'package:mynote/core/database/daos/todo_dao.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
 
-/// 待办的本地数据源。D2 是一张平铺列表：⛔ 无筛选、无搜索、无分页、无排序入口
+/// 待办的本地数据源。待办稿是一张平铺列表：⛔ 无筛选、无搜索、无分页、无排序入口
 /// （`created_at DESC` 在 [TodoDao] 的 SQL 里排完，这里不二次排序）。
 abstract class TodoLocalDataSource {
   /// 订阅全量待办。

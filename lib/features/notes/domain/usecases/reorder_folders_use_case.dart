@@ -2,9 +2,9 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
 
-/// 按用户拖拽后的顺序重排文件夹（P4 的拖动图标）。
+/// 按用户拖拽后的顺序重排文件夹（文件夹管理的拖动图标）。
 ///
-/// ⛔ **不校验顺序的合法性**（是否覆盖全部 id）：唯一的调用方是 P4，它给的就是
+/// ⛔ **不校验顺序的合法性**（是否覆盖全部 id）：唯一的调用方是文件夹管理，它给的就是
 /// `folderProvider` 当前那一列的完整顺序。在这里查一遍列表 = 多发一次查询换一个
 /// 上层本就成立的前提。
 /// ⛔ **不做「顺序没变就不写」的短路**：`n` 是两位数的文件夹数，一次 `batch` 比

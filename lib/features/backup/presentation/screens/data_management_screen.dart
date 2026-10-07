@@ -14,7 +14,7 @@ import 'package:material_ui/material_ui.dart';
 
 /// 数据与同步页（`/settings/data`）：导出 / 导入 / WebDAV 三个入口。
 ///
-/// 与 P5、主题页同形态：root 层二级页，整屏盖住 Shell，不渲染 `AppBottomNav`。
+/// 与设置、主题页同形态：root 层二级页，整屏盖住 Shell，不渲染 `AppBottomNav`。
 /// 全部由 `AppTopBar` / `AppSectionHeader` / `AppCard` / `AppListTile` /
 /// `AppSwitchRow` 拼装，不造新视觉。
 class DataManagementScreen extends ConsumerWidget {

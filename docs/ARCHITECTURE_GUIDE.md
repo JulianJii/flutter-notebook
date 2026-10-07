@@ -87,9 +87,9 @@ class NoteRepositoryImpl implements NoteRepository {
 
 **Notifier 示例：**
 ```dart
-class NoteEditor extends Notifier<NoteEditorState> {
+class ExampleNotifier extends Notifier<ExampleState> {
   @override
-  NoteEditorState build() => const NoteEditorState();
+  ExampleState build() => const ExampleState();
 
   Future<void> save(Note note) async {
     state = state.copyWith(isSaving: true);

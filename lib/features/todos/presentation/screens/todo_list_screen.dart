@@ -16,12 +16,12 @@ import '../providers/todo_list_provider.dart';
 import '../widgets/todo_card.dart';
 import '../widgets/todo_reminder_sheet.dart';
 
-/// P2 待办列表（D2）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
+/// 待办列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// 与 P1（`NoteListScreen`）结构同构，两处**故意**不同：
-/// 1. 顶栏右侧**只有 1 个** `settings` 图标 —— D2 上没有 `folder`，说明「顶栏按钮集
-///    随页面变化，非全局固定」（`UI-IMPLEMENTATION-SPEC.md` §4 P2）。⛔ 别照抄 P1 的 2 个。
-/// 2. 本页**无分类 chip / 无搜索 / 无排序入口** —— D2 明确「本页无」。
+/// 与笔记列表（`NoteListScreen`）结构同构，两处**故意**不同：
+/// 1. 顶栏右侧**只有 1 个** `settings` 图标 ——待办稿上没有 `folder`，说明「顶栏按钮集
+///   随页面变化，非全局固定」（`UI-IMPLEMENTATION-SPEC.md` §4 待办）。⛔ 别照抄笔记列表的 2 个。
+/// 2. 本页**无分类 chip / 无搜索 / 无排序入口** ——待办稿明确「本页无」。
 ///
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（`TASK-008`）。
 /// 本 Screen 只为 FAB 定位引用 `kBottomNavContentHeight`。
@@ -55,12 +55,12 @@ class TodoListScreen extends ConsumerWidget {
               children: <Widget>[
                 AppTopBar(
                   showDivider: false,
-                  // 页面标题在顶栏内（与 P1 一致）：标题与右侧图标同处一行。
+                  // 页面标题在顶栏内（与笔记列表一致）：标题与右侧图标同处一行。
                   title: Text(
                     l10n.todos,
-                    // `scaled(1)` —— P2 **不接** P5 的「文字大小」：D2 上没有这一行
-                    // 的消费方（`ARCHITECTURE-DESIGN.md` §4 的取值来源表只列了 P1
-                    // 卡片与 P3 正文）。跟着放大会改动 P2 的 golden 基线。
+                    // `scaled(1)` ——待办 **不接** 设置的「文字大小」：待办稿上没有这一行
+                    // 的消费方（`ARCHITECTURE-DESIGN.md` §4 的取值来源表只列了笔记列表
+                    // 卡片与笔记详情正文）。跟着放大会改动待办的 golden 基线。
                     style: context.textStyles.displayTitle
                         .scaled(1)
                         .copyWith(color: context.colors.textPrimary),
@@ -77,7 +77,7 @@ class TodoListScreen extends ConsumerWidget {
                     AppIconButton(
                       icon: AppIcons.settings,
                       // tooltip 传 l10n：`AppIconButton` 的 tooltip 是无障碍必需，
-                      // 不是装饰（D1~D5 稿上都没有文字标签）。
+                      // 不是装饰（笔记列表稿~设置稿上都没有文字标签）。
                       tooltip: l10n.settings,
                       onPressed: () => context.push(AppRoutes.settings),
                     ),
@@ -98,7 +98,7 @@ class TodoListScreen extends ConsumerWidget {
               ],
             ),
             // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
-            // 后者的 z 序在 `bottomNavigationBar` 之下，而 D2 里 FAB 明确叠在
+            // 后者的 z 序在 `bottomNavigationBar` 之下，而待办稿里 FAB 明确叠在
             // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
             Positioned(
               // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
@@ -116,10 +116,9 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
-  /// 新建待办。**弹窗视觉无稿（Q7 / Q13）**：与 P4「新建文件夹」同一套
+  /// 新建待办。**弹窗视觉无稿**：与文件夹管理「新建文件夹」同一套
   /// `showDialog` + Material 默认样式，⛔ 不建 `AppDialog` / `AppBottomSheet`
-  /// （§8的「不建」清单）。
-  /// Q13 / Q34 → docs/OPEN-DESIGN-QUESTIONS.md（弹窗与 Snackbar 沿用 Material 默认）。
+  /// （§8的「不建」清单）；失败提示沿用 `AppUtils.showSnackBar`。
   ///
   /// 空标题校验在 `CreateTodoUseCase`（返回 `InputFailure`），页面不重复判断。
   /// 成功不需要 `ref.invalidate`：drift watch 推新行，`todoListProvider` 自建。
@@ -149,7 +148,7 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
-  /// 编辑待办（Q21 的编辑入口）：改标题，或从同一个弹窗里删除。
+  /// 编辑待办：改标题，或从同一个弹窗里删除。
   ///
   /// 勾选**不在**这里做 —— 卡片左侧的复选框才是勾选入口，弹窗里再放一个会出现
   /// 两个能改同一字段的地方，`todoOverridesProvider` 的乐观回滚也就无从判断
@@ -212,7 +211,7 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
-  /// 清除全部已完成（Q21 定稿的第二个入口，与编辑弹窗里的单条删除并列）。
+  /// 清除全部已完成（与编辑弹窗里的单条删除并列）。
   ///
   /// 成功后 `collapse()`：已空的分隔行不该留在展开态。
   Future<void> _clearCompleted(BuildContext context, WidgetRef ref) async {
@@ -236,7 +235,7 @@ class TodoListScreen extends ConsumerWidget {
   }
 
   /// 二次确认弹窗。删除单条与清除全部共用同一形状（弹窗视觉无稿，沿用 Material
-  /// 默认形态，与 P3 / P4 一致，故不抽 `AppDialog`）。
+  /// 默认形态，与笔记详情 / 文件夹管理一致，故不抽 `AppDialog`）。
   ///
   /// 返回 true = 确认，false / null（点外面）= 取消。
   Future<bool?> _confirm(
@@ -312,10 +311,10 @@ class TodoListScreen extends ConsumerWidget {
   }
 
   /// 勾选回写。**只调 provider**：回滚逻辑是 `todoOverridesProvider` 的事
-  /// （`ARCHITECTURE-DESIGN.md` §6.2 P2），Screen 不重复实现、也不自己改列表。
+  /// （`ARCHITECTURE-DESIGN.md` §6.2 待办），Screen 不重复实现、也不自己改列表。
   ///
   /// 落库失败时 provider 已回滚，这里补一句 Snackbar —— 静默回滚会让用户以为
-  /// 勾上了（Q33 / Q34：Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`）。
+  /// 勾上了（Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`）。
   Future<void> _toggle(
     BuildContext context,
     WidgetRef ref,
@@ -357,15 +356,14 @@ class _TodoList extends StatelessWidget {
 
   final void Function(Todo todo, bool value) onChanged;
 
-  /// 点卡片本体 → 编辑弹窗。Q21 原先留空是因为「点卡片语义无稿」，现在编辑入口
-  /// 落地，卡片点击就该落到它上面。
+  /// 点卡片本体 → 编辑弹窗。
   final void Function(Todo todo) onEdit;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    // Q31 只落地本轮新增的这处空状态：内联 3 行，与 `RecentlyDeletedScreen` 的
-    // 既有写法逐字一致，⛔ 不抽 `AppEmptyView`（§8「不建」清单）。
+    // 空状态内联 3 行，与 `RecentlyDeletedScreen` 的既有写法逐字一致，
+    // ⛔ 不抽 `AppEmptyView`（§8「不建」清单）。
     if (active.isEmpty && done.isEmpty) {
       return Center(
         child: Text(
@@ -383,7 +381,7 @@ class _TodoList extends StatelessWidget {
     final itemCount = doneStart + (expanded ? done.length : 0);
 
     return ListView.separated(
-      // 行间距沿用 D1 的 `gridRow`(12dp) —— D2 只有 1 张卡，间距无稿，但同 App
+      // 行间距沿用笔记列表稿的 `gridRow`(12dp) ——待办稿只有 1 张卡，间距无稿，但同 App
       // 统一间距比另开一个只被一处用的值便宜。
       padding: _padding(context),
       itemCount: itemCount,
@@ -413,8 +411,8 @@ class _TodoList extends StatelessWidget {
     );
   }
 
-  /// 底部留白 = 底部导航高 + 12dp + 安全区，与 P1 / P3 同一约定（D1 实测卡片
-  /// 曾被底栏直接裁切）。D2 只有 1 张卡看不出裁切，但 FAB 会压住空区域 ——
+  /// 底部留白 = 底部导航高 + 12dp + 安全区，与笔记列表 / 笔记详情同一约定（笔记列表稿实测卡片
+  /// 曾被底栏直接裁切）。待办稿只有 1 张卡看不出裁切，但 FAB 会压住空区域 ——
   /// 不为「看不到」而省掉。
   EdgeInsets _padding(BuildContext context) => EdgeInsets.fromLTRB(
     AppSpacing.pageH,

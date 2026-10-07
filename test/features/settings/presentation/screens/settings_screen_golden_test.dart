@@ -14,7 +14,7 @@ import 'package:zoloto/zoloto.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// 与 P1 / P2 / P3 / P4 四份基线同一视口，便于横向比对。
+/// 与笔记列表 / 待办 / 笔记详情 / 文件夹管理四份基线同一视口，便于横向比对。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
   size: Size(360, 778),
@@ -25,7 +25,7 @@ const TestEnvironment goldenEnv = TestEnvironment(
 void main() {
   setUpAll(() => registerFallbackValue(const AppSettings.defaults()));
 
-  testGoldenWidgets('P5 设置 — 默认档（文字大小「默认」/ 按编辑日期 / 宫格模式）', (tester) async {
+  testGoldenWidgets('设置 — 默认档（文字大小「默认」/ 按编辑日期 / 宫格模式）', (tester) async {
     final repo = _MockSettingsRepository();
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),

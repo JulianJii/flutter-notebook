@@ -28,7 +28,7 @@ class _MockFolderRepository extends Mock implements FolderRepository {}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// D1 基准视口（1080px = 360dp）。P1 / P3 / P2 三份基线共用同一个，
+/// 笔记列表稿基准视口（1080px = 360dp）。笔记列表 / 笔记详情 / 待办三份基线共用同一个，
 /// 便于横向比对；`pixelRatio = 1.0` 让 1 dp = 1 物理像素。
 const TestEnvironment goldenEnv = TestEnvironment(
   name: 'light',
@@ -39,7 +39,7 @@ const TestEnvironment goldenEnv = TestEnvironment(
 
 DateTime _d(int m, int d) => DateTime(2026, m, d);
 
-/// 覆盖 D1 的 4 种卡片形态：正常摘要 / 空摘要占位文案 / 纯数字标题 / 多行长摘要。
+/// 覆盖笔记列表稿的 4 种卡片形态：正常摘要 / 空摘要占位文案 / 纯数字标题 / 多行长摘要。
 /// ⚠️ 全部常量 —— `DateTime.now()` 会让基线每天都不一样。
 final List<Note> _notes = <Note>[
   Note(
@@ -99,7 +99,7 @@ final List<FolderWithCount> _folders = <FolderWithCount>[
 ];
 
 /// 复刻 `app_router.dart` 的 `StatefulShellRoute` 结构（**不复用 `routerProvider`** ——
-/// 它带全局 override，是 golden 噪声）。带上 `NotesShell` 才能让基线覆盖 D1 的
+/// 它带全局 override，是 golden 噪声）。带上 `NotesShell` 才能让基线覆盖笔记列表稿的
 /// 完整页面形态（含底部 2 Tab）与 TASK-034 的 FAB 定位决策。
 GoRouter _router() => GoRouter(
   initialLocation: AppRoutes.notes,
@@ -143,7 +143,7 @@ void main() {
     registerFallbackValue(const AppSettings.defaults());
   });
 
-  testGoldenWidgets('P1 笔记列表 — 有数据态', (tester) async {
+  testGoldenWidgets('笔记列表 — 有数据态', (tester) async {
     final noteRepo = _MockNoteRepository();
     when(
       () => noteRepo.watch(any()),
@@ -152,10 +152,10 @@ void main() {
     when(
       () => folderRepo.watchWithCounts(),
     ).thenAnswer((_) => Stream<List<FolderWithCount>>.value(_folders));
-    // P1 读 `settingsProvider`（TASK-047）→ 必须 override 到 Repository，否则
+    // 笔记列表读 `settingsProvider`（TASK-047）→ 必须 override 到 Repository，否则
     // 撞上测试环境里未实现的 `sharedPreferencesProvider`。基线锁的是**默认档**
     // （`noteSort = editedDesc` / `noteLayout = grid` / `textScale = normal`
-    // → 系数 1.0），故 `AppSettings.defaults()` 就是 D1 的对照态。
+    // → 系数 1.0），故 `AppSettings.defaults()` 就是笔记列表稿的对照态。
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),

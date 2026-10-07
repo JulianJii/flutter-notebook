@@ -3,7 +3,7 @@ import 'package:mynote/core/ui/app_card.dart';
 import 'package:mynote/core/ui/app_section_header.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 一个设置分组 = **卡外标题 + 一张白卡**。P5 / 主题页 / 数据与同步页 /
+/// 一个设置分组 = **卡外标题 + 一张白卡**。设置 / 主题页 / 数据与同步页 /
 /// WebDAV 配置页共用。
 ///
 /// 此前这 20 行在四个页面里各抄了一份（`_Group`），新增第五个设置页时会变成

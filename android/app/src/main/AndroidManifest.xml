@@ -34,6 +34,13 @@
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <!-- 待办提醒的定时通知接收器（插件 v16 起不再自带，必须 app 声明）。
+             ⚠️ 这里刻意不声明 ScheduledNotificationBootReceiver：重启后重排提醒
+             是有意不做（见 ReminderScheduler 类注释），少一条权限少一个崩溃点。 -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"/>
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

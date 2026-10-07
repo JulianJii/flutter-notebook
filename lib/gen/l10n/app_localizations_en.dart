@@ -225,9 +225,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGroupQuick => 'Quick actions';
 
   @override
-  String get settingsGroupReminder => 'Reminders';
-
-  @override
   String get settingsGroupOther => 'Other';
 
   @override
@@ -250,13 +247,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsNoteLayout => 'Note list layout';
-
-  @override
-  String get settingsStrongReminder => 'Strong reminder';
-
-  @override
-  String get settingsStrongReminderDesc =>
-      'Keeps ringing even when silent or do not disturb is on';
 
   @override
   String get settingsTextScaleSmall => 'Small';
@@ -322,12 +312,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsThemeDark => 'Dark';
-
-  @override
-  String get settingsSwitchOn => 'On';
-
-  @override
-  String get settingsSwitchOff => 'Off';
 
   @override
   String get notesSearchHint => 'Search notes';

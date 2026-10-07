@@ -37,12 +37,11 @@ void main() {
       );
     });
 
-    test('往返一致：save(X) -> load() == X（7 字段逐字段相等）', () async {
+    test('往返一致：save(X) -> load() == X（6 字段逐字段相等）', () async {
       const x = AppSettings(
         textScale: TextScaleLevel.xLarge,
         noteSort: AppNoteSort.titleAsc,
         noteLayout: NoteLayout.list,
-        strongReminder: true,
         locale: 'en',
         themeMode: AppThemeMode.dark,
         colorScheme: AppColorScheme.violet,
@@ -69,13 +68,12 @@ void main() {
       final real = await realRepo({
         settingsStorageKey:
             '{"schemaVersion":1,"textScale":123,"noteSort":"NOPE",'
-            '"strongReminder":"yes","noteLayout":"list","themeMode":"light"}',
+            '"noteLayout":"list","themeMode":"light"}',
       });
       final result = await real.load();
       result.fold((f) => fail('应为 Right，实际 $f'), (s) {
         expect(s.textScale, TextScaleLevel.normal, reason: '类型错 → 默认');
         expect(s.noteSort, AppNoteSort.editedDesc, reason: 'enum 名不认识 → 默认');
-        expect(s.strongReminder, isFalse, reason: '类型错 → 默认');
         expect(s.noteLayout, NoteLayout.list, reason: '正确的字段必须保留');
         expect(s.themeMode, AppThemeMode.light, reason: '正确的字段必须保留');
       });
@@ -91,16 +89,16 @@ void main() {
 
     test('未知 schemaVersion -> 逐字段回落，不删 key、不整份重置', () async {
       final real = await realRepo({
-        settingsStorageKey: '{"schemaVersion":99,"strongReminder":true}',
+        settingsStorageKey: '{"schemaVersion":99,"noteLayout":"list"}',
       });
       final result = await real.load();
       result.fold((f) => fail('应为 Right，实际 $f'), (s) {
-        expect(s.strongReminder, isTrue, reason: '认识的字段照读');
+        expect(s.noteLayout, NoteLayout.list, reason: '认识的字段照读');
         expect(s.textScale, TextScaleLevel.normal);
       });
       (await real.load()).fold(
         (f) => fail('应为 Right，实际 $f'),
-        (s) => expect(s.strongReminder, isTrue, reason: 'key 没被删'),
+        (s) => expect(s.noteLayout, NoteLayout.list, reason: 'key 没被删'),
       );
     });
 
@@ -143,19 +141,6 @@ void main() {
       final real = await realRepo({settingsStorageKey: rawJson});
       return (await real.load()).fold((f) => fail('应为 Right，实际 $f'), (s) => s);
     }
-
-    test('strongReminder 写成 String', () async {
-      final s = await loadWith(
-        '{"textScale":"large","noteSort":"editedAsc","noteLayout":"list",'
-        '"strongReminder":"yes","themeMode":"dark","locale":"en"}',
-      );
-      expect(s.strongReminder, isFalse, reason: '坏字段回落默认');
-      expect(s.textScale, TextScaleLevel.large);
-      expect(s.noteSort, AppNoteSort.editedAsc);
-      expect(s.noteLayout, NoteLayout.list);
-      expect(s.themeMode, AppThemeMode.dark);
-      expect(s.locale, 'en');
-    });
 
     test('textScale 写成 int', () async {
       final s = await loadWith('{"textScale":1,"noteSort":"titleAsc"}');
@@ -255,7 +240,6 @@ void main() {
       expect(d.textScale, TextScaleLevel.normal);
       expect(d.noteSort, AppNoteSort.editedDesc);
       expect(d.noteLayout, NoteLayout.grid);
-      expect(d.strongReminder, isFalse);
       expect(d.locale, isNull, reason: '跟系统');
       expect(d.themeMode, AppThemeMode.system);
       expect(d.colorScheme, AppColorScheme.amber);

@@ -12,7 +12,7 @@ void main() {
   setUp(() async {
     db = AppDatabase.memory();
     dao = FolderDao(db);
-    // D4 实测口径：词声笔记 1 条 + 未分类 154 条 = 全部 155 条。
+    // 文件夹管理稿实测口径：词声笔记 1 条 + 未分类 154 条 = 全部 155 条。
     // 这里用小数字复现同一关系：f1 有 1 条，f0 有 0 条，2 条未分类。
     await dao.insert(
       NoteFoldersCompanion.insert(
@@ -102,7 +102,7 @@ void main() {
     expect(await dao.watchUncategorizedCount().first, 3);
   });
 
-  test('deleteById + nullOutFolder 同事务 → 笔记落未分类（Q37）', () async {
+  test('deleteById + nullOutFolder 同事务 → 笔记落未分类', () async {
     // 真实编排在 TASK-021 的 datasource（db.transaction）；这里只验两个原子操作各自可用。
     await db.transaction(() async {
       await dao.nullOutFolder('f1');

@@ -38,11 +38,11 @@ abstract class FolderLocalDataSource {
   /// 开头 —— 映射成 `InputFailure` 是 Repository 的活。
   Future<NoteFolder> rename(String folderId, String name);
 
-  /// 删除：删文件夹行 + 其下笔记 `folder_id` 置 NULL，**同一个事务**（Q37）。
+  /// 删除：删文件夹行 + 其下笔记 `folder_id` 置 NULL，**同一个事务**。
   /// 命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String folderId);
 
-  /// 按给定顺序重排（P4 拖拽）。[orderedFolderIds] 是 UI 上的完整最终顺序，
+  /// 按给定顺序重排（文件夹管理拖拽）。[orderedFolderIds] 是 UI 上的完整最终顺序，
   /// 实现把它整表写成 `sort_index = 0..n-1`。
   Future<void> reorder(List<String> orderedFolderIds);
 }
@@ -108,7 +108,7 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
   Future<void> delete(String folderId) => _guard(() async {
     await _db.transaction(() async {
       // 显式置 NULL 与外键 ON DELETE SET NULL 冗余：原子性不寄托在某个
-      // drift / SQLite 版本的外键行为上（Q37 问的正是这个）。
+      // drift / SQLite 版本的外键行为上。
       await _dao.nullOutFolder(folderId);
       final removed = await _dao.deleteById(folderId);
       if (removed == 0) {

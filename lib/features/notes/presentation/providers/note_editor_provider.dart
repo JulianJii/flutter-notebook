@@ -18,13 +18,14 @@ const String kNewNoteId = 'new';
 
 const Object _unset = Object();
 
-/// P3 的草稿状态：一次读 + 局部更新，**不需要 stream**（`ARCHITECTURE-DESIGN.md`
-/// §6.2 P3）。用 `AsyncNotifier` 让 loading / error 零成本。
+/// 笔记详情的草稿状态：一次读 + 局部更新，**不需要 stream**（`ARCHITECTURE-DESIGN.md`
+/// §6.2 笔记详情）。用 `AsyncNotifier` 让 loading / error 零成本。
 ///
 /// ⛔ **零状态枚举**：loading / error 由 `AsyncValue` 承载，`isDirty` /
 /// `wordCount` / `isNew` 全是派生 getter（§6.3「能派生的一律不存」）。
 class NoteEditorState {
   const NoteEditorState({
+    this.folderId,
     this.draftTitle = '',
     this.draftContent = '',
     this.savedTitle = '',
@@ -32,9 +33,14 @@ class NoteEditorState {
     this.draftBackground,
     this.savedBackground,
     this.createdAt,
-    this.isSaving = false,
     this.lastFailure,
   });
+
+  /// 所属文件夹（null = 未分类）。
+  ///
+  /// `flush()` 必须带上它：`UpdateNoteParams.folderId` 不传就等于清成未分类
+  /// （见该字段的注释），编辑已有笔记会静默「搬出」原文件夹。
+  final String? folderId;
 
   /// 草稿。`TextEditingController` 的值经 `onChanged` 落到这里。
   final String draftTitle;
@@ -56,9 +62,7 @@ class NoteEditorState {
 
   final DateTime? createdAt;
 
-  final bool isSaving;
-
-  /// 最近一次落库失败。**唯一的用户可见失败信号**（Q33 / Q34：Snackbar 视觉无稿，
+  /// 最近一次落库失败。**唯一的用户可见失败信号**（Snackbar 视觉无稿，
   /// 沿用 `AppUtils.showSnackBar`）。
   ///
   /// 为什么不直接用 `flush()` 的返回值：自动保存走 `Timer`，返回值被丢弃 ——
@@ -82,10 +86,11 @@ class NoteEditorState {
     Object? draftBackground = _unset,
     Object? savedBackground = _unset,
     Object? createdAt = _unset,
-    bool? isSaving,
     Object? lastFailure = _unset,
   }) {
     return NoteEditorState(
+      // 落库位置不参与草稿编辑，没有对外 set 方法，copyWith 一律原样带过去。
+      folderId: folderId,
       draftTitle: draftTitle ?? this.draftTitle,
       draftContent: draftContent ?? this.draftContent,
       savedTitle: savedTitle ?? this.savedTitle,
@@ -99,7 +104,6 @@ class NoteEditorState {
       createdAt: identical(createdAt, _unset)
           ? this.createdAt
           : createdAt as DateTime?,
-      isSaving: isSaving ?? this.isSaving,
       lastFailure: identical(lastFailure, _unset)
           ? this.lastFailure
           : lastFailure as Failure?,
@@ -109,7 +113,7 @@ class NoteEditorState {
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 @riverpod
 class NoteEditor extends _$NoteEditor {
@@ -125,14 +129,16 @@ class NoteEditor extends _$NoteEditor {
   /// `update` 一条不存在的记录 → 永远失败，草稿存不进去且无任何提示。
   String? _savedId;
 
+  /// [folderId] 只在 `/notes/new?folder=<id>`（从某个分类页点 + 号）时有值；
+  /// 已有笔记的归属以库为准，由 [build] 自己读出来。
   @override
-  Future<NoteEditorState> build(String noteId) {
+  Future<NoteEditorState> build(String noteId, {String? folderId}) {
     _noteId = noteId;
     // 不取消会「页面已销毁但定时器触发」，写进已 dispose 的 provider。
     ref.onDispose(() => _debounce?.cancel());
 
     if (noteId == kNewNoteId) {
-      return Future.value(const NoteEditorState());
+      return Future.value(NoteEditorState(folderId: folderId));
     }
     return ref
         .read(getNoteUseCaseProvider)(noteId)
@@ -141,6 +147,7 @@ class NoteEditor extends _$NoteEditor {
             // `Failure` 本身就是 `Object`，直接抛即可，`AsyncValue.error` 会承载它。
             (failure) => throw failure,
             (note) => NoteEditorState(
+              folderId: note.folderId,
               draftTitle: note.title,
               draftContent: note.content,
               savedTitle: note.title,
@@ -203,7 +210,7 @@ class NoteEditor extends _$NoteEditor {
     _scheduleSave();
   }
 
-  /// debounce 500ms —— `ARCHITECTURE-DESIGN.md` §4 P3 / §8.6 明确的值。
+  /// debounce 500ms —— `ARCHITECTURE-DESIGN.md` §4 笔记详情 / §8.6 明确的值。
   /// 不用 debounce 包：加一个依赖不值 3 行 `Timer`。
   void _scheduleSave() {
     _debounce?.cancel();
@@ -217,13 +224,13 @@ class NoteEditor extends _$NoteEditor {
     final current = state.value;
     if (current == null || !current.isDirty) return;
 
-    // 刻意**不**写 `isSaving: true` 的中间态：它没有任何 UI 消费方（Q24），却会让
-    // 每次自动保存多一次整页重建。等真做保存指示器时再在这一行加回去。
     final result = current.isNew
         ? await ref.read(createNoteUseCaseProvider)(
             CreateNoteParams(
               title: current.draftTitle,
               content: current.draftContent,
+              // 从哪个分类页进来就落在哪个分类（分类页会把 `?folder=` 带上）。
+              folderId: current.folderId,
               // 先选背景、后写内容：首次落库时把背景一起带上。
               background: current.draftBackground,
             ),
@@ -234,25 +241,26 @@ class NoteEditor extends _$NoteEditor {
               noteId: _savedId ?? _noteId,
               title: current.draftTitle,
               content: current.draftContent,
-            ),
+              // 必填：不传会被当成「移回未分类」，改一个字就把笔记搬出原分类。
+              folderId: current.folderId,
+              ),
           );
 
     // 标题与正文都为空时不做特殊处理：交给 UseCase 的 `InputFailure`，
-    // UI 不重复校验（`ARCHITECTURE-DESIGN.md` §4 P1 链路）。
+    // UI 不重复校验（`ARCHITECTURE-DESIGN.md` §4 笔记列表链路）。
     state = AsyncData(
       result.fold(
         // 失败：草稿保留、`saved*` 不动 → `isDirty` 仍为 true，可再次触发保存。
-        // 失败信号写进 `lastFailure` 供 UI 弹提示（Q33 / Q34）。
+        // 失败信号写进 `lastFailure` 供 UI 弹提示。
         (failure) {
           ref
               .read(taggedLoggerProvider('notes'))
               .w('note save failed', error: failure);
-          return current.copyWith(isSaving: false, lastFailure: failure);
+          return current.copyWith(lastFailure: failure);
         },
         (saved) {
           _savedId ??= saved.id;
           return current.copyWith(
-            isSaving: false,
             savedTitle: saved.title,
             savedContent: saved.content,
             savedBackground: saved.background,

@@ -8,9 +8,9 @@ part of 'note_search_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// P1 的搜索词。
+/// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同 P5 偏好的裁决，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
 /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///
@@ -23,9 +23,9 @@ part of 'note_search_provider.dart';
 @ProviderFor(NoteSearch)
 final noteSearchProvider = NoteSearchProvider._();
 
-/// P1 的搜索词。
+/// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同 P5 偏好的裁决，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
 /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///
@@ -35,9 +35,9 @@ final noteSearchProvider = NoteSearchProvider._();
 /// ponytail: 每键一次全表扫描。超过约 1 万条笔记、输入开始掉帧时，
 /// 加 250ms debounce，或改 FTS5。
 final class NoteSearchProvider extends $NotifierProvider<NoteSearch, String> {
-  /// P1 的搜索词。
+  /// 笔记列表的搜索词。
   ///
-  /// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同 P5 偏好的裁决，
+  /// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
   /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
   /// 那时才需要跨页恢复。
   ///
@@ -75,9 +75,9 @@ final class NoteSearchProvider extends $NotifierProvider<NoteSearch, String> {
 
 String _$noteSearchHash() => r'e7bb19aaa7c6fdf2d185b9872e7200c8d08b4476';
 
-/// P1 的搜索词。
+/// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同 P5 偏好的裁决，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
 /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///

@@ -16,29 +16,28 @@ import '../widgets/create_folder_row.dart';
 import '../widgets/folder_row.dart';
 import 'note_list_screen.dart' show selectedFolderFilter;
 
-/// P4 文件夹管理（D4）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
+/// 文件夹管理。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **行序 =「全部」→ 各真实文件夹 →「未分类」→「新建文件夹」**（D4 实测）。
+/// **行序 =「全部」→ 各真实文件夹 →「未分类」→「新建文件夹」**（文件夹管理稿实测）。
 /// 「全部」与「未分类」**不是文件夹行**（`ARCHITECTURE-DESIGN.md` §5.3），由本页
 /// 合成：「全部」的计数 = 各文件夹 count 之和 + 未分类计数，一行算术、不额外查询。
 ///
-/// **筛选真相源是 URL**（§8.2）：点行只写 `?folder=`，读取侧的 P1 与本页读同一个
+/// **筛选真相源是 URL**（§8.2）：点行只写 `?folder=`，读取侧的笔记列表与本页读同一个
 /// query 参数（[selectedFolderFilter]），因此不需要任何本地 state，返回上一页
 /// 时筛选态自动恢复。
 ///
 /// **可拖项只有真实文件夹**：`ReorderableListView` 的 `header` / `footer` 装
 /// 「全部」「未分类」「新建文件夹」三行固定项，拖动顺序写进库里的 `sort_index`
-/// （覆盖 D4 稿「本页无排序入口」，见 `docs/OPEN-DESIGN-QUESTIONS.md` Q-新2）。
+/// （覆盖文件夹管理稿「本页无排序入口」）。
 ///
-/// ⛔ **不提供重命名 / 删除入口**：无长按菜单、无多选态、顶栏也不画 trash
-/// （Q11 / Q12 未答，trash 语义未知已定：删掉）。
+/// ⛔ **不提供重命名 / 删除入口**：无长按菜单、无多选态、顶栏也不画 trash。
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
 class FolderManagerScreen extends ConsumerWidget {
   const FolderManagerScreen({super.key});
 
-  /// 行间距（D4 实测 ≈8dp）。
+  /// 行间距（文件夹管理稿实测 ≈8dp）。
   ///
-  /// ⚠️ `AppSpacing.gridRow`(12dp) 是 D1 的值，两者不同；8dp 只有 P4 一个调用点，
+  /// ⚠️ `AppSpacing.gridRow`(12dp) 是笔记列表稿的值，两者不同；8dp 只有文件夹管理一个调用点，
   /// 故留在页面内不进 `core/theme/tokens/`（只有一个调用点的值不是 token）。
   static const double rowGap = 8;
 
@@ -57,7 +56,7 @@ class FolderManagerScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final folders = ref.watch(folderProvider).value ?? const [];
     final uncategorized = ref.watch(uncategorizedCountProvider).value ?? 0;
-    // Q31 / Q33 → docs/OPEN-DESIGN-QUESTIONS.md（空 / 加载 / 错误态视觉无稿）
+    // 空 / 加载 / 错误态视觉无稿，由 `AsyncValue` 兜底，不额外建视觉。
     final selected = selectedFolderFilter(
       GoRouterState.of(context).uri.queryParameters,
     );
@@ -74,8 +73,8 @@ class FolderManagerScreen extends ConsumerWidget {
                 icon: AppIcons.back,
                 tooltip: l10n.back,
                 color: context.colors.textPrimary,
-                // P4 是 `/notes` 的子路由，正常是 push 上去的 → `pop` 才能保住
-                // P1 的滚动位置；直接 deep link 进来时栈里没有下层，回退到 P1。
+                // 文件夹管理是 `/notes` 的子路由，正常是 push 上去的 → `pop` 才能保住
+                // 笔记列表的滚动位置；直接 deep link 进来时栈里没有下层，回退到笔记列表。
                 onPressed: () => context.canPop()
                     ? context.pop()
                     : context.go(AppRoutes.notes),
@@ -84,7 +83,7 @@ class FolderManagerScreen extends ConsumerWidget {
                 l10n.folders,
                 style: context.textStyles.topBarTitle,
               ),
-              // D4 顶栏下方**无** 1dp 分隔线（同 P5，按稿关掉）。
+              // 文件夹管理稿顶栏下方**无** 1dp 分隔线（同设置，按稿关掉）。
               showDivider: false,
             ),
             Expanded(
@@ -136,7 +135,7 @@ class FolderManagerScreen extends ConsumerWidget {
                     key: ValueKey<String>(item.folder.id),
                     FolderRow(
                       name: item.folder.name,
-                      // 计数让位给拖动图标（P4 拖拽排序）。
+                      // 计数让位给拖动图标（文件夹管理拖拽排序）。
                       isSelected: selected == item.folder.id,
                       onTap: () => context.go(
                         '${AppRoutes.notes}?'
@@ -184,9 +183,9 @@ class FolderManagerScreen extends ConsumerWidget {
     }, (_) {});
   }
 
-  /// 新建文件夹。**弹窗视觉无稿（Q13）**：用 `showDialog` + Material 默认样式，
+  /// 新建文件夹。**弹窗视觉无稿**：用 `showDialog` + Material 默认样式，
   /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
-  /// Q13 / Q34 → docs/OPEN-DESIGN-QUESTIONS.md（弹窗与 Snackbar 沿用 Material 默认）
+  /// 失败提示同样沿用 `AppUtils.showSnackBar`。
   ///
   /// 校验（空名 / 超长 / 重名）全在 `CreateFolderUseCase` 里，页面只负责把
   /// `InputFailure` 的文案弹出来。

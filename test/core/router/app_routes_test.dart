@@ -19,7 +19,7 @@ void main() {
       expect(paths.toSet(), hasLength(paths.length), reason: '存在重复路径');
     });
 
-    test('initial 指向 P1 笔记列表', () {
+    test('initial 指向笔记列表', () {
       expect(AppRoutes.initial, AppRoutes.notes);
     });
 

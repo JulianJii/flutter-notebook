@@ -18,13 +18,13 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// D5 的 4 个分组标题（「云服务」已按产品要求移除，「最近删除」并入「其他」）。
-const List<String> _groupTitles = <String>['笔记样式', '快捷功能', '提醒', '其他'];
+/// 设置稿的 3 个分组标题（「云服务」已按产品要求移除，「最近删除」并入「其他」，
+/// 「提醒」随「强提醒」一并移除）。
+const List<String> _groupTitles = <String>['笔记样式', '快捷功能', '其他'];
 
 const List<String> _groupKeys = <String>[
   'section_note_style',
   'section_quick',
-  'section_reminder',
   'section_other',
 ];
 
@@ -51,7 +51,7 @@ void main() {
   });
 
   Future<void> pumpP5(WidgetTester tester) async {
-    // 默认测试视口是 800×600，而 P5 的 5 个分组实测 ≈794dp 高 —— 最后一个分组会
+    // 默认测试视口是 800×600，而设置的 3 个分组加起来超过 600dp 高 —— 最后一个分组会
     // 落在 ListView 的 cacheExtent 之外**根本不被构建**，几何与计数断言会误报。
     // 这里给一个能容下整页的视口（比例 1.0，与 golden 基线同一约定）。
     tester.view.physicalSize = const Size(800, 1000);
@@ -87,8 +87,8 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  group('D5 结构', () {
-    testWidgets('渲染出 4 个分组，顺序为 笔记样式 → 快捷功能 → 提醒 → 其他', (tester) async {
+  group('设置稿结构', () {
+    testWidgets('渲染出 3 个分组，顺序为 笔记样式 → 快捷功能 → 其他', (tester) async {
       await pumpP5(tester);
 
       for (final title in _groupTitles) {
@@ -165,21 +165,21 @@ void main() {
       expect(find.byType(AppDivider), findsNWidgets(6));
     });
 
-    testWidgets('4 张分组卡，10 行', (tester) async {
+    testWidgets('3 张分组卡，9 行', (tester) async {
       await pumpP5(tester);
 
-      expect(find.byType(AppCard), findsNWidgets(4));
-      expect(find.byType(AppListTile), findsNWidgets(10));
+      expect(find.byType(AppCard), findsNWidgets(3));
+      expect(find.byType(AppListTile), findsNWidgets(9));
       expect(find.byType(Switch), findsNothing, reason: '开关已改为选择器行');
       // 6 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议）
-      // + 4 个选择器行（文字大小 / 排序 / 布局 / 强提醒）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
+      // + 3 个选择器行（文字大小 / 排序 / 布局）。
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(9));
     });
   });
 
-  /// ⚠️ **4 个**而不是 5 个：主题（明暗 + 配色）已迁到独立的主题页，
-  /// P5 上只剩跳转入口行（见 `theme_screen_test.dart`）。
-  group('4 个可写行走 settingsProvider', () {
+  /// ⚠️ **3 个**而不是 4 个：主题（明暗 + 配色）已迁到独立的主题页，
+  /// 设置上只剩跳转入口行（见 `theme_screen_test.dart`）。
+  group('3 个可写行走 settingsProvider', () {
     testWidgets('3 个选择器行显示当前值文案，不是枚举英文名', (tester) async {
       await pumpP5(tester);
 
@@ -252,33 +252,10 @@ void main() {
       expect(find.text('默认'), findsNothing);
     });
 
-    testWidgets('强提醒：初始值取自 provider，选「开启」后写回', (tester) async {
-      await pumpP5(tester);
-
-      expect(container.read(settingsProvider).strongReminder, isFalse);
-      expect(find.text('关闭'), findsOneWidget, reason: '行尾显示当前值');
-      expect(
-        find.text('持续响铃且静音和勿扰状态下仍有效'),
-        findsOneWidget,
-        reason: 'D5 强提醒行有副标题',
-      );
-
-      await tester.tap(find.byKey(const Key('select_strong_reminder')));
-      await tester.pumpAndSettle();
-      expect(find.byType(BottomSheet), findsOneWidget);
-
-      await tester.tap(find.text('开启'));
-      await tester.pumpAndSettle();
-
-      expect(container.read(settingsProvider).strongReminder, isTrue);
-      expect(find.byType(BottomSheet), findsNothing);
-      expect(find.text('开启'), findsOneWidget);
-    });
-
     testWidgets('主题行是跳转入口：chevron 行，不再弹选项单', (tester) async {
       await pumpP5(tester);
 
-      // 三档的选择已迁到主题页，P5 上只留入口。
+      // 三档的选择已迁到主题页，设置上只留入口。
       expect(find.byKey(const Key('select_theme_mode')), findsNothing);
       expect(find.byKey(const Key('chevron_theme')), findsOneWidget);
       expect(
@@ -297,7 +274,7 @@ void main() {
   });
 
   group('chevron 行', () {
-    /// 仍不可点的一行（Q14：速记二级页无稿）。
+    /// 仍不可点的一行（速记二级页无稿）。
     const String deadKey = 'chevron_quick_capture';
 
     /// 已接线的 4 行（主题 / 最近删除 / 隐私政策 / 用户协议）。
@@ -326,7 +303,7 @@ void main() {
           matching: find.byType(InkWell),
         ),
         findsNothing,
-        reason: '$deadKey 包了 InkWell → 可点，违反 Q14',
+        reason: '$deadKey 包了 InkWell → 可点，但速记二级页无稿不该可点',
       );
       for (final key in wiredKeys) {
         expect(
@@ -374,7 +351,7 @@ void main() {
       // `.theme` 不出现 —— 「深色模式」行接上后 `settings.themeMode` 合法命中，
       // 断言随之撤销；主题缺席的约束改由上面 `change_theme` 一项守住。
       expect(source, isNot(contains('.notifications')));
-      // Q14 的不可点行只剩「速记」；最近删除 / 隐私政策 / 用户协议已接线。
+      // 不可点行只剩「速记」；最近删除 / 隐私政策 / 用户协议已接线。
       expect(source, contains('AppRoutes.theme'));
       expect(source, contains('AppRoutes.noteTrash'));
       expect(source, contains('AppRoutes.privacyPolicy'));
@@ -386,7 +363,7 @@ void main() {
       );
     });
 
-    test('P5 不再自带分组 Widget，改用 core/ui 的 AppSettingsGroup', () {
+    test('设置不再自带分组 Widget，改用 core/ui 的 AppSettingsGroup', () {
       final source = File(
         'lib/features/settings/presentation/screens/settings_screen.dart',
       ).readAsStringSync();

@@ -159,7 +159,7 @@ void main() {
     expect(find.byType(AppIconButton), findsNWidgets(2));
     expect(find.byIcon(AppIcons.settings), findsOneWidget);
     expect(find.byIcon(AppIcons.trash), findsOneWidget);
-    expect(find.byIcon(AppIcons.folder), findsNothing, reason: 'D2 顶栏无 folder');
+    expect(find.byIcon(AppIcons.folder), findsNothing, reason: '待办稿顶栏无 folder');
   });
 
   testWidgets('点 settings 图标跳 /settings', (tester) async {
@@ -383,7 +383,7 @@ void main() {
     );
   });
 
-  group('Q21 编辑 / 删除入口（点卡片）', () {
+  group('编辑 / 删除入口（点卡片）', () {
     Future<void> pumpOneTodo(
       WidgetTester tester, {
       required GoRouter router,
@@ -575,7 +575,7 @@ void main() {
     });
   });
 
-  group('Q21 已完成折叠分组 + 清除已完成', () {
+  group('已完成折叠分组 + 清除已完成', () {
     Future<void> pumpMixed(
       WidgetTester tester, {
       required GoRouter router,

@@ -15,16 +15,17 @@ part 'settings_provider.g.dart';
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
-/// 异步的，`AsyncNotifier` 会让 P5 必然先渲染一帧 loading，且 P1/P3 读偏好也得
+/// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
 /// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
+///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
 ///
-/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
+/// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
+/// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
-/// （比如用户离开 P1）松手时把 state 丢掉 —— 下次进 P5 读到的又是默认值，
+/// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 @Riverpod(keepAlive: true)
 class Settings extends _$Settings {
@@ -64,10 +65,7 @@ class Settings extends _$Settings {
   void setNoteLayout(NoteLayout value) =>
       _write(state.copyWith(noteLayout: value));
 
-  void setStrongReminder(bool value) =>
-      _write(state.copyWith(strongReminder: value));
-
-  /// 主题模式。P5「深色模式」行的唯一写入口。
+  /// 主题模式。设置「深色模式」行的唯一写入口。
   ///
   /// 之前主题读的是 `main.dart` 的 `themeModeProvider`（`build()` 写死 `system`
   /// 且不落盘），用户的选择一重建就没了。现统一从 [AppSettings.themeMode] 走，
@@ -81,7 +79,7 @@ class Settings extends _$Settings {
       _write(state.copyWith(colorScheme: value));
 
   // ⛔ **仍不建 `setLocale`**：语言有独立的 `persistentLocaleProvider`（它自己写盘），
-  // 在这里再存一份就成了双真相源。要在 P5 加语言行时先决定谁是真源。
+  // 在这里再存一份就成了双真相源。要在设置加语言行时先决定谁是真源。
 
   /// 先同步改 state（UI 立即响应），再 fire-and-forget 落盘。
   void _write(AppSettings next) {
@@ -106,7 +104,7 @@ class Settings extends _$Settings {
 ///
 /// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
 /// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的 P1 卡片 / P3 正文）只
+/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
 /// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
 ///
 /// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
@@ -114,7 +112,7 @@ class Settings extends _$Settings {
 @Riverpod(keepAlive: true)
 double textScaleFactor(Ref ref) =>
     switch (ref.watch(settingsProvider).textScale) {
-      // Q14 → docs/OPEN-DESIGN-QUESTIONS.md（4 档倍率无稿，暂取线性值）
+      // 4 档倍率无稿，暂取线性值。
       TextScaleLevel.small => 0.875,
       TextScaleLevel.normal => 1.0,
       TextScaleLevel.large => 1.125,

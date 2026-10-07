@@ -19,11 +19,11 @@ import '../providers/note_search_provider.dart';
 import '../widgets/note_card.dart';
 import '../widgets/note_masonry_grid.dart';
 
-/// P1 笔记列表（D1）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
+/// 笔记列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **三条 P5 偏好都在这里落地**（`ARCHITECTURE-DESIGN.md` §4 的取值来源表）：
+/// **三条设置偏好都在这里落地**（`ARCHITECTURE-DESIGN.md` §4 的取值来源表）：
 /// `noteSort` 进 [NoteQuery]、`noteLayout` 选排布、`textScale` 逐层透传给
-/// 字阶。三者都经 provider 读，改完 P5 回来即生效，不重启 App；
+/// 字阶。三者都经 provider 读，改完设置回来即生效，不重启 App；
 /// ⛔ **一律不进 URL**（§8.2：偏好不是导航状态）。
 ///
 /// **分类栏与左右滑动用官方组件**（本页新增）：分类栏 = [TabBar]，内容 =
@@ -36,7 +36,7 @@ import '../widgets/note_masonry_grid.dart';
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（`TASK-008`）。
 /// 本 Screen 只为 FAB 定位引用 `kBottomNavContentHeight`。
 /// ⛔ **不直接 watch Repository / UseCase**：数据链路固定为
-/// Screen → `noteListProvider` → UseCase → Repository（`ARCHITECTURE-DESIGN.md` §4 P1）。
+/// Screen → `noteListProvider` → UseCase → Repository（`ARCHITECTURE-DESIGN.md` §4 笔记列表）。
 class NoteListScreen extends ConsumerStatefulWidget {
   const NoteListScreen({super.key});
 
@@ -112,7 +112,7 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
       settingsProvider.select((s) => (s.noteSort, s.noteLayout)),
     );
     final textScale = ref.watch(textScaleFactorProvider);
-    // Q1 落地：搜索 + 筛选 + 排序三者叠加进同一个 [NoteQuery]（`props` 已覆盖
+    // 搜索 + 筛选 + 排序三者叠加进同一个 [NoteQuery]（`props` 已覆盖
     // 三个字段，任一变化都会重新订阅）。
     final search = ref.watch(noteSearchProvider);
     // 空串归一为 null：datasource 也会归一（`_normalizeTerm`），但那里归一是给所有
@@ -176,7 +176,7 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
               ],
             ),
             // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
-            // 后者的 z 序在 `bottomNavigationBar` 之下，而 D1 里 FAB 明确叠在
+            // 后者的 z 序在 `bottomNavigationBar` 之下，而笔记列表稿里 FAB 明确叠在
             // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
             Positioned(
               // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
@@ -186,9 +186,10 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
                   AppSpacing.pageH -
                   AppSpacing.sm -
                   30,
-              // Q6 按「落地页 = P3 空白编辑器」落地：`/notes/new` 与
+              // 落地页 = 笔记详情空白编辑器：`/notes/new` 与
               // `NoteEditorProvider(kNewNoteId)` 共用编辑页，停止输入 500ms 自动落库。
-              child: AppFab(onPressed: () => context.push(AppRoutes.noteNew)),
+              // 「全部」与「未分类」没有真实归属，`folderId` 传 null → 落到未分类。
+              child: AppFab(onPressed: () => context.push(AppRoutes.noteNewPath(folderId: newNoteFolderId(filter)))),
             ),
           ],
         ),
@@ -234,9 +235,9 @@ class _CategoryPage extends ConsumerWidget {
     // `pop` 无内容（"There is nothing to pop"），且列表滚动位置丢失。
     void openNote(Note note) => context.push(AppRoutes.noteDetailPath(note.id));
 
-    // 搜索无结果：内联 3 行，与 `RecentlyDeletedScreen` / P2 的空状态写法逐字一致。
+    // 搜索无结果：内联 3 行，与 `RecentlyDeletedScreen` / 待办的空状态写法逐字一致。
     // ⛔ 只在**有搜索词**时提示 —— 无搜索词的空列表是「还没笔记」，是另一回事
-    // （Q31 无稿，见 docs/OPEN-DESIGN-QUESTIONS.md）。⛔ 不抽 `AppEmptyView`。
+    // （无搜索词的空列表不建空态视觉）。⛔ 不抽 `AppEmptyView`。
     if (items.isEmpty && searchTerm != null) {
       return Center(
         child: Text(
@@ -255,8 +256,7 @@ class _CategoryPage extends ConsumerWidget {
         onTapNote: openNote,
       ),
       // 列表与宫格共用同一张 NoteCard —— 两种布局的**唯一**区别是排布方式，
-      // 卡片内容逐字一致（Q14 补稿后只校这一处）。
-      // Q14 → docs/OPEN-DESIGN-QUESTIONS.md（列表模式视觉无稿，按单列通栏实现）
+      // 卡片内容逐字一致（列表模式视觉无稿，按单列通栏实现）。
       NoteLayout.list => _NoteList(
         notes: items,
         textScale: textScale,
@@ -274,7 +274,7 @@ const double _kTabHeight = 32;
 /// 全圆角把两端收成半圆，视觉半径远大于 16dp 的观感，显得过圆。
 const double _kTabRadius = 8;
 
-/// P1 分类栏。[TabBar]（官方组件）—— 可横向滚动、点选即切换，与 [TabBarView]
+/// 笔记列表分类栏。[TabBar]（官方组件）—— 可横向滚动、点选即切换，与 [TabBarView]
 /// 共用一个 [TabController]，左右滑动开箱即用。
 ///
 /// **选中态靠色差分层的「白块」**：本 App 无阴影（[AppElevation.card] = 0），
@@ -283,8 +283,8 @@ const double _kTabRadius = 8;
 /// ⛔ 不沿用 `chipSelectedBg`（`#EFEFEF`）：它与页底 `#F2F2F2` 只差 3 个色阶，
 /// 选中态在灰底上等于消失（这正是旧 TabBar 看起来「没选中」的原因）。
 ///
-/// Q18 → docs/OPEN-DESIGN-QUESTIONS.md（tab 顺序真相源在 `folder_dao` 的
-/// `ORDER BY created_at ASC`，⛔ 不在 Dart 层重排）
+/// tab 顺序真相源在 `folder_dao` 的 `ORDER BY`（全部恒首位、文件夹按
+/// `sortIndex / createdAt`、未分类恒最后），⛔ 不在 Dart 层重排
 class _CategoryTabBar extends StatelessWidget {
   const _CategoryTabBar({
     required this.controller,
@@ -296,7 +296,7 @@ class _CategoryTabBar extends StatelessWidget {
 
   final List<FolderWithCount> folders;
 
-  /// P5「文字大小」的排版系数，透传给每个 tab 的标签。
+  /// 设置「文字大小」的排版系数，透传给每个 tab 的标签。
   final double textScale;
 
   @override
@@ -308,7 +308,7 @@ class _CategoryTabBar extends StatelessWidget {
 
     return TabBar(
       controller: controller,
-      // 文件夹数量不可预知（P4 能无限新建），横向滚动是零成本的兜底。
+      // 文件夹数量不可预知（文件夹管理能无限新建），横向滚动是零成本的兜底。
       isScrollable: true,
       // ⛔ 必填：`isScrollable: true` 时默认 `startOffset` 会在左侧留一段空白，
       // 与稿的左对齐页面边距不符。
@@ -356,6 +356,13 @@ String filterLocation(String? filter) => switch (filter) {
   final id => '${AppRoutes.notes}?${AppRoutes.folderQueryKey}=$id',
 };
 
+/// 筛选值 → 新建笔记的落地文件夹。null = 未分类。
+///
+/// ⛔ 哨兵 [kFolderFilterUncategorized] 不是文件夹 id，它是「筛出 folderId 为空
+/// 的笔记」的查询指令，写进新建笔记就成了把 uuid 当 id。
+String? newNoteFolderId(String? filter) =>
+    filter == null || filter == kFolderFilterUncategorized ? null : filter;
+
 /// URL → `NoteQuery` 的纯映射。SQL 语义由 domain 表达，Screen 只翻 URL。
 ///
 /// [searchTerm] 独立于文件夹筛选：两者是**叠加**关系（搜「标题含 X 且在文件夹 Y
@@ -369,14 +376,14 @@ NoteQuery noteQueryFor(String? filter, {String? searchTerm}) =>
       final id => NoteQuery.of(id).copyWith(searchTerm: searchTerm),
     };
 
-/// P1 顶栏：左对齐页面标题「笔记」+ 右对齐图标组。
+/// 笔记列表顶栏：左对齐页面标题「笔记」+ 右对齐图标组。
 ///
 /// 标题**在顶栏内**（不另起一行大标题）：顶栏本来就是页面标题的位置，标题与
 /// 图标同处一行，下方内容区整块上移。
 class _TopBar extends StatelessWidget {
   const _TopBar({required this.textScale});
 
-  /// P5「文字大小」的排版系数。标题原本是页面大标题时就接 `textScale`
+  /// 设置「文字大小」的排版系数。标题原本是页面大标题时就接 `textScale`
   /// （`AppLargeTitle`），移进顶栏后语义不变 —— 仍是同一条「文字大小」的消费方。
   final double textScale;
 
@@ -391,11 +398,11 @@ class _TopBar extends StatelessWidget {
             .scaled(textScale)
             .copyWith(color: context.colors.textPrimary),
       ),
-      // 图标照 D1 画出来；`folder` / `settings` 的目标页由 TASK-050 / 046 落地，
+      // 图标照笔记列表稿画出来；`folder` / `settings` 的目标页由 TASK-050 / 046 落地，
       // 现在点进去是占位页 —— 预期行为，不因「目标页还没建」就删掉图标
-      // （`ROADMAP.md` §4.3）。D1 顶栏无搜索入口（Q1），不加。
+      // （`ROADMAP.md` §4.3）。笔记列表稿顶栏无搜索入口，不加。
       // tooltip 传 l10n：`AppIconButton` 的 tooltip 是无障碍必需，不是装饰
-      // （D1~D5 稿上没有文字标签）。
+      // （笔记列表稿~设置稿上没有文字标签）。
       actions: <Widget>[
         AppIconButton(
           icon: AppIcons.folder,
@@ -416,13 +423,13 @@ class _TopBar extends StatelessWidget {
 /// 太大；提成文件私有常量而不是散落字面量（同 `settings_screen` 的同类约定）。
 const double _kSearchSuffixSize = 18;
 
-/// P1 搜索框。**页面内私有**（同 `_CategoryTabBar`，不进 `core/ui`）：只 P1 用。
+/// 笔记列表搜索框。**页面内私有**（同 `_CategoryTabBar`，不进 `core/ui`）：只笔记列表用。
 ///
-/// ⛔ **不建 `AppTextField`**（同 P3 标题栏的裁决）：搜索框的边框 / 底色无稿，
+/// ⛔ **不建 `AppTextField`**（同笔记详情标题栏的裁决）：搜索框的边框 / 底色无稿，
 /// 按「无边框纯文本」写一条 `InputDecoration` 就够，不值得为它开一个组件。
 ///
 /// **controller 的唯一用途是「清空」**：没有 controller 时清空输入框只能靠换
-/// `key` 强制重建，那会把焦点一起丢掉。它随 State 正常 dispose，与 P3 / P4 弹窗
+/// `key` 强制重建，那会把焦点一起丢掉。它随 State 正常 dispose，与笔记详情 / 文件夹管理弹窗
 /// 里「不能 dispose controller」那条约束不是一回事（那是 dialog future 提前完成
 /// 导致的退场动画问题）。
 class _SearchField extends ConsumerStatefulWidget {
@@ -500,8 +507,8 @@ class _SearchFieldState extends ConsumerState<_SearchField> {
   }
 }
 
-/// P5「笔记列表布局 = 列表」时的单列排布。**页面内私有**（不进 `core/ui`）：
-/// 带 `Note` 业务字段，且与 P1 的 tab 栏同理只此一处用
+/// 设置「笔记列表布局 = 列表」时的单列排布。**页面内私有**（不进 `core/ui`）：
+/// 带 `Note` 业务字段，且与笔记列表的 tab 栏同理只此一处用
 /// （`DEVELOPMENT-GUIDELINES.md` §7.3）。
 ///
 /// ⛔ **不建自己的卡片**：直接复用 [NoteCard]，两种布局的卡片内容必须逐字一致。
@@ -522,7 +529,7 @@ class _NoteList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Q31 → docs/OPEN-DESIGN-QUESTIONS.md（无搜索词的空列表不建空态视觉）
+    // 无搜索词的空列表不建空态视觉。
     if (notes.isEmpty) return const SizedBox.shrink();
 
     return ListView.separated(

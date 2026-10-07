@@ -16,16 +16,17 @@ part of 'settings_provider.dart';
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
-/// 异步的，`AsyncNotifier` 会让 P5 必然先渲染一帧 loading，且 P1/P3 读偏好也得
+/// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
 /// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
+///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
 ///
-/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
+/// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
+/// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
-/// （比如用户离开 P1）松手时把 state 丢掉 —— 下次进 P5 读到的又是默认值，
+/// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 
 @ProviderFor(Settings)
@@ -39,16 +40,17 @@ final settingsProvider = SettingsProvider._();
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
-/// 异步的，`AsyncNotifier` 会让 P5 必然先渲染一帧 loading，且 P1/P3 读偏好也得
+/// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
 /// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
+///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
 ///
-/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
+/// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
+/// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
-/// （比如用户离开 P1）松手时把 state 丢掉 —— 下次进 P5 读到的又是默认值，
+/// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   /// 全局用户偏好。**唯一的读入口**。
@@ -59,16 +61,17 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   /// 破坏面就被限制在这一个文件里。
   ///
   /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
-  /// 异步的，`AsyncNotifier` 会让 P5 必然先渲染一帧 loading，且 P1/P3 读偏好也得
+  /// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
   /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
   /// microtask 里读一次持久化值，读到后 state 自动重建
-  ///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
+  ///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
   ///
-  /// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
+  /// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
+  /// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
   ///
   /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
   ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
-  /// （比如用户离开 P1）松手时把 state 丢掉 —— 下次进 P5 读到的又是默认值，
+  /// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
   /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
   SettingsProvider._()
     : super(
@@ -97,7 +100,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'89984c2d32b02f05ea847cba93d66c862adbd5e5';
+String _$settingsHash() => r'311c87818484166bddab6a54ccc903a883d1c7b1';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///
@@ -107,16 +110,17 @@ String _$settingsHash() => r'89984c2d32b02f05ea847cba93d66c862adbd5e5';
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
-/// 异步的，`AsyncNotifier` 会让 P5 必然先渲染一帧 loading，且 P1/P3 读偏好也得
+/// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
 /// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 P5 段）。
+///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
 ///
-/// Q33 → docs/OPEN-DESIGN-QUESTIONS.md（偏好保存失败只记日志，不回滚不弹 Snackbar）。
+/// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
+/// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
 /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
 ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
-/// （比如用户离开 P1）松手时把 state 丢掉 —— 下次进 P5 读到的又是默认值，
+/// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 
 abstract class _$Settings extends $Notifier<AppSettings> {
@@ -141,7 +145,7 @@ abstract class _$Settings extends $Notifier<AppSettings> {
 ///
 /// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
 /// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的 P1 卡片 / P3 正文）只
+/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
 /// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
 ///
 /// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
@@ -154,7 +158,7 @@ final textScaleFactorProvider = TextScaleFactorProvider._();
 ///
 /// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
 /// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的 P1 卡片 / P3 正文）只
+/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
 /// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
 ///
 /// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
@@ -167,7 +171,7 @@ final class TextScaleFactorProvider
   ///
   /// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
   /// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-  /// 不认识 `TextScaleLevel`。消费方（TASK-047 的 P1 卡片 / P3 正文）只
+  /// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
   /// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
   ///
   /// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp

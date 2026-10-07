@@ -5,20 +5,20 @@ import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// D4 列表末尾的「新建文件夹」行动作。唯一调用方是 P4（TASK-050）。
+/// 文件夹管理稿列表末尾的「新建文件夹」行动作。唯一调用方是文件夹管理（TASK-050）。
 ///
 /// 与 [FolderRow] 同为 `AppCard` 白卡，但布局是**垂直居中**的一列：琥珀色 ⊕ 在上、
 /// 文案在下，实测略高 ≈72dp。无描边、无箭头、无计数。
 ///
-/// ⛔ **只把 [onTap] 往上抛**：新建文件夹的输入弹窗无设计稿（**Q13**），
-/// 由P4 决定，本组件不建 `AppDialog` / `AppBottomSheet`。
+/// ⛔ **只把 [onTap] 往上抛**：新建文件夹的输入弹窗无设计稿，由文件夹管理决定，
+/// 本组件不建 `AppDialog` / `AppBottomSheet`。
 class CreateFolderRow extends StatelessWidget {
   const CreateFolderRow({super.key, this.onTap});
 
   /// 点击回调。null → 不可点（不包 `InkWell`，无水波纹）。
   final VoidCallback? onTap;
 
-  /// 图标与文案的间距。6dp（D4 实测）。测试按它断言垂直排布。
+  /// 图标与文案的间距。6dp（文件夹管理稿实测）。测试按它断言垂直排布。
   static const double iconGap = AppSpacing.actionRowIconGap;
 
   @override

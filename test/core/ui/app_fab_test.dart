@@ -66,7 +66,7 @@ void main() {
     expect(pressed, 1);
   });
 
-  testWidgets('AppCheckbox value=true 不崩（D2 checked 无稿）', (tester) async {
+  testWidgets('AppCheckbox value=true 不崩（待办稿 checked 无稿）', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light(),

@@ -67,7 +67,7 @@ class NoteQuery extends Equatable {
 
   final NoteSort sort;
 
-  /// 搜索词。无搜索 UI（**Q1**），数据层先备好一行 `LIKE`。
+  /// 搜索词。数据层备好一行 `LIKE`（参数化，非 FTS5）。
   ///
   /// ⚠️ 空串归一化在 datasource（`TASK-021`）：`''` 会生成 `LIKE '%%'`
   /// 匹配全部，实体不替上层做判断。

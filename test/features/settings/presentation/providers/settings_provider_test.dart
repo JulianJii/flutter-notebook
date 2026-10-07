@@ -45,7 +45,6 @@ void main() {
     const stored = AppSettings(
       textScale: TextScaleLevel.large,
       noteLayout: NoteLayout.list,
-      strongReminder: true,
     );
     when(
       () => repo.load(),
@@ -89,16 +88,16 @@ void main() {
   });
 
   test('set* 调用一次 save，传入完整对象且只改一个字段', () async {
-    container.read(settingsProvider.notifier).setStrongReminder(true);
+    container.read(settingsProvider.notifier).setNoteLayout(NoteLayout.list);
     await settle();
 
     final captured =
         verify(() => repo.save(captureAny())).captured.single as AppSettings;
-    expect(captured.strongReminder, isTrue);
+    expect(captured.noteLayout, NoteLayout.list);
     // 关键回归：set* 只改一个字段，其余**不能**被 copyWith 清空。
     expect(captured.textScale, AppSettings.defaults().textScale);
     expect(captured.noteSort, AppSettings.defaults().noteSort);
-    expect(captured.noteLayout, AppSettings.defaults().noteLayout);
+    expect(captured.themeMode, AppSettings.defaults().themeMode);
   });
 
   test('setColorScheme 立即改 state，且不动 themeMode（两个维度互不覆盖）', () async {
@@ -113,20 +112,18 @@ void main() {
     await settle();
   });
 
-  test('4 个 setter 各改各的字段', () async {
+  test('3 个 setter 各改各的字段', () async {
     final n = container.read(settingsProvider.notifier);
     n.setTextScale(TextScaleLevel.xLarge);
     n.setNoteSort(AppNoteSort.createdDesc);
     n.setNoteLayout(NoteLayout.list);
-    n.setStrongReminder(true);
     await settle();
 
     final s = container.read(settingsProvider);
     expect(s.textScale, TextScaleLevel.xLarge);
     expect(s.noteSort, AppNoteSort.createdDesc);
     expect(s.noteLayout, NoteLayout.list);
-    expect(s.strongReminder, isTrue);
-    verify(() => repo.save(any())).called(4);
+    verify(() => repo.save(any())).called(3);
   });
 
   test('设置与当前相同的值不触发写入', () async {

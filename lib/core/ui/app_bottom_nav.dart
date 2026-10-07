@@ -4,11 +4,10 @@ import 'package:mynote/core/theme/tokens/app_radius.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:material_ui/material_ui.dart';
 
-// Q35 → docs/OPEN-DESIGN-QUESTIONS.md
 /// 底部标签栏（2 项）。**纯视觉组件：只管画，不管导航。**
 ///
 /// 导航由调用方（`NotesShell`）通过 [onTap] 回调处理 —— 见
-/// `ARCHITECTURE-DESIGN.md` §7.1。取值来自 `UI-IMPLEMENTATION-SPEC.md` §4 P1 BottomNav。
+/// `ARCHITECTURE-DESIGN.md` §7.1。取值来自 `UI-IMPLEMENTATION-SPEC.md` §4 笔记列表 BottomNav。
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     required this.items,
@@ -17,7 +16,7 @@ class AppBottomNav extends StatelessWidget {
     super.key,
   });
 
-  /// 2 项（D1/D2：笔记 / 待办）。等宽平分，不支持 3 项以上的设计稿依据。
+  /// 2 项（笔记列表稿/待办稿：笔记 / 待办）。等宽平分，不支持 3 项以上的设计稿依据。
   final List<AppBottomNavItem> items;
 
   /// 当前选中项下标。选中态由它推导，不放在 item 上。
@@ -63,11 +62,11 @@ class AppBottomNav extends StatelessWidget {
   }
 }
 
-/// 导航栏内容区高度，不含底部安全区。D1/D2 实测 ≈64dp。
+/// 导航栏内容区高度，不含底部安全区。笔记列表稿/待办稿实测 ≈64dp。
 ///
 /// **必须是顶层公开常量**：不能是 `AppBottomNav` 的静态成员，也不能叫 `_barHeight`。
-/// TASK-033（`NoteMasonryGrid` 底部留白）/ TASK-034（P1 的 FAB 定位）/
-/// TASK-042（P2 的 FAB 定位）三处都按它算「底部导航顶部 + 12dp」，且都是
+/// TASK-033（`NoteMasonryGrid` 底部留白）/ TASK-034（笔记列表的 FAB 定位）/
+/// TASK-042（待办的 FAB 定位）三处都按它算「底部导航顶部 + 12dp」，且都是
 /// **不带类名前缀**地引用。私有常量跨文件不可见、类成员常量需前缀，
 /// 两种都会逼下游各复制一份字面量 64 然后互相漂移。
 /// 改这一处即可，别在下游再定义同值常量。
@@ -77,7 +76,7 @@ const double kBottomNavContentHeight = 64;
 class AppBottomNavItem {
   const AppBottomNavItem({required this.icon, required this.label});
 
-  /// 24dp 线性图标（2dp 描边、圆端点）。D1/D2 底部导航。
+  /// 24dp 线性图标（2dp 描边、圆端点）。笔记列表稿/待办稿底部导航。
   final IconData icon;
 
   /// 标签文案。调用方传已本地化的字符串（`AppLocalizations.of(context).xxx`）。
@@ -110,7 +109,7 @@ class _BottomNavItem extends StatelessWidget {
   static const double _iconSize = 20;
 
   /// 图标与标签的间距。§2.5 未给；28 + 2 + 16(12sp 行高) = 46，在 64dp 栏内
-  /// 上下各留 9。⚠️ 待按 D1/D2 截图量取复核。该值不建 token（只有一个调用点）。
+  /// 上下各留 9。⚠️ 待按笔记列表稿/待办稿截图量取复核。该值不建 token（只有一个调用点）。
   static const double _labelGap = 2;
 
   @override

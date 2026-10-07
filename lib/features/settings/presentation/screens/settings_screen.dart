@@ -11,30 +11,30 @@ import 'package:material_ui/material_ui.dart';
 import '../../domain/entities/app_settings.dart';
 import '../providers/settings_provider.dart';
 
-/// P5 设置（D5）。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
+/// 设置。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **9 行 = 5 可写 + 4 chevron**，一一对应 D5 的 5 个区块：
+/// **9 行 = 3 选择器 + 6 chevron**，一一对应设置稿的 3 个区块：
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
 /// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
 /// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
-/// | 快捷功能 | 速记 | chevron，**不可点**（Q14） |
-/// | 提醒 | 强提醒 | 选择器，开启 / 关闭 二选一 |
+/// | 快捷功能 | 速记 | chevron，**不可点**（二级页无稿） |
 /// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
 ///
 /// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
 /// 「最近删除」并入「其他」（回收站页 = `RecentlyDeletedScreen`）。
+/// 「提醒」分组随「强提醒」一并移除：待办稿待办没有日期 / 优先级字段，开关没有作用对象。
 ///
-/// 主题入口是 D5 稿之后补的一行（D5 无主题行，见 `TASK-046` 的 Out of Scope）：
+/// 主题入口是设置稿之后补的一行（设置稿无主题行，见 `TASK-046` 的 Out of Scope）：
 /// 不给入口，`AppSettings.themeMode` / `colorScheme` 就只是永远读不到第二值的字段。
 /// 值的选择在**主题页**（`ThemeScreen`），明暗与配色是两个正交维度。
 ///
-/// ⛔ **不渲染 `AppBottomNav`**：P5 是 root 层的顶层路由（`parentNavigatorKey`），
-/// 整个盖住 Shell，稿上（D5）底部也没有 Tab。
+/// ⛔ **不渲染 `AppBottomNav`**：设置是 root 层的顶层路由（`parentNavigatorKey`），
+/// 整个盖住 Shell，稿上（设置稿）底部也没有 Tab。
 /// ⛔ **不直接 watch Repository / UseCase**：数据链路固定为
 /// Screen → `settingsProvider` → UseCase → Repository。
-/// ⛔ **不建二级页**：值的选择走底部弹层（`_pickOption`），不跳页（Q14 / Q25 未答）。
+/// ⛔ **不建二级页**：值的选择走底部弹层（`_pickOption`），不跳页。
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -53,25 +53,25 @@ class SettingsScreen extends ConsumerWidget {
               leading: AppIconButton(
                 icon: AppIcons.back,
                 tooltip: l10n.back,
-                // D5 的返回箭头是深色，而 `AppIcon` 的默认色是 `outlineControl`
+                // 设置稿的返回箭头是深色，而 `AppIcon` 的默认色是 `outlineControl`
                 // 浅灰（`PROJECT-STATUS.md` §3.10 待办 #2：待按截图统一裁定）。
                 // 这里按稿传色，不改 `core/ui`。
                 color: context.colors.textPrimary,
                 // `pop` 走 Navigator 的返回动画，与 `push` 进入成对；仅当直达
-                // `/settings`（栈里没有下层页，如深链）pop 不掉时，才 `go` 回 P1。
+                // `/settings`（栈里没有下层页，如深链）pop 不掉时，才 `go` 回笔记列表。
                 onPressed: () => context.canPop()
                     ? context.pop()
                     : context.go(AppRoutes.notes),
               ),
-              // 标题居中（形态 B），与 P4 / 回收站 / 协议页同一形态；文案复用底栏
+              // 标题居中（形态 B），与文件夹管理 / 回收站 / 协议页同一形态；文案复用底栏
               // 的 `settings` key，不新增同义 key。
               centerTitle: Text(
                 l10n.settings,
                 style: context.textStyles.topBarTitle,
               ),
-              // D5 顶栏下方**无** 1dp 分隔线（`AppTopBar` 默认画）。
-              // 按 §3.9 待办 #2「各页按实际稿传值」关掉。⚠️ P1 / P2 仍是默认的 true
-              // （D1 / D2 上同样没有这条线），统一收敛归 TASK-051。
+              // 设置稿顶栏下方**无** 1dp 分隔线（`AppTopBar` 默认画）。
+              // 按 §3.9 待办 #2「各页按实际稿传值」关掉。⚠️ 笔记列表 / 待办仍是默认的 true
+              // （笔记列表稿 / 待办稿上同样没有这条线），统一收敛归 TASK-051。
               showDivider: false,
             ),
             Expanded(
@@ -139,26 +139,6 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   AppSettingsGroup(
-                    key: const Key('section_reminder'),
-                    title: l10n.settingsGroupReminder,
-                    children: <Widget>[
-                      _selectTile<bool>(
-                        context,
-                        key: const Key('select_strong_reminder'),
-                        title: l10n.settingsStrongReminder,
-                        subtitle: l10n.settingsStrongReminderDesc,
-                        valueText: _onOffLabel(
-                          l10n,
-                          settings.strongReminder,
-                        ),
-                        options: const <bool>[false, true],
-                        current: settings.strongReminder,
-                        labelOf: (value) => _onOffLabel(l10n, value),
-                        onSelected: notifier.setStrongReminder,
-                      ),
-                    ],
-                  ),
-                  AppSettingsGroup(
                     key: const Key('section_other'),
                     title: l10n.settingsGroupOther,
                     children: <Widget>[
@@ -200,7 +180,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  /// chevron 行。[onTap] 为 null 时保持不可点（只剩「速记」，Q14 二级页无稿）。
+  /// chevron 行。[onTap] 为 null 时保持不可点（只剩「速记」，二级页无稿）。
   Widget _chevronTile(
     BuildContext context, {
     required String title,
@@ -223,7 +203,7 @@ class SettingsScreen extends ConsumerWidget {
 
   /// 右侧「当前值 + 右箭头」行：点一下**弹出选项单**，选中即写回。
   ///
-  /// 「深色模式」/「强提醒」两行原是 `AppSwitchRow`、文字大小 / 排序 / 布局三行原是
+  /// 「深色模式」行原是 `AppSwitchRow`、文字大小 / 排序 / 布局三行原是
   /// stepper（点一下翻转或循环到下一个值）：开关只有两态，`AppThemeMode.system`
   /// 因此永不可达；循环切换则看不见全部可选项。这里统一成选择器 ——
   /// 值由 [options] 全量列出，`current` 只决定勾。
@@ -236,15 +216,11 @@ class SettingsScreen extends ConsumerWidget {
     required String Function(T value) labelOf,
     required ValueChanged<T> onSelected,
     Key? key,
-    String? subtitle,
     bool dividerBefore = false,
   }) {
     return AppListTile(
       key: key,
       title: title,
-      subtitle: subtitle,
-      // 「强提醒」在稿上是 w600，主题行不是（与 `AppSwitchRow.titleWeight` 同源）。
-      titleWeight: subtitle == null ? null : AppSwitchRow.titleWeight,
       trailingValue: valueText,
       trailing: AppIcon(
         icon: AppIcons.chevronRight,
@@ -274,10 +250,10 @@ const double _kRowTrailingIconSize = 20;
 /// 文字大小 → 当前值文案。
 ///
 /// ⛔ **不直接上屏 `TextScaleLevel.name`**：那会显示英文 `xLarge`。
-/// 映射是 P5 专属文案，故放页面内而不进 `core/`（约束 7）。
+/// 映射是设置专属文案，故放页面内而不进 `core/`（约束 7）。
 String _textScaleLabel(AppLocalizations l10n, TextScaleLevel level) =>
     switch (level) {
-      // D5 上默认值显示的是「默认」而不是「标准」→ `normal` 这一档的文案是「默认」。
+      // 设置稿上默认值显示的是「默认」而不是「标准」→ `normal` 这一档的文案是「默认」。
       TextScaleLevel.small => l10n.settingsTextScaleSmall,
       TextScaleLevel.normal => l10n.settingsTextScaleDefault,
       TextScaleLevel.large => l10n.settingsTextScaleLarge,
@@ -303,8 +279,7 @@ String _noteLayoutLabel(AppLocalizations l10n, NoteLayout layout) =>
 /// 选项单：底部弹层，当前项打勾。选中即 `pop(value)`，取消即 `pop(null)`。
 ///
 /// ⛔ 不引第二套选项控件：Material 的 `showModalBottomSheet` + 现成的 `AppListTile`
-/// 已能表达，且字阶 / 内边距与页面内其他行同源（⛔ 不凭空造视觉）。
-/// Q14 → docs/OPEN-DESIGN-QUESTIONS.md（弹层视觉无稿，沿用 Material 默认）。
+/// 已能表达，且字阶 / 内边距与页面内其他行同源（弹层视觉无稿，沿用 Material 默认）。
 Future<T?> _pickOption<T>(
   BuildContext context, {
   required List<T> options,
@@ -335,7 +310,3 @@ Future<T?> _pickOption<T>(
     ),
   );
 }
-
-/// 布尔偏好 → 开 / 关文案。
-String _onOffLabel(AppLocalizations l10n, bool value) =>
-    value ? l10n.settingsSwitchOn : l10n.settingsSwitchOff;

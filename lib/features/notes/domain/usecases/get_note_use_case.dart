@@ -3,7 +3,7 @@ import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 
-/// 读单条笔记。P3 打开时用它初始化草稿。
+/// 读单条笔记。笔记详情打开时用它初始化草稿。
 ///
 /// 「找不到」由 Repository 返回 `Left(CacheFailure(message: 'Note not found: $id'))`
 /// —— **不在这里预检**：预检会让「检查」与「使用」之间出现竞态窗口，

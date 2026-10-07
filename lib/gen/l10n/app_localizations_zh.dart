@@ -220,9 +220,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsGroupQuick => '快捷功能';
 
   @override
-  String get settingsGroupReminder => '提醒';
-
-  @override
   String get settingsGroupOther => '其他';
 
   @override
@@ -245,12 +242,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsNoteLayout => '笔记列表布局';
-
-  @override
-  String get settingsStrongReminder => '强提醒';
-
-  @override
-  String get settingsStrongReminderDesc => '持续响铃且静音和勿扰状态下仍有效';
 
   @override
   String get settingsTextScaleSmall => '小';
@@ -316,12 +307,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsThemeDark => '深色';
-
-  @override
-  String get settingsSwitchOn => '开启';
-
-  @override
-  String get settingsSwitchOff => '关闭';
 
   @override
   String get notesSearchHint => '搜索笔记';

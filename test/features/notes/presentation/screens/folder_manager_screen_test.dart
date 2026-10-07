@@ -111,7 +111,7 @@ void main() {
     expect(items[0].name, '全部');
     expect(items[1].name, '闻声笔记');
     expect(items[2].name, '未分类');
-    // D4 的 1 + 154 = 155。真实文件夹行**没有计数**（那一位是拖动图标）。
+    // 文件夹管理稿的 1 + 154 = 155。真实文件夹行**没有计数**（那一位是拖动图标）。
     expect(items.map((e) => e.count).toList(), <int?>[155, null, 154]);
   });
 

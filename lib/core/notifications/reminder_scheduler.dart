@@ -9,7 +9,7 @@ import 'package:timezone/timezone.dart' as tz;
 /// ⛔ 不复用 `core/notifications/notification_service.dart`：那是推送（FCM）的
 /// 抽象，没有定时能力，且实现是 Debug 空壳。本类是**本地定时通知**，只服务待办。
 ///
-/// ⛔ 不做「重复提醒」/「重启后恢复」：前者 D2 没有入口，后者要原生 boot
+/// ⛔ 不做「重复提醒」/「重启后恢复」：前者待办稿没有入口，后者要原生 boot
 /// receiver + 重排逻辑，收益 < 复杂度（重启后提醒丢失是可接受的当前行为）。
 ///
 /// ⚠️ **失败一律抛出**（平台异常 / `ArgumentError`），不在这里吞也不映射 `Failure`
@@ -32,6 +32,16 @@ class ReminderScheduler {
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(),
+        // 桌面端（开发时最常撞的两个）：插件对每个平台都强制校验 settings，
+        // 少给一个就在 init() 直接抛 ArgumentError。
+        macOS: DarwinInitializationSettings(),
+        windows: WindowsInitializationSettings(
+          appName: 'MyNote',
+          // 跟 android applicationId 对齐；Windows 靠它把 toast 归到本应用
+          appUserModelId: 'com.wode.mynote',
+          // ⚠️ toast 点击回调的标识，**定死**。换掉 = 已弹出的通知点不动。
+          guid: '8f3c1a52-6d47-4b9e-a1c8-5e2f7d306b94',
+        ),
       ),
     );
     _ready = true;
@@ -57,6 +67,16 @@ class ReminderScheduler {
     if (ios != null) {
       return await ios.requestPermissions(alert: true, sound: true) ?? true;
     }
+    // ⛔ 不给 Windows 请求权限：toast 开关在系统「通知」设置里，插件没提供接口，
+    // 这里只能当已授权。代价是「没开通知 → 到点静默不弹」
+    // （同见 `docs/FEATURES.md`「已知限制」）。
+    final macos = _plugin
+        .resolvePlatformSpecificImplementation<
+          MacOSFlutterLocalNotificationsPlugin
+        >();
+    if (macos != null) {
+      return await macos.requestPermissions(alert: true, sound: true) ?? true;
+    }
     return true;
   }
 
@@ -77,6 +97,7 @@ class ReminderScheduler {
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(_channelId, _channelName),
         iOS: DarwinNotificationDetails(),
+        macOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );

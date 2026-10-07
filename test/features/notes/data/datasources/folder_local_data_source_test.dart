@@ -38,7 +38,7 @@ void main() {
     return rows.single.data['folder_id'] as String?;
   }
 
-  test('delete 是原子的：文件夹消失 + 其下笔记落入未分类（Q37）', () async {
+  test('delete 是原子的：文件夹消失 + 其下笔记落入未分类', () async {
     await source.delete('f1');
 
     expect(

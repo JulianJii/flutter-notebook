@@ -50,7 +50,8 @@ class AppColors extends ThemeExtension<AppColors> {
   ///
   /// ⚠️ 中性色**不是**浅色的复制：深底配深字会不可读，故 13 个语义色全部
   /// 另给一套深色值（色板本身由 flex_color_scheme 从 [accent] 派生）。
-  /// Q36 → docs/OPEN-DESIGN-QUESTIONS.md（深色表无稿，按 M3 深色规范反推）
+  /// 数值按 M3 深色规范反推（bg `#121212` / surface `#1E1E1E` / 文字 `#F2F2F2`），
+  /// 拿到深色稿只改本构造函数，`app_theme.dart` 零改动。
   const AppColors.dark({this.accent = kDesignAccent})
     : bg = const Color(0xFF121212),
       surface = const Color(0xFF1E1E1E),
@@ -66,55 +67,55 @@ class AppColors extends ThemeExtension<AppColors> {
       chipSelectedBg = const Color(0xFF2A2A2A),
       textDisabled = const Color(0xFFA0A0A0);
 
-  /// 页面底色（列表页 / 设置页）。D1/D2/D4/D5 卡片外区域。
+  /// 页面底色（列表页 / 设置页）。笔记列表稿/待办稿/文件夹管理稿/设置稿卡片外区域。
   final Color bg;
 
-  /// 卡片与面板底色。D1–D5。
+  /// 卡片与面板底色。笔记列表稿–设置稿。
   final Color surface;
 
-  /// 底部导航「选中」图标底。D1/D2。
+  /// 底部导航「选中」图标底。笔记列表稿/待办稿。
   final Color surfaceInverse;
 
-  /// 大标题、卡片标题、设置项标题、正文。D1–D5。
+  /// 大标题、卡片标题、设置项标题、正文。笔记列表稿–设置稿。
   final Color textPrimary;
 
-  /// 摘要、设置项右侧值、待办副文案。D1/D3/D5。
+  /// 摘要、设置项右侧值、待办副文案。笔记列表稿/笔记详情稿/设置稿。
   final Color textSecondary;
 
-  /// 日期、详情页元信息。D1/D3。
+  /// 日期、详情页元信息。笔记列表稿/笔记详情稿。
   final Color textTertiary;
 
-  /// 详情页「标题」占位符。D3。
+  /// 详情页「标题」占位符。笔记详情稿。
   final Color textPlaceholder;
 
-  /// 设置分组标题。D5。
+  /// 设置分组标题。设置稿。
   final Color textSectionHeader;
 
-  /// FAB、加号、文件夹选中勾、新建文件夹图标、开关 on。D1/D2/D4/D5。
+  /// FAB、加号、文件夹选中勾、新建文件夹图标、开关 on。笔记列表稿/待办稿/文件夹管理稿/设置稿。
   ///
-  /// ⚠️ 取色校准（2026-10-04，D2 原图 1080×2460 直方图取色）：FAB 圆面主色
+  /// ⚠️ 取色校准（2026-10-04，待办稿原图 1080×2460 直方图取色）：FAB 圆面主色
   /// 峰值实测为 **`#FFBB10`**，与本表的 `#F0A020` 相差 15(R)/27(G)/16(B)，
   /// 远超「2 个色阶」。**本轮保留规格值未改**（改设计 token 是设计侧决策），
   /// 该差异已登记在 `specs/docs/PROJECT-STATUS.md`，等设计确认后再动这一个字段。
   final Color accent;
 
-  /// 设置卡片内行分割线、底部导航顶部分隔线。D5/D1/D2。
+  /// 设置卡片内行分割线、底部导航顶部分隔线。设置稿/笔记列表稿/待办稿。
   final Color divider;
 
-  /// 复选框描边、底部导航未选中图标。D1/D2。
+  /// 复选框描边、底部导航未选中图标。笔记列表稿/待办稿。
   final Color outlineControl;
 
-  /// 「强提醒」开关关闭轨道。D5。
+  /// 「强提醒」开关关闭轨道。设置稿。
   final Color switchOff;
 
-  /// 「全部」chip 选中底。D1。
+  /// 「全部」chip 选中底。笔记列表稿。
   ///
   /// chip 未选中底是 [surface]（`#FFFFFF`），不另设字段。
   final Color chipSelectedBg;
 
-  /// 「新建文件夹」行文案色。D4 `[推导]`。
+  /// 「新建文件夹」行文案色。文件夹管理稿 `[推导]`。
   ///
-  /// ⚠️ D4 实测的`#666` **不在** `UI-IMPLEMENTATION-SPEC.md` §2.1 的 14 行
+  /// ⚠️ 文件夹管理稿实测的`#666` **不在** `UI-IMPLEMENTATION-SPEC.md` §2.1 的 14 行
   /// 颜色表里 —— 它既不是 [textPrimary]（标题黑）也不是 [textSecondary]
   /// （计数灰 `#999999`），是卡片内一个独立的中间灰，故补一个字段。
   /// JPEG 取色精度有限，登记为 §9 容差项。

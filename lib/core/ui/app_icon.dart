@@ -13,7 +13,7 @@ import 'package:material_ui/material_ui.dart';
 abstract final class AppIcons {
   const AppIcons._();
 
-  // ---- 顶栏（D1~D5）----
+  // ---- 顶栏（笔记列表稿~设置稿）----
   static const IconData folder = Icons.folder_outlined;
   static const IconData settings = Icons.settings_outlined;
   static const IconData back = Icons.arrow_back;
@@ -21,7 +21,7 @@ abstract final class AppIcons {
   static const IconData palette = Icons.palette_outlined;
   static const IconData overflow = Icons.more_vert;
 
-  // ---- 页面内（D1/D2/D4）----
+  // ---- 页面内（笔记列表稿/待办稿/文件夹管理稿）----
   static const IconData plus = Icons.add;
   static const IconData chevronRight = Icons.chevron_right;
   static const IconData stepper = Icons.swap_vert;
@@ -30,19 +30,19 @@ abstract final class AppIcons {
   static const IconData circlePlusOutline = Icons.add_circle_outline;
   static const IconData checkboxOutline = Icons.check_box_outlined;
 
-  /// P4 拖动排序把手。**不在设计稿的 15 个语义里**（稿无排序入口），
+  /// 文件夹管理拖动排序把手。**不在设计稿的 15 个语义里**（稿无排序入口），
   /// 取平台惯例的 `drag_handle`。
   static const IconData drag = Icons.drag_handle;
 
   // ---- 提醒（待办小窗）----
   //
-  // ⚠️ 这三个**不在设计稿的 15 个语义里**：D2 原本「无日期、无提醒」，小窗是后加
+  // ⚠️ 这三个**不在设计稿的 15 个语义里**：待办稿原本「无日期、无提醒」，小窗是后加
   // 的能力（无稿）。取 Material 惯例字形，等设计补稿后只改这里。
   static const IconData alarm = Icons.alarm;
   static const IconData clock = Icons.access_time;
   static const IconData edit = Icons.edit_outlined;
 
-  // ---- 底部导航（D1/D2）----
+  // ---- 底部导航（笔记列表稿/待办稿）----
   static const IconData navNotes = Icons.list_rounded;
   static const IconData navTodo = Icons.check_rounded;
 }

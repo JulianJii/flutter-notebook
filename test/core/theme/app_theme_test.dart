@@ -99,7 +99,7 @@ void main() {
   });
 
   group('深色', () {
-    // Q36 → docs/OPEN-DESIGN-QUESTIONS.md（深色彩无稿，按 M3 深色规范反推）
+    // 深色彩无稿，按 M3 深色规范反推。
     test('深色不是浅色的复制：底色与文字色都换了', () {
       expect(dark.bg, isNot(light.bg));
       expect(dark.surface, isNot(light.surface));

@@ -40,7 +40,7 @@ void main() {
   late List<NoteQuery> queries;
 
   /// 偏好从 **Repository** 层灌入（持久化的真实边界），因此这条链路测的是
-  /// 「P5 改了偏好 → P1 立刻变」的真实路径，而不是 mock 掉整个 provider。
+  /// 「设置改了偏好 → 笔记列表立刻变」的真实路径，而不是 mock 掉整个 provider。
   Widget app(AppSettings stored) {
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer((_) async => Right(stored));
@@ -70,7 +70,7 @@ void main() {
       // 若沿用同一个 container，换掉的 override 不会让它重读（Riverpod 的
       // `didUpdateWidget` 只做 `updateOverrides`），偏好就永远停在第一帧的值。
       // 想要「不重启就生效」那条真实路径，用 `set*` 写同一个 provider即可 ——
-      // 本文件是「给定持久化值 → P1 长什么样」的契约测试，所以换 container。
+      // 本文件是「给定持久化值 → 笔记列表长什么样」的契约测试，所以换 container。
       key: ValueKey<AppSettings>(stored),
       overrides: [
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
@@ -83,7 +83,7 @@ void main() {
         // 「A Timer is still pending」上（同 `AGENTS.md` §测试约定）。
         // 必须 override：它会一路走到真 drift，而 drift 在 stream 取消时留
         // 0 时长 `Timer.run`，fake_async zone 里每个用例都会挂在「A Timer is
-        // still pending」上。⚠️ 用 `value([])` 而**不是** `empty()`：P1 要等
+        // still pending」上。⚠️ 用 `value([])` 而**不是** `empty()`：笔记列表要等
         // 文件夹流首次出值才建 `TabController`，空流永远停在 loading 会让
         // 内容区留白。
         folderProvider.overrideWith(

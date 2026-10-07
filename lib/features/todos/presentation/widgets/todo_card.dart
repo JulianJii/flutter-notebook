@@ -5,7 +5,7 @@ import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/core/utils/app_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// D2 的待办卡：左复选框 + 右标题，此外什么都没有（D2 明确「无日期、无优先级、
+/// 待办稿的待办卡：左复选框 + 右标题，此外什么都没有（待办稿明确「无日期、无优先级、
 /// 无删除入口」）。
 ///
 /// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（`UI-IMPLEMENTATION-SPEC.md`
@@ -37,9 +37,9 @@ class TodoCard extends StatelessWidget {
   /// 勾选变更。null → 复选框禁用。
   final ValueChanged<bool>? onChanged;
 
-  /// 卡片本体点击 → 编辑弹窗（Q21 的编辑入口）。
+  /// 卡片本体点击 → 编辑弹窗。
   ///
-  /// ⚠️ D2 **无卡片按压态视觉**（Q35），`AppCard` 只画涟漪不画按压样式。⛔ 不加
+  /// ⚠️ 待办稿 **无卡片按压态视觉**（沿用 Material 默认），`AppCard` 只画涟漪。⛔ 不加
   /// `onLongPress`：长按与「点卡片」语义冲突，且 `AppCard` 没有该参数，要加就得动
   /// `core/ui`。
   final VoidCallback? onTap;
@@ -54,12 +54,12 @@ class TodoCard extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          // `AppCheckbox.size`（20dp）是该组件自己声明的「见方边长」（§4 P2），
+          // `AppCheckbox.size`（20dp）是该组件自己声明的「见方边长」（§4 待办），
           // 但 Material `Checkbox` 内部固定 8dp 内边距，实际占位 32dp —— 直接用
-          // 会把卡片撑到 72dp，比 D2 的 60dp 高出整整一个内边距。这里把布局盒
+          // 会把卡片撑到 72dp，比待办稿的 60dp 高出整整一个内边距。这里把布局盒
           // 收回 20dp，让排版由真实内容（16sp × 1.4 = 22.4dp 行高）决定。
           // ⚠️ 代价：可点区从 32×32 降到 20×20。M3 的 48dp 目标本项目已经因为
-          // D2 明确要求 20dp 视觉而放弃（TASK-013 选了 `shrinkWrap`），此处不再
+          // 待办稿明确要求 20dp 视觉而放弃（TASK-013 选了 `shrinkWrap`），此处不再
           // 进一步压缩到不可用的程度以外的其他数值。
           SizedBox.square(
             dimension: AppCheckbox.size,
@@ -70,7 +70,7 @@ class TodoCard extends StatelessWidget {
             child: Text(
               title,
               style: context.textStyles.rowTitle.copyWith(
-                // Q21 定稿：完成态灰字 + 删除线。只改本组件，不动 Screen。
+                // 完成态：灰字 + 删除线。只改本组件，不动 Screen。
                 color: checked
                     ? context.colors.textTertiary
                     : context.colors.textPrimary,
@@ -106,10 +106,10 @@ class TodoCard extends StatelessWidget {
     );
   }
 
-  /// 卡片上下内边距。D2 实测卡高 ≈60dp、内含 20dp 复选框 → `(60 − 20) / 2 = 20dp`。
+  /// 卡片上下内边距。待办稿实测卡高 ≈60dp、内含 20dp 复选框 → `(60 − 20) / 2 = 20dp`。
   ///
   /// ⚠️ 写成 `cardPad`(12) + `sm`(8) 的具名 token 组合而不是单值 20：
-  /// `AppSpacing` 没有 20 这一档，为一个组件新造 token 是纯仪式（且 20 会被 D2 的
+  /// `AppSpacing` 没有 20 这一档，为一个组件新造 token 是纯仪式（且 20 会被待办稿的
   /// 复核结论推翻，届时改这一行比改 token + 它的 dartdoc 便宜）。
   static const double _verticalPad = AppSpacing.cardPad + AppSpacing.sm;
 }

@@ -11,7 +11,7 @@ import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 ///
 /// ⛔ **不预检存在性**：预检让「检查」与「删除」之间出现竞态窗口，且多一次查询。
 /// 找不到由 Repository 返回 `Left(CacheFailure(...))`。
-/// ⛔ **不加二次确认**：`AppDialog` 无稿（Q13 / Q34），那是 UI 层的事。
+/// ⛔ **不加二次确认**：弹窗无稿，那是 UI 层的事。
 /// ⛔ 不建 `Restore` / `Purge`（`USECASE-MAP.md` §4 已判定不建，空壳方法就是负债）。
 class DeleteNoteUseCase {
   const DeleteNoteUseCase(this._repository);

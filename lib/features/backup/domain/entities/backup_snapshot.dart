@@ -44,10 +44,9 @@ class BackupNote {
   /// ⚠️ 取 `updatedAt` 与 `deletedAt` 的**较晚者**：软删除也是一次变更，只用
   /// `updatedAt` 比的话，「A 机删除 / B 机改标题」会让一条更晚的编辑把已删除
   /// 的笔记复活（删除不刷新 `updatedAt`，见 `NoteDao.softDeleteById`）。
-  DateTime get version =>
-      deletedAt == null || deletedAt!.isBefore(updatedAt)
-          ? updatedAt
-          : deletedAt!;
+  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
+      ? updatedAt
+      : deletedAt!;
 
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
@@ -252,8 +251,7 @@ class BackupSnapshot {
   /// 双向合并：逐条比 [version]，新的赢；一样新保留 [local]（避免无意义写库）。
   ///
   /// 只新增不删除 —— 本项目「永不丢数据」，合并后的并集必然 ≥ 任一方的集合。
-  /// Q40 → docs/OPEN-DESIGN-QUESTIONS.md（待办是硬删除、无墓碑，A 机删掉后
-  /// B 机的同一条会在下次同步被带回来）。
+  /// ⚠️ 待办是硬删除、无墓碑：A 机删掉一条后，B 机的同一条会在下次同步被带回来
   static ({BackupSnapshot merged, BackupImportResult result}) merge(
     BackupSnapshot local,
     BackupSnapshot incoming,

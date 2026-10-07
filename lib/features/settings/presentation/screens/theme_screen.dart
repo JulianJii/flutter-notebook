@@ -22,7 +22,7 @@ import '../providers/settings_provider.dart';
 ///
 /// 色板由 `AppTheme` 交给 flex_color_scheme 从方案主色派生；这里只负责选值。
 ///
-/// ⛔ **不渲染 `AppBottomNav`**：root 层路由，整屏盖住 Shell，与 P5 同形态。
+/// ⛔ **不渲染 `AppBottomNav`**：root 层路由，整屏盖住 Shell，与设置同形态。
 /// ⛔ **不直接 watch Repository / UseCase**：Screen → `settingsProvider` →
 /// UseCase → Repository。
 class ThemeScreen extends ConsumerWidget {

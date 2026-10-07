@@ -6,9 +6,9 @@ import '../../core/network/integrations/grpc/greeter_client.dart';
 
 /// 演示通过可复用的 [GrpcGreeterClient] 进行一元调用和服务端流式 gRPC 调用：
 /// - 一元 `SayHello` 默认使用公共的 `grpcb.in:9000` 测试服务器
-///   （经典的 helloworld.Greeter 示例），无需设置即可工作。
+///  （经典的 helloworld.Greeter 示例），无需设置即可工作。
 /// - 服务端流式 `SayHelloStream` 需要本地运行 `tool/grpc_demo_server.dart`
-///   （`dart run tool/grpc_demo_server.dart`）；默认主机设置为 `localhost:50051`。
+///  （`dart run tool/grpc_demo_server.dart`）；默认主机设置为 `localhost:50051`。
 ///
 /// 将 `core/network/integrations/grpc/` 复制到真实的功能模块中，
 /// 并将 `greeter.proto` 替换为你自己的服务契约以复用此模式。

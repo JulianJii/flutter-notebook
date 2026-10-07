@@ -23,7 +23,7 @@ class NoteFolders extends Table {
 
   DateTimeColumn get updatedAt => dateTime()();
 
-  /// P4 拖拽排序位。越小越靠前，**同值按 [createdAt] 兜底** ——
+  /// 文件夹管理拖拽排序位。越小越靠前，**同值按 [createdAt] 兜底** ——
   /// 迁移前的老数据全是默认值 0，兜底保证了升级后列表顺序与升级前一致。
   ///
   /// 写入只有两条路径：新建时取 `MAX+1`（排末尾），拖拽时整表写成 `0..n-1`

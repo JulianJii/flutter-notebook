@@ -4,7 +4,7 @@
 /// 方案主色见 [AppColorSchemeSeed.seed]；整套色板由 `AppTheme` 交给
 /// flex_color_scheme 从主色派生（明暗两态各一套）。
 ///
-/// Q37 → docs/OPEN-DESIGN-QUESTIONS.md（方案清单与数量无稿）
+/// 共 4 套（琥珀 / 蓝 / 绿 / 紫）；要增删只改这个枚举与 [AppColorSchemeSeed.seed]。
 enum AppColorScheme { amber, blue, green, violet }
 
 /// 方案主色的 ARGB 值。

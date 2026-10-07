@@ -7,12 +7,13 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// 3 种形态由参数组合表达（`DEVELOPMENT-GUIDELINES.md` §8：不用布尔开关）：
 /// - A 右对齐图标组：`AppTopBar(actions: [...])`
-/// - A' 左对齐页面标题 + 右对齐图标组：`AppTopBar(title: ..., actions: [...])`  ← D1/D2
-/// - B 居中标题 + 右侧图标：`AppTopBar(leading: ..., centerTitle: ..., actions: [...])`  ← D4
-/// - C 仅返回：`AppTopBar(leading: ...)`  ← D5
+/// - A' 左对齐页面标题 + 右对齐图标组：`AppTopBar(title: ..., actions: [...])`  ← 笔记列表稿/待办稿
+/// - B 居中标题 + 右侧图标：`AppTopBar(leading: ..., centerTitle: ..., actions: [...])`  ← 文件夹管理稿
+/// - C 仅返回：`AppTopBar(leading: ...)`  ← 设置稿
 ///
-/// 取值来自 `UI-IMPLEMENTATION-SPEC.md` §0（高 56dp）、§4 P1~P5（各页 AppBar）。
-// Q28 → docs/OPEN-DESIGN-QUESTIONS.md
+/// 取值来自 `UI-IMPLEMENTATION-SPEC.md` §0（高 56dp）、§4 笔记列表~设置（各页 AppBar）。
+///
+/// 非 edge-to-edge：安全区由本组件自己包。
 class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,
@@ -28,13 +29,13 @@ class AppTopBar extends StatelessWidget {
 
   /// 左对齐的页面标题（形态 A'），通常是 `Text`。null → 不渲染标题（形态 A / C）。
   ///
-  /// 与 [centerTitle] 互斥：两者同时给时 [centerTitle] 生效（居中形态优先，D4）。
+  /// 与 [centerTitle] 互斥：两者同时给时 [centerTitle] 生效（居中形态优先，文件夹管理稿）。
   final Widget? title;
 
   /// 居中标题，通常是 `Text`。null → 不渲染标题（形态 A / C）。
   final Widget? centerTitle;
 
-  /// 右侧图标组，按给定顺序排列（D1: folder → settings；D3: share → palette → overflow）。
+  /// 右侧图标组，按给定顺序排列（笔记列表稿: folder → settings；笔记详情稿: share → palette → overflow）。
   final List<Widget> actions;
 
   /// 顶栏底边是否画 1dp 分隔线。
@@ -47,7 +48,7 @@ class AppTopBar extends StatelessWidget {
   /// 顶栏内容区高度，不含状态栏安全区。
   static const double height = 56;
 
-  /// 图标按钮之间的间距。`UI-IMPLEMENTATION-SPEC.md` §4 P1 `[推导: 8dp]`。
+  /// 图标按钮之间的间距。`UI-IMPLEMENTATION-SPEC.md` §4 笔记列表 `[推导: 8dp]`。
   static const double _actionGap = AppSpacing.chipGap;
 
   @override
@@ -67,7 +68,7 @@ class AppTopBar extends StatelessWidget {
             : null,
       ),
       // ⚠️ 幂等：Tab 内页面已被 `NotesShell` 的 SafeArea 消费掉顶部 inset，这里加 0；
-      // push 到 root 的页面（P3/P4/P5）需要自己避让状态栏。
+      // push 到 root 的页面（笔记详情/文件夹管理/设置）需要自己避让状态栏。
       child: SafeArea(
         top: true,
         bottom: false,

@@ -10,7 +10,7 @@ part of 'note_editor_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 
 @ProviderFor(NoteEditor)
@@ -18,17 +18,17 @@ final noteEditorProvider = NoteEditorFamily._();
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 final class NoteEditorProvider
     extends $AsyncNotifierProvider<NoteEditor, NoteEditorState> {
   /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
   ///
-  /// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+  /// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
   /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
   NoteEditorProvider._({
     required NoteEditorFamily super.from,
-    required String super.argument,
+    required (String, {String? folderId}) super.argument,
   }) : super(
          retry: null,
          name: r'noteEditorProvider',
@@ -44,7 +44,7 @@ final class NoteEditorProvider
   String toString() {
     return r'noteEditorProvider'
         ''
-        '($argument)';
+        '$argument';
   }
 
   @$internal
@@ -62,11 +62,11 @@ final class NoteEditorProvider
   }
 }
 
-String _$noteEditorHash() => r'b6f005214b9eb2cc0ed9f1f62381e7bfc17e9cec';
+String _$noteEditorHash() => r'54a79fcffd92f91a08f6feef02aad554ed838336';
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 
 final class NoteEditorFamily extends $Family
@@ -76,7 +76,7 @@ final class NoteEditorFamily extends $Family
           AsyncValue<NoteEditorState>,
           NoteEditorState,
           FutureOr<NoteEditorState>,
-          String
+          (String, {String? folderId})
         > {
   NoteEditorFamily._()
     : super(
@@ -89,11 +89,11 @@ final class NoteEditorFamily extends $Family
 
   /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
   ///
-  /// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+  /// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
   /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 
-  NoteEditorProvider call(String noteId) =>
-      NoteEditorProvider._(argument: noteId, from: this);
+  NoteEditorProvider call(String noteId, {String? folderId}) =>
+      NoteEditorProvider._(argument: (noteId, folderId: folderId), from: this);
 
   @override
   String toString() => r'noteEditorProvider';
@@ -101,14 +101,15 @@ final class NoteEditorFamily extends $Family
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 P3）：D3 没有保存按钮、
+/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 
 abstract class _$NoteEditor extends $AsyncNotifier<NoteEditorState> {
-  late final _$args = ref.$arg as String;
-  String get noteId => _$args;
+  late final _$args = ref.$arg as (String, {String? folderId});
+  String get noteId => _$args.$1;
+  String? get folderId => _$args.folderId;
 
-  FutureOr<NoteEditorState> build(String noteId);
+  FutureOr<NoteEditorState> build(String noteId, {String? folderId});
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
@@ -121,6 +122,9 @@ abstract class _$NoteEditor extends $AsyncNotifier<NoteEditorState> {
               Object?,
               Object?
             >;
-    return element.handleCreate(ref, () => build(_$args));
+    return element.handleCreate(
+      ref,
+      () => build(_$args.$1, folderId: _$args.folderId),
+    );
   }
 }

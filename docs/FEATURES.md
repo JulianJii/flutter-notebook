@@ -13,7 +13,7 @@ title: Features
 ### 笔记（`lib/features/notes/`）
 
 - **列表** `/notes`：瀑布流卡片、按标题 / 正文搜索（无结果有空态提示）、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计。
-- **详情** `/notes/:id`、`/notes/new`：标题 + 正文编辑，**自动保存**（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认）。正文唯一真相源是 **Quill Delta JSON**（`flutter_quill`）。
+- **详情** `/notes/:id`、`/notes/new`：标题 + 正文编辑，**自动保存**（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认）。正文唯一真相源是 **Quill Delta JSON**（`flutter_quill`）。从某个分类页点 + 号进 `/notes/new?folder=<id>`（`AppRoutes.noteNewPath`），该分类随新笔记一起落库。
 - **文件夹管理** `/notes/folders`：新建 / 重命名 / 删除 / 拖拽排序，显示每个文件夹的笔记数。
 - **最近删除** `/notes/trash`：软删除列表，支持恢复、永久删除、清空回收站（均二次确认）。
 
@@ -35,7 +35,7 @@ title: Features
 
 ### 设置（`lib/features/settings/`）
 
-笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、强提醒开关、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
+笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、最近删除入口、隐私政策 / 用户协议。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
 
 「数据与同步」行是进入 `features/backup/` 的跳转入口（见下节），不把 WebDAV 配置并进 `AppSettings` —— 那是「App 长什么样」的偏好，凭据是另一回事。
 
@@ -54,9 +54,7 @@ title: Features
 - 同步是**单文件快照**，不是增量队列：`GET` 到 404 就当「远端还没文件」，等价于首次推送。因此不需要冲突状态机 —— 模板自带的离线变更队列（`offline_sync_service` / `connectivity_plus`）未接线，已整体移除。
 - 快照有自己的 `version`（当前 1），高于它的直接拒绝导入，不静默降级解析。
 - WebDAV 客户端是 **dio 手搓**的（`GET` / `PUT` / `MKCOL` / `PROPFIND` + Basic Auth），不引第三方包；该 Dio 实例独立（`webDavDioProvider`），不加 `LogInterceptor` —— 请求头里有密码。
-- ⛔ 待办是硬删除、无墓碑 —— **Q40**；密码明文落本地 —— **Q41**（均见 `docs/OPEN-DESIGN-QUESTIONS.md`）。
 
----
 
 ## 工程能力
 

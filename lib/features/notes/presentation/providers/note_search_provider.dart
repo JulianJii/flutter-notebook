@@ -2,9 +2,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_search_provider.g.dart';
 
-/// P1 的搜索词。
+/// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同 P5 偏好的裁决，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
 /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///

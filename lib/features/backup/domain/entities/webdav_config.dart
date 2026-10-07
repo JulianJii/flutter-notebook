@@ -6,8 +6,8 @@ import 'package:equatable/equatable.dart';
 /// 「数据搬到哪去」的凭据。混进一个实体会让每次改字号都重写一遍密码。
 ///
 /// ⚠️ 密码明文落 SharedPreferences：本 App 无账号体系、无后端，设备本地存储
-/// 已被系统沙箱保护；为它引入 keychain / 加密是给一个本地 App 上锁自己的门。
-/// Q41 → docs/OPEN-DESIGN-QUESTIONS.md
+/// 已被系统沙箱保护；为它引入 keychain / 加密是给一个本地 App 上锁自己的门
+/// （同见 `docs/FEATURES.md`「已知限制」）。
 class WebDavConfig extends Equatable {
   const WebDavConfig({
     this.url = '',

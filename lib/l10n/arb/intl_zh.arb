@@ -186,11 +186,11 @@
   },
   "notes": "笔记",
   "@notes": {
-    "description": "P1 page large title and bottom navigation tab label"
+    "description": "Note list page large title and bottom navigation tab label"
   },
   "todos": "待办",
   "@todos": {
-    "description": "P2 page large title and bottom navigation tab label"
+    "description": "To-do list page large title and bottom navigation tab label"
   },
   "all": "全部",
   "@all": {
@@ -202,63 +202,63 @@
   },
   "back": "返回",
   "@back": {
-    "description": "Tooltip of the P3 top bar back button"
+    "description": "Tooltip of the note detail top bar back button"
   },
   "share": "分享",
   "@share": {
-    "description": "Tooltip of the P3 top bar share icon"
+    "description": "Tooltip of the note detail top bar share icon"
   },
   "palette": "配色",
   "@palette": {
-    "description": "Tooltip of the P3 top bar palette icon (Q10 unresolved)"
+    "description": "Tooltip of the note detail top bar palette icon"
   },
   "noteBackground": "背景",
   "@noteBackground": {
-    "description": "Title of the P3 background picker sheet and the accessibility label of a background thumbnail"
+    "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
   },
   "noteBackgroundNone": "无背景",
   "@noteBackgroundNone": {
-    "description": "Accessibility label of the blank (no background) thumbnail in the P3 background picker sheet"
+    "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"
   },
   "more": "更多",
   "@more": {
-    "description": "Tooltip of the P3 top bar overflow icon (Q9 unresolved)"
+    "description": "Tooltip of the note detail top bar overflow icon"
   },
   "folders": "文件夹",
   "@folders": {
-    "description": "P4 folder manager screen large title and the P1 top bar folder icon tooltip"
+    "description": "Folder manager folder manager screen large title and the note list top bar folder icon tooltip"
   },
   "createFolder": "新建文件夹",
   "@createFolder": {
-    "description": "Label of the create-folder action row at the end of the P4 folder list, and the title of the create-folder dialog"
+    "description": "Label of the create-folder action row at the end of the folder manager folder list, and the title of the create-folder dialog"
   },
   "folderName": "文件夹名称",
   "@folderName": {
-    "description": "Hint text of the create-folder dialog text field (P4)"
+    "description": "Hint text of the create-folder dialog text field (folder manager)"
   },
   "createTodo": "新建待办",
   "@createTodo": {
-    "description": "Title of the create-todo dialog opened by the P2 FAB"
+    "description": "Title of the create-todo dialog opened by the to-do list FAB"
   },
   "todoTitle": "待办标题",
   "@todoTitle": {
-    "description": "Hint text of the create-todo dialog text field (P2)"
+    "description": "Hint text of the create-todo dialog text field (to-do list)"
   },
   "save": "保存",
   "@save": {
-    "description": "Confirm button of the create-folder dialog (P4)"
+    "description": "Confirm button of the create-folder dialog (folder manager)"
   },
   "delete": "删除",
   "@delete": {
-    "description": "Tooltip of the P4 top bar trash icon (Q11 unresolved, the button is disabled)"
+    "description": "Tooltip of the folder manager top bar trash icon"
   },
   "noteTitleHint": "标题",
   "@noteTitleHint": {
-    "description": "Placeholder shown in the P3 note title field when it is empty"
+    "description": "Placeholder shown in the note detail note title field when it is empty"
   },
   "noteMetaWordCount": "{count}字",
   "@noteMetaWordCount": {
-    "description": "Word count shown in the P3 note meta line",
+    "description": "Word count shown in the note detail note meta line",
     "placeholders": {
       "count": {
         "type": "int"
@@ -267,55 +267,43 @@
   },
   "settingsGroupNoteStyle": "笔记样式",
   "@settingsGroupNoteStyle": {
-    "description": "P5 section header: note appearance"
+    "description": "Settings section header: note appearance"
   },
   "settingsGroupQuick": "快捷功能",
   "@settingsGroupQuick": {
-    "description": "P5 section header: quick actions"
-  },
-  "settingsGroupReminder": "提醒",
-  "@settingsGroupReminder": {
-    "description": "P5 section header: reminders"
+    "description": "Settings section header: quick actions"
   },
   "settingsGroupOther": "其他",
   "@settingsGroupOther": {
-    "description": "P5 section header: misc"
+    "description": "Settings section header: misc"
   },
   "settingsRecentDeleted": "最近删除",
   "@settingsRecentDeleted": {
-    "description": "P5 chevron row leading to the trash screen, and its page title"
+    "description": "Settings chevron row leading to the trash screen, and its page title"
   },
   "settingsQuickCapture": "速记",
   "@settingsQuickCapture": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsPrivacyPolicy": "隐私政策",
   "@settingsPrivacyPolicy": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsUserAgreement": "用户协议",
   "@settingsUserAgreement": {
-    "description": "P5 chevron row (Q14: no second level page)"
+    "description": "Settings chevron row"
   },
   "settingsTextScale": "文字大小",
   "@settingsTextScale": {
-    "description": "P5 stepper row title: font size"
+    "description": "Settings stepper row title: font size"
   },
   "settingsNoteSort": "选择排序方式",
   "@settingsNoteSort": {
-    "description": "P5 stepper row title: note sort order"
+    "description": "Settings stepper row title: note sort order"
   },
   "settingsNoteLayout": "笔记列表布局",
   "@settingsNoteLayout": {
-    "description": "P5 stepper row title: note list layout"
-  },
-  "settingsStrongReminder": "强提醒",
-  "@settingsStrongReminder": {
-    "description": "P5 switch row title"
-  },
-  "settingsStrongReminderDesc": "持续响铃且静音和勿扰状态下仍有效",
-  "@settingsStrongReminderDesc": {
-    "description": "P5 switch row subtitle"
+    "description": "Settings stepper row title: note list layout"
   },
   "settingsTextScaleSmall": "小",
   "@settingsTextScaleSmall": {
@@ -410,14 +398,6 @@
   "settingsThemeDark": "深色",
   "@settingsThemeDark": {
     "description": "Theme mode option: dark"
-  },
-  "settingsSwitchOn": "开启",
-  "@settingsSwitchOn": {
-    "description": "Selected option of a two-option settings row"
-  },
-  "settingsSwitchOff": "关闭",
-  "@settingsSwitchOff": {
-    "description": "Unselected option of a two-option settings row"
   },
   "notesSearchHint": "搜索笔记",
   "@notesSearchHint": {
@@ -596,7 +576,7 @@
   },
   "clearCompletedTodos": "清除已完成",
   "@clearCompletedTodos": {
-    "description": "Tooltip of the P2 top bar action that clears finished to-dos"
+    "description": "Tooltip of the to-do list top bar action that clears finished to-dos"
   },
   "clearCompletedTodosConfirm": "确定要清除全部已完成的待办吗？此操作无法撤销。",
   "@clearCompletedTodosConfirm": {
@@ -682,7 +662,7 @@
   },
   "settingsDataManagement": "数据与同步",
   "@settingsDataManagement": {
-    "description": "P5 row that opens the data and sync page"
+    "description": "Settings row that opens the data and sync page"
   },
   "dataTitle": "数据与同步",
   "@dataTitle": {

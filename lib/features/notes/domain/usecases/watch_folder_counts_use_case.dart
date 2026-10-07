@@ -1,6 +1,6 @@
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/notes/domain/entities/folder_with_count.dart';
-import 'package:init/features/notes/domain/repositories/folder_repository.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
+import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
 
 /// 订阅文件夹 + 每个文件夹的笔记数（P4 的数据源）。
 ///

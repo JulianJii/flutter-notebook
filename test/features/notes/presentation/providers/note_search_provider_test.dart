@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/features/notes/presentation/providers/note_search_provider.dart';
+import 'package:mynote/features/notes/presentation/providers/note_search_provider.dart';
 
 void main() {
   test('默认空串；set 覆盖状态', () {

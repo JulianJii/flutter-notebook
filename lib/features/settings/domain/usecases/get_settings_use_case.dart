@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
 
 /// 读用户偏好。启动时调一次填充 P5。
 ///

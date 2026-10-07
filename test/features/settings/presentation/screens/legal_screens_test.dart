@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:init/core/router/app_routes.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/features/settings/presentation/screens/legal_screens.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/router/app_routes.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/features/settings/presentation/screens/legal_screens.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 两页轻量 smoke：⛔ 不做 golden（纯静态文档，锁几何没有价值；正文文案在 l10n

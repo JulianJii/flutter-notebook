@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/storage/local_storage_service.dart';
-import 'package:init/core/theme/app_color_scheme.dart';
-import 'package:init/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/storage/local_storage_service.dart';
+import 'package:mynote/core/theme/app_color_scheme.dart';
+import 'package:mynote/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

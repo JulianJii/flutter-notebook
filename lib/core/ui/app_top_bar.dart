@@ -1,6 +1,6 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_elevation.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 页面顶部栏容器。统一高度、安全区与图标组间距。

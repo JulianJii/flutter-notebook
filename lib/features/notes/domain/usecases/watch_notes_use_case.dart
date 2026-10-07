@@ -1,6 +1,6 @@
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 
 /// 按 [NoteQuery] 订阅笔记列表。**唯一的列表数据入口**，UI 靠它拿流。
 ///

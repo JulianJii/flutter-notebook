@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/analytics/analytics_event.dart';
-import 'package:init/core/analytics/analytics_service.dart';
-import 'package:init/core/analytics/firebase_analytics_service.dart';
-import 'package:init/core/feature_flags/feature_flag_providers.dart';
+import 'package:mynote/core/analytics/analytics_event.dart';
+import 'package:mynote/core/analytics/analytics_service.dart';
+import 'package:mynote/core/analytics/firebase_analytics_service.dart';
+import 'package:mynote/core/feature_flags/feature_flag_providers.dart';
 
 /// 供开发使用的调试分析服务
 class DebugAnalyticsService implements AnalyticsService {

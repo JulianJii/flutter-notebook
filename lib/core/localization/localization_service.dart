@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 /// 语言在其母语中的名称。gen-l10n 不提供，需自行维护。

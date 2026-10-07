@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/repositories/folder_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
 
 /// 删除文件夹。其下笔记的 `folderId` 落 null（「未分类」）。
 ///

@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:init/features/todos/data/repositories/todo_repository_impl.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/data/repositories/todo_repository_impl.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:uuid/uuid.dart';
 

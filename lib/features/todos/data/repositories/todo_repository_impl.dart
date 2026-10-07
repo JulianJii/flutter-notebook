@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
 import 'package:uuid/uuid.dart';
 
 /// 待办 Repository 的唯一实现。与 [NoteRepositoryImpl] 同构。

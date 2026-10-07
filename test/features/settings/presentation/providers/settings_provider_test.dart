@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/theme/app_color_scheme.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
-import 'package:init/features/settings/presentation/providers/settings_provider.dart';
-import 'package:init/features/settings/providers/settings_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/theme/app_color_scheme.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
+import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}

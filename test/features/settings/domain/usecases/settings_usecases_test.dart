@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
-import 'package:init/features/settings/domain/usecases/get_settings_use_case.dart';
-import 'package:init/features/settings/domain/usecases/save_settings_use_case.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/features/settings/domain/usecases/get_settings_use_case.dart';
+import 'package:mynote/features/settings/domain/usecases/save_settings_use_case.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}

@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/watch_todos_use_case.dart';
-import 'package:init/features/todos/presentation/providers/todo_list_provider.dart';
-import 'package:init/features/todos/providers/todos_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/watch_todos_use_case.dart';
+import 'package:mynote/features/todos/presentation/providers/todo_list_provider.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockWatchTodos extends Mock implements WatchTodosUseCase {}

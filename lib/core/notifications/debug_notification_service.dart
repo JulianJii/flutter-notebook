@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:init/core/notifications/notification_service.dart';
+import 'package:mynote/core/notifications/notification_service.dart';
 
 /// 通知服务的简单调试实现
 class DebugNotificationService implements NotificationService {

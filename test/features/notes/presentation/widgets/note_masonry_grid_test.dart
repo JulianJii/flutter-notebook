@@ -1,12 +1,12 @@
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/ui/app_bottom_nav.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/presentation/widgets/note_card.dart';
-import 'package:init/features/notes/presentation/widgets/note_masonry_grid.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/app_bottom_nav.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/presentation/widgets/note_card.dart';
+import 'package:mynote/features/notes/presentation/widgets/note_masonry_grid.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:zoloto/zoloto.dart';
 

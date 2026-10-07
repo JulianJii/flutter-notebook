@@ -2,8 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/network/api_client.dart';
-import 'package:init/core/error/failures.dart';
+import 'package:mynote/core/network/api_client.dart';
+import 'package:mynote/core/error/failures.dart';
 
 class MockDio extends Mock implements Dio {}
 

@@ -1,5 +1,5 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 1dp 可缩进分割线。用于设置卡片内的行间分隔（D5）。

@@ -1,4 +1,4 @@
-import 'package:init/core/ui/app_list_tile.dart';
+import 'package:mynote/core/ui/app_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 设置行：标题（w600）+ 副说明 + 右侧开关（D5「强提醒」）。

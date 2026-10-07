@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/localization/language_selector_widget.dart';
-import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/core/localization/localization_service.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/localization/language_selector_widget.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
+import 'package:mynote/core/localization/localization_service.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 
 /// 演示如何使用语言选择器 widget 的页面
 class LanguageSelectorExample extends ConsumerWidget {

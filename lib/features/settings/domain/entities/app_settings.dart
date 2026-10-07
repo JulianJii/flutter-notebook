@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:init/core/theme/app_color_scheme.dart';
+import 'package:mynote/core/theme/app_color_scheme.dart';
 
 /// 文字大小。`ARCHITECTURE-DESIGN.md` §2.13 的 4 值枚举，默认 `normal`。
 ///

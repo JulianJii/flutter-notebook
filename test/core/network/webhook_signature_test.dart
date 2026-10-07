@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/network/integrations/webhook_signature.dart';
+import 'package:mynote/core/network/integrations/webhook_signature.dart';
 
 void main() {
   const secret = 'shared-secret';

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
 
 /// 新建待办。业务规则：标题 trim 后非空。
 ///

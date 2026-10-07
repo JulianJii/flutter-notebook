@@ -1,8 +1,8 @@
-import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/core/theme/app_color_scheme.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/providers/settings_providers.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/theme/app_color_scheme.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'settings_provider.g.dart';

@@ -1,5 +1,5 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 圆形浮动按钮。直径 64dp / 琥珀底 / 白色 `plus`，出现在 P1 / P2。

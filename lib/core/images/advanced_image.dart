@@ -4,9 +4,9 @@ import 'dart:ui' as ui;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/images/debug_image_processor.dart';
-import 'package:init/core/images/image_processor.dart';
-import 'package:init/core/storage/cache_manager.dart';
+import 'package:mynote/core/images/debug_image_processor.dart';
+import 'package:mynote/core/images/image_processor.dart';
+import 'package:mynote/core/storage/cache_manager.dart';
 
 /// 图像处理器 Provider
 final imageProcessorProvider = Provider<ImageProcessor>((ref) {

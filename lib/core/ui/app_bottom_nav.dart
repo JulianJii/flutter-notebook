@@ -1,7 +1,7 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_elevation.dart';
-import 'package:init/core/theme/tokens/app_radius.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_radius.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:material_ui/material_ui.dart';
 
 // Q35 → docs/OPEN-DESIGN-QUESTIONS.md

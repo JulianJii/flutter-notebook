@@ -1,5 +1,5 @@
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'deleted_note_list_provider.g.dart';

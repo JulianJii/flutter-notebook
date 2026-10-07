@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_elevation.dart';
-import 'package:init/core/ui/ui.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {

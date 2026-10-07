@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/providers/storage_providers.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
-import 'package:init/features/settings/domain/usecases/get_settings_use_case.dart';
-import 'package:init/features/settings/domain/usecases/save_settings_use_case.dart';
-import 'package:init/features/settings/providers/settings_providers.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/features/settings/domain/usecases/get_settings_use_case.dart';
+import 'package:mynote/features/settings/domain/usecases/save_settings_use_case.dart';
+import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

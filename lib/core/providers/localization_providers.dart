@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/providers/storage_providers.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 
 /// 用于在 SharedPreferences 中存储所选语言代码的键
 const _languageCodeKey = 'selected_language_code';

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
 
 /// `UpdateNoteBackgroundUseCase` 的参数。可构造 + 有 `==`，供测试的
 /// `registerFallbackValue` 使用。

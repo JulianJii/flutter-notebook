@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:init/core/images/image_processor.dart';
+import 'package:mynote/core/images/image_processor.dart';
 
 /// 用于测试的 ImageProcessor 调试实现
 class DebugImageProcessor implements ImageProcessor {

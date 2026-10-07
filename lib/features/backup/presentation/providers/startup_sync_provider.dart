@@ -1,7 +1,7 @@
-import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/backup/domain/entities/webdav_config.dart';
-import 'package:init/features/backup/providers/backup_providers.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/backup/domain/entities/webdav_config.dart';
+import 'package:mynote/features/backup/providers/backup_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'startup_sync_provider.g.dart';

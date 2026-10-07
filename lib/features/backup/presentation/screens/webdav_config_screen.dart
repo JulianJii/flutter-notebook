@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:init/core/router/app_routes.dart';
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/features/backup/domain/entities/webdav_config.dart';
-import 'package:init/features/backup/presentation/providers/webdav_config_provider.dart';
-import 'package:init/features/backup/presentation/widgets/backup_feedback.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/router/app_routes.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/features/backup/domain/entities/webdav_config.dart';
+import 'package:mynote/features/backup/presentation/providers/webdav_config_provider.dart';
+import 'package:mynote/features/backup/presentation/widgets/backup_feedback.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// WebDAV 服务器配置页（`/settings/webdav`）。

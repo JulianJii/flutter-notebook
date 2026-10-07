@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/storage/local_storage_service.dart';
-import 'package:init/core/theme/app_color_scheme.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/storage/local_storage_service.dart';
+import 'package:mynote/core/theme/app_color_scheme.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
 
 /// 偏好在 `SharedPreferences` 里的 key。**单 key JSON**（ADR-14）。
 const String settingsStorageKey = 'app_settings';

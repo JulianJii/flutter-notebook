@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
 
 void main() {
   test('默认值 = 全部 + editedDesc + 无搜索 + 不分页', () {

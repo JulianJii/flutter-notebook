@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/app_large_title.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/app_large_title.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget wrap(Widget child) => MaterialApp(

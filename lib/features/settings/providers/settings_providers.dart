@@ -1,8 +1,8 @@
-import 'package:init/core/providers/storage_providers.dart';
-import 'package:init/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:init/features/settings/domain/repositories/settings_repository.dart';
-import 'package:init/features/settings/domain/usecases/get_settings_use_case.dart';
-import 'package:init/features/settings/domain/usecases/save_settings_use_case.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
+import 'package:mynote/features/settings/data/repositories/settings_repository_impl.dart';
+import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/features/settings/domain/usecases/get_settings_use_case.dart';
+import 'package:mynote/features/settings/domain/usecases/save_settings_use_case.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'settings_providers.g.dart';

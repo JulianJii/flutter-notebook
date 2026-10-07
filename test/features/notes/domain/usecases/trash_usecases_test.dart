@@ -1,12 +1,12 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
-import 'package:init/features/notes/domain/usecases/empty_trash_use_case.dart';
-import 'package:init/features/notes/domain/usecases/purge_note_use_case.dart';
-import 'package:init/features/notes/domain/usecases/restore_note_use_case.dart';
-import 'package:init/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/features/notes/domain/usecases/empty_trash_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/purge_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/restore_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockNoteRepository extends Mock implements NoteRepository {}

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/features/notes/domain/utils/note_delta.dart';
+import 'package:mynote/features/notes/domain/utils/note_delta.dart';
 
 void main() {
   test('空串 → 只有尾换行的空文档（WordCounter 视作 0 字）', () {

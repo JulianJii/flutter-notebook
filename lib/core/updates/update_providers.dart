@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/constants/app_constants.dart';
-import 'package:init/core/updates/update_service.dart';
+import 'package:mynote/core/constants/app_constants.dart';
+import 'package:mynote/core/updates/update_service.dart';
 
 /// 更新服务的 Provider
 final updateServiceProvider = Provider<UpdateService>((ref) {

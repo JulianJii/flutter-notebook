@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note_folder.dart';
-import 'package:init/features/notes/domain/repositories/folder_repository.dart';
-import 'package:init/features/notes/domain/usecases/create_folder_params.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
+import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
 
 /// 新建文件夹。业务规则：名称非空（trim 后）、长度 ≤ 40。
 ///

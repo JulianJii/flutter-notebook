@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:init/core/router/app_routes.dart';
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/core/utils/app_utils.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/utils/note_delta.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/router/app_routes.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/utils/note_delta.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../providers/deleted_note_list_provider.dart';

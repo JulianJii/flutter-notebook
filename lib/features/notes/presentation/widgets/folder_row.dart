@@ -1,6 +1,6 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/ui/ui.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// D4 的文件夹行：左选中勾 / 中名称 / 右计数或拖动图标。唯一调用方是 P4

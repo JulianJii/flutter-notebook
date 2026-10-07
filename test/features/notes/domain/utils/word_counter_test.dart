@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/features/notes/domain/utils/word_counter.dart';
+import 'package:mynote/features/notes/domain/utils/word_counter.dart';
 
 void main() {
   group('WordCounter.count', () {

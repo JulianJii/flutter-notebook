@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
 
 /// 待办的领域抽象。实现在 data 层（`TASK-022`）。
 abstract class TodoRepository {

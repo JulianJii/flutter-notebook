@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
 
 /// drift 存 `DateTime` 用 unix **秒**，毫秒级的值会全部塌成 0
 ///（排序键相同，`createdAt DESC` 测不出方向）。

@@ -1,8 +1,8 @@
-import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
-import 'package:init/features/todos/providers/todos_providers.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'todo_list_provider.g.dart';

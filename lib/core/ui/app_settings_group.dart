@@ -1,6 +1,6 @@
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/ui/app_card.dart';
-import 'package:init/core/ui/app_section_header.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/app_card.dart';
+import 'package:mynote/core/ui/app_section_header.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 一个设置分组 = **卡外标题 + 一张白卡**。P5 / 主题页 / 数据与同步页 /

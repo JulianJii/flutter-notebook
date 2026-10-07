@@ -1,5 +1,5 @@
-name: init
-description: "A new Flutter project."
+name: mynote
+description: "MyNote - A Flutter application."
 # 以下代码行可防止该包通过 `flutter pub publish` 被意外发布到
 # pub.dev。这对私有包是首选做法。
 publish_to: 'none' # 如需发布到 pub.dev，请删除此行

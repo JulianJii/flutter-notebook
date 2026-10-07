@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 
 /// 读单条笔记。P3 打开时用它初始化草稿。
 ///

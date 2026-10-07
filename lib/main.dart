@@ -1,16 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:init/core/constants/app_constants.dart';
-import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/core/providers/storage_providers.dart';
-import 'package:init/core/router/app_router.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/updates/update_providers.dart';
-import 'package:init/features/backup/presentation/providers/startup_sync_provider.dart';
-import 'package:init/features/settings/domain/entities/app_settings.dart';
-import 'package:init/features/settings/presentation/providers/settings_provider.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/constants/app_constants.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
+import 'package:mynote/core/router/app_router.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/updates/update_providers.dart';
+import 'package:mynote/features/backup/presentation/providers/startup_sync_provider.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {

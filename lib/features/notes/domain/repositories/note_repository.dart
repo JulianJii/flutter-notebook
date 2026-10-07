@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
 
 /// 笔记的领域抽象。实现在 data 层（`TASK-022`）。
 abstract class NoteRepository {

@@ -1,6 +1,6 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 分类筛选 chip（D1）。

@@ -1,4 +1,4 @@
-import 'package:init/core/usecases/usecase.dart';
+import 'package:mynote/core/usecases/usecase.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/folder_with_count.dart';

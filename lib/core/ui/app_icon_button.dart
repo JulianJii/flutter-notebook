@@ -1,4 +1,4 @@
-import 'package:init/core/ui/app_icon.dart';
+import 'package:mynote/core/ui/app_icon.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 顶栏图标按钮。48dp 触控区 / 24dp 图形。

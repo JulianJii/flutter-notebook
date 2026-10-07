@@ -1,10 +1,10 @@
 import 'package:drift/drift.dart' show DriftWrappedException, Value;
 import 'package:drift/native.dart' show SqliteException;
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/folder_dao.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/features/notes/domain/entities/folder_with_count.dart';
-import 'package:init/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/folder_dao.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 
 /// UNIQUE 冲突在 [CacheException.message] 里的**前缀**。
 ///

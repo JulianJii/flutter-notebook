@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
 
 /// 批量清除全部已完成待办，返回删除行数。
 ///

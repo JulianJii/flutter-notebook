@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/app_divider.dart';
-import 'package:init/core/ui/app_list_tile.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/app_divider.dart';
+import 'package:mynote/core/ui/app_list_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget _wrap(Widget child) => MaterialApp(

@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/usecases/create_note_params.dart';
-import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
-import 'package:init/features/notes/domain/usecases/update_note_params.dart';
-import 'package:init/features/notes/domain/utils/note_delta.dart';
-import 'package:init/features/notes/domain/utils/word_counter.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
+import 'package:mynote/features/notes/domain/utils/note_delta.dart';
+import 'package:mynote/features/notes/domain/utils/word_counter.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_editor_provider.g.dart';

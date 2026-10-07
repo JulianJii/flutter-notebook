@@ -1,4 +1,4 @@
-import 'package:init/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../domain/entities/note.dart';

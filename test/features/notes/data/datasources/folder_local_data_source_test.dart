@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart' show Variable;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/features/notes/data/datasources/folder_local_data_source.dart';
-import 'package:init/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/features/notes/data/datasources/folder_local_data_source.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 
 /// drift 存 `DateTime` 用 unix **秒**，毫秒级的值会全部塌成 0。
 final DateTime _t1 = DateTime.fromMillisecondsSinceEpoch(100 * 1000);

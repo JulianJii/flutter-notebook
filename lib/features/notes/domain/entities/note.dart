@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
 
 const Object _unset = Object();
 

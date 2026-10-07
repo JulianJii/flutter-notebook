@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
 
 /// 勾选 / 取消勾选。传**目标值**（[ToggleTodoParams.isDone]）而不是「翻转」。
 ///

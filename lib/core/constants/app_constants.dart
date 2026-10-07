@@ -3,9 +3,9 @@ class AppConstants {
   static const String apiBaseUrl = 'https://api.yourdomain.com';
 
   // 应用常量
-  static const String appName = 'Flutter Riverpod Clean Architecture';
+  static const String appName = 'MyNote';
   static const String appVersion = '1.0.0';
-  static const String packageName = 'com.wode.init';
+  static const String packageName = 'com.wode.mynote';
   static const String iOSAppId = '123456789';
   static const String appcastUrl = 'https://your-appcast-url.com/appcast.xml';
 

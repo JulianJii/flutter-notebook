@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/providers/localization_providers.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
 
 /// 处理应用中语言特定资源的服务
 class LocalizedAssetService {

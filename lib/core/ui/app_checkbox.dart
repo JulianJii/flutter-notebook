@@ -1,5 +1,5 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_radius.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_radius.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 20dp 见方复选框（D2 待办行左侧）。

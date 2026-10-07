@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
-import 'package:init/features/notes/domain/usecases/update_note_params.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 
 /// 更新笔记（P3 的自动保存入口）。
 ///

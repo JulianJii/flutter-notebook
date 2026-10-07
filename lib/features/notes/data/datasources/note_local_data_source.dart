@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart' show DriftWrappedException, Value;
 import 'package:drift/native.dart' show SqliteException;
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/note_dao.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/note_dao.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
 
 /// 笔记的本地数据源。**SQL 的唯一调用方是 [NoteDao]**，本类只做
 /// 「`NoteQuery` → DAO 参数」的翻译与「drift 行 → 实体」的转换。

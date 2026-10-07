@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/core/utils/app_utils.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/presentation/providers/todo_list_provider.dart';
-import 'package:init/features/todos/presentation/providers/todo_reminder_provider.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/presentation/providers/todo_list_provider.dart';
+import 'package:mynote/features/todos/presentation/providers/todo_reminder_provider.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 

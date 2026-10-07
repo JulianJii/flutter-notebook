@@ -1,5 +1,5 @@
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/gen/assets.gen.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/gen/assets.gen.dart';
 
 /// 背景图的不透明度。详情页与列表卡片**共用一个值** —— 两处各调一个数字，
 /// 迟早会看到同一个背景在两个页面上深浅不一。

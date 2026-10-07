@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/localization/language_selector_widget.dart';
-import 'package:init/core/providers/localization_providers.dart';
-import 'package:init/core/localization/localization_service.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/localization/language_selector_widget.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
+import 'package:mynote/core/localization/localization_service.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class LocalizationDemo extends ConsumerWidget {

@@ -1,8 +1,8 @@
 // 只取 `Value` —— 整包导入 drift 会与 matcher 的 `isNull` 撞名。
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/note_dao.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/note_dao.dart';
 
 void main() {
   late AppDatabase db;

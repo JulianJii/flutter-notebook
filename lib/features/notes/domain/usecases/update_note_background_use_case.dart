@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
-import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
 
 /// 只改笔记的纸张背景（null = 清除）。
 ///

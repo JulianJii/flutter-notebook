@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:material_ui/material_ui.dart';
-import 'package:init/core/feature_flags/feature_flag_service.dart';
+import 'package:mynote/core/feature_flags/feature_flag_service.dart';
 
 /// 使用远程配置的功能开关服务实现
 /// 在真实应用中，这会使用 Firebase Remote Config 或类似的服务

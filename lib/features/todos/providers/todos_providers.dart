@@ -1,13 +1,13 @@
-import 'package:init/core/providers/database_providers.dart';
-import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:init/features/todos/data/repositories/todo_repository_impl.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
-import 'package:init/features/todos/domain/usecases/create_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
-import 'package:init/features/todos/domain/usecases/delete_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/watch_todos_use_case.dart';
+import 'package:mynote/core/providers/database_providers.dart';
+import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/data/repositories/todo_repository_impl.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/delete_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/watch_todos_use_case.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'todos_providers.g.dart';

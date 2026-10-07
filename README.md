@@ -160,8 +160,6 @@ Windows 用同名 `.ps1`（参数一致）；执行策略受限时：
 
 | 文档 | 内容 |
 |------|------|
-| [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) | 上手流程 |
-| [docs/ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md) | 分层与目录约定 |
 | [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md) | 编码规范与设计模式 |
 | [docs/FEATURES.md](docs/FEATURES.md) | 核心功能说明 |
 | [docs/OPEN-DESIGN-QUESTIONS.md](docs/OPEN-DESIGN-QUESTIONS.md) | 待设计确认清单（代码里的 `Q` 编号台账） |

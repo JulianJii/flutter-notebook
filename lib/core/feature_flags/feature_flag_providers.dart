@@ -1,10 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/analytics/analytics_providers.dart';
-import 'package:init/core/feature_flags/feature_flag_service.dart';
-import 'package:init/core/feature_flags/local_feature_flag_service.dart';
-import 'package:init/core/feature_flags/remote_feature_flag_service.dart';
+import 'package:mynote/core/analytics/analytics_providers.dart';
+import 'package:mynote/core/feature_flags/feature_flag_service.dart';
+import 'package:mynote/core/feature_flags/local_feature_flag_service.dart';
+import 'package:mynote/core/feature_flags/remote_feature_flag_service.dart';
 
 /// 默认功能开关的键
 const Map<String, dynamic> kDefaultFeatureFlags = {

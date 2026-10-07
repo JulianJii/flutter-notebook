@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/repositories/folder_repository.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
 
 /// 按用户拖拽后的顺序重排文件夹（P4 的拖动图标）。
 ///

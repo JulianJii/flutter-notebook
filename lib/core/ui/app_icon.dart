@@ -1,4 +1,4 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 设计稿 15 个图标语义的集中映射。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.5。

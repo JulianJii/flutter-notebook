@@ -1,4 +1,4 @@
-import 'package:init/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 白色圆角容器。全 App **唯一**的卡片外观。

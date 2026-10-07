@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart' show SqliteException;
-import 'package:init/core/database/app_database.dart';
-import 'package:init/features/backup/domain/entities/backup_snapshot.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/features/backup/domain/entities/backup_snapshot.dart';
 
 /// 三张表 ↔ [BackupSnapshot] 的双向通道。
 ///

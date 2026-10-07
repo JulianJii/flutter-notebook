@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:init/core/error/exceptions.dart';
+import 'package:mynote/core/error/exceptions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {

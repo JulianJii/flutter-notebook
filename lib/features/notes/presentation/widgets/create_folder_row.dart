@@ -1,8 +1,8 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// D4 列表末尾的「新建文件夹」行动作。唯一调用方是 P4（TASK-050）。

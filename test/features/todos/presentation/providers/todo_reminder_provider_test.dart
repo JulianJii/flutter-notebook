@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/notifications/reminder_scheduler.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_params.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_use_case.dart';
-import 'package:init/features/todos/presentation/providers/todo_reminder_provider.dart';
-import 'package:init/features/todos/providers/todos_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/notifications/reminder_scheduler.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_params.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
+import 'package:mynote/features/todos/presentation/providers/todo_reminder_provider.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockReminderScheduler extends Mock implements ReminderScheduler {}

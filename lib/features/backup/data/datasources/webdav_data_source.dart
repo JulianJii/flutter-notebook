@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:init/features/backup/domain/entities/webdav_config.dart';
+import 'package:mynote/features/backup/domain/entities/webdav_config.dart';
 
 /// WebDAV 客户端。只做三件事：`GET` 取快照、`PUT` 传快照、`PROPFIND` 探活。
 ///

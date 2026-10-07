@@ -1,6 +1,6 @@
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/ui/app_bottom_nav.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/app_bottom_nav.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/entities/note.dart';

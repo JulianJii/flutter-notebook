@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:init/core/analytics/analytics_event.dart';
-import 'package:init/core/analytics/analytics_service.dart';
+import 'package:mynote/core/analytics/analytics_event.dart';
+import 'package:mynote/core/analytics/analytics_service.dart';
 
 /// 使用 Firebase Analytics 实现的 AnalyticsService
 /// 注意：在实际应用中，你需要引入 firebase_analytics 包

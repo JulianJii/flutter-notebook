@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/data/datasources/folder_local_data_source.dart';
-import 'package:init/features/notes/data/repositories/folder_repository_impl.dart';
-import 'package:init/features/notes/domain/entities/folder_with_count.dart';
-import 'package:init/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/data/datasources/folder_local_data_source.dart';
+import 'package:mynote/features/notes/data/repositories/folder_repository_impl.dart';
+import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:uuid/uuid.dart';
 

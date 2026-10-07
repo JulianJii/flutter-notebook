@@ -1,13 +1,13 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart' show SqliteException;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/note_dao.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/features/notes/data/datasources/note_local_data_source.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/note_dao.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/features/notes/data/datasources/note_local_data_source.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockNoteDao extends Mock implements NoteDao {}

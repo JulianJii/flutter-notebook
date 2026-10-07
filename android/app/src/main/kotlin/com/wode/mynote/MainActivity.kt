@@ -1,4 +1,4 @@
-package com.wode.init
+package com.wode.mynote
 
 import io.flutter.embedding.android.FlutterActivity
 

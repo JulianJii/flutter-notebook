@@ -1,14 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/providers/database_providers.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
-import 'package:init/features/notes/domain/usecases/create_folder_params.dart';
-import 'package:init/features/notes/domain/usecases/create_note_params.dart';
-import 'package:init/features/notes/presentation/providers/note_list_provider.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/providers/database_providers.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
+import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
+import 'package:mynote/features/notes/presentation/providers/note_list_provider.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
 
 void main() {
   late AppDatabase db;

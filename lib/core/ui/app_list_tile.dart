@@ -1,7 +1,7 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/app_divider.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/app_divider.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 设置 / 文件夹 / 待办的通用行。P2 / P4 / P5 三页共用一个组件。

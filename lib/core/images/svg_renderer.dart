@@ -4,7 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/storage/cache_manager.dart';
+import 'package:mynote/core/storage/cache_manager.dart';
 
 /// SVG 缓存 Provider
 final svgCacheProvider = Provider<CacheManager<ui.Image>>((ref) {

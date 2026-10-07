@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/logging/logger_provider.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/backup/domain/entities/backup_import_result.dart';
-import 'package:init/features/backup/presentation/providers/webdav_config_provider.dart';
-import 'package:init/features/backup/providers/backup_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/backup/domain/entities/backup_import_result.dart';
+import 'package:mynote/features/backup/presentation/providers/webdav_config_provider.dart';
+import 'package:mynote/features/backup/providers/backup_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'backup_file_service.dart';

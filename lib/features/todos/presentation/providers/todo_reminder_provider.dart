@@ -1,7 +1,7 @@
-import 'package:init/core/notifications/reminder_scheduler.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_params.dart';
-import 'package:init/features/todos/providers/todos_providers.dart';
+import 'package:mynote/core/notifications/reminder_scheduler.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_params.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'todo_reminder_provider.g.dart';

@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show Value, Variable;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/folder_dao.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/folder_dao.dart';
 
 void main() {
   late AppDatabase db;

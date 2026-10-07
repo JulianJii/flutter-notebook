@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
 
 void main() {
   test('copyWith 切换 isDone', () {

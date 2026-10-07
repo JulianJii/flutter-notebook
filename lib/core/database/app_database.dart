@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:init/core/database/tables/note_folders_table.dart';
-import 'package:init/core/database/tables/notes_table.dart';
-import 'package:init/core/database/tables/todos_table.dart';
+import 'package:mynote/core/database/tables/note_folders_table.dart';
+import 'package:mynote/core/database/tables/notes_table.dart';
+import 'package:mynote/core/database/tables/todos_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 

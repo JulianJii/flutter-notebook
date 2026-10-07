@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/usecases/create_note_params.dart';
-import 'package:init/features/notes/domain/usecases/create_note_use_case.dart';
-import 'package:init/features/notes/domain/usecases/get_note_use_case.dart';
-import 'package:init/features/notes/domain/usecases/update_note_background_params.dart';
-import 'package:init/features/notes/domain/usecases/update_note_background_use_case.dart';
-import 'package:init/features/notes/domain/usecases/update_note_params.dart';
-import 'package:init/features/notes/domain/usecases/update_note_use_case.dart';
-import 'package:init/features/notes/presentation/providers/note_editor_provider.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
+import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
+import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockGetNote extends Mock implements GetNoteUseCase {}

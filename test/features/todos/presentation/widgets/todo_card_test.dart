@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/features/todos/presentation/widgets/todo_card.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/features/todos/presentation/widgets/todo_card.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:zoloto/zoloto.dart';
 

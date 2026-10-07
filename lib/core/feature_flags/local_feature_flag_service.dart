@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:material_ui/material_ui.dart';
-import 'package:init/core/feature_flags/feature_flag_service.dart';
+import 'package:mynote/core/feature_flags/feature_flag_service.dart';
 
 /// 使用本地值的功能开关服务实现
 /// 适用于开发、测试或作为回退方案

@@ -1,17 +1,17 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
-import 'package:init/features/todos/domain/usecases/create_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
-import 'package:init/features/todos/domain/usecases/delete_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_params.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/watch_todos_use_case.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/delete_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_params.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/watch_todos_use_case.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTodoRepository extends Mock implements TodoRepository {}

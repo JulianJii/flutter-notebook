@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/logging/console_logger.dart';
-import 'package:init/core/logging/logger.dart';
+import 'package:mynote/core/logging/console_logger.dart';
+import 'package:mynote/core/logging/logger.dart';
 
 /// 全局日志记录器实例的 Provider
 final loggerProvider = Provider<Logger>((ref) {

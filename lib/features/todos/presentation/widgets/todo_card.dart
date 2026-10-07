@@ -1,8 +1,8 @@
-import 'package:init/core/theme/tokens/app_colors.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/core/theme/tokens/app_text_styles.dart';
-import 'package:init/core/ui/ui.dart';
-import 'package:init/core/utils/app_utils.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/core/utils/app_utils.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// D2 的待办卡：左复选框 + 右标题，此外什么都没有（D2 明确「无日期、无优先级、

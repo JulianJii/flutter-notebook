@@ -1,18 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/providers/database_providers.dart';
-import 'package:init/core/providers/storage_providers.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
-import 'package:init/features/todos/domain/usecases/create_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/delete_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_params.dart';
-import 'package:init/features/todos/domain/usecases/toggle_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/update_todo_use_case.dart';
-import 'package:init/features/todos/domain/usecases/watch_todos_use_case.dart';
-import 'package:init/features/todos/providers/todos_providers.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/providers/database_providers.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/delete_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
+import 'package:mynote/features/todos/domain/usecases/toggle_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
+import 'package:mynote/features/todos/domain/usecases/watch_todos_use_case.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

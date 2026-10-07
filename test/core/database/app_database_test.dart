@@ -2,7 +2,7 @@
 // ignore: depend_on_referenced_packages
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
+import 'package:mynote/core/database/app_database.dart';
 
 void main() {
   late AppDatabase db;

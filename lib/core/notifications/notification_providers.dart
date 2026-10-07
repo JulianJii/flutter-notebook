@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:init/core/analytics/analytics_providers.dart';
-import 'package:init/core/notifications/debug_notification_service.dart';
-import 'package:init/core/notifications/notification_service.dart';
+import 'package:mynote/core/analytics/analytics_providers.dart';
+import 'package:mynote/core/notifications/debug_notification_service.dart';
+import 'package:mynote/core/notifications/notification_service.dart';
 
 /// 通知服务的 Provider
 final notificationServiceProvider = Provider<NotificationService>((ref) {

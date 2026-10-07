@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/database/daos/todo_dao.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/database/daos/todo_dao.dart';
 
 /// [createdAt] 单位是**秒**：drift 默认把 `DateTime` 存成 unix 秒，毫秒级的值
 /// 会全部塌成 0（于是排序键相同，测不出方向）。

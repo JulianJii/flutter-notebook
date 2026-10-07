@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/router/app_routes.dart';
+import 'package:mynote/core/router/app_routes.dart';
 
 void main() {
   group('AppRoutes', () {

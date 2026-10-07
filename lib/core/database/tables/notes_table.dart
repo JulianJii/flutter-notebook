@@ -20,7 +20,7 @@ import 'note_folders_table.dart';
 /// ⚠️ 本文件**没有** `part 'notes_table.g.dart'`：drift 2.35 默认是
 /// monolithic shared-part 模式，行类（`NoteRow`）与 companion（`NotesCompanion`）
 /// 由 `build_runner` 生成进**数据库文件**的 `app_database.g.dart`。要拿到
-/// `NoteRow` 需 `import 'package:init/core/database/app_database.dart';`。
+/// `NoteRow` 需 `import 'package:mynote/core/database/app_database.dart';`。
 /// 表名 / 列 getter（`notes` / `Notes.id` …）则直接从本文件取。
 @DataClassName('NoteRow')
 @TableIndex(name: 'idx_notes_folder_id', columns: {#folderId})

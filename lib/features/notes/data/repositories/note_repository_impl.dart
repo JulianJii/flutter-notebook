@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:init/core/error/exceptions.dart';
-import 'package:init/core/error/failures.dart';
-import 'package:init/features/notes/data/datasources/note_local_data_source.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/domain/entities/note_query.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/features/notes/data/datasources/note_local_data_source.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_query.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 import 'package:uuid/uuid.dart';
 
 /// 笔记 Repository 的唯一实现。

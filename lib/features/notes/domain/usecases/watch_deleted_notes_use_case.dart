@@ -1,5 +1,5 @@
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/repositories/note_repository.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 
 /// 订阅「最近删除」列表（软删除的笔记，按删除时间倒序）。
 ///

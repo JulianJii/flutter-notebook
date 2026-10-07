@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/ui/app_card.dart';
-import 'package:init/core/ui/app_icon.dart';
-import 'package:init/features/notes/presentation/widgets/create_folder_row.dart';
-import 'package:init/features/notes/presentation/widgets/folder_row.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/ui/app_card.dart';
+import 'package:mynote/core/ui/app_icon.dart';
+import 'package:mynote/features/notes/presentation/widgets/create_folder_row.dart';
+import 'package:mynote/features/notes/presentation/widgets/folder_row.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 Widget _wrap(Widget child) => MaterialApp(

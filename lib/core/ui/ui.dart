@@ -1,4 +1,4 @@
-// core/ui 公共出口。调用方一律 `import 'package:init/core/ui/ui.dart';`。
+// core/ui 公共出口。调用方一律 `import 'package:mynote/core/ui/ui.dart';`。
 //
 // ⚠️ 本文件只导出 core/ui 下的 T1 组件。不要把 lib/core/generators/ 下的
 //    同名 0 字节模板文件导进来（app_card.dart 等在两处同名）。

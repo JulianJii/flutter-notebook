@@ -1,6 +1,6 @@
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/todos/domain/entities/todo.dart';
-import 'package:init/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
 
 /// 订阅全量待办。**唯一的 P2 列表数据入口**。
 ///

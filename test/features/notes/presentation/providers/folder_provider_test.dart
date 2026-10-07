@@ -1,15 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/database/app_database.dart';
-import 'package:init/core/providers/database_providers.dart';
-import 'package:init/core/usecases/usecase.dart';
-import 'package:init/features/notes/domain/entities/folder_with_count.dart';
-import 'package:init/features/notes/domain/entities/note_folder.dart';
-import 'package:init/features/notes/domain/usecases/create_folder_params.dart';
-import 'package:init/features/notes/domain/usecases/create_note_params.dart';
-import 'package:init/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
-import 'package:init/features/notes/presentation/providers/folder_provider.dart';
-import 'package:init/features/notes/providers/notes_providers.dart';
+import 'package:mynote/core/database/app_database.dart';
+import 'package:mynote/core/providers/database_providers.dart';
+import 'package:mynote/core/usecases/usecase.dart';
+import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
+import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
+import 'package:mynote/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
+import 'package:mynote/features/notes/presentation/providers/folder_provider.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockWatchFolderCountsUseCase extends Mock

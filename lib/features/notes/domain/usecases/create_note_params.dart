@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
 
 /// `CreateNoteUseCase` 的参数。多参数才建 params 类（`Get` / `Delete` 单参数
 /// 直接收 `String`）。可构造 + 有 `==`，供测试的 `registerFallbackValue` 使用。

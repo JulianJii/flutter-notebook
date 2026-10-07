@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:material_ui/material_ui.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:zoloto/zoloto.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {

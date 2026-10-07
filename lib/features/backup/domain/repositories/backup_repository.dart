@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import 'package:init/core/error/failures.dart';
+import 'package:mynote/core/error/failures.dart';
 
 import '../entities/backup_import_result.dart';
 import '../entities/webdav_config.dart';

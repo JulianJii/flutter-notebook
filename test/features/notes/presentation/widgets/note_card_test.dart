@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:init/core/theme/app_theme.dart';
-import 'package:init/core/theme/tokens/app_spacing.dart';
-import 'package:init/features/notes/domain/entities/note.dart';
-import 'package:init/features/notes/domain/entities/note_background.dart';
-import 'package:init/features/notes/presentation/widgets/note_background_image.dart';
-import 'package:init/features/notes/presentation/widgets/note_card.dart';
-import 'package:init/gen/l10n/app_localizations.dart';
+import 'package:mynote/core/theme/app_theme.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/presentation/widgets/note_background_image.dart';
+import 'package:mynote/features/notes/presentation/widgets/note_card.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {

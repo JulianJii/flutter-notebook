@@ -180,11 +180,13 @@ void main() {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    expect(find.byType(AppIconButton), findsNWidgets(4));
+    // 顶栏 4 个 + 正文工具条右端的「插入图片」1 个。
+    expect(find.byType(AppIconButton), findsNWidgets(5));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.share), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
+    expect(find.byIcon(AppIcons.image), findsOneWidget);
     expect(find.byType(AppBottomNav), findsNothing, reason: '笔记详情是二级 Push 页');
   });
 

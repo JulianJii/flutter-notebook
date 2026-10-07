@@ -131,6 +131,17 @@ class SettingsScreen extends ConsumerWidget {
                         dividerBefore: true,
                         onTap: () => context.push(AppRoutes.theme),
                       ),
+                      // 插入图片前是否压缩。放在「笔记样式」组：它改的不是页面观感，
+                      // 而是笔记正文插入图片时对原图的处理口径，消费方只有笔记详情
+                      // （经 `noteCompressImagesProvider` 单向订阅这个 bool）。
+                      AppSwitchRow(
+                        key: const Key('switch_compress_images'),
+                        title: l10n.settingsCompressImages,
+                        subtitle: l10n.settingsCompressImagesDesc,
+                        value: settings.compressImages,
+                        dividerBefore: true,
+                        onChanged: notifier.setCompressImages,
+                      ),
                     ],
                   ),
                   AppSettingsGroup(

@@ -99,4 +99,3 @@ final logger = ref.read(loggerProvider);
 logger.e('save failed'); // v/d/i/w/e/c/p，另有 child(tag) 派生子 logger
 ```
 
-> ⚠️ 早期文档提到的 `core/utils/extensions/`（`context.tr()`、`DateTime.timeAgo` 等）**不存在**，未实现。取文案用 `AppLocalizations.of(context).xxx`（gen-l10n 强类型 getter），日期格式化用 `core/localization` 的 `context.formatDate/formatTime/formatDateTime/formatCurrency` 扩展。

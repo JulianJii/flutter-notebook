@@ -39,7 +39,9 @@ class AppConstants {
   //     —— 分别随 `lib/features/auth/`、`lib/features/home/`、
   //        `lib/features/posts/` 与 `lib/core/auth/` 一并删除。
   // Examples hub & integration pattern demo routes
-  static const String advancedFeaturesRoute = '/examples/advanced';
+  //
+  // 已删：`advancedFeaturesRoute` —— 随 `advanced_features_showcase.dart` 与
+  // `core/images/` 一并删除（零外部引用）。
   static const String localizationDemoScreenRoute = '/examples/localization';
   static const String languageSelectorDemoRoute =
       '/examples/localization/selector';

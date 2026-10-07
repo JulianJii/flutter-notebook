@@ -70,3 +70,11 @@ class NotificationFailure extends Failure {
     super.statusCode,
   });
 }
+
+/// 笔记图片失败：选出来的文件读不出字节，或压缩失败。
+///
+/// ⛔ message 要给**用户能看懂的原因**：失败传回 UI 后直接进 Snackbar 文案
+/// （见 `NoteImage` 的处理链路），开发者日志不属于 Failure。
+class ImageFailure extends Failure {
+  const ImageFailure({super.message = 'Image failure', super.statusCode});
+}

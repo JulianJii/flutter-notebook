@@ -14,10 +14,13 @@ title: Features
 
 - **列表** `/notes`：瀑布流卡片、按标题 / 正文搜索（无结果有空态提示）、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计。
 - **详情** `/notes/:id`、`/notes/new`：标题 + 正文编辑，**自动保存**（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认）。正文唯一真相源是 **Quill Delta JSON**（`flutter_quill`）。从某个分类页点 + 号进 `/notes/new?folder=<id>`（`AppRoutes.noteNewPath`），该分类随新笔记一起落库。
+- **图片**：正文工具条右端的图片按钮 → 系统文件选择器（`file_picker`，`FileType.image`，支持多选）→ 在当前光标处插入。图片**不落文件系统**，而是 base64 的 data-URI 内嵌进 Quill 的 image embed（`NoteImage.embedData`），随 `notes.content` 一起落库 —— 因此不存在「笔记还在、图片没了」的悬挂引用。设置里「压缩插入的图片」开启时（默认开），大于 2MB 的图会先压成 JPEG（`flutter_image_compress`）；关掉则原图直嵌。
 - **文件夹管理** `/notes/folders`：新建 / 重命名 / 删除 / 拖拽排序，显示每个文件夹的笔记数。
 - **最近删除** `/notes/trash`：软删除列表，支持恢复、永久删除、清空回收站（均二次确认）。
 
 > 筛选是 `sealed NoteFolderFilter` 三态；列表由 `StreamProvider.family(NoteQuery)` 驱动，筛选 / 排序变化即自动重查。
+
+> ⚠️ **图片内嵌的三条代价**（用户选择带来的天花板，不是 bug）：① 正文比二进制原图大 ~1/3；② 每次按键是全量序列化整份 Delta（`_onContentChanged`），带若干张图的长笔记上会出现卡顿 —— 真到那天再换成 `controller.changes` 增量合并 + debounce；③ 单张上限 10MB、一次最多 20MB（`NoteImage` 里的常量），超限直接拒绝并提示。列表摘要走 `NoteDelta.plainText`，它跳过 embed，图片不会变成乱码。
 
 ### 待办（`lib/features/todos/`）
 
@@ -35,7 +38,7 @@ title: Features
 
 ### 设置（`lib/features/settings/`）
 
-笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、最近删除入口、隐私政策 / 用户协议、**关于**（`/settings/about`：版本号 + 检测更新 + 仓库主页 + 开源许可）。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
+笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、**压缩插入的图片**（见上「图片」）、最近删除入口、隐私政策 / 用户协议、**关于**（`/settings/about`：版本号 + 检测更新 + 仓库主页 + 开源许可）。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
 
 「数据与同步」行是进入 `features/backup/` 的跳转入口（见下节），不把 WebDAV 配置并进 `AppSettings` —— 那是「App 长什么样」的偏好，凭据是另一回事。
 

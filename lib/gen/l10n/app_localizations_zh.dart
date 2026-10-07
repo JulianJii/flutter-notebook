@@ -179,6 +179,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noteBackground => '背景';
 
   @override
+  String get noteImageInsert => '插入图片';
+
+  @override
+  String get noteImageInsertFailed => '图片插入失败（单张上限 10MB，一次最多 20MB）';
+
+  @override
   String get noteBackgroundNone => '无背景';
 
   @override
@@ -300,6 +306,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsNoteLayout => '笔记列表布局';
+
+  @override
+  String get settingsCompressImages => '压缩插入的图片';
+
+  @override
+  String get settingsCompressImagesDesc => '大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大';
 
   @override
   String get settingsTextScaleSmall => '小';

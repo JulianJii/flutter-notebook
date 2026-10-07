@@ -64,6 +64,7 @@ Map<String, Object?> _toJson(AppSettings s) {
     'noteLayout': s.noteLayout.name,
     'themeMode': s.themeMode.name,
     'colorScheme': s.colorScheme.name,
+    'compressImages': s.compressImages,
   };
 }
 
@@ -82,6 +83,7 @@ AppSettings _fromJson(Map<String, Object?> json) {
     themeMode: _byName(AppThemeMode.values, json['themeMode']) ?? d.themeMode,
     colorScheme:
         _byName(AppColorScheme.values, json['colorScheme']) ?? d.colorScheme,
+    compressImages: (json['compressImages'] as bool?) ?? d.compressImages,
   );
 }
 

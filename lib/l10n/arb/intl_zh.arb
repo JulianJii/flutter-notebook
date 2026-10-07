@@ -216,6 +216,14 @@
   "@noteBackground": {
     "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
   },
+  "noteImageInsert": "插入图片",
+  "@noteImageInsert": {
+    "description": "Tooltip of the note detail editor toolbar button that picks an image to insert into the note body"
+  },
+  "noteImageInsertFailed": "图片插入失败（单张上限 10MB，一次最多 20MB）",
+  "@noteImageInsertFailed": {
+    "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"
+  },
   "noteBackgroundNone": "无背景",
   "@noteBackgroundNone": {
     "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"
@@ -388,6 +396,14 @@
   "settingsNoteLayout": "笔记列表布局",
   "@settingsNoteLayout": {
     "description": "Settings stepper row title: note list layout"
+  },
+  "settingsCompressImages": "压缩插入的图片",
+  "@settingsCompressImages": {
+    "description": "Settings switch row title: compress images before embedding them into note content"
+  },
+  "settingsCompressImagesDesc": "大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大",
+  "@settingsCompressImagesDesc": {
+    "description": "Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals"
   },
   "settingsTextScaleSmall": "小",
   "@settingsTextScaleSmall": {

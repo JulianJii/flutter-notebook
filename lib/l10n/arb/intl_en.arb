@@ -219,6 +219,14 @@
   "@noteBackground": {
     "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
   },
+  "noteImageInsert": "Insert image",
+  "@noteImageInsert": {
+    "description": "Tooltip of the note detail editor toolbar button that picks an image to insert into the note body"
+  },
+  "noteImageInsertFailed": "Could not insert the image (10MB per image, 20MB in total)",
+  "@noteImageInsertFailed": {
+    "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"
+  },
   "noteBackgroundNone": "No background",
   "@noteBackgroundNone": {
     "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"
@@ -391,6 +399,14 @@
   "settingsNoteLayout": "Note list layout",
   "@settingsNoteLayout": {
     "description": "Settings stepper row title: note list layout"
+  },
+  "settingsCompressImages": "Compress inserted images",
+  "@settingsCompressImages": {
+    "description": "Settings switch row title: compress images before embedding them into note content"
+  },
+  "settingsCompressImagesDesc": "Images over 2MB are re-encoded as JPEG. Turn off to keep originals, at the cost of larger notes",
+  "@settingsCompressImagesDesc": {
+    "description": "Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals"
   },
   "settingsTextScaleSmall": "Small",
   "@settingsTextScaleSmall": {

@@ -39,17 +39,27 @@ abstract final class NoteDelta {
         .where((op) => op.data is String)
         .map((op) => op.data as String)
         .join();
-    // ponytail: 到上限就整块清空（不是 LRU）—— 换来的最坏情况只是退化成
+    // ponytail: 超预算就整块清空（不是 LRU）—— 换来的最坏情况只是退化成
     // 无缓存的正确结果。真的需要精确 LRU 时再换实现，别提前优化。
-    if (_plainTextCache.length >= _plainTextCacheLimit) _plainTextCache.clear();
+    //
+    // ⚠️ 预算按**累计字符数**而不是条目数：正文里可以嵌 base64 图片，一条 raw
+    // 就能到几 MB，按条目数限 64 条等于把几百 MB 强引用钉死在内存里。
+    if (_plainTextCacheChars + raw.length > _plainTextCacheCharLimit) {
+      _plainTextCache.clear();
+      _plainTextCacheChars = 0;
+    }
     _plainTextCache[raw] = text;
+    _plainTextCacheChars += raw.length;
     return text;
   }
 
   static final Map<String, String> _plainTextCache = {};
 
-  /// 上限按「可见卡片数×2」取，再多也换不来什么。
-  static const int _plainTextCacheLimit = 64;
+  /// 已存 key 的累计字符数。[_plainTextCache] 本身无长度信息，自己记一笔。
+  static int _plainTextCacheChars = 0;
+
+  /// 缓存预算（约 256K 字符 ≈ 数十条长笔记的摘要）。
+  static const int _plainTextCacheCharLimit = 256 * 1024;
 
   /// 空正文的规范 Delta。`Document` 不接受空 Delta（`loadDocument` 抛
   /// ArgumentError），故这里补一个换行 insert。

@@ -100,7 +100,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'311c87818484166bddab6a54ccc903a883d1c7b1';
+String _$settingsHash() => r'b3ecb8258059e96c2832be14d90505d103817ce1';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///

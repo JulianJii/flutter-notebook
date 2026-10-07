@@ -184,6 +184,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteBackground => 'Background';
 
   @override
+  String get noteImageInsert => 'Insert image';
+
+  @override
+  String get noteImageInsertFailed =>
+      'Could not insert the image (10MB per image, 20MB in total)';
+
+  @override
   String get noteBackgroundNone => 'No background';
 
   @override
@@ -307,6 +314,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsNoteLayout => 'Note list layout';
+
+  @override
+  String get settingsCompressImages => 'Compress inserted images';
+
+  @override
+  String get settingsCompressImagesDesc =>
+      'Images over 2MB are re-encoded as JPEG. Turn off to keep originals, at the cost of larger notes';
 
   @override
   String get settingsTextScaleSmall => 'Small';

@@ -2,8 +2,10 @@ import 'package:mynote/core/providers/database_providers.dart';
 import 'package:mynote/features/notes/data/datasources/folder_local_data_source.dart';
 import 'package:mynote/features/notes/data/datasources/note_local_data_source.dart';
 import 'package:mynote/features/notes/data/repositories/folder_repository_impl.dart';
+import 'package:mynote/features/notes/data/repositories/note_image_repository_impl.dart';
 import 'package:mynote/features/notes/data/repositories/note_repository_impl.dart';
 import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
+import 'package:mynote/features/notes/domain/repositories/note_image_repository.dart';
 import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 import 'package:mynote/features/notes/domain/usecases/create_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart';
@@ -11,6 +13,7 @@ import 'package:mynote/features/notes/domain/usecases/delete_folder_use_case.dar
 import 'package:mynote/features/notes/domain/usecases/delete_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/empty_trash_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/pick_note_image_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/purge_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/restore_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/rename_folder_use_case.dart';
@@ -126,4 +129,17 @@ PurgeNoteUseCase purgeNoteUseCase(Ref ref) {
 @riverpod
 EmptyTrashUseCase emptyTrashUseCase(Ref ref) {
   return EmptyTrashUseCase(ref.watch(noteRepositoryProvider));
+}
+
+// ---- 图片 ----
+// ⛔ 不要 keepAlive：`NoteImageRepositoryImpl` 无状态（每次都新开选择器），
+// 常驻只为省一次 new，收益为零。
+@riverpod
+NoteImageRepository noteImageRepository(Ref ref) {
+  return NoteImageRepositoryImpl();
+}
+
+@riverpod
+PickNoteImageUseCase pickNoteImageUseCase(Ref ref) {
+  return PickNoteImageUseCase(ref.watch(noteImageRepositoryProvider));
 }

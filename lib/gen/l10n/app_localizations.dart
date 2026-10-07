@@ -404,6 +404,18 @@ abstract class AppLocalizations {
   /// **'背景'**
   String get noteBackground;
 
+  /// Tooltip of the note detail editor toolbar button that picks an image to insert into the note body
+  ///
+  /// In zh, this message translates to:
+  /// **'插入图片'**
+  String get noteImageInsert;
+
+  /// Snackbar shown when picking or compressing the chosen images fails, including the size limits
+  ///
+  /// In zh, this message translates to:
+  /// **'图片插入失败（单张上限 10MB，一次最多 20MB）'**
+  String get noteImageInsertFailed;
+
   /// Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet
   ///
   /// In zh, this message translates to:
@@ -637,6 +649,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'笔记列表布局'**
   String get settingsNoteLayout;
+
+  /// Settings switch row title: compress images before embedding them into note content
+  ///
+  /// In zh, this message translates to:
+  /// **'压缩插入的图片'**
+  String get settingsCompressImages;
+
+  /// Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals
+  ///
+  /// In zh, this message translates to:
+  /// **'大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大'**
+  String get settingsCompressImagesDesc;
 
   /// Font size option: small
   ///

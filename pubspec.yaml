@@ -122,6 +122,8 @@ dependencies:
   #瀑布流网格（D1 笔记列表 2 列）—— ARCHITECTURE-DESIGN §7.5 裁决新增的唯一 UI 依赖
   flutter_staggered_grid_view: ^0.7.0
   file_picker: ^13.1.0
+  #插入笔记图片：把超大图压成 JPEG 再 base64 内嵌（设置项可关）
+  flutter_image_compress: ^2.5.1
   #待办提醒：到点弹系统通知（Android / iOS）
   # ⚠️ 只能用 23.0.0-dev.x：稳定版（19~22）的 Linux 实现锁 `dbus ^0.7.8`，而
   # `wakelock_plus >=1.8.1` 要 `dbus ^0.8.0`，两者求解不出来。等上游跟到 dbus 0.8

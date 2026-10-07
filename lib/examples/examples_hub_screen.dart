@@ -74,15 +74,9 @@ class ExamplesHubScreen extends StatelessWidget {
           _Section(
             title: 'App capabilities',
             entries: [
-              _Entry(
-                icon: Icons.tune,
-                title: 'Advanced features showcase',
-                subtitle:
-                    'Feature flags, analytics, notifications, images, '
-                    'logging, accessibility, updates, offline sync, reviews',
-                onTap: (context) =>
-                    context.push(AppConstants.advancedFeaturesRoute),
-              ),
+              // 「Advanced features showcase」随 `core/images/` 一并删除：那套
+              // ImageProcessor / AdvancedImage 无人调用，`flutter_image_compress`
+              // 落地后业务侧也不再需要它们。
               _Entry(
                 icon: Icons.language,
                 title: 'Localization',

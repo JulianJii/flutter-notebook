@@ -21,6 +21,7 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/note_editor_provider.dart';
 import '../providers/note_prefs_provider.dart';
 import '../widgets/note_background_image.dart';
+import '../widgets/note_image_embed_builder.dart';
 
 /// 笔记详情 / 编辑。
 ///
@@ -377,6 +378,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           // 外层已有 SingleChildScrollView，编辑器内不再自带滚动。
           scrollable: false,
           padding: EdgeInsets.zero,
+          // 正文里图片的渲染器。不注册的话 image embed 会走 Quill 的
+          // `unknownEmbedBuilder`，画成一块占位文字。
+          embedBuilders: <EmbedBuilder>[NoteImageEmbedBuilder()],
         ),
       ),
     );
@@ -391,13 +395,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 /// 按钮集是**裁剪过的**：Quill 默认全量（字体 / 字号 / 对齐 / 颜色 / 代码块 /
 /// 上下标 / 缩进 / 剪贴板 / 搜索）一行滑不完，找按钮要一直横向拖。
 /// 关掉的每一项下面都写了理由 —— 等溢出菜单 / 配色的稿再评估加回。
-class _EditorToolbar extends StatelessWidget {
+class _EditorToolbar extends ConsumerWidget {
   const _EditorToolbar({required this.controller});
 
   final QuillController controller;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DecoratedBox(
       // 底边一条分隔线把工具条与正文分开。页面 `Column` 的交叉轴是 `start`，
       // 故要显式撑满，否则这条线只盖住工具条本身那一段。
@@ -406,9 +410,26 @@ class _EditorToolbar extends StatelessWidget {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: QuillSimpleToolbar(
-          controller: controller,
-          config: QuillSimpleToolbarConfig(
+        child: Row(
+          children: <Widget>[
+            // `Expanded` 而非等分：工具条按钮数随 11 个按钮横滚变化，
+            // 给它「剩下的全部」，图片按钮则始终钉在右端。
+            Expanded(child: _richTextButtons(context)),
+            AppIconButton(
+              icon: AppIcons.image,
+              tooltip: AppLocalizations.of(context).noteImageInsert,
+              onPressed: () => _insertImage(context, ref),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _richTextButtons(BuildContext context) {
+    return QuillSimpleToolbar(
+      controller: controller,
+      config: QuillSimpleToolbarConfig(
             // 单行：`multiRowsDisplay: false` 走 Quill 自带的横向滚动按钮列表
             // （固定高 42dp，放不下时两侧出现滚动箭头）。360dp 竖屏放不下 11 个
             // 按钮，故**必然**是「一行 + 可滑动」而不是 `Wrap` 的两行。
@@ -449,8 +470,45 @@ class _EditorToolbar extends StatelessWidget {
             showSearchButton: false,
             showDirection: false,
           ),
-        ),
+        );
+  }
+
+  /// 选图 → 压缩 → 插进正文。
+  ///
+  /// 插入动作本身由 `QuillController` 完成，落库走既有的 `_onContentChanged`
+  /// 链路（`@riverpod` 的 NoteEditor debounce），这里不碰任何持久化代码。
+  Future<void> _insertImage(BuildContext context, WidgetRef ref) async {
+    final result = await ref.read(
+      pickNoteImageUseCaseProvider,
+    )(compress: ref.read(noteCompressImagesProvider));
+
+    // ⚠️ 异步间隙：选择器期间用户可能已退出本页（`context` 失效后再用会崩）。
+    if (!context.mounted) return;
+
+    result.fold(
+      // 文案里带上上限：对着一张 15MB 的照片说「插入失败」，用户只会反复重试。
+      // 至于「太大」与「读取失败」共用一句，是因为两者的补救动作一样（换张图）。
+      (failure) => AppUtils.showSnackBar(
+        context,
+        message: AppLocalizations.of(context).noteImageInsertFailed,
       ),
+      (images) {
+        for (final image in images) {
+          _insertSingle(image.embedData);
+        }
+      },
+    );
+  }
+
+  /// 在光标处插一张图，并把光标移到这张图之后（多图依次往下排）。
+  void _insertSingle(String embedData) {
+    final max = controller.document.length;
+    final index = controller.selection.baseOffset.clamp(0, max);
+    controller.replaceText(
+      index,
+      0,
+      BlockEmbed.image(embedData),
+      TextSelection.collapsed(offset: index + 1),
     );
   }
 }

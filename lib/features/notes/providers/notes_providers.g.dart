@@ -898,3 +898,99 @@ final class EmptyTrashUseCaseProvider
 }
 
 String _$emptyTrashUseCaseHash() => r'9daefe6c23d956a4c025f5967edfb6ea8cb0d1a0';
+
+@ProviderFor(noteImageRepository)
+final noteImageRepositoryProvider = NoteImageRepositoryProvider._();
+
+final class NoteImageRepositoryProvider
+    extends
+        $FunctionalProvider<
+          NoteImageRepository,
+          NoteImageRepository,
+          NoteImageRepository
+        >
+    with $Provider<NoteImageRepository> {
+  NoteImageRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'noteImageRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$noteImageRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<NoteImageRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NoteImageRepository create(Ref ref) {
+    return noteImageRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoteImageRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoteImageRepository>(value),
+    );
+  }
+}
+
+String _$noteImageRepositoryHash() =>
+    r'2e7fae8b430fc917b5cfcf6aeac6abc971020001';
+
+@ProviderFor(pickNoteImageUseCase)
+final pickNoteImageUseCaseProvider = PickNoteImageUseCaseProvider._();
+
+final class PickNoteImageUseCaseProvider
+    extends
+        $FunctionalProvider<
+          PickNoteImageUseCase,
+          PickNoteImageUseCase,
+          PickNoteImageUseCase
+        >
+    with $Provider<PickNoteImageUseCase> {
+  PickNoteImageUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pickNoteImageUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$pickNoteImageUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<PickNoteImageUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PickNoteImageUseCase create(Ref ref) {
+    return pickNoteImageUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PickNoteImageUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PickNoteImageUseCase>(value),
+    );
+  }
+}
+
+String _$pickNoteImageUseCaseHash() =>
+    r'6bf05c5e45f52777bd7d63c88db89732ea67c2c3';

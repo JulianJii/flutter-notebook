@@ -78,6 +78,10 @@ class Settings extends _$Settings {
   void setColorScheme(AppColorScheme value) =>
       _write(state.copyWith(colorScheme: value));
 
+  /// 插入图片前是否压缩。false = 原图直嵌（画质无损、正文字节数大得多）。
+  void setCompressImages(bool value) =>
+      _write(state.copyWith(compressImages: value));
+
   // ⛔ **不建 `setLocale`**：语言的真源是 `core` 的 `persistentLocaleProvider`
   // （键 `selected_language_code`，自己写盘），设置页的语言行直接读写它。
   // 在这里再存一份就是双真相源（`AppSettings.locale` 已因此删除）。

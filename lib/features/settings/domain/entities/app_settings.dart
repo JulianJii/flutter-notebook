@@ -36,6 +36,7 @@ class AppSettings extends Equatable {
     this.noteLayout = NoteLayout.grid,
     this.themeMode = AppThemeMode.system,
     this.colorScheme = AppColorScheme.amber,
+    this.compressImages = true,
   });
 
   /// 默认值入口。设置稿上显示的正是这几个值。
@@ -44,7 +45,8 @@ class AppSettings extends Equatable {
       noteSort = AppNoteSort.editedDesc,
       noteLayout = NoteLayout.grid,
       themeMode = AppThemeMode.system,
-      colorScheme = AppColorScheme.amber;
+      colorScheme = AppColorScheme.amber,
+      compressImages = true;
 
   final TextScaleLevel textScale;
 
@@ -64,12 +66,20 @@ class AppSettings extends Equatable {
   /// 默认 `amber` = 设计稿 `#F0A020`。
   final AppColorScheme colorScheme;
 
+  /// 插入图片前是否压缩。
+  ///
+  /// true（默认）→ 超过 [NoteImage.compressByteThreshold] 的图片压成 JPEG 再
+  /// 内嵌；false → 原图直嵌，画质无损但正文字节数会大得多。
+  /// 阈值与违反上限都住在 `NoteImage`，本类不带业务常量。
+  final bool compressImages;
+
   AppSettings copyWith({
     TextScaleLevel? textScale,
     AppNoteSort? noteSort,
     NoteLayout? noteLayout,
     AppThemeMode? themeMode,
     AppColorScheme? colorScheme,
+    bool? compressImages,
   }) {
     return AppSettings(
       textScale: textScale ?? this.textScale,
@@ -77,6 +87,7 @@ class AppSettings extends Equatable {
       noteLayout: noteLayout ?? this.noteLayout,
       themeMode: themeMode ?? this.themeMode,
       colorScheme: colorScheme ?? this.colorScheme,
+      compressImages: compressImages ?? this.compressImages,
     );
   }
 
@@ -87,5 +98,6 @@ class AppSettings extends Equatable {
     noteLayout,
     themeMode,
     colorScheme,
+    compressImages,
   ];
 }

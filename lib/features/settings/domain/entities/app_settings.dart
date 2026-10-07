@@ -23,7 +23,7 @@ enum NoteLayout { grid, list }
 /// 映射成 `ThemeMode` 在 `main.dart` 的 `MyApp` 里（3↔3 一一对应）。
 enum AppThemeMode { system, light, dark }
 
-/// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
+/// 用户偏好。5 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
 /// 需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
 ///
@@ -34,7 +34,6 @@ class AppSettings extends Equatable {
     this.textScale = TextScaleLevel.normal,
     this.noteSort = AppNoteSort.editedDesc,
     this.noteLayout = NoteLayout.grid,
-    this.locale,
     this.themeMode = AppThemeMode.system,
     this.colorScheme = AppColorScheme.amber,
   });
@@ -44,7 +43,6 @@ class AppSettings extends Equatable {
     : textScale = TextScaleLevel.normal,
       noteSort = AppNoteSort.editedDesc,
       noteLayout = NoteLayout.grid,
-      locale = null,
       themeMode = AppThemeMode.system,
       colorScheme = AppColorScheme.amber;
 
@@ -54,13 +52,11 @@ class AppSettings extends Equatable {
 
   final NoteLayout noteLayout;
 
-  /// 语言，BCP-47 主语言码（`'zh'` / `'en'`）。null = 跟系统。
+  /// ⛔ **这里没有 `locale` 字段**：语言的真源是 `core` 的
+  /// `persistentLocaleProvider`（`selected_language_code`），它自己写盘。
+  /// 在这里再存一份就成了双真相源，且表达不出「跟随系统」这一档
+  /// （见 `docs/LOCALIZATION_GUIDE.md`）。
   ///
-  /// ⚠️ **存 `String?` 而不是 Flutter 的 `Locale?`**：domain 是纯 Dart 层，
-  /// `Locale` 住在 `dart:ui`，import 它就破了「domain ⛔ 不 import Flutter」。
-  /// 映射成 `Locale` 在 presentation 层（`TASK-045`）。
-  final String? locale;
-
   /// 明暗。设置「跟随系统 / 浅色 / 深色」三档（主题页）。
   final AppThemeMode themeMode;
 
@@ -72,7 +68,6 @@ class AppSettings extends Equatable {
     TextScaleLevel? textScale,
     AppNoteSort? noteSort,
     NoteLayout? noteLayout,
-    Object? locale = _unset,
     AppThemeMode? themeMode,
     AppColorScheme? colorScheme,
   }) {
@@ -80,7 +75,6 @@ class AppSettings extends Equatable {
       textScale: textScale ?? this.textScale,
       noteSort: noteSort ?? this.noteSort,
       noteLayout: noteLayout ?? this.noteLayout,
-      locale: identical(locale, _unset) ? this.locale : locale as String?,
       themeMode: themeMode ?? this.themeMode,
       colorScheme: colorScheme ?? this.colorScheme,
     );
@@ -91,11 +85,7 @@ class AppSettings extends Equatable {
     textScale,
     noteSort,
     noteLayout,
-    locale,
     themeMode,
     colorScheme,
   ];
 }
-
-/// [copyWith] 的哨兵：`copyWith(locale: null)` 必须**真的**把语言切回「跟系统」。
-const Object _unset = Object();

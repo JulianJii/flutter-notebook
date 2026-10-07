@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/shell/notes_shell.dart';
@@ -30,6 +31,7 @@ import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MockNoteRepository extends Mock implements NoteRepository {}
 
@@ -40,9 +42,18 @@ class MockTodoRepository extends Mock implements TodoRepository {}
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
 void main() {
+  late SharedPreferences prefs;
+
   setUpAll(() {
     registerFallbackValue(const NoteQuery());
     registerFallbackValue(const AppSettings.defaults());
+  });
+
+  setUp(() async {
+    // 设置页的「语言」行读 `persistentLocaleProvider` → `sharedPreferencesProvider`，
+    // 后者默认抛 UnimplementedError，渲染设置路由时必须给它一个 mock 实例。
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
   });
 
   // routerProvider 不再依赖 authProvider / persistentLocaleProvider，
@@ -93,6 +104,7 @@ void main() {
         folderRepositoryProvider.overrideWithValue(folderRepo),
         todoRepositoryProvider.overrideWithValue(todoRepo),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light(),

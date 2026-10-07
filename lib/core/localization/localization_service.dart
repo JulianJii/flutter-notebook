@@ -17,11 +17,11 @@ class LocalizationService {
 
   final Ref ref;
 
-  /// 获取当前语言环境
-  Locale get currentLocale => ref.read(persistentLocaleProvider);
+  /// 获取生效的语言环境（跟随系统时是解析后的系统语言）
+  Locale get currentLocale => ref.read(appLocaleProvider);
 
-  /// 设置新的语言环境
-  Future<void> setLocale(Locale locale) async {
+  /// 设置新的语言环境。传 `null` 回到「跟随系统」。
+  Future<void> setLocale(Locale? locale) async {
     await ref.read(persistentLocaleProvider.notifier).setLocale(locale);
   }
 
@@ -97,8 +97,8 @@ extension LocalizationServiceExtension on BuildContext {
   LocalizationService get localization =>
       ProviderScope.containerOf(this).read(localizationServiceProvider);
 
-  /// 设置新的语言环境
-  Future<void> setLocale(Locale locale) => localization.setLocale(locale);
+  /// 设置新的语言环境。传 `null` 回到「跟随系统」。
+  Future<void> setLocale(Locale? locale) => localization.setLocale(locale);
 
   /// 重置为系统语言环境
   Future<void> resetToSystemLocale() => localization.resetToSystemLocale();

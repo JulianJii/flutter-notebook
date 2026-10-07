@@ -78,9 +78,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The selected language will be applied across the entire application';
 
   @override
-  String get localization_assets_demo => 'Localization & Assets Demo';
-
-  @override
   String get current_language => 'Current Language';
 
   @override
@@ -312,6 +309,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsThemeDark => 'Dark';
+
+  @override
+  String get settingsLanguageSystem => 'Follow system';
 
   @override
   String get notesSearchHint => 'Search notes';

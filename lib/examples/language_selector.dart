@@ -11,7 +11,7 @@ class LanguageSelectorExample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentLocale = ref.watch(persistentLocaleProvider);
+    final currentLocale = ref.watch(appLocaleProvider);
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(

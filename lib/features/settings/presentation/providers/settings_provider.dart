@@ -78,8 +78,9 @@ class Settings extends _$Settings {
   void setColorScheme(AppColorScheme value) =>
       _write(state.copyWith(colorScheme: value));
 
-  // ⛔ **仍不建 `setLocale`**：语言有独立的 `persistentLocaleProvider`（它自己写盘），
-  // 在这里再存一份就成了双真相源。要在设置加语言行时先决定谁是真源。
+  // ⛔ **不建 `setLocale`**：语言的真源是 `core` 的 `persistentLocaleProvider`
+  // （键 `selected_language_code`，自己写盘），设置页的语言行直接读写它。
+  // 在这里再存一份就是双真相源（`AppSettings.locale` 已因此删除）。
 
   /// 先同步改 state（UI 立即响应），再 fire-and-forget 落盘。
   void _write(AppSettings next) {

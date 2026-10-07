@@ -75,9 +75,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get language_explanation => '所选语言将应用于整个应用';
 
   @override
-  String get localization_assets_demo => '本地化与资源演示';
-
-  @override
   String get current_language => '当前语言';
 
   @override
@@ -307,6 +304,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsThemeDark => '深色';
+
+  @override
+  String get settingsLanguageSystem => '跟随系统';
 
   @override
   String get notesSearchHint => '搜索笔记';

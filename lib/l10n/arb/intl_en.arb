@@ -402,6 +402,10 @@
   "@settingsThemeDark": {
     "description": "Theme mode option: dark"
   },
+  "settingsLanguageSystem": "Follow system",
+  "@settingsLanguageSystem": {
+    "description": "Language option: follow system"
+  },
   "notesSearchHint": "Search notes",
   "@notesSearchHint": {
     "description": "Placeholder of the note search field"

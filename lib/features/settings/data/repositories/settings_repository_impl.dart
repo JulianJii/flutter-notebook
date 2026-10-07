@@ -62,7 +62,6 @@ Map<String, Object?> _toJson(AppSettings s) {
     'textScale': s.textScale.name,
     'noteSort': s.noteSort.name,
     'noteLayout': s.noteLayout.name,
-    'locale': s.locale,
     'themeMode': s.themeMode.name,
     'colorScheme': s.colorScheme.name,
   };
@@ -78,12 +77,8 @@ AppSettings _fromJson(Map<String, Object?> json) {
     textScale: _byName(TextScaleLevel.values, json['textScale']) ?? d.textScale,
     noteSort: _byName(AppNoteSort.values, json['noteSort']) ?? d.noteSort,
     noteLayout: _byName(NoteLayout.values, json['noteLayout']) ?? d.noteLayout,
-    locale: switch (json['locale']) {
-      // 空串不是合法的语言码：null 才是「跟系统」的语义。库里存进 `''` 只可能来自
-      // 手改或旧版本 bug，构造 `Locale('')` 会得到一个匹配不到任何语言的实例。
-      final String v when v.isNotEmpty => v,
-      _ => null,
-    },
+    // ⚠️ `locale` 字段已下线（语言真源在 `core`），旧数据里残留的 `locale` key
+    // 由「未知 key 一律忽略」逐字段回落的规则自然丢掉，不需要迁移代码。
     themeMode: _byName(AppThemeMode.values, json['themeMode']) ?? d.themeMode,
     colorScheme:
         _byName(AppColorScheme.values, json['colorScheme']) ?? d.colorScheme,

@@ -122,9 +122,9 @@ final service = ref.read(localizationServiceProvider);
 final translatedText = service.translate('welcome_message');
 final formattedDate = service.formatDate(DateTime.now());
 
-// Change the app locale
-await service.setLocale(const Locale('fr'));
-await service.resetToSystemLocale();
+// Change the app locale（只接受受支持的语言码，其余是 no-op）
+await service.setLocale(const Locale('en'));
+await service.resetToSystemLocale(); // 回到跟随系统
 ```
 
 你也可以通过 BuildContext 扩展使用该服务：
@@ -134,7 +134,7 @@ await service.resetToSystemLocale();
 final service = context.localization;
 
 // Or use extension methods directly
-await context.setLocale(const Locale('es'));
+await context.setLocale(const Locale('en'));
 final currentLocale = context.currentLocale;
 ```
 
@@ -276,18 +276,32 @@ String commonPath = LocalizedAssetService.getCommonImagePath('logo.png');
 
 ## 与 Riverpod 集成
 
-系统使用 Riverpod providers 来管理活动区域设置：
+系统用两个 provider 管理语言（`lib/core/providers/localization_providers.dart`）：
 
 ```dart
-// Watch the current locale
-final currentLocale = ref.watch(localeProvider);
+// 用户选择。`Locale?`：null = 跟随系统（没选过 / 主动回退）。
+// ⛔ 不要直接拿它上屏 —— 它可能是 null。
+final picked = ref.watch(persistentLocaleProvider);
 
-// Change the active locale
-ref.read(localeProvider.notifier).setLocale(const Locale('es'));
+// 已解析、可直接上屏的语言：用户选择 → 系统语言 → 中文。
+// `MaterialApp.locale` 与 core 内所有读方都 watch 它。
+final currentLocale = ref.watch(appLocaleProvider);
 
-// Access translations based on the current locale
-final translations = ref.watch(translationsProvider);
+// 写入口只有一个；传 null = 回到「跟随系统」（删掉落盘键）
+await ref.read(persistentLocaleProvider.notifier).setLocale(const Locale('zh'));
+await ref.read(persistentLocaleProvider.notifier).setLocale(null);
+
+// 服务类同款 API（widget 外也能用）
+await ref.read(localizationServiceProvider).setLocale(const Locale('zh'));
+await ref.read(localizationServiceProvider).resetToSystemLocale();
 ```
+
+> ⚠️ 早期文档里的 `localeProvider` / `translationsProvider` **不存在**，编译不过。
+
+**设置页的入口**：设置 → 其他 →「语言」，三档（跟随系统 / 中文 / English），
+复用设置页的选择器行 + 底部弹层，语言名取 `localeDisplayName()`（母语名），
+⚠️ 加一门语言时**只需**加 ARB 与 `localeDisplayName` 的分支，选项列表从
+`AppLocalizations.supportedLocales` 自动派生。
 
 ## 最佳实践
 

@@ -50,7 +50,7 @@ class LocalizedImage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(persistentLocaleProvider);
+    final locale = ref.watch(appLocaleProvider);
 
     return Image.asset(
       useCommonPath

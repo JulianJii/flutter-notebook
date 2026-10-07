@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
@@ -10,9 +11,16 @@ import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zoloto/zoloto.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
+
+/// 空的 mock 偏好：语言行读它，无 `selected_language_code` → 「跟随系统」。
+Future<SharedPreferences> _mockPrefs() async {
+  SharedPreferences.setMockInitialValues({});
+  return SharedPreferences.getInstance();
+}
 
 /// 与笔记列表 / 待办 / 笔记详情 / 文件夹管理四份基线同一视口，便于横向比对。
 const TestEnvironment goldenEnv = TestEnvironment(
@@ -25,7 +33,9 @@ const TestEnvironment goldenEnv = TestEnvironment(
 void main() {
   setUpAll(() => registerFallbackValue(const AppSettings.defaults()));
 
-  testGoldenWidgets('设置 — 默认档（文字大小「默认」/ 按编辑日期 / 宫格模式）', (tester) async {
+  testGoldenWidgets(
+    '设置 — 默认档（文字大小「默认」/ 按编辑日期 / 宫格模式 / 语言「跟随系统」）',
+    (tester) async {
     final repo = _MockSettingsRepository();
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),
@@ -39,7 +49,14 @@ void main() {
       tester: tester,
       widget: ProviderScope(
         // override 打在 Repository 层：测试环境无 `shared_preferences` 插件实现。
-        overrides: [settingsRepositoryProvider.overrideWithValue(repo)],
+        // 语言行还读 `sharedPreferencesProvider`（默认抛 UnimplementedError），
+        // 故一并给它一个 mock 实例；初始值为空 → 语言落在「跟随系统」档。
+        overrides: [
+          settingsRepositoryProvider.overrideWithValue(repo),
+          sharedPreferencesProvider.overrideWithValue(
+            await _mockPrefs(),
+          ),
+        ],
         child: MaterialApp(
           theme: AppTheme.light(),
           localizationsDelegates: <LocalizationsDelegate<dynamic>>[

@@ -37,12 +37,11 @@ void main() {
       );
     });
 
-    test('往返一致：save(X) -> load() == X（6 字段逐字段相等）', () async {
+    test('往返一致：save(X) -> load() == X（5 字段逐字段相等）', () async {
       const x = AppSettings(
         textScale: TextScaleLevel.xLarge,
         noteSort: AppNoteSort.titleAsc,
         noteLayout: NoteLayout.list,
-        locale: 'en',
         themeMode: AppThemeMode.dark,
         colorScheme: AppColorScheme.violet,
       );
@@ -170,24 +169,6 @@ void main() {
       }
     });
 
-    test('locale 写成 int / 空串 -> null（null = 跟系统）', () async {
-      for (final raw in <String>['42', '""']) {
-        final s = await loadWith('{"locale":$raw,"noteLayout":"list"}');
-        expect(s.locale, isNull, reason: 'raw=$raw');
-        expect(s.noteLayout, NoteLayout.list);
-      }
-    });
-
-    // ⚠️ **不支持但非空**的语言码（`"zz"`）在本层原样读出：data 层是纯 Dart，
-    // ⛔ 不 import `gen/l10n`，也无从知道哪些语言码受支持。判定交给构造 `Locale`
-    // 的那一层（`core/localization` 的 `isSupportedLocale`，TASK-045/046）。
-    // 本层只负责「不是字符串 → 回落」与「空串 → 回落」这两种无争议的情况。
-    test('不支持但非空的语言码：本层原样读出，判定交给 presentation 层', () async {
-      final s = await loadWith('{"locale":"zz","noteLayout":"list"}');
-      expect(s.locale, 'zz');
-      expect(s.noteLayout, NoteLayout.list);
-    });
-
     test('enum 名不认识（未来值 / 被改名）', () async {
       final s = await loadWith('{"textScale":"huge","noteLayout":"list"}');
       expect(s.textScale, TextScaleLevel.normal);
@@ -240,19 +221,12 @@ void main() {
       expect(d.textScale, TextScaleLevel.normal);
       expect(d.noteSort, AppNoteSort.editedDesc);
       expect(d.noteLayout, NoteLayout.grid);
-      expect(d.locale, isNull, reason: '跟系统');
       expect(d.themeMode, AppThemeMode.system);
       expect(d.colorScheme, AppColorScheme.amber);
     });
 
     test('值相等：默认构造 == defaults()', () {
       expect(const AppSettings(), const AppSettings.defaults());
-    });
-
-    test('copyWith(locale: null) 真的把语言切回「跟系统」', () {
-      const withLocale = AppSettings(locale: 'en');
-      expect(withLocale.copyWith(locale: null).locale, isNull);
-      expect(withLocale.copyWith().locale, 'en');
     });
   });
 }

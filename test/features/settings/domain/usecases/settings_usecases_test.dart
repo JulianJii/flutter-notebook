@@ -10,7 +10,7 @@ import 'package:mocktail/mocktail.dart';
 
 class MockSettingsRepository extends Mock implements SettingsRepository {}
 
-final AppSettings _settings = AppSettings(locale: 'en');
+final AppSettings _settings = const AppSettings(themeMode: AppThemeMode.dark);
 
 void main() {
   late MockSettingsRepository repo;

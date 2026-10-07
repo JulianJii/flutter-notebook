@@ -14,7 +14,7 @@ class LocalizationAssetsDemo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final locale = ref.watch(persistentLocaleProvider);
+    final locale = ref.watch(appLocaleProvider);
 
     final l10n = AppLocalizations.of(context);
 

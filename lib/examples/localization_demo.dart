@@ -11,7 +11,7 @@ class LocalizationDemo extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentLocale = ref.watch(persistentLocaleProvider);
+    final currentLocale = ref.watch(appLocaleProvider);
     final now = DateTime.now();
     final orderDate = DateTime.now().subtract(const Duration(days: 3));
 

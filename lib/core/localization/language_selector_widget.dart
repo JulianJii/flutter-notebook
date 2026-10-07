@@ -13,7 +13,7 @@ class LanguageSelectorWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentLocale = ref.watch(persistentLocaleProvider);
+    final currentLocale = ref.watch(appLocaleProvider);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -108,7 +108,7 @@ class LanguagePopupMenuButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentLocale = ref.watch(persistentLocaleProvider);
+    final currentLocale = ref.watch(appLocaleProvider);
 
     return PopupMenuButton<Locale>(
       tooltip: AppLocalizations.of(context).language,

@@ -26,11 +26,6 @@ void main() async {
       overrides: [
         // 用该实例覆盖 shared preferences provider
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-
-        // 覆盖默认语言环境 provider，改为使用持久化语言环境
-        defaultLocaleProvider.overrideWith(
-          (ref) => ref.watch(persistentLocaleProvider),
-        ),
       ],
       child: const MyApp(),
     ),
@@ -61,8 +56,8 @@ class MyApp extends ConsumerWidget {
       settingsProvider.select((s) => s.colorScheme),
     );
 
-    // 监听持久化语言环境
-    final locale = ref.watch(persistentLocaleProvider);
+    // 监听生效的语言环境：用户选择 → 系统语言 → 中文
+    final locale = ref.watch(appLocaleProvider);
 
     // 挂载启动自动同步：`AsyncNotifier` 的 build 只在首次监听时跑一次，
     // 开关没开时它立刻返回。失败静默（用户此刻可能在任何页面）。

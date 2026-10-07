@@ -55,11 +55,10 @@ void main() {
 
   test('端到端：save -> load 往返一致', () async {
     await container.read(saveSettingsUseCaseProvider)(
-      const AppSettings(locale: 'en', themeMode: AppThemeMode.dark),
+      const AppSettings(themeMode: AppThemeMode.dark),
     );
     final loaded = await container.read(getSettingsUseCaseProvider)(NoParams());
     loaded.fold((f) => fail('应为 Right，实际 $f'), (s) {
-      expect(s.locale, 'en');
       expect(s.themeMode, AppThemeMode.dark);
     });
   });

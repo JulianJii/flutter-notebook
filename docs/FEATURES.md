@@ -139,6 +139,14 @@ Text(AppLocalizations.of(context).item_count(count));
 
 日期 / 时间 / 货币用 `context.formatDate/formatTime/formatDateTime/formatCurrency` 扩展。
 
+**切换语言**：设置 → 其他 →「语言」，三档 —— **跟随系统**（默认）/ 中文 / English。改完立即生效，
+选择落在 `SharedPreferences` 的 `selected_language_code`；没选过就是「跟随系统」，取系统语言，
+系统语言不是中英文时回落中文。
+
+> 语言的**唯一真源**是 `core/providers/localization_providers.dart` 的
+> `persistentLocaleProvider`（`Locale?`，null = 跟随系统）与派生的 `appLocaleProvider`
+> （已解析、可直接上屏）。⛔ `AppSettings` 里**没有**语言字段 —— 两份偏好表达不出「跟随系统」。
+
 详情请参见[本地化指南](https://jessejii.github.io/init/localization.html)。
 
 ### 两级缓存

@@ -230,12 +230,6 @@ abstract class AppLocalizations {
   /// **'所选语言将应用于整个应用'**
   String get language_explanation;
 
-  /// Title for the localization assets demo screen
-  ///
-  /// In zh, this message translates to:
-  /// **'本地化与资源演示'**
-  String get localization_assets_demo;
-
   /// Label for displaying current language info
   ///
   /// In zh, this message translates to:
@@ -655,6 +649,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'深色'**
   String get settingsThemeDark;
+
+  /// Language option: follow system
+  ///
+  /// In zh, this message translates to:
+  /// **'跟随系统'**
+  String get settingsLanguageSystem;
 
   /// Placeholder of the note search field
   ///

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynote/core/localization/localization_service.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
@@ -13,13 +15,14 @@ import '../providers/settings_provider.dart';
 
 /// 设置。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **9 行 = 3 选择器 + 6 chevron**，一一对应设置稿的 3 个区块：
+/// **10 行 = 4 选择器 + 6 chevron**，一一对应设置稿的 3 个区块：
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
 /// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
 /// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
 /// | 快捷功能 | 速记 | chevron，**不可点**（二级页无稿） |
+/// | 其他 | 语言 | 选择器，三档（跟随系统 / 中文 / English），走 `core` 的语言 provider |
 /// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
 ///
 /// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
@@ -43,6 +46,9 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final settings = ref.watch(settingsProvider);
     final notifier = ref.read(settingsProvider.notifier);
+
+    // 语言选择：`null` = 跟随系统（没选过或主动回退）。
+    final languageCode = ref.watch(persistentLocaleProvider)?.languageCode;
 
     return Scaffold(
       backgroundColor: context.colors.bg,
@@ -142,10 +148,26 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('section_other'),
                     title: l10n.settingsGroupOther,
                     children: <Widget>[
+                      // 语言：三档（跟随系统 / 中文 / English）。⚠️ 真源是 core 的
+                      // `persistentLocaleProvider`（它自己写 SharedPreferences），
+                      // ⛔ 不写进 `AppSettings` —— 两份偏好会让「跟随系统」无法表达。
+                      _selectTile<String?>(
+                        context,
+                        key: const Key('select_language'),
+                        title: l10n.language,
+                        valueText: _languageLabel(l10n, languageCode),
+                        options: _languageOptions,
+                        current: languageCode,
+                        labelOf: (code) => _languageLabel(l10n, code),
+                        onSelected: (code) => ref
+                            .read(persistentLocaleProvider.notifier)
+                            .setLocale(code == null ? null : Locale(code)),
+                      ),
                       _chevronTile(
                         context,
                         key: const Key('chevron_data_management'),
                         title: l10n.settingsDataManagement,
+                        dividerBefore: true,
                         onTap: () => context.push(AppRoutes.dataManagement),
                       ),
                       _chevronTile(
@@ -235,7 +257,11 @@ class SettingsScreen extends ConsumerWidget {
           current: current,
           labelOf: labelOf,
         );
-        if (picked != null && picked != current) onSelected(picked);
+        // ⚠️ **不能判 `picked != null`**：语言的「跟随系统」档就是 `null`，判空会让
+        // 这一档永远选不中。重复选同一个值由各写入口自己短路
+        // （`settingsProvider._write` 值没变就不写）。
+        // `as T`：语言行的 `T` 是 `String?`，`T?` 与 `T` 在泛型体内不互通，显式转一次。
+        if (picked != current) onSelected(picked as T);
       },
     );
   }
@@ -275,6 +301,22 @@ String _noteLayoutLabel(AppLocalizations l10n, NoteLayout layout) =>
       NoteLayout.grid => l10n.settingsLayoutGrid,
       NoteLayout.list => l10n.settingsLayoutList,
     };
+
+/// 语言三档：`null` 排第一（跟随系统是默认档），其余取 gen-l10n 支持的语言码。
+///
+/// ⛔ **不硬编码 `['zh', 'en']`**：加语言时 `AppLocalizations.supportedLocales`
+/// 会跟着涨，写死列表会静默漏掉新语言。
+final List<String?> _languageOptions = <String?>[
+  null,
+  ...AppLocalizations.supportedLocales.map((locale) => locale.languageCode),
+];
+
+/// 语言码 → 当前值文案。`null` = 跟随系统。
+///
+/// 语言名用 `core` 现成的母语名映射（中文 / English），⛔ 不另加语言名文案 ——
+/// 那样加一门语言要同时改 ARB 和映射表两处。
+String _languageLabel(AppLocalizations l10n, String? code) =>
+    code == null ? l10n.settingsLanguageSystem : localeDisplayName(Locale(code));
 
 /// 选项单：底部弹层，当前项打勾。选中即 `pop(value)`，取消即 `pop(null)`。
 ///

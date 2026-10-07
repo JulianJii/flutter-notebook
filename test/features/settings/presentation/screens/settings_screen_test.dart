@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/providers/localization_providers.dart';
+import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/ui/ui.dart';
@@ -15,6 +17,7 @@ import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
@@ -33,8 +36,9 @@ void main() {
 
   late _MockSettingsRepository repo;
   late ProviderContainer container;
+  late SharedPreferences prefs;
 
-  setUp(() {
+  setUp(() async {
     repo = _MockSettingsRepository();
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),
@@ -44,8 +48,15 @@ void main() {
     ).thenAnswer((_) async => const Right<Failure, Unit>(unit));
     // override 打在 **Repository** 层：既不接 SharedPreferences（测试环境无插件实现），
     // 也守住「Screen 只经 provider 取偏好」这条分层约束。
+    // 语言行 watch `persistentLocaleProvider` → 经 `sharedPreferencesProvider`
+    // 读盘，而后者默认 `throw UnimplementedError()`（测试环境无插件实现）。
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
     container = ProviderContainer(
-      overrides: [settingsRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(repo),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
     );
     addTearDown(container.dispose);
   });
@@ -158,22 +169,23 @@ void main() {
       );
     });
 
-    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 6 条）', (tester) async {
+    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 7 条）', (tester) async {
       await pumpP5(tester);
 
-      // 笔记样式 4 行 → 3 条，其他 4 行（含「数据与同步」）→ 3 条。
-      expect(find.byType(AppDivider), findsNWidgets(6));
+      // 笔记样式 4 行 → 3 条，其他 5 行（语言 + 数据与同步 + 最近删除 +
+      // 隐私政策 + 用户协议）→ 4 条。
+      expect(find.byType(AppDivider), findsNWidgets(7));
     });
 
-    testWidgets('3 张分组卡，9 行', (tester) async {
+    testWidgets('3 张分组卡，10 行', (tester) async {
       await pumpP5(tester);
 
       expect(find.byType(AppCard), findsNWidgets(3));
-      expect(find.byType(AppListTile), findsNWidgets(9));
+      expect(find.byType(AppListTile), findsNWidgets(10));
       expect(find.byType(Switch), findsNothing, reason: '开关已改为选择器行');
       // 6 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议）
-      // + 3 个选择器行（文字大小 / 排序 / 布局）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(9));
+      // + 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
     });
   });
 
@@ -270,6 +282,46 @@ void main() {
       // 跳转本身由 `app_router_test.dart` 守；主题页内的选值由 `theme_screen_test.dart` 守。
       expect(find.byType(BottomSheet), findsNothing);
       verifyNever(() => repo.save(any()));
+    });
+  });
+
+  /// 语言行的真源是 `core` 的 `persistentLocaleProvider`，⛔ 不写 `AppSettings`
+  /// （那个字段已删，避免双真相源）。
+  group('语言行', () {
+    testWidgets('默认档是「跟随系统」，弹层列出三档', (tester) async {
+      await pumpP5(tester);
+
+      expect(find.text('跟随系统'), findsOneWidget, reason: '没选过 → 跟随系统');
+
+      await tester.tap(find.byKey(const Key('select_language')));
+      await tester.pumpAndSettle();
+
+      final sheet = find.byType(BottomSheet);
+      for (final option in <String>['跟随系统', '中文', 'English']) {
+        expect(
+          find.descendant(of: sheet, matching: find.text(option)),
+          findsOneWidget,
+          reason: '选项缺少 $option',
+        );
+      }
+    });
+
+    testWidgets('选 English：写语言 provider 并落盘', (tester) async {
+      await pumpP5(tester);
+      await pick(tester, 'select_language', 'English');
+
+      expect(container.read(persistentLocaleProvider), const Locale('en'));
+      expect(prefs.getString(languageCodeKey), 'en');
+      expect(find.text('English'), findsOneWidget, reason: '行尾当前值已更新');
+    });
+
+    testWidgets('选回「跟随系统」：state 变 null 且删掉落盘键', (tester) async {
+      await pumpP5(tester);
+      await pick(tester, 'select_language', 'English');
+      await pick(tester, 'select_language', '跟随系统');
+
+      expect(container.read(persistentLocaleProvider), isNull);
+      expect(prefs.getString(languageCodeKey), isNull);
     });
   });
 

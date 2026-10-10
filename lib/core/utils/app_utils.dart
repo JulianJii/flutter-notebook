@@ -1,5 +1,6 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AppUtils {
   // 日期格式化
@@ -68,40 +69,22 @@ class AppUtils {
     );
   }
 
-  // 显示 toast 消息
-  static void showToast(
-    BuildContext context, {
+  // 显示 toast 消息（fluttertoast）
+  //
+  // ⚠️ fluttertoast 只实现 Android / iOS / Web：桌面端（Windows / macOS /
+  // Linux）调用会抛 MissingPluginException，且界面上什么都看不到。
+  static Future<bool?> showToast({
     required String message,
     Duration? duration,
   }) {
-    final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).size.height * 0.1,
-        width: MediaQuery.of(context).size.width,
-        child: Center(
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Text(
-                message,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ),
-          ),
-        ),
-      ),
+    return Fluttertoast.showToast(
+      msg: message,
+      timeInSecForIosWeb: (duration ?? const Duration(seconds: 2)).inSeconds,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black.withValues(alpha: 0.7),
+      textColor: Colors.white,
+      fontSize: 14,
     );
-
-    overlay.insert(overlayEntry);
-    Future.delayed(duration ?? const Duration(seconds: 2), () {
-      overlayEntry.remove();
-    });
   }
 
   // 邮箱校验

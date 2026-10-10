@@ -34,10 +34,15 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   String? _syncingWith;
   bool _hosting = false;
 
+  /// ⚠️ `dispose` 里**不能**再用 `ref`（那时它已被 riverpod 回收），所以在
+  /// `initState` 里先把实例抓出来。`late` 惰性初始化恰好让首次取值发生在
+  /// `initState`（`ref` 在 State 构造期还不可用）。
+  late final _useCases = ref.read(lanSyncUseCasesProvider);
+
   @override
   void initState() {
     super.initState();
-    _hosting = ref.read(lanSyncUseCasesProvider).isHosting;
+    _hosting = _useCases.isHosting;
   }
 
   @override
@@ -46,7 +51,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
     // 活得比这个 widget 长 —— 不显式关掉，用户早就退出这一页了却还在对同网段
     // 开着一个读写全部笔记的服务。代价是「同步到一半切走会被打断」，那本来就该
     // 中断（合并是幂等的，下次连上继续）。
-    ref.read(lanSyncUseCasesProvider).stopHosting();
+    _useCases.stopHosting();
     super.dispose();
   }
 

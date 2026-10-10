@@ -24,25 +24,6 @@ class AppConstants {
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;
 
-  // 路由常量
-  //
-  // ⚠️ 笔记 App 在用的路由唯一 Source of Truth 是 `core/router/app_routes.dart`，
-  // ⛔ 不再往这里加路由字符串。
-  //
-  // 以下只是 `lib/examples/` 内部跳转用的路径字面量，均未挂进 GoRouter。
-  //
-  // 已删（零外部引用）：
-  //   `initialRoute` `homeRoute` `localizationDemoRoute` `examplesHubRoute`
-  //   `settingsRoute` `languageSettingsRoute` `localizationAssetsDemoRoute`
-  //   `loginRoute` `registerRoute` `chatRoute` `surveyRoute`
-  //   `postsRoute` `postDetailRoute` `biometricDemoRoute`
-  //     —— 分别随 `lib/features/auth/`、`lib/features/home/`、
-  //        `lib/features/posts/` 与 `lib/core/auth/` 一并删除。
-  // 已删：`localizationDemoScreenRoute` `languageSelectorDemoRoute`
-  // `webSocketDemoRoute` `webhookDemoRoute` `graphqlDemoRoute` `grpcDemoRoute`
-  // `backgroundTasksDemoRoute` `fileTransferDemoRoute` —— 随 `lib/examples/`
-  // 一并删除（零外部引用）。
-
   // Hive box names
   static const String settingsBox = 'settings';
   static const String cacheBox = 'cache';

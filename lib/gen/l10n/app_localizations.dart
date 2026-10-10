@@ -446,6 +446,24 @@ abstract class AppLocalizations {
   /// **'文件夹名称'**
   String get folderName;
 
+  /// Inline error of the create-folder dialog when the name is empty
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入文件夹名称'**
+  String get folderNameEmpty;
+
+  /// Inline error of the create-folder dialog when the name exceeds the limit
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹名称不能超过 {max} 个字符'**
+  String folderNameTooLong(int max);
+
+  /// Inline error / snackbar of the create-folder dialog when the name is already taken
+  ///
+  /// In zh, this message translates to:
+  /// **'已存在同名文件夹'**
+  String get folderNameExists;
+
   /// Title of the create-todo dialog opened by the to-do list FAB
   ///
   /// In zh, this message translates to:

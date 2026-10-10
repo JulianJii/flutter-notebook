@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/ui/app_icon.dart';
 import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
@@ -68,7 +69,10 @@ void main() {
   });
 
   /// override 打在 Repository 层（data 的边界）；**不接真实 drift 库**。
-  Widget app({int uncategorized = 154, List<FolderWithCount>? folders}) {
+  ///
+  /// [createResult] 是新建文件夹的写库结果（默认成功）—— 失败分支要在建 widget
+  /// **之前**就 stub 好，mock 只在 `app()` 里建。
+  Widget app({List<FolderWithCount>? folders, Either<Failure, NoteFolder>? createResult}) {
     final repo = _MockFolderRepository();
     when(repo.watchWithCounts).thenAnswer(
       (_) => Stream<List<FolderWithCount>>.value(
@@ -76,12 +80,10 @@ void main() {
       ),
     );
     when(() => repo.reorder(any())).thenAnswer((_) async => const Right(unit));
-    // 「未分类」走 DAO 的 `COUNT(*)` 透传，不再是「取笔记列表再 .length」——
-    // 所以这里 stub 的是一个标量流，不是一批假笔记。
-    when(
-      repo.watchUncategorizedCount,
-    ).thenAnswer((_) => Stream<int>.value(uncategorized));
     when(() => repo.delete(any())).thenAnswer((_) async => const Right(unit));
+    when(
+      () => repo.create(any()),
+    ).thenAnswer((_) async => createResult ?? Right<Failure, NoteFolder>(_f1));
     folderRepo = repo;
     return ProviderScope(
       overrides: [folderRepositoryProvider.overrideWithValue(repo)],
@@ -101,19 +103,25 @@ void main() {
   List<FolderRow> rows(WidgetTester tester) =>
       tester.widgetList<FolderRow>(find.byType(FolderRow)).toList();
 
-  testWidgets('行序：全部 → 各文件夹 → 未分类 → 新建文件夹', (tester) async {
-    await tester.pumpWidget(app());
+  testWidgets('行序：各真实文件夹 → 新建文件夹；没有「全部」「未分类」，也没有计数', (tester) async {
+    await tester.pumpWidget(
+      app(
+        folders: <FolderWithCount>[
+          FolderWithCount(folder: _f1, count: 1),
+          FolderWithCount(folder: _f2, count: 2),
+        ],
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.byType(FolderRow), findsNWidgets(3));
+    expect(find.byType(FolderRow), findsNWidgets(2));
     expect(find.byType(CreateFolderRow), findsOneWidget);
-
-    final items = rows(tester);
-    expect(items[0].name, '全部');
-    expect(items[1].name, '闻声笔记');
-    expect(items[2].name, '未分类');
-    // 文件夹管理稿的 1 + 154 = 155。真实文件夹行**没有计数**（那一位是拖动图标）。
-    expect(items.map((e) => e.count).toList(), <int?>[155, null, 154]);
+    expect(rows(tester).map((e) => e.name).toList(), <String>['闻声笔记', '速记']);
+    // 「全部」「未分类」是笔记列表的分类 tab，本页不列；行内也不显示笔记数。
+    expect(find.text('全部'), findsNothing);
+    expect(find.text('未分类'), findsNothing);
+    expect(find.text('1'), findsNothing);
+    expect(find.text('2'), findsNothing);
   });
 
   testWidgets('文件夹行右侧是拖动图标，且只有真实文件夹可拖', (tester) async {
@@ -164,19 +172,11 @@ void main() {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    expect(rows(tester).map((e) => e.isSelected).toList(), <bool>[
-      true,
-      false,
-      false,
-    ]);
+    expect(rows(tester).map((e) => e.isSelected).toList(), <bool>[false]);
 
     router.go('/notes/folders?folder=f1');
     await tester.pumpAndSettle();
-    expect(rows(tester).map((e) => e.isSelected).toList(), <bool>[
-      false,
-      true,
-      false,
-    ]);
+    expect(rows(tester).map((e) => e.isSelected).toList(), <bool>[true]);
   });
 
   testWidgets('点文件夹行跳到 /notes?folder=<id>', (tester) async {
@@ -187,43 +187,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('notes:f1'), findsOneWidget);
-  });
-
-  testWidgets('点「未分类」行跳到 /notes?folder=uncategorized', (tester) async {
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('未分类'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('notes:uncategorized'), findsOneWidget);
-  });
-
-  testWidgets('点「全部」行回到 /notes（不带 query）', (tester) async {
-    router = GoRouter(
-      initialLocation: '/notes/folders?folder=uncategorized',
-      routes: <RouteBase>[
-        GoRoute(
-          path: '/notes/folders',
-          builder: (context, state) => const FolderManagerScreen(),
-        ),
-        GoRoute(
-          path: '/notes',
-          builder: (context, state) => Scaffold(
-            body: Text('notes:${state.uri.queryParameters['folder'] ?? 'all'}'),
-          ),
-        ),
-      ],
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('全部'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('notes:all'), findsOneWidget);
   });
 
   testWidgets('顶栏无删除图标', (tester) async {
@@ -299,5 +262,68 @@ void main() {
 
     expect(find.byType(AlertDialog), findsNothing);
     verifyNever(() => folderRepo.create(any()));
+  });
+
+  /// 弹窗内联校验：报错显示在输入框下方、**弹窗不关**，改完直接再提交。
+  testWidgets('空名 / 超长 / 重名 → 就地报错且不写库；合法名 → 提交 trim 后的值', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(CreateFolderRow));
+    await tester.pumpAndSettle();
+    final dialog = find.byType(AlertDialog);
+    final field = find.byType(TextField);
+    final save = find.widgetWithText(TextButton, '保存');
+
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(find.text('请输入文件夹名称'), findsOneWidget);
+
+    await tester.enterText(field, '名' * 41);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(find.text('文件夹名称不能超过 40 个字符'), findsOneWidget);
+
+    // 库里已有「闻声笔记」（`_f1`）。
+    await tester.enterText(field, '闻声笔记');
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(find.text('已存在同名文件夹'), findsOneWidget);
+    expect(dialog, findsOneWidget, reason: '弹窗不关：用户改个名就能接着提交');
+    verifyNever(() => folderRepo.create(any()));
+
+    await tester.enterText(field, ' 旅行 ');
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    final created =
+        verify(() => folderRepo.create(captureAny())).captured.single
+            as NoteFolder;
+    expect(created.name, '旅行', reason: '两端空格在提交前 trim');
+    expect(dialog, findsNothing);
+  });
+
+  /// 弹窗打开期间名字被占（导入 / 恢复）→ 库里的 UNIQUE 冲突回来的是
+  /// `InputFailure`，弹给用户的必须是本地化文案，不是 SQL 原文。
+  testWidgets('写库撞重名 → SnackBar 是本地化文案', (tester) async {
+    await tester.pumpWidget(
+      app(
+        createResult: const Left(
+          InputFailure(
+            message: 'UNIQUE: UNIQUE constraint failed: note_folders.name',
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(CreateFolderRow));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '旅行');
+    await tester.tap(find.widgetWithText(TextButton, '保存'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('已存在同名文件夹'), findsOneWidget);
+    expect(find.textContaining('UNIQUE'), findsNothing);
   });
 }

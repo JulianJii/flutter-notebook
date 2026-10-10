@@ -18,6 +18,10 @@ import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart'
 class CreateFolderUseCase {
   const CreateFolderUseCase(this._repository);
 
+  /// 名称长度上限。**唯一出处**：弹窗在提交前用同一个常量做校验，
+  /// 上限改了不会只有一边跟着变。
+  static const int maxNameLength = 40;
+
   final FolderRepository _repository;
 
   Future<Either<Failure, NoteFolder>> call(CreateFolderParams params) {
@@ -27,7 +31,7 @@ class CreateFolderUseCase {
         const Left(InputFailure(message: 'Folder name must not be empty')),
       );
     }
-    if (name.length > 40) {
+    if (name.length > maxNameLength) {
       return Future.value(
         const Left(
           InputFailure(message: 'Folder name must be at most 40 characters'),

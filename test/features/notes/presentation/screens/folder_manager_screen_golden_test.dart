@@ -22,7 +22,7 @@ const TestEnvironment goldenEnv = TestEnvironment(
   platform: TargetPlatform.android,
 );
 
-/// 文件夹管理稿实测的三个数：`全部 155 = 闻声笔记 1 + 未分类 154`。
+/// 一个真实文件夹（`count` 已不在行内显示，但实体照旧带它）。
 /// ⚠️ 全部常量 —— `DateTime.now()` 会让基线每天都不一样。
 final List<FolderWithCount> _folders = <FolderWithCount>[
   FolderWithCount(
@@ -35,10 +35,6 @@ final List<FolderWithCount> _folders = <FolderWithCount>[
     count: 1,
   ),
 ];
-
-/// 文件夹管理自己不渲染笔记卡，只用得到「未分类」的**计数**。计数走 DAO 的
-/// `COUNT(*)` 透传，所以这里连一条假笔记都不需要。
-const int _uncategorized = 154;
 
 /// 只提供一条路由：`AppIconButton` 的 back 不可点（`canPop() == false` 时才导航），
 /// 基线不需要完整 Shell。
@@ -57,14 +53,11 @@ GoRouter _router() => GoRouter(
 );
 
 void main() {
-  testGoldenWidgets('文件夹管理 — 全部 155 / 闻声笔记 1 / 未分类 154', (tester) async {
+  testGoldenWidgets('文件夹管理 — 只有真实文件夹 + 新建文件夹，行内无计数', (tester) async {
     final folderRepo = _MockFolderRepository();
     when(
       () => folderRepo.watchWithCounts(),
     ).thenAnswer((_) => Stream<List<FolderWithCount>>.value(_folders));
-    when(() => folderRepo.watchUncategorizedCount()).thenAnswer(
-      (_) => Stream<int>.value(_uncategorized),
-    );
 
     await expectMatchTestEnvironments(
       'folder_manager_screen',

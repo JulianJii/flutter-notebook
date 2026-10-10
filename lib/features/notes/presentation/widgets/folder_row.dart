@@ -3,7 +3,7 @@ import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 文件夹管理稿的文件夹行：左选中勾 / 中名称 / 右计数或拖动图标。唯一调用方是文件夹管理
+/// 文件夹管理稿的文件夹行：左选中勾 / 中名称 / 右侧插槽（拖动图标）。唯一调用方是文件夹管理
 /// （TASK-050）。
 ///
 /// 容器与中右区都复用 `core/ui` 的 T1 组件（`AppCard` + `AppListTile`）——
@@ -21,7 +21,6 @@ class FolderRow extends StatelessWidget {
   const FolderRow({
     required this.name,
     super.key,
-    this.count,
     this.trailing,
     this.isSelected = false,
     this.onTap,
@@ -29,10 +28,6 @@ class FolderRow extends StatelessWidget {
 
   /// 文件夹名（「全部」/ 用户文件夹名 / 「未分类」）。由调用方传 l10n 结果。
   final String name;
-
-  /// 右侧计数（文件夹管理稿实测 155 / 1 / 154）。字阶 `text.value` + `secondary`。
-  /// null → 不画计数（真实文件夹行把它换成了 [trailing] 的拖动图标）。
-  final int? count;
 
   /// 右侧插槽。文件夹管理传拖动图标（`ReorderableDragStartListener`）。
   ///
@@ -66,7 +61,6 @@ class FolderRow extends StatelessWidget {
               )
             : null,
         title: name,
-        trailingValue: count == null ? null : '$count',
         trailing: trailing,
       ),
     );

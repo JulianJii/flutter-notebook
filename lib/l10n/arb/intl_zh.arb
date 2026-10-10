@@ -244,6 +244,23 @@
   "@folderName": {
     "description": "Hint text of the create-folder dialog text field (folder manager)"
   },
+  "folderNameEmpty": "请输入文件夹名称",
+  "@folderNameEmpty": {
+    "description": "Inline error of the create-folder dialog when the name is empty"
+  },
+  "folderNameTooLong": "文件夹名称不能超过 {max} 个字符",
+  "@folderNameTooLong": {
+    "description": "Inline error of the create-folder dialog when the name exceeds the limit",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "folderNameExists": "已存在同名文件夹",
+  "@folderNameExists": {
+    "description": "Inline error / snackbar of the create-folder dialog when the name is already taken"
+  },
   "createTodo": "新建待办",
   "@createTodo": {
     "description": "Title of the create-todo dialog opened by the to-do list FAB"

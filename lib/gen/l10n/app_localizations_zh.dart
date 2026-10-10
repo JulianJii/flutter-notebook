@@ -200,6 +200,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderName => '文件夹名称';
 
   @override
+  String get folderNameEmpty => '请输入文件夹名称';
+
+  @override
+  String folderNameTooLong(int max) {
+    return '文件夹名称不能超过 $max 个字符';
+  }
+
+  @override
+  String get folderNameExists => '已存在同名文件夹';
+
+  @override
   String get createTodo => '新建待办';
 
   @override

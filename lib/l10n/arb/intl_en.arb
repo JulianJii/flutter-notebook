@@ -247,6 +247,23 @@
   "@folderName": {
     "description": "Hint text of the create-folder dialog text field (folder manager)"
   },
+  "folderNameEmpty": "Enter a folder name",
+  "@folderNameEmpty": {
+    "description": "Inline error of the create-folder dialog when the name is empty"
+  },
+  "folderNameTooLong": "Folder names can't be longer than {max} characters",
+  "@folderNameTooLong": {
+    "description": "Inline error of the create-folder dialog when the name exceeds the limit",
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "folderNameExists": "A folder with this name already exists",
+  "@folderNameExists": {
+    "description": "Inline error / snackbar of the create-folder dialog when the name is already taken"
+  },
   "createTodo": "New todo",
   "@createTodo": {
     "description": "Title of the create-todo dialog opened by the to-do list FAB"

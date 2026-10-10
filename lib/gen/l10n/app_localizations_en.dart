@@ -206,6 +206,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderName => 'Folder name';
 
   @override
+  String get folderNameEmpty => 'Enter a folder name';
+
+  @override
+  String folderNameTooLong(int max) {
+    return 'Folder names can\'t be longer than $max characters';
+  }
+
+  @override
+  String get folderNameExists => 'A folder with this name already exists';
+
+  @override
   String get createTodo => 'New todo';
 
   @override

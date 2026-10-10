@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
@@ -8,6 +9,7 @@ import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/core/utils/app_utils.dart';
 import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
+import 'package:mynote/features/notes/domain/usecases/create_folder_use_case.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -19,17 +21,16 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 
 /// 文件夹管理。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **行序 =「全部」→ 各真实文件夹 →「未分类」→「新建文件夹」**（文件夹管理稿实测）。
-/// 「全部」与「未分类」**不是文件夹行**（`ARCHITECTURE-DESIGN.md` §5.3），由本页
-/// 合成：「全部」的计数 = 各文件夹 count 之和 + 未分类计数，一行算术、不额外查询。
+/// **行序 = 各真实文件夹 →「新建文件夹」**，行内无计数。
+/// 「全部」与「未分类」**不在本页**（`ARCHITECTURE-DESIGN.md` §5.3：两者都不是表里的
+/// 行）—— 它们是笔记列表顶部的分类 tab，本页只列真实文件夹。
 ///
 /// **筛选真相源是 URL**（§8.2）：点行只写 `?folder=`，读取侧的笔记列表与本页读同一个
 /// query 参数（[selectedFolderFilter]），因此不需要任何本地 state，返回上一页
 /// 时筛选态自动恢复。
 ///
-/// **可拖项只有真实文件夹**：`ReorderableListView` 的 `header` / `footer` 装
-/// 「全部」「未分类」「新建文件夹」三行固定项，拖动顺序写进库里的 `sort_index`
-/// （覆盖文件夹管理稿「本页无排序入口」）。
+/// **可拖项只有真实文件夹**：「新建文件夹」装在 `ReorderableListView` 的 `footer`
+/// 固定行，拖动顺序写进库里的 `sort_index`（覆盖文件夹管理稿「本页无排序入口」）。
 ///
 /// ⛔ **仍不提供重命名入口**：`renameFolderUseCaseProvider` 在库里有、也有测试，
 /// 但设计稿没有它的位置（`UI-IMPLEMENTATION-SPEC.md` §4 P4 段「本页无」），无稿不画。
@@ -60,13 +61,10 @@ class FolderManagerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final folders = ref.watch(folderProvider).value ?? const [];
-    final uncategorized = ref.watch(uncategorizedCountProvider).value ?? 0;
     // 空 / 加载 / 错误态视觉无稿，由 `AsyncValue` 兜底，不额外建视觉。
     final selected = selectedFolderFilter(
       GoRouterState.of(context).uri.queryParameters,
     );
-    final total =
-        folders.fold<int>(0, (sum, item) => sum + item.count) + uncategorized;
 
     return Scaffold(
       backgroundColor: context.colors.bg,
@@ -92,8 +90,8 @@ class FolderManagerScreen extends ConsumerWidget {
               showDivider: false,
             ),
             Expanded(
-              // ⚠️ 只有**真实文件夹**是可拖项：`header` / `footer` 放三行页合成的
-              // 固定行，这样 `onReorderItem` 拿到的 index 就是 `folders` 的下标，
+              // ⚠️ 只有**真实文件夹**是可拖项：「新建文件夹」装在 `footer` 的固定行，
+              // 这样 `onReorderItem` 拿到的 index 就是 `folders` 的下标，
               // 不需要任何偏移换算。
               child: ReorderableListView.builder(
                 padding: const EdgeInsets.symmetric(
@@ -107,31 +105,8 @@ class FolderManagerScreen extends ConsumerWidget {
                 // `newIndex` 里被拖走的那一项减掉了，本页不需要再修索引。
                 onReorderItem: (oldIndex, newIndex) =>
                     _reorderFolders(context, ref, oldIndex, newIndex),
-                header: _gappedBelow(
-                  FolderRow(
-                    name: l10n.all,
-                    count: total,
-                    isSelected: selected == null,
-                    onTap: () => context.go(AppRoutes.notes),
-                  ),
-                ),
-                footer: Column(
-                  children: <Widget>[
-                    _gappedBelow(
-                      FolderRow(
-                        name: l10n.uncategorized,
-                        count: uncategorized,
-                        isSelected: selected == kFolderFilterUncategorized,
-                        onTap: () => context.go(
-                          '${AppRoutes.notes}?'
-                          '${AppRoutes.folderQueryKey}=$kFolderFilterUncategorized',
-                        ),
-                      ),
-                    ),
-                    CreateFolderRow(
-                      onTap: () => _promptCreateFolder(context, ref),
-                    ),
-                  ],
+                footer: CreateFolderRow(
+                  onTap: () => _promptCreateFolder(context, ref),
                 ),
                 itemBuilder: (context, index) {
                   final item = folders[index];
@@ -146,7 +121,6 @@ class FolderManagerScreen extends ConsumerWidget {
                       onLongPress: () => _showFolderMenu(context, ref, item.folder),
                       child: FolderRow(
                         name: item.folder.name,
-                        // 计数让位给拖动图标（文件夹管理拖拽排序）。
                         isSelected: selected == item.folder.id,
                         onTap: () => context.go(
                           '${AppRoutes.notes}?'
@@ -197,10 +171,11 @@ class FolderManagerScreen extends ConsumerWidget {
 
   /// 新建文件夹。**弹窗视觉无稿**：用 `showDialog` + Material 默认样式，
   /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
-  /// 失败提示同样沿用 `AppUtils.showSnackBar`。
   ///
-  /// 校验（空名 / 超长 / 重名）全在 `CreateFolderUseCase` 里，页面只负责把
-  /// `InputFailure` 的文案弹出来。
+  /// 名称校验（空 / 超长 / 重名）**在弹窗里就地判**，错误显示在输入框下方、弹窗不
+  /// 关 —— 用户直接改完再提交，不用「关弹窗 → 看报错 → 重新打开」。
+  /// `CreateFolderUseCase` 里同一套校验**照旧保留**：它是领域规则，也是库外调用的
+  /// 唯一防线（重名的最终判据仍是库里 `name` 的 UNIQUE 索引，弹窗只是先一步拦）。
   Future<void> _promptCreateFolder(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     // ⛔ 不用 `TextEditingController`：`showDialog` 的 future 在 `pop` 时就完成，
@@ -210,38 +185,73 @@ class FolderManagerScreen extends ConsumerWidget {
 
     final name = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.createFolder),
-        content: TextField(
-          autofocus: true,
-          decoration: InputDecoration(hintText: l10n.folderName),
-          onChanged: (value) => entered = value,
-          onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(entered),
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        // 校验态（错误文案）只活在这一个弹窗里，`StatefulBuilder` 够用 ——
+        // 为一个输入框建一个 StatefulWidget 是把状态搬到文件级别。
+        String? error;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            void submit() {
+              final trimmed = entered.trim();
+              final taken = ref.read(folderProvider).value ?? const [];
+              if (trimmed.isEmpty) {
+                setState(() => error = l10n.folderNameEmpty);
+              } else if (trimmed.length > CreateFolderUseCase.maxNameLength) {
+                setState(
+                  () => error = l10n.folderNameTooLong(
+                    CreateFolderUseCase.maxNameLength,
+                  ),
+                );
+              } else if (taken.any((item) => item.folder.name == trimmed)) {
+                setState(() => error = l10n.folderNameExists);
+              } else {
+                Navigator.of(dialogContext).pop(trimmed);
+              }
+            }
+
+            return AlertDialog(
+              title: Text(l10n.createFolder),
+              content: TextField(
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.folderName,
+                  errorText: error,
+                ),
+                onChanged: (value) => entered = value,
+                onSubmitted: (value) {
+                  entered = value;
+                  submit();
+                },
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(onPressed: submit, child: Text(l10n.save)),
+              ],
+            );
+          },
+        );
+      },
     );
 
-    if (name == null || name.trim().isEmpty) return;
+    if (name == null) return;
 
     final result = await ref
         .read(createFolderUseCaseProvider)
-        .call(CreateFolderParams(name: name.trim()));
+        .call(CreateFolderParams(name: name));
     // 成功路径不需要 `ref.invalidate`：drift watch 会把新行推给 `folderProvider`，
     // UI 自动重建（`ARCHITECTURE-DESIGN.md` §8.4）。
     result.fold((failure) {
-      if (context.mounted) {
-        AppUtils.showSnackBar(context, message: failure.message);
-      }
+      if (!context.mounted) return;
+      // 走到这里还撞重名 = 弹窗打开期间名字被占（导入 / 恢复）：把它翻成本地化
+      // 文案，别的失败（写库出错）原样透出。**空名 / 超长**在弹窗里已拦下，
+      // 所以 `InputFailure` 在本页只剩「重名」一种含义。
+      AppUtils.showSnackBar(
+        context,
+        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
+      );
     }, (_) {});
   }
 

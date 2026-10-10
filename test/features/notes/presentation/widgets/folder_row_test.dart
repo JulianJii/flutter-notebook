@@ -20,38 +20,25 @@ Widget _wrap(Widget child) => MaterialApp(
 
 void main() {
   group('FolderRow', () {
-    testWidgets('未选中：无 check，名称与计数照常渲染', (tester) async {
-      await tester.pumpWidget(_wrap(const FolderRow(name: '未分类', count: 154)));
+    testWidgets('未选中：无 check，名称照常渲染，右侧无计数', (tester) async {
+      await tester.pumpWidget(_wrap(const FolderRow(name: '未分类')));
 
       expect(find.byIcon(AppIcons.check), findsNothing);
       expect(find.text('未分类'), findsOneWidget);
-      expect(find.text('154'), findsOneWidget);
+      expect(find.byType(Text), findsOneWidget, reason: '只剩名称一个 Text');
     });
 
     testWidgets('选中：显示 20dp 琥珀色 check', (tester) async {
       await tester.pumpWidget(
-        _wrap(const FolderRow(name: '全部', count: 155, isSelected: true)),
+        _wrap(const FolderRow(name: '全部', isSelected: true)),
       );
 
       expect(find.byIcon(AppIcons.check), findsOneWidget);
       expect(tester.widget<AppIcon>(find.byType(AppIcon)).size, 20);
-      expect(find.text('155'), findsOneWidget);
+      expect(tester.widget<Text>(find.text('全部')).style?.fontSize, 15);
     });
 
-    testWidgets('计数右对齐、13sp；名称 15sp', (tester) async {
-      await tester.pumpWidget(
-        _wrap(const FolderRow(name: '闻声笔记', count: 1, isSelected: true)),
-      );
-
-      expect(tester.widget<Text>(find.text('1')).style?.fontSize, 13);
-      expect(tester.widget<Text>(find.text('闻声笔记')).style?.fontSize, 15);
-      expect(
-        tester.getTopRight(find.text('1')).dx,
-        greaterThan(tester.getTopRight(find.text('闻声笔记')).dx),
-      );
-    });
-
-    testWidgets('count 为 null 时不画计数（文件夹管理把这一位换成了拖动图标）', (tester) async {
+    testWidgets('trailing 在名称右侧（文件夹管理传拖动图标）', (tester) async {
       await tester.pumpWidget(
         _wrap(
           const FolderRow(
@@ -62,7 +49,6 @@ void main() {
       );
 
       expect(find.byIcon(AppIcons.drag), findsOneWidget);
-      expect(find.byType(Text), findsOneWidget, reason: '只剩名称一个 Text');
       expect(
         tester.getTopRight(find.byIcon(AppIcons.drag)).dx,
         greaterThan(tester.getTopRight(find.text('闻声笔记')).dx),
@@ -72,7 +58,7 @@ void main() {
     testWidgets('onTap 非空时被调用一次', (tester) async {
       var tapped = 0;
       await tester.pumpWidget(
-        _wrap(FolderRow(name: '全部', count: 155, onTap: () => tapped++)),
+        _wrap(FolderRow(name: '全部', onTap: () => tapped++)),
       );
       await tester.tap(find.byType(FolderRow));
 
@@ -80,7 +66,7 @@ void main() {
     });
 
     testWidgets('onTap 为 null 时点击无反应且不崩', (tester) async {
-      await tester.pumpWidget(_wrap(const FolderRow(name: '全部', count: 155)));
+      await tester.pumpWidget(_wrap(const FolderRow(name: '全部')));
       await tester.tap(find.byType(FolderRow), warnIfMissed: false);
       await tester.pump();
 
@@ -90,7 +76,7 @@ void main() {
 
     testWidgets('行高由 rowTitle + 上下 rowPadH 得出，不写死高度', (tester) async {
       await tester.pumpWidget(
-        _wrap(const FolderRow(name: '闻声笔记', count: 1, isSelected: true)),
+        _wrap(const FolderRow(name: '闻声笔记', isSelected: true)),
       );
 
       // 15sp x 1.4 + 16x2 = 53（文件夹管理稿实测 ~60，未写死）。
@@ -121,7 +107,7 @@ void main() {
       await tester.pumpWidget(_wrap(const CreateFolderRow()));
       final create = tester.getSize(find.byType(CreateFolderRow)).height;
 
-      await tester.pumpWidget(_wrap(const FolderRow(name: '全部', count: 155)));
+      await tester.pumpWidget(_wrap(const FolderRow(name: '全部')));
       final row = tester.getSize(find.byType(FolderRow)).height;
 
       expect(create, closeTo(72, 1.5));

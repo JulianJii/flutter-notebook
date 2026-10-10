@@ -899,6 +899,199 @@ final class EmptyTrashUseCaseProvider
 
 String _$emptyTrashUseCaseHash() => r'9daefe6c23d956a4c025f5967edfb6ea8cb0d1a0';
 
+@ProviderFor(watchTrashedFoldersUseCase)
+final watchTrashedFoldersUseCaseProvider =
+    WatchTrashedFoldersUseCaseProvider._();
+
+final class WatchTrashedFoldersUseCaseProvider
+    extends
+        $FunctionalProvider<
+          WatchTrashedFoldersUseCase,
+          WatchTrashedFoldersUseCase,
+          WatchTrashedFoldersUseCase
+        >
+    with $Provider<WatchTrashedFoldersUseCase> {
+  WatchTrashedFoldersUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'watchTrashedFoldersUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$watchTrashedFoldersUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<WatchTrashedFoldersUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  WatchTrashedFoldersUseCase create(Ref ref) {
+    return watchTrashedFoldersUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WatchTrashedFoldersUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WatchTrashedFoldersUseCase>(value),
+    );
+  }
+}
+
+String _$watchTrashedFoldersUseCaseHash() =>
+    r'4aab34ed693ade7422720fa9a3f75d98cdd4a1d0';
+
+@ProviderFor(restoreFolderUseCase)
+final restoreFolderUseCaseProvider = RestoreFolderUseCaseProvider._();
+
+final class RestoreFolderUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RestoreFolderUseCase,
+          RestoreFolderUseCase,
+          RestoreFolderUseCase
+        >
+    with $Provider<RestoreFolderUseCase> {
+  RestoreFolderUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'restoreFolderUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$restoreFolderUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RestoreFolderUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RestoreFolderUseCase create(Ref ref) {
+    return restoreFolderUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RestoreFolderUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RestoreFolderUseCase>(value),
+    );
+  }
+}
+
+String _$restoreFolderUseCaseHash() =>
+    r'971bee76e34c56b98f9f171f13004e54b8d34d25';
+
+@ProviderFor(purgeFolderUseCase)
+final purgeFolderUseCaseProvider = PurgeFolderUseCaseProvider._();
+
+final class PurgeFolderUseCaseProvider
+    extends
+        $FunctionalProvider<
+          PurgeFolderUseCase,
+          PurgeFolderUseCase,
+          PurgeFolderUseCase
+        >
+    with $Provider<PurgeFolderUseCase> {
+  PurgeFolderUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'purgeFolderUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$purgeFolderUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<PurgeFolderUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  PurgeFolderUseCase create(Ref ref) {
+    return purgeFolderUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PurgeFolderUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PurgeFolderUseCase>(value),
+    );
+  }
+}
+
+String _$purgeFolderUseCaseHash() =>
+    r'aa585fb47f83b79694768316b17d73296e157362';
+
+@ProviderFor(emptyFolderTrashUseCase)
+final emptyFolderTrashUseCaseProvider = EmptyFolderTrashUseCaseProvider._();
+
+final class EmptyFolderTrashUseCaseProvider
+    extends
+        $FunctionalProvider<
+          EmptyFolderTrashUseCase,
+          EmptyFolderTrashUseCase,
+          EmptyFolderTrashUseCase
+        >
+    with $Provider<EmptyFolderTrashUseCase> {
+  EmptyFolderTrashUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'emptyFolderTrashUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$emptyFolderTrashUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<EmptyFolderTrashUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  EmptyFolderTrashUseCase create(Ref ref) {
+    return emptyFolderTrashUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(EmptyFolderTrashUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<EmptyFolderTrashUseCase>(value),
+    );
+  }
+}
+
+String _$emptyFolderTrashUseCaseHash() =>
+    r'8b35de47fa24f34cd4a3e9decaaef37e9ff5ad31';
+
 @ProviderFor(noteImageRepository)
 final noteImageRepositoryProvider = NoteImageRepositoryProvider._();
 

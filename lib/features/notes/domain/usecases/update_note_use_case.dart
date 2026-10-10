@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
@@ -28,7 +29,7 @@ class UpdateNoteUseCase {
         const Left(InputFailure(message: 'Note must have a title or content')),
       );
     }
-    final now = DateTime.now();
+    final now = AppClock.appNow();
     return _repository.update(
       Note(
         id: params.noteId,

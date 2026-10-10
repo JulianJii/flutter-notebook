@@ -4,7 +4,9 @@ import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/shell/notes_shell.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/features/backup/presentation/screens/data_management_screen.dart';
+import 'package:mynote/features/backup/presentation/screens/lan_sync_screen.dart';
 import 'package:mynote/features/backup/presentation/screens/webdav_config_screen.dart';
+import 'package:mynote/features/backup/presentation/screens/webdav_history_screen.dart';
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
 import 'package:mynote/features/notes/presentation/screens/folder_manager_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/note_detail_screen.dart';
@@ -104,6 +106,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.webDav,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => const WebDavConfigScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.webDavHistory,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const WebDavHistoryScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.lanSync,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const LanSyncScreen(),
       ),
       GoRoute(
         path: AppRoutes.privacyPolicy,

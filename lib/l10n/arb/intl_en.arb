@@ -526,9 +526,38 @@
   "@noteDeleted": {
     "description": "Snackbar shown after a note is soft deleted"
   },
-  "trashEmpty": "No deleted notes",
+  "trashEmpty": "Trash is empty",
   "@trashEmpty": {
     "description": "Empty state of the trash screen"
+  },
+  "trashGroupNotes": "Notes",
+  "@trashGroupNotes": {
+    "description": "Section header of the notes group in the trash"
+  },
+  "trashGroupFolders": "Folders",
+  "@trashGroupFolders": {
+    "description": "Section header of the folders group in the trash"
+  },
+  "trashGroupTodos": "To-dos",
+  "@trashGroupTodos": {
+    "description": "Section header of the todos group in the trash"
+  },
+  "deleteFolderConfirm": "Delete \"{name}\"? Its notes move to Uncategorized. You can restore the folder from the trash.",
+  "@deleteFolderConfirm": {
+    "description": "Body of the folder delete confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteFolderMenu": "Delete folder",
+  "@deleteFolderMenu": {
+    "description": "Long-press menu item that deletes a folder"
+  },
+  "deleteFolderDone": "Moved to trash",
+  "@deleteFolderDone": {
+    "description": "Snackbar shown after a folder is moved to the trash"
   },
   "trashRestore": "Restore",
   "@trashRestore": {
@@ -536,7 +565,7 @@
   },
   "restoreDone": "Restored",
   "@restoreDone": {
-    "description": "Snackbar shown after a note is restored"
+    "description": "Snackbar shown after an item is restored"
   },
   "trashDeleteForever": "Delete permanently",
   "@trashDeleteForever": {
@@ -550,7 +579,7 @@
   "@trashEmptyAction": {
     "description": "Top bar action that empties the trash, and its confirm button"
   },
-  "trashEmptyConfirm": "Delete all notes in Recently deleted? This can't be undone.",
+  "trashEmptyConfirm": "Delete everything in the trash? This can't be undone.",
   "@trashEmptyConfirm": {
     "description": "Body of the empty-trash confirmation dialog"
   },
@@ -775,6 +804,83 @@
   "@dataTitle": {
     "description": "Title of the data management screen"
   },
+  "lanTitle": "Local network sync",
+  "@lanTitle": {
+    "description": "Title of the LAN sync screen"
+  },
+  "lanAllowAccess": "Allow this device to be found",
+  "@lanAllowAccess": {
+    "description": "Switch that starts/stops hosting on this device"
+  },
+  "lanAllowAccessDesc": "When on, another device on the same Wi-Fi can find this one and sync directly.",
+  "@lanAllowAccessDesc": {
+    "description": "Subtitle of the allow-access switch"
+  },
+  "lanHostingOn": "This device is reachable",
+  "@lanHostingOn": {
+    "description": "Footer shown while this device is hosting"
+  },
+  "lanSearching": "Looking for devices on this network…",
+  "@lanSearching": {
+    "description": "Shown while no peer has been discovered yet"
+  },
+  "lanNoPeers": "No devices found. Check that both devices are on the same Wi-Fi and that the other one has \"Allow this device to be found\" turned on.",
+  "@lanNoPeers": {
+    "description": "Empty state when discovery is running but found nothing"
+  },
+  "lanSync": "Sync",
+  "@lanSync": {
+    "description": "Action that syncs with one peer"
+  },
+  "lanSyncDone": "Synced: {changed} changed",
+  "@lanSyncDone": {
+    "description": "Snackbar shown after a LAN sync",
+    "placeholders": {
+      "changed": {
+        "type": "int"
+      }
+    }
+  },
+  "lanClockAligned": "Clock aligned with {device}",
+  "@lanClockAligned": {
+    "description": "Snackbar shown after the clock offset was adjusted to match the peer",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "lanManual": "Enter address",
+  "@lanManual": {
+    "description": "Button opening the manual-address dialog"
+  },
+  "lanManualTitle": "Connect to a device",
+  "@lanManualTitle": {
+    "description": "Title of the manual-address dialog"
+  },
+  "lanManualIp": "IP address",
+  "@lanManualIp": {
+    "description": "Label of the IP field in the manual-address dialog"
+  },
+  "lanManualPort": "Port",
+  "@lanManualPort": {
+    "description": "Label of the port field in the manual-address dialog"
+  },
+  "lanManualAdd": "Add",
+  "@lanManualAdd": {
+    "description": "Confirm button of the manual-address dialog"
+  },
+  "lanManualHint": "Use this when broadcast is blocked by the router. Enter the port shown on the other device's screen.",
+  "@lanManualHint": {
+    "description": "Helper text of the manual-address dialog"
+  },
+  "lanSecurityNote": "Traffic on a local network is unencrypted and needs no password — only turn this on on a network you trust.",
+  "@lanSecurityNote": {
+    "description": "Security warning shown at the bottom of the LAN screen"
+  },
+  "@dataTitle": {
+    "description": "Title of the data management screen"
+  },
   "dataGroupExport": "Export",
   "@dataGroupExport": {
     "description": "Section header of the export group"
@@ -899,9 +1005,9 @@
   "@dataErrorServer": {
     "description": "Snackbar shown when the server returns an error"
   },
-  "dataErrorInvalidFile": "This file isn't a snapshot exported by this app",
+  "dataErrorInvalidFile": "This file isn't a snapshot exported by this app, or it's too large",
   "@dataErrorInvalidFile": {
-    "description": "Snackbar shown when the picked file is not a snapshot"
+    "description": "Snackbar shown when the picked file is not a snapshot, or is over the size cap"
   },
   "dataErrorNotConfigured": "No WebDAV server configured yet",
   "@dataErrorNotConfigured": {
@@ -910,6 +1016,53 @@
   "dataErrorUnknown": "Something went wrong. Try again",
   "@dataErrorUnknown": {
     "description": "Snackbar shown for any other backup failure"
+  },
+  "webDavHistory": "Version history",
+  "@webDavHistory": {
+    "description": "Title of the WebDAV version history screen"
+  },
+  "webDavHistoryEmpty": "No history yet. Each time a sync actually changes the server copy, the version it replaces is kept here.",
+  "@webDavHistoryEmpty": {
+    "description": "Empty state of the version history screen"
+  },
+  "webDavHistoryEntryAt": "{date} · {count} items",
+  "@webDavHistoryEntryAt": {
+    "description": "One row of the version history list",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "webDavHistoryRestore": "Recover contents",
+  "@webDavHistoryRestore": {
+    "description": "Action that merges a historical version back into local"
+  },
+  "webDavHistoryRestoreConfirm": "Merge the contents from {date}. Note: notes, to-dos and folders deleted back then will NOT come back — the deletion is newer than this version.",
+  "@webDavHistoryRestoreConfirm": {
+    "description": "Body of the restore-a-history-version confirmation dialog. Warns that deletions are NOT rolled back.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "webDavHistoryRestored": "Recovered: {inserted} added, {updated} updated",
+  "@webDavHistoryRestored": {
+    "description": "Snackbar shown after restoring a historical version",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
   },
   "webDavTitle": "WebDAV",
   "@webDavTitle": {

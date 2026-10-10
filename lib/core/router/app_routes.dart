@@ -62,6 +62,18 @@ abstract final class AppRoutes {
   /// WebDAV 服务器配置。从 [dataManagement] 进入。
   static const String webDav = '/settings/webdav';
 
+  /// WebDAV 历史版本。从 [webDav] 进入。
+  ///
+  /// ⚠️ 挂在 `/settings` 前缀下而不是 `/notes`，所以**不存在** `:id` 被当成笔记 id
+  /// 的路由冲突（那是 `/notes` 子树才有的问题）。
+  static const String webDavHistory = '/settings/webdav/history';
+
+  /// 局域网同步（设备间直接同步）。从 [dataManagement] 进入。
+  ///
+  /// ⚠️ 同样挂在 `/settings` 前缀下，所以**不存在** `:id` 被当成笔记 id 的路由
+  /// 冲突（那是 `/notes` 子树才有的问题）。
+  static const String lanSync = '/settings/lan';
+
   /// 隐私政策。`/settings` 的兄弟路由（root navigator，整页覆盖）。
   static const String privacyPolicy = '/settings/privacy-policy';
 

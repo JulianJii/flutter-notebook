@@ -17,15 +17,34 @@ class NoteFolder extends Equatable {
     required this.name,
     required this.createdAt,
     required this.updatedAt,
+    this.deletedAt,
   });
 
   final String id;
 
+  /// **用户看到并编辑的名字**，不含回收站的 `#id` 让出后缀 ——
+  /// datasource 在 `deletedAt != null` 时把那一段剥掉（见
+  /// `note_folders_table.dart` 的 `visibleFolderName`）。实体这一侧永远是干净的。
   final String name;
 
   final DateTime createdAt;
 
   final DateTime updatedAt;
+
+  /// 软删除时刻。null = 正常文件夹；非 null = 在回收站里。
+  ///
+  /// ⛔ **不参与 [copyWith]**：回收站相关的写入全部由
+  /// `FolderLocalDataSourceImpl` 直连 DAO 完成（要连 `name` 让出一起写，
+  /// copyWith 表达不了），没有「先改实体再落库」的路径。
+  final DateTime? deletedAt;
+
+  /// 合并比较键 —— 快照合并（`BackupFolder.version`）的语义来源。
+  ///
+  /// ⚠️ 取 `updatedAt` 与 `deletedAt` 的**较晚者**：软删除也是一次变更，而
+  /// 软删除**不刷** `updatedAt`（见 `FolderDao.markTrashed`）。
+  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
+      ? updatedAt
+      : deletedAt!;
 
   NoteFolder copyWith({String? name, DateTime? updatedAt}) {
     return NoteFolder(
@@ -33,9 +52,10 @@ class NoteFolder extends Equatable {
       name: name ?? this.name,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, createdAt, updatedAt];
+  List<Object?> get props => [id, name, createdAt, updatedAt, deletedAt];
 }

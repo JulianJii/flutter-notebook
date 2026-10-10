@@ -26,6 +26,27 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- 局域网同步：iOS 14+ 首次访问本地网络必须向用户申请授权，缺这条
+	     Info.plist 项则请求直接失败（不弹窗、无报错）。文案会出现在系统弹窗上，
+	     必须说清用途。 -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>用于在同一局域网内查找并连接你的其他设备，直接同步笔记与待办，不会上传到互联网。</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<!-- 局域网设备发现的服务类型。 -->
+		<string>_mynote._tcp</string>
+	</array>
+	<!-- 明文 HTTP：只放行**局域网**，不是全局放开。
+	     WebDAV 用户自配的服务器大量是 NAS 上的 `http://192.168.x.x/…`，
+	     局域网同步的对端 IP 也必然是明文。用 NSAllowsLocalNetworking
+	     （覆盖 RFC1918 私网与 .local）而不是 NSAllowsArbitraryLoads：
+	     后者会连公网明文一起放开，审核也会盯。代价是「公网 http 的 WebDAV」
+	     在 iOS 上会被拦 —— 那本来也该拦。见 docs/FEATURES.md「已知限制」。 -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

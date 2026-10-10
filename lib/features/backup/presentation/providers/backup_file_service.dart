@@ -35,6 +35,9 @@ Future<void> shareSnapshotJson(String json, String fileName) async {
 
 /// 选一个 `.json` 文件并读出文本。用户取消 → `null`。
 ///
+/// ⛔ **这里不设体积上限**：上限是「本应用的快照能有多大」的性质，属
+/// `BackupRepositoryImpl._decode`，那里一处管住文件导入、WebDAV 远端与局域网
+/// 同步三条路径（远端文件此前完全没有上限）。
 Future<String?> pickSnapshotJson() async {
   final files = await FilePicker.pickFiles(
     type: FileType.custom,

@@ -6,6 +6,7 @@ import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
@@ -30,7 +31,11 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// 「全部」「未分类」「新建文件夹」三行固定项，拖动顺序写进库里的 `sort_index`
 /// （覆盖文件夹管理稿「本页无排序入口」）。
 ///
-/// ⛔ **不提供重命名 / 删除入口**：无长按菜单、无多选态、顶栏也不画 trash。
+/// ⛔ **仍不提供重命名入口**：`renameFolderUseCaseProvider` 在库里有、也有测试，
+/// 但设计稿没有它的位置（`UI-IMPLEMENTATION-SPEC.md` §4 P4 段「本页无」），无稿不画。
+/// 要加的话与删除同处长按菜单加一项即可。
+/// 删除入口是**长按**弹菜单：行内 `trailing` 已被拖拽手柄占满，再塞图标会挤掉
+/// 拖拽区（`FolderRow` 有测试钉住布局）。
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
 class FolderManagerScreen extends ConsumerWidget {
   const FolderManagerScreen({super.key});
@@ -133,19 +138,26 @@ class FolderManagerScreen extends ConsumerWidget {
                   return _gappedBelow(
                     // 可拖项必须有 key（`ReorderableListView` 的硬要求）。
                     key: ValueKey<String>(item.folder.id),
-                    FolderRow(
-                      name: item.folder.name,
-                      // 计数让位给拖动图标（文件夹管理拖拽排序）。
-                      isSelected: selected == item.folder.id,
-                      onTap: () => context.go(
-                        '${AppRoutes.notes}?'
-                        '${AppRoutes.folderQueryKey}=${item.folder.id}',
-                      ),
-                      trailing: ReorderableDragStartListener(
-                        index: index,
-                        child: const AppIcon(
-                          icon: AppIcons.drag,
-                          size: AppSpacing.rowIconSize,
+                    // 长按菜单包在 `FolderRow` 外面而不是塞进它的参数：`AppCard`
+                    // 只有 `onTap`，改它就得动全部调用方与它的测试。`opaque` 让
+                    // 长按命中整张卡片（含 padding 区），符合「按卡片」的手感。
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onLongPress: () => _showFolderMenu(context, ref, item.folder),
+                      child: FolderRow(
+                        name: item.folder.name,
+                        // 计数让位给拖动图标（文件夹管理拖拽排序）。
+                        isSelected: selected == item.folder.id,
+                        onTap: () => context.go(
+                          '${AppRoutes.notes}?'
+                          '${AppRoutes.folderQueryKey}=${item.folder.id}',
+                        ),
+                        trailing: ReorderableDragStartListener(
+                          index: index,
+                          child: const AppIcon(
+                            icon: AppIcons.drag,
+                            size: AppSpacing.rowIconSize,
+                          ),
                         ),
                       ),
                     ),
@@ -232,4 +244,102 @@ class FolderManagerScreen extends ConsumerWidget {
       }
     }, (_) {});
   }
+
+  /// 长按文件夹 → 底部操作菜单。
+  ///
+  /// ⚠️ **弹窗视觉无稿**：用 `showModalBottomSheet` 的 Material 默认形态，
+  /// ⛔ 不建 `core/ui` 组件（同 `_promptCreateFolder` 的理由）。
+  /// 当前只有「删除」一项 —— `renameFolderUseCase` 存在但无稿可依（见类注释）。
+  Future<void> _showFolderMenu(
+    BuildContext context,
+    WidgetRef ref,
+    NoteFolder folder,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final action = await showModalBottomSheet<_FolderAction>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+              title: Text(
+                folder.name,
+                style: context.textStyles.rowTitle.copyWith(
+                  color: context.colors.textTertiary,
+                ),
+              ),
+              enabled: false,
+            ),
+            const AppDivider(),
+            ListTile(
+              leading: AppIcon(
+                icon: AppIcons.trash,
+                size: AppSpacing.rowIconSize,
+                color: context.colors.feedbackDanger,
+              ),
+              title: Text(
+                l10n.deleteFolderMenu,
+                style: context.textStyles.rowTitle.copyWith(
+                  color: context.colors.feedbackDanger,
+                ),
+              ),
+              onTap: () => Navigator.of(sheetContext).pop(_FolderAction.delete),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (action != _FolderAction.delete || !context.mounted) return;
+    await _confirmDeleteFolder(context, ref, folder);
+  }
+
+  /// 删除文件夹：二次确认 → 软删除（进回收站，可恢复）。
+  ///
+  /// ⚠️ `DeleteFolderUseCase` 的注释原写「不加二次确认（弹窗无稿）」—— 那是在
+  /// 删除**没有入口**的前提下说的（无法触发的路径不需要确认框）。现在有了入口，
+  /// 确认框就是必须的：误触长按不能直接删掉一个文件夹。
+  /// 删除是软删除，其下的笔记落进未分类，两者都可在回收站恢复。
+  Future<void> _confirmDeleteFolder(
+    BuildContext context,
+    WidgetRef ref,
+    NoteFolder folder,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.deleteFolderConfirm(folder.name)),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final result = await ref.read(deleteFolderUseCaseProvider)(folder.id);
+    result.fold((failure) {
+      if (context.mounted) {
+        AppUtils.showSnackBar(context, message: failure.message);
+      }
+    }, (_) {
+      // 成功不弹提示：文件夹从列表消失本身就是反馈。
+      if (context.mounted) {
+        AppUtils.showSnackBar(context, message: l10n.deleteFolderDone);
+      }
+    });
+  }
 }
+
+/// 长按菜单里的动作。只有一项，但**用枚举而不是 `bool`**：返回 `true/false` 的话
+/// 弹「取消」与弹「删除」在语义上都是 false，将来加第二项时这个 bool 就说不清它
+/// 代表什么了。
+enum _FolderAction { delete }

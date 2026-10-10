@@ -165,7 +165,7 @@ Windows 用同名 `.ps1`（参数一致）；执行策略受限时：
 | [docs/TOOLS.md](docs/TOOLS.md) | 生成器脚本用法 |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | 贡献流程 |
 
-专项指南：`LOCALIZATION_GUIDE.md`、`FEATURE_FLAGS_GUIDE.md`、`ANALYTICS_GUIDE.md`、`EXAMPLES.md`。
+专项指南：`LOCALIZATION_GUIDE.md`、`FEATURE_FLAGS_GUIDE.md`、`ANALYTICS_GUIDE.md`。
 
 ---
 

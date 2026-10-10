@@ -407,7 +407,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteDeleted => 'Moved to Recently deleted';
 
   @override
-  String get trashEmpty => 'No deleted notes';
+  String get trashEmpty => 'Trash is empty';
+
+  @override
+  String get trashGroupNotes => 'Notes';
+
+  @override
+  String get trashGroupFolders => 'Folders';
+
+  @override
+  String get trashGroupTodos => 'To-dos';
+
+  @override
+  String deleteFolderConfirm(String name) {
+    return 'Delete \"$name\"? Its notes move to Uncategorized. You can restore the folder from the trash.';
+  }
+
+  @override
+  String get deleteFolderMenu => 'Delete folder';
+
+  @override
+  String get deleteFolderDone => 'Moved to trash';
 
   @override
   String get trashRestore => 'Restore';
@@ -427,7 +447,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trashEmptyConfirm =>
-      'Delete all notes in Recently deleted? This can\'t be undone.';
+      'Delete everything in the trash? This can\'t be undone.';
 
   @override
   String get emptyDone => 'Emptied';
@@ -610,6 +630,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataTitle => 'Data & Sync';
 
   @override
+  String get lanTitle => 'Local network sync';
+
+  @override
+  String get lanAllowAccess => 'Allow this device to be found';
+
+  @override
+  String get lanAllowAccessDesc =>
+      'When on, another device on the same Wi-Fi can find this one and sync directly.';
+
+  @override
+  String get lanHostingOn => 'This device is reachable';
+
+  @override
+  String get lanSearching => 'Looking for devices on this network…';
+
+  @override
+  String get lanNoPeers =>
+      'No devices found. Check that both devices are on the same Wi-Fi and that the other one has \"Allow this device to be found\" turned on.';
+
+  @override
+  String get lanSync => 'Sync';
+
+  @override
+  String lanSyncDone(int changed) {
+    return 'Synced: $changed changed';
+  }
+
+  @override
+  String lanClockAligned(String device) {
+    return 'Clock aligned with $device';
+  }
+
+  @override
+  String get lanManual => 'Enter address';
+
+  @override
+  String get lanManualTitle => 'Connect to a device';
+
+  @override
+  String get lanManualIp => 'IP address';
+
+  @override
+  String get lanManualPort => 'Port';
+
+  @override
+  String get lanManualAdd => 'Add';
+
+  @override
+  String get lanManualHint =>
+      'Use this when broadcast is blocked by the router. Enter the port shown on the other device\'s screen.';
+
+  @override
+  String get lanSecurityNote =>
+      'Traffic on a local network is unencrypted and needs no password — only turn this on on a network you trust.';
+
+  @override
   String get dataGroupExport => 'Export';
 
   @override
@@ -696,13 +772,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataErrorInvalidFile =>
-      'This file isn\'t a snapshot exported by this app';
+      'This file isn\'t a snapshot exported by this app, or it\'s too large';
 
   @override
   String get dataErrorNotConfigured => 'No WebDAV server configured yet';
 
   @override
   String get dataErrorUnknown => 'Something went wrong. Try again';
+
+  @override
+  String get webDavHistory => 'Version history';
+
+  @override
+  String get webDavHistoryEmpty =>
+      'No history yet. Each time a sync actually changes the server copy, the version it replaces is kept here.';
+
+  @override
+  String webDavHistoryEntryAt(DateTime date, int count) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $count items';
+  }
+
+  @override
+  String get webDavHistoryRestore => 'Recover contents';
+
+  @override
+  String webDavHistoryRestoreConfirm(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return 'Merge the contents from $dateString. Note: notes, to-dos and folders deleted back then will NOT come back — the deletion is newer than this version.';
+  }
+
+  @override
+  String webDavHistoryRestored(int inserted, int updated) {
+    return 'Recovered: $inserted added, $updated updated';
+  }
 
   @override
   String get webDavTitle => 'WebDAV';

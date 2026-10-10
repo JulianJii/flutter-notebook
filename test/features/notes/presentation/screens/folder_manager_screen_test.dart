@@ -81,6 +81,7 @@ void main() {
     when(
       repo.watchUncategorizedCount,
     ).thenAnswer((_) => Stream<int>.value(uncategorized));
+    when(() => repo.delete(any())).thenAnswer((_) async => const Right(unit));
     folderRepo = repo;
     return ProviderScope(
       overrides: [folderRepositoryProvider.overrideWithValue(repo)],
@@ -230,6 +231,58 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.delete_outline), findsNothing);
+  });
+
+  /// 删除入口是**长按**：行内 `trailing` 已被拖拽手柄占满，加图标会挤掉拖拽区
+  /// （`FolderRow` 有测试钉住布局），而多选态要新增选中态 —— 长按是唯一不改动
+  /// 现有视觉的选项。
+  testWidgets('长按文件夹弹菜单 → 确认 → 软删除', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('闻声笔记'));
+    await tester.pumpAndSettle();
+    expect(find.text('删除文件夹'), findsOneWidget);
+
+    await tester.tap(find.text('删除文件夹'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(TextButton, '删除'));
+    await tester.pumpAndSettle();
+
+    verify(() => folderRepo.delete('f1')).called(1);
+    expect(find.text('已移入回收站'), findsOneWidget);
+  });
+
+  testWidgets('菜单里取消 → 确认框都不出现，不写库', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('闻声笔记'));
+    await tester.pumpAndSettle();
+    // 底部菜单关闭（点菜单外的「新建文件夹」行触发 pop 不可靠，直接用
+    // 系统返回 —— 与用户实际按返回键一致）。
+    final back = tester.state<NavigatorState>(find.byType(Navigator).first);
+    back.pop();
+    await tester.pumpAndSettle();
+
+    verifyNever(() => folderRepo.delete(any()));
+  });
+
+  testWidgets('确认框点取消 → 不写库', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('闻声笔记'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('删除文件夹'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, '取消'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    verifyNever(() => folderRepo.delete(any()));
   });
 
   testWidgets('新建文件夹弹窗可输入、可取消，取消不提交', (tester) async {

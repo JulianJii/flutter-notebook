@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  明文 HTTP 放行范围。
+
+  Android 9（API 28）起默认**禁止**明文流量，而本 App 有两条正当的明文需求：
+    1. WebDAV 同步：用户自配的服务器大量是局域网 NAS 上的 `http://192.168.x.x/…`
+       —— WebDAV over HTTPS 在自建场景里并不普遍；
+    2. 局域网设备间同步：对端 IP 由用户当场指定，必然是明文。
+
+  ⛔ 这里放行的是「用户自己填进来的地址」，不是给某个固定第三方域名开后门。
+  但要说清代价：明文可被同网段嗅探 —— Basic Auth 只是 base64，笔记内容以
+  JSON 明文过网。信任局域网内其他设备。见 docs/FEATURES.md「已知限制」。
+
+  保留 base-config 的 cleartextTrafficPermitted=false 作为兜底：将来若引入
+  不需要明文的远端服务，在 domain-config 里显式放行即可，不必再动这里。
+-->
+<network-security-config>
+    <!-- 用户自配的 WebDAV / 局域网对端。 -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>

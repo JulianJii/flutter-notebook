@@ -11,10 +11,13 @@ import 'package:mynote/features/notes/domain/usecases/create_folder_use_case.dar
 import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/delete_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/delete_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/empty_folder_trash_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/empty_trash_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/pick_note_image_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/purge_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/purge_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/restore_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/restore_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/rename_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/reorder_folders_use_case.dart';
@@ -23,6 +26,7 @@ import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart'
 import 'package:mynote/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/watch_notes_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/watch_trashed_folders_use_case.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'notes_providers.g.dart';
@@ -129,6 +133,28 @@ PurgeNoteUseCase purgeNoteUseCase(Ref ref) {
 @riverpod
 EmptyTrashUseCase emptyTrashUseCase(Ref ref) {
   return EmptyTrashUseCase(ref.watch(noteRepositoryProvider));
+}
+
+// 文件夹 / 待办的回收站入口在**各自 feature** 的屏里，但它们共用 `/notes/trash`
+// 这一页 —— 所以用例的 DI 也在各自 feature 装配，只在这一处并列登记。
+@riverpod
+WatchTrashedFoldersUseCase watchTrashedFoldersUseCase(Ref ref) {
+  return WatchTrashedFoldersUseCase(ref.watch(folderRepositoryProvider));
+}
+
+@riverpod
+RestoreFolderUseCase restoreFolderUseCase(Ref ref) {
+  return RestoreFolderUseCase(ref.watch(folderRepositoryProvider));
+}
+
+@riverpod
+PurgeFolderUseCase purgeFolderUseCase(Ref ref) {
+  return PurgeFolderUseCase(ref.watch(folderRepositoryProvider));
+}
+
+@riverpod
+EmptyFolderTrashUseCase emptyFolderTrashUseCase(Ref ref) {
+  return EmptyFolderTrashUseCase(ref.watch(folderRepositoryProvider));
 }
 
 // ---- 图片 ----

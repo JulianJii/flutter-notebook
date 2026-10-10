@@ -8,6 +8,13 @@ import 'package:mynote/features/backup/domain/repositories/backup_repository.dar
 import 'package:mynote/features/backup/domain/usecases/export_backup_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/get_webdav_config_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/import_backup_use_case.dart';
+import 'package:mynote/features/backup/data/datasources/lan_discovery.dart';
+import 'package:mynote/features/backup/data/repositories/lan_sync_repository_impl.dart';
+import 'package:mynote/features/backup/domain/repositories/lan_sync_repository.dart';
+import 'package:mynote/features/backup/domain/usecases/lan_sync_use_cases.dart';
+
+import 'package:mynote/features/backup/domain/usecases/list_backup_history_use_case.dart';
+import 'package:mynote/features/backup/domain/usecases/restore_backup_version_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/save_webdav_config_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/sync_with_webdav_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/test_webdav_use_case.dart';
@@ -67,6 +74,38 @@ ImportBackupUseCase importBackupUseCase(Ref ref) {
 @Riverpod(keepAlive: true)
 SyncWithWebDavUseCase syncWithWebDavUseCase(Ref ref) {
   return SyncWithWebDavUseCase(ref.watch(backupRepositoryProvider));
+}
+
+// ---- 局域网同步 ----
+
+/// 局域网传输的数据源。⛔ **不是** provider：它持有 `HttpServer` / UDP socket，
+/// 生命周期由 [lanSyncUseCases] 统一管，单独暴露会让两份 socket 实例并存。
+LanDiscovery lanDiscovery(Ref ref) => LanDiscovery(deviceName: '本机');
+
+@Riverpod(keepAlive: true)
+LanSyncRepository lanSyncRepository(Ref ref) {
+  return LanSyncRepositoryImpl(
+    ref.watch(backupLocalDataSourceProvider),
+    lanDiscovery(ref),
+  );
+}
+
+/// ⛔ **必须 keepAlive**：它间接持有 `HttpServer` 与 UDP socket。被回收就等于
+/// 「服务莫名其妙停了」，而且 provider 重建会起一个**新**端口，广播出去的端口与
+/// 实际监听的对不上 —— 症状是「开了服务但别人连不上」。
+@Riverpod(keepAlive: true)
+LanSyncUseCases lanSyncUseCases(Ref ref) {
+  return LanSyncUseCases(ref.watch(lanSyncRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+ListBackupHistoryUseCase listBackupHistoryUseCase(Ref ref) {
+  return ListBackupHistoryUseCase(ref.watch(backupRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+RestoreBackupVersionUseCase restoreBackupVersionUseCase(Ref ref) {
+  return RestoreBackupVersionUseCase(ref.watch(backupRepositoryProvider));
 }
 
 @Riverpod(keepAlive: true)

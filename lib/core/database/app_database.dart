@@ -12,10 +12,12 @@ part 'app_database.g.dart';
 
 /// 全 App 唯一的 SQLite 出入口。不是 feature，不含业务语义。
 ///
-/// `schemaVersion = 5`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
+/// `schemaVersion = 6`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
 /// `notes_table.dart` 头注）；v2 → v3 加 `background` 列（笔记纸张背景，
 /// 可空 = 无背景）；v3 → v4 给 `note_folders` 加 `sort_index` 列（文件夹管理拖拽排序）；
-/// v4 → v5 给 `todos` 加 `reminder_at` 列（待办提醒时刻，可空 = 无提醒）。
+/// v4 → v5 给 `todos` 加 `reminder_at` 列（待办提醒时刻，可空 = 无提醒）；
+/// v5 → v6 给 `note_folders` 与 `todos` 加 `deleted_at` 列（**软删除**，
+/// 让删除能跨设备传播 —— 硬删除不留痕，见两张表的类注释）。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///
 /// 三张表（`notes` / `note_folders` / `todos`）在 `@DriftDatabase` 注解里声明，
@@ -29,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -52,6 +54,12 @@ class AppDatabase extends _$AppDatabase {
       // v4 → v5：`todos` 加提醒时刻。老数据为 null = 没设提醒，无需回填。
       if (from < 5) {
         await m.addColumn(todos, todos.reminderAt);
+      }
+      // v5 → v6：文件夹与待办改软删除。老数据为 null = 未删除，与升级前的
+      // 「全部可见」视图一致，**无需回填**。
+      if (from < 6) {
+        await m.addColumn(noteFolders, noteFolders.deletedAt);
+        await m.addColumn(todos, todos.deletedAt);
       }
     },
     beforeOpen: (details) async {

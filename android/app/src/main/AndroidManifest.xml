@@ -1,4 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 联网：WebDAV 同步（备份 / 恢复）、局域网设备间同步、检查更新。
+         ⚠️ **必须写在 main**：Flutter 模板只把它放进 debug / profile 两个
+         manifest，release 包因此**一个请求都发不出去**，WebDAV 同步在发布版
+         里 100% 失败。 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 局域网同步需要读取本机的局域网地址（拿不到就填不出连接目标）。 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- 局域网设备发现靠 UDP 广播，WiFi 下收广播要靠 multicast lock
+         （`MulticastLock`）。无此权限时省电模式会掐掉收包，发现不到对端。 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+
     <!-- 待办提醒：通知权限（Android 13+）+ 精确到点的闹钟权限。
          `SCHEDULE_EXACT_ALARM` 覆盖 12~13，`USE_EXACT_ALARM` 覆盖 14+（14 起前者
          不再默认授予，且这两条缺任一句 `zonedSchedule` 都会直接抛错）。 -->
@@ -9,6 +20,7 @@
     <application
         android:label="init"
         android:name="${applicationName}"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

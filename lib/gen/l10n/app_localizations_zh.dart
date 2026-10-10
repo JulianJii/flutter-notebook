@@ -397,7 +397,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noteDeleted => '已移到「最近删除」';
 
   @override
-  String get trashEmpty => '没有已删除的笔记';
+  String get trashEmpty => '回收站是空的';
+
+  @override
+  String get trashGroupNotes => '笔记';
+
+  @override
+  String get trashGroupFolders => '文件夹';
+
+  @override
+  String get trashGroupTodos => '待办';
+
+  @override
+  String deleteFolderConfirm(String name) {
+    return '确定要删除「$name」吗？其中的笔记会移到「未分类」，文件夹可在回收站恢复。';
+  }
+
+  @override
+  String get deleteFolderMenu => '删除文件夹';
+
+  @override
+  String get deleteFolderDone => '已移入回收站';
 
   @override
   String get trashRestore => '恢复';
@@ -415,7 +435,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get trashEmptyAction => '清空';
 
   @override
-  String get trashEmptyConfirm => '确定要清空所有已删除的笔记吗？此操作无法撤销。';
+  String get trashEmptyConfirm => '确定要清空回收站吗？此操作无法撤销。';
 
   @override
   String get emptyDone => '已清空';
@@ -591,6 +611,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataTitle => '数据与同步';
 
   @override
+  String get lanTitle => '局域网同步';
+
+  @override
+  String get lanAllowAccess => '允许本机被连接';
+
+  @override
+  String get lanAllowAccessDesc => '开启后，同一 WiFi 下的另一台设备能发现本机并直接同步。';
+
+  @override
+  String get lanHostingOn => '本机正在可被连接';
+
+  @override
+  String get lanSearching => '正在查找同一网络下的设备…';
+
+  @override
+  String get lanNoPeers => '没找到设备。请确认两台设备连的是同一个 WiFi，并且另一台已打开「允许本机被连接」。';
+
+  @override
+  String get lanSync => '同步';
+
+  @override
+  String lanSyncDone(int changed) {
+    return '同步完成：$changed 条更新';
+  }
+
+  @override
+  String lanClockAligned(String device) {
+    return '时钟已对齐到 $device';
+  }
+
+  @override
+  String get lanManual => '手动输入地址';
+
+  @override
+  String get lanManualTitle => '连接指定设备';
+
+  @override
+  String get lanManualIp => '对方 IP 地址';
+
+  @override
+  String get lanManualPort => '端口';
+
+  @override
+  String get lanManualAdd => '添加';
+
+  @override
+  String get lanManualHint => '广播被路由器挡住时用这个。端口填对方屏幕上显示的那个。';
+
+  @override
+  String get lanSecurityNote => '局域网内是明文传输，且不需要密码 —— 只在信任的家庭网络里开启。';
+
+  @override
   String get dataGroupExport => '导出';
 
   @override
@@ -673,13 +745,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataErrorServer => '服务器拒绝了这次请求';
 
   @override
-  String get dataErrorInvalidFile => '这个文件不是本应用导出的数据';
+  String get dataErrorInvalidFile => '这个文件不是本应用导出的数据，或文件太大';
 
   @override
   String get dataErrorNotConfigured => '还没有配置 WebDAV 服务器';
 
   @override
   String get dataErrorUnknown => '操作失败，请重试';
+
+  @override
+  String get webDavHistory => '历史版本';
+
+  @override
+  String get webDavHistoryEmpty => '还没有历史版本。每次同步改动了服务器上的数据时，会自动把覆盖前的那份存一份。';
+
+  @override
+  String webDavHistoryEntryAt(DateTime date, int count) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '$dateString · $count 条';
+  }
+
+  @override
+  String get webDavHistoryRestore => '找回内容';
+
+  @override
+  String webDavHistoryRestoreConfirm(DateTime date) {
+    final intl.DateFormat dateDateFormat = intl.DateFormat.yMMMd(localeName);
+    final String dateString = dateDateFormat.format(date);
+
+    return '将 $dateString 的内容合并进来。注意：当时被删除的笔记、待办和文件夹不会回来—— 删除记录比历史版本更新。';
+  }
+
+  @override
+  String webDavHistoryRestored(int inserted, int updated) {
+    return '已找回内容：新增 $inserted 条，更新 $updated 条';
+  }
 
   @override
   String get webDavTitle => 'WebDAV';

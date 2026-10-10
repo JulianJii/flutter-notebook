@@ -7,7 +7,12 @@ import 'package:equatable/equatable.dart';
 /// 免得被当成待办稿明确否掉的「截止日」重新长回实体里。
 /// ⛔ **不加** `sortIndex`（待办无排序入口，排序固定 `createdAt DESC`，在 DAO 做）。
 /// ⛔ **不加** `folderId`：待办与笔记无关联，待办稿没有任何「关联笔记」入口。
-/// ⛔ **不加** `deletedAt`（§5.4 末行「`Todo` 同理不加」）。
+///
+/// ## `deletedAt`：曾经明确不加，现在加
+///
+/// §5.4 末行原写「`Todo` 同理不加（硬删除）」，该裁决已翻转 —— 删除必须能
+/// **跨设备传播**，硬删除不留痕，A 机删掉的待办会在 B 机下次同步时原样回来。
+/// 软删除与 `notes` 同形，是当时那轮「全支持删除传播」的唯一解。
 class Todo extends Equatable {
   const Todo({
     required this.id,
@@ -16,6 +21,7 @@ class Todo extends Equatable {
     required this.updatedAt,
     this.isDone = false,
     this.reminderAt,
+    this.deletedAt,
   });
 
   final String id;
@@ -31,6 +37,13 @@ class Todo extends Equatable {
   final DateTime createdAt;
 
   final DateTime updatedAt;
+
+  /// 软删除时刻。null = 正常待办；非 null = 在回收站里。
+  ///
+  /// ⛔ **不参与 [copyWith]**：回收站相关的写入全部由 `TodoLocalDataSource`
+  /// 直连 DAO 完成，没有「先在内存里改实体再落库」的路径。加一个没人调用的
+  /// 参数就是第二套真相源。
+  final DateTime? deletedAt;
 
   /// [isDone] 是非空 bool，`?? this.isDone` 即可 —— 哨兵只用于「显式置 null」。
   ///
@@ -52,6 +65,7 @@ class Todo extends Equatable {
       reminderAt: identical(reminderAt, reminderUnset)
           ? this.reminderAt
           : reminderAt as DateTime?,
+      deletedAt: deletedAt,
     );
   }
 
@@ -63,6 +77,7 @@ class Todo extends Equatable {
     reminderAt,
     createdAt,
     updatedAt,
+    deletedAt,
   ];
 }
 

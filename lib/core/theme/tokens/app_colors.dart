@@ -121,6 +121,22 @@ class AppColors extends ThemeExtension<AppColors> {
   /// JPEG 取色精度有限，登记为 §9 容差项。
   final Color textDisabled;
 
+  /// 操作成功反馈色（Snackbar 文案、图标）。数据与同步的提示、恢复成功。
+  ///
+  /// ⚠️ **不进构造函数**：iOS 系统绿在明暗两套下同值，浅色深色没有差别，所以它是
+  /// 带默认值的 `final` 而不是 `required this.x` —— 省掉 `light` / `dark` /
+  /// `copyWith` / `lerp` 四处的搬运。将来真要分色阶再提升为构造参数。
+  ///
+  /// 此前是 `features/backup/presentation/widgets/backup_feedback.dart` 里的局部
+  /// 常量（「只有一个调用点，进 token 是浪费」）。文件夹管理的删除菜单也要它，
+  /// 而 notes 不能 import backup（跨 feature），理由已不成立。
+  final Color feedbackSuccess = const Color(0xFF34C759);
+
+  /// 破坏性操作反馈色（永久删除、删除文件夹）。
+  ///
+  /// ⚠️ 同 [feedbackSuccess]：明暗同值，故不占构造参数。
+  final Color feedbackDanger = const Color(0xFFFF3B30);
+
   @override
   AppColors copyWith({
     Color? bg,

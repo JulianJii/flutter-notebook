@@ -38,15 +38,71 @@ void main() {
     return rows.single.data['folder_id'] as String?;
   }
 
-  test('delete 是原子的：文件夹消失 + 其下笔记落入未分类', () async {
+  test('delete 是原子的：文件夹进回收站 + 其下笔记落入未分类', () async {
     await source.delete('f1');
 
     expect(
-      await db.customSelect('SELECT id FROM note_folders').get(),
-      isEmpty,
-      reason: '文件夹行应被删掉',
+      await source.watchTrashed().first,
+      hasLength(1),
+      reason: '软删除 = 行还在，标了 deleted_at —— 硬删除不留痕，跨设备传不过去',
     );
+    expect((await source.watchTrashed().first).single.name, '词声笔记',
+        reason: '领域实体这一侧剥掉让出后缀，用户看到的是原名');
     expect(await folderIdOf('n1'), isNull, reason: '笔记应落入未分类');
+    // ⚠️ 软删除下外键 ON DELETE SET NULL **不触发**（行还在），笔记落未分类
+    // 靠的是 nullOutFolder 的显式 UPDATE —— 漏了它这里就会是 'f1'。
+    expect(
+      (await db.customSelect('SELECT name, deleted_at FROM note_folders').get())
+          .single,
+      isNotNull,
+    );
+  });
+
+  /// `name` 是 UNIQUE，软删除若不让出原名，用户删了「词声笔记」就再也建不了同名
+  /// 文件夹（撞约束报错，看起来像 bug）。让出版形如 `词声笔记#f1`，靠 id 保证
+  /// 必然不与任何行撞名。
+  test('delete 让出原名，原名可以被重新占用', () async {
+    await source.delete('f1');
+    await db.customStatement(
+      'INSERT INTO note_folders (id, name, created_at, updated_at) VALUES (?,?,?,?)',
+      ['f2', '词声笔记', 200, 200],
+    );
+
+    final stored = (await db.customSelect('SELECT name FROM note_folders')
+        .get()).map((r) => r.data['name']);
+    expect(stored, containsAll(<String>['词声笔记', '词声笔记#f1']));
+  });
+
+  test('restore 改回原名 + 刷 updated_at', () async {
+    final before = (await db.customSelect('SELECT updated_at FROM note_folders')
+        .get()).single.data['updated_at'];
+    await source.delete('f1');
+    await source.restore('f1');
+
+    final rows = await db.customSelect('SELECT name, deleted_at, updated_at FROM note_folders').get();
+    expect(rows.single.data['name'], '词声笔记', reason: '让出的名字还回去了');
+    expect(rows.single.data['deleted_at'], isNull);
+    expect(
+      rows.single.data['updated_at'],
+      isNot(before),
+      reason: '恢复必须刷 updated_at，否则同步时 version 退回旧值、恢复传不过去',
+    );
+    expect(await source.watchTrashed().first, isEmpty);
+  });
+
+  test('restore 时原名已被占用 -> CacheException，保留让出版', () async {
+    await source.delete('f1');
+    await db.customStatement(
+      'INSERT INTO note_folders (id, name, created_at, updated_at) VALUES (?,?,?,?)',
+      ['f2', '词声笔记', 200, 200],
+    );
+
+    await expectLater(source.restore('f1'), throwsA(isA<CacheException>()));
+
+    final stored = (await db.customSelect('SELECT name, deleted_at FROM note_folders').get())
+        .map((r) => r.data['name']);
+    expect(stored, contains('词声笔记#f1'),
+        reason: '不悄悄改名：用户要恢复的是原文件夹，不是一个同名的空壳');
   });
 
   test('delete 不存在的文件夹 -> CacheException，且事务整体回滚', () async {

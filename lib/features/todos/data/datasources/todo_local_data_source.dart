@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:drift/drift.dart' show DriftWrappedException, Value;
 import 'package:drift/native.dart' show SqliteException;
 import 'package:mynote/core/database/app_database.dart';
@@ -8,7 +9,7 @@ import 'package:mynote/features/todos/domain/entities/todo.dart';
 /// 待办的本地数据源。待办稿是一张平铺列表：⛔ 无筛选、无搜索、无分页、无排序入口
 /// （`created_at DESC` 在 [TodoDao] 的 SQL 里排完，这里不二次排序）。
 abstract class TodoLocalDataSource {
-  /// 订阅全量待办。
+  /// 订阅全量待办。**不含回收站里的**。
   ///
   /// 错误传播：drift 的 watch 不在流里抛同步异常；读库失败以
   /// `Stream.error(CacheException)` 出现，由 Repository 映射为 `CacheFailure`，
@@ -21,10 +22,25 @@ abstract class TodoLocalDataSource {
   /// 更新。命中 0 行 → 抛 [CacheException]。勾选切换复用本方法（传目标 `isDone`）。
   Future<Todo> update(Todo todo);
 
-  /// 删除。命中 0 行 → 抛 [CacheException]。
+  /// **软删除**（进回收站）。命中 0 行 → 抛 [CacheException]。
+  ///
+  /// ⛔ 不是物理删：删除要能跨设备传播（`BackupTodo.version`），硬删除不留痕。
   Future<void> delete(String todoId);
 
-  /// 批量清除已完成，返回删除行数。**命中 0 行不抛**（= 已经清空），
+  /// 从回收站恢复：`deleted_at` 置 null + 刷 `updated_at`（后者是同步能传出去
+  /// 的前提，见 `TodoDao.markRestored`）。命中 0 行 → 抛 [CacheException]。
+  Future<void> restore(String todoId);
+
+  /// 订阅回收站里的待办，按删除时间倒序。
+  Stream<List<Todo>> watchTrashed();
+
+  /// 回收站的「永久删除」：**物理**删行。只由回收站 UI 发起。
+  Future<void> purge(String todoId);
+
+  /// 清空回收站。命中 0 行**不抛**（= 已清空），与 [purge] 的语义不同。
+  Future<void> purgeAllTrashed();
+
+  /// 批量**软删除**全部已完成，返回行数。**命中 0 行不抛**（= 已经清空），
   /// 与 [delete] 的 0 行抛错语义不同：批量是幂等操作，没有可清的项就是成功。
   Future<int> deleteCompleted();
 }
@@ -85,8 +101,32 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
     return _toEntity(row);
   });
 
+  /// **软删除**：写 `deleted_at`（不刷 `updated_at`，删除不是编辑）。
   @override
   Future<void> delete(String todoId) => _guard(() async {
+    final hit = await _dao.markTrashed(todoId, AppClock.appNow());
+    if (!hit) {
+      throw CacheException(message: 'Todo not found: $todoId');
+    }
+  });
+
+  @override
+  Future<void> restore(String todoId) => _guard(() async {
+    final hit = await _dao.markRestored(todoId, AppClock.appNow());
+    if (!hit) {
+      throw CacheException(message: 'Todo not found: $todoId');
+    }
+  });
+
+  @override
+  Stream<List<Todo>> watchTrashed() {
+    return _guardStream(
+      _dao.watchTrashed().map((rows) => rows.map(_toEntity).toList()),
+    );
+  }
+
+  @override
+  Future<void> purge(String todoId) => _guard(() async {
     final removed = await _dao.deleteById(todoId);
     if (removed == 0) {
       throw CacheException(message: 'Todo not found: $todoId');
@@ -94,11 +134,14 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
   });
 
   @override
-  Future<int> deleteCompleted() => _guard(() => _dao.deleteCompleted());
+  Future<void> purgeAllTrashed() => _guard(() => _dao.deleteAllTrashed());
 
-  /// 更新后回读单行。`TodoDao` 没有 `getById`，而 `createdAt` 既不写、调用方也
-  /// 给不出 —— 不回读就得把一个假时间戳交给上层。用 drift DSL 单表查询，
-  /// 不新增 DAO 方法（DAO 是 `TASK-020` 的产物，本轮不改）。
+  @override
+  Future<int> deleteCompleted() =>
+      _guard(() => _dao.trashCompleted(AppClock.appNow()));
+
+  /// 更新后回读单行。`createdAt` 既不写、调用方也给不出 —— 不回读就得把一个假
+  /// 时间戳交给上层。用 drift DSL 单表查询，不新增 DAO 方法。
   Future<TodoRow?> _read(String todoId) {
     return (_db.select(
       _db.todos,
@@ -116,6 +159,7 @@ Todo _toEntity(TodoRow row) {
     reminderAt: row.reminderAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    deletedAt: row.deletedAt,
   );
 }
 

@@ -44,10 +44,14 @@ class BackupLocalDataSource {
         for (final row in folders)
           BackupFolder(
             id: row.id,
+            // 存**让出版**（`<原名>#<id>`），不是用户看到的名字。跨设备合并与恢复
+            // 都依赖两侧用同一套约定，剥后缀只发生在展示层（`folder_local_data_source`
+            // 的 `_toEntity`）。
             name: row.name,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             sortIndex: row.sortIndex,
+            deletedAt: row.deletedAt,
           ),
       ],
       todos: <BackupTodo>[
@@ -58,6 +62,8 @@ class BackupLocalDataSource {
             isDone: row.isDone,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
+            reminderAt: row.reminderAt,
+            deletedAt: row.deletedAt,
           ),
       ],
     );
@@ -115,6 +121,9 @@ class BackupLocalDataSource {
       createdAt: Value(folder.createdAt),
       updatedAt: Value(folder.updatedAt),
       sortIndex: Value(folder.sortIndex),
+      // ⚠️ 必须显式写：`deletedAt` 漏掉的话，来端「已删」的文件夹会被当成正常的
+      // 插入 —— 每同步一次，回收站里的文件夹就复活一批。
+      deletedAt: Value(folder.deletedAt),
     );
     try {
       if (exists) {
@@ -126,6 +135,10 @@ class BackupLocalDataSource {
       await _db.into(_db.noteFolders).insert(row);
       return true;
     } on SqliteException {
+      return false;
+    } on DriftWrappedException {
+      // 同上：drift 会把底层异常包一层再抛。只 catch `SqliteException` 时，
+      // 撞 UNIQUE 若以这层形式出现，改名重试不生效 → 整批同步事务回滚。
       return false;
     }
   }
@@ -176,7 +189,13 @@ class BackupLocalDataSource {
             isDone: Value(todo.isDone),
             createdAt: Value(todo.createdAt),
             updatedAt: Value(todo.updatedAt),
+            reminderAt: Value(todo.reminderAt),
+            // ⚠️ 同理：`insertOrReplace` 会把未列出的列清成 NULL，漏了 `deletedAt`
+            // 就等于每次同步清空全部「已删」状态。
+            deletedAt: Value(todo.deletedAt),
           ),
+          // ⚠️ `reminderAt` 必须显式写出：`insertOrReplace` 是 DELETE+INSERT，
+          // 漏掉的列取默认值（NULL），等于每次同步都把接收端的提醒时间清零。
           mode: InsertMode.insertOrReplace,
         );
       }

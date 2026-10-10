@@ -89,10 +89,47 @@ void main() {
     );
   });
 
-  test('delete 后列表为空；再删一次 -> CacheException', () async {
+  test('delete 是软删除：列表消失、行进回收站；再删一次不报错', () async {
     await source.insert(_todo('t1'));
     await source.delete('t1');
-    expect(await source.watchAll().first, isEmpty);
-    await expectLater(source.delete('t1'), throwsA(isA<CacheException>()));
+
+    expect(await source.watchAll().first, isEmpty, reason: '列表只看未删除的');
+    expect(
+      (await source.watchTrashed().first).map((t) => t.id),
+      <String>['t1'],
+      reason: '软删除 = 行还在。硬删除不留痕，跨设备传不过去',
+    );
+    // 重复软删**不再抛**：行确实还在（只是标记），这是幂等操作。
+    // 抛错的是 purge —— 它才是物理删。
+    await source.delete('t1');
+    await expectLater(source.delete('nope'), throwsA(isA<CacheException>()));
+  });
+
+  test('restore 出回收站并刷 updated_at', () async {
+    await source.insert(_todo('t1'));
+    final before = (await source.watchAll().first).single.updatedAt;
+
+    await source.delete('t1');
+    await source.restore('t1');
+
+    final after = (await source.watchAll().first).single;
+    expect(after.deletedAt, isNull);
+    expect(await source.watchTrashed().first, isEmpty);
+    expect(
+      after.updatedAt.isAfter(before),
+      isTrue,
+      reason: '恢复必须刷 updated_at —— 合并键是 max(updatedAt, deletedAt)，'
+          '不刷则 version 退回旧值、同步时恢复被远端的删除态压回去',
+    );
+  });
+
+  test('purge 是物理删（回收站的「永久删除」）', () async {
+    await source.insert(_todo('t1'));
+    await source.delete('t1');
+
+    await source.purge('t1');
+
+    expect(await source.watchTrashed().first, isEmpty);
+    await expectLater(source.purge('t1'), throwsA(isA<CacheException>()));
   });
 }

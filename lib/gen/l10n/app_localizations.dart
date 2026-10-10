@@ -827,8 +827,44 @@ abstract class AppLocalizations {
   /// Empty state of the trash screen
   ///
   /// In zh, this message translates to:
-  /// **'没有已删除的笔记'**
+  /// **'回收站是空的'**
   String get trashEmpty;
+
+  /// Section header of the notes group in the trash
+  ///
+  /// In zh, this message translates to:
+  /// **'笔记'**
+  String get trashGroupNotes;
+
+  /// Section header of the folders group in the trash
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹'**
+  String get trashGroupFolders;
+
+  /// Section header of the todos group in the trash
+  ///
+  /// In zh, this message translates to:
+  /// **'待办'**
+  String get trashGroupTodos;
+
+  /// Body of the folder delete confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除「{name}」吗？其中的笔记会移到「未分类」，文件夹可在回收站恢复。'**
+  String deleteFolderConfirm(String name);
+
+  /// Long-press menu item that deletes a folder
+  ///
+  /// In zh, this message translates to:
+  /// **'删除文件夹'**
+  String get deleteFolderMenu;
+
+  /// Snackbar shown after a folder is moved to the trash
+  ///
+  /// In zh, this message translates to:
+  /// **'已移入回收站'**
+  String get deleteFolderDone;
 
   /// Restore action of a trash row
   ///
@@ -836,7 +872,7 @@ abstract class AppLocalizations {
   /// **'恢复'**
   String get trashRestore;
 
-  /// Snackbar shown after a note is restored
+  /// Snackbar shown after an item is restored
   ///
   /// In zh, this message translates to:
   /// **'已恢复'**
@@ -863,7 +899,7 @@ abstract class AppLocalizations {
   /// Body of the empty-trash confirmation dialog
   ///
   /// In zh, this message translates to:
-  /// **'确定要清空所有已删除的笔记吗？此操作无法撤销。'**
+  /// **'确定要清空回收站吗？此操作无法撤销。'**
   String get trashEmptyConfirm;
 
   /// Snackbar shown after the trash is emptied
@@ -1172,6 +1208,102 @@ abstract class AppLocalizations {
   /// **'数据与同步'**
   String get dataTitle;
 
+  /// Title of the LAN sync screen
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网同步'**
+  String get lanTitle;
+
+  /// Switch that starts/stops hosting on this device
+  ///
+  /// In zh, this message translates to:
+  /// **'允许本机被连接'**
+  String get lanAllowAccess;
+
+  /// Subtitle of the allow-access switch
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，同一 WiFi 下的另一台设备能发现本机并直接同步。'**
+  String get lanAllowAccessDesc;
+
+  /// Footer shown while this device is hosting
+  ///
+  /// In zh, this message translates to:
+  /// **'本机正在可被连接'**
+  String get lanHostingOn;
+
+  /// Shown while no peer has been discovered yet
+  ///
+  /// In zh, this message translates to:
+  /// **'正在查找同一网络下的设备…'**
+  String get lanSearching;
+
+  /// Empty state when discovery is running but found nothing
+  ///
+  /// In zh, this message translates to:
+  /// **'没找到设备。请确认两台设备连的是同一个 WiFi，并且另一台已打开「允许本机被连接」。'**
+  String get lanNoPeers;
+
+  /// Action that syncs with one peer
+  ///
+  /// In zh, this message translates to:
+  /// **'同步'**
+  String get lanSync;
+
+  /// Snackbar shown after a LAN sync
+  ///
+  /// In zh, this message translates to:
+  /// **'同步完成：{changed} 条更新'**
+  String lanSyncDone(int changed);
+
+  /// Snackbar shown after the clock offset was adjusted to match the peer
+  ///
+  /// In zh, this message translates to:
+  /// **'时钟已对齐到 {device}'**
+  String lanClockAligned(String device);
+
+  /// Button opening the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'手动输入地址'**
+  String get lanManual;
+
+  /// Title of the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'连接指定设备'**
+  String get lanManualTitle;
+
+  /// Label of the IP field in the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'对方 IP 地址'**
+  String get lanManualIp;
+
+  /// Label of the port field in the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'端口'**
+  String get lanManualPort;
+
+  /// Confirm button of the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get lanManualAdd;
+
+  /// Helper text of the manual-address dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'广播被路由器挡住时用这个。端口填对方屏幕上显示的那个。'**
+  String get lanManualHint;
+
+  /// Security warning shown at the bottom of the LAN screen
+  ///
+  /// In zh, this message translates to:
+  /// **'局域网内是明文传输，且不需要密码 —— 只在信任的家庭网络里开启。'**
+  String get lanSecurityNote;
+
   /// Section header of the export group
   ///
   /// In zh, this message translates to:
@@ -1310,10 +1442,10 @@ abstract class AppLocalizations {
   /// **'服务器拒绝了这次请求'**
   String get dataErrorServer;
 
-  /// Snackbar shown when the picked file is not a snapshot
+  /// Snackbar shown when the picked file is not a snapshot, or is over the size cap
   ///
   /// In zh, this message translates to:
-  /// **'这个文件不是本应用导出的数据'**
+  /// **'这个文件不是本应用导出的数据，或文件太大'**
   String get dataErrorInvalidFile;
 
   /// Snackbar shown when syncing without a configured server
@@ -1327,6 +1459,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'操作失败，请重试'**
   String get dataErrorUnknown;
+
+  /// Title of the WebDAV version history screen
+  ///
+  /// In zh, this message translates to:
+  /// **'历史版本'**
+  String get webDavHistory;
+
+  /// Empty state of the version history screen
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有历史版本。每次同步改动了服务器上的数据时，会自动把覆盖前的那份存一份。'**
+  String get webDavHistoryEmpty;
+
+  /// One row of the version history list
+  ///
+  /// In zh, this message translates to:
+  /// **'{date} · {count} 条'**
+  String webDavHistoryEntryAt(DateTime date, int count);
+
+  /// Action that merges a historical version back into local
+  ///
+  /// In zh, this message translates to:
+  /// **'找回内容'**
+  String get webDavHistoryRestore;
+
+  /// Body of the restore-a-history-version confirmation dialog. Warns that deletions are NOT rolled back.
+  ///
+  /// In zh, this message translates to:
+  /// **'将 {date} 的内容合并进来。注意：当时被删除的笔记、待办和文件夹不会回来—— 删除记录比历史版本更新。'**
+  String webDavHistoryRestoreConfirm(DateTime date);
+
+  /// Snackbar shown after restoring a historical version
+  ///
+  /// In zh, this message translates to:
+  /// **'已找回内容：新增 {inserted} 条，更新 {updated} 条'**
+  String webDavHistoryRestored(int inserted, int updated);
 
   /// Title of the WebDAV config screen
   ///

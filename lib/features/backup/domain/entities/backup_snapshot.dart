@@ -5,7 +5,11 @@ import 'backup_import_result.dart';
 /// ⚠️ 读的时候**据此拒绝**比它高的版本（[BackupSnapshot.parse] 不拒绝，由
 /// Repository 判）：未来的格式我们读不懂，静默降级解析会造出一堆缺字段的
 /// 半残数据 —— 那比「无法导入」更难收拾。
-const int backupSnapshotVersion = 1;
+///
+/// **v2**：文件夹与待办加 `deletedAt`（跨设备软删除）。**向后兼容** —— v1 文件
+/// 没有这两个字段，解析出来是 `null` = 未删除，与 v1 时代「全部可见」的行为
+/// 一致，所以老快照照样能导入（只有加字段、没有改语义）。
+const int backupSnapshotVersion = 2;
 
 /// 快照里的一篇笔记。`content` 是 Quill Delta 的 JSON 字符串，与库里同格式
 /// （`NoteDeltaCodec` 的编解码结果），本层不做任何解释。
@@ -84,6 +88,10 @@ class BackupNote {
 ///
 /// ⚠️ `name` 在库里是 UNIQUE。跨设备各自新建同名文件夹会撞约束 —— 由
 /// `BackupLocalDataSource` 改名重试，这里**不做**去重（合并规则只认 id）。
+///
+/// ⚠️ `name` 存的是**让出版**（`<原名>#<id>`，见
+/// `note_folders_table.dart` 的 `trashedFolderName`），不是用户看到的名字。
+/// 跨设备合并时两侧都要用同一套约定，否则恢复会写回一个带 `#` 的名字。
 class BackupFolder {
   const BackupFolder({
     required this.id,
@@ -91,6 +99,7 @@ class BackupFolder {
     required this.createdAt,
     required this.updatedAt,
     required this.sortIndex,
+    this.deletedAt,
   });
 
   final String id;
@@ -103,12 +112,22 @@ class BackupFolder {
 
   final int sortIndex;
 
+  /// 非 null = 在回收站里。
+  final DateTime? deletedAt;
+
+  /// 合并比较键。语义同 [BackupNote.version]（软删除也是一次变更，且软删除不刷
+  /// `updatedAt`），抽成共用逻辑避免三处各写一遍、各错一遍。
+  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
+      ? updatedAt
+      : deletedAt!;
+
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
     'name': name,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'sortIndex': sortIndex,
+    'deletedAt': deletedAt?.toIso8601String(),
   };
 
   static BackupFolder? fromJson(Map<String, Object?> json) {
@@ -129,11 +148,18 @@ class BackupFolder {
       createdAt: createdAt,
       updatedAt: updatedAt,
       sortIndex: json['sortIndex'] is int ? json['sortIndex']! as int : 0,
+      deletedAt: _date(json['deletedAt']),
     );
   }
 }
 
 /// 快照里的一条待办。
+///
+/// ⚠️ `reminderAt`（提醒时刻）**必须出现在这里**：`BackupLocalDataSource._writeTodos`
+/// 用的是 `InsertMode.insertOrReplace`，而 SQLite 的 `INSERT OR REPLACE` 语义是
+/// 「DELETE + INSERT」—— **未列出的列一律取默认值**。少写这一列 = 每同步一次就把
+/// 接收端全部待办的提醒时间清零（不是「不同步」，是「清空」）。
+/// 同理适用于 [deletedAt]：漏了它，每同步一次就把所有已删待办复活。
 class BackupTodo {
   const BackupTodo({
     required this.id,
@@ -141,6 +167,8 @@ class BackupTodo {
     required this.isDone,
     required this.createdAt,
     required this.updatedAt,
+    this.reminderAt,
+    this.deletedAt,
   });
 
   final String id;
@@ -153,12 +181,25 @@ class BackupTodo {
 
   final DateTime updatedAt;
 
+  /// null = 没设提醒。
+  final DateTime? reminderAt;
+
+  /// 非 null = 在回收站里。
+  final DateTime? deletedAt;
+
+  /// 合并比较键。语义同 [BackupNote.version]。
+  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
+      ? updatedAt
+      : deletedAt!;
+
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
     'title': title,
     'isDone': isDone,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
+    'reminderAt': reminderAt?.toIso8601String(),
+    'deletedAt': deletedAt?.toIso8601String(),
   };
 
   static BackupTodo? fromJson(Map<String, Object?> json) {
@@ -179,6 +220,8 @@ class BackupTodo {
       isDone: json['isDone'] == true,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      reminderAt: _date(json['reminderAt']),
+      deletedAt: _date(json['deletedAt']),
     );
   }
 }
@@ -250,8 +293,11 @@ class BackupSnapshot {
 
   /// 双向合并：逐条比 [version]，新的赢；一样新保留 [local]（避免无意义写库）。
   ///
-  /// 只新增不删除 —— 本项目「永不丢数据」，合并后的并集必然 ≥ 任一方的集合。
-  /// ⚠️ 待办是硬删除、无墓碑：A 机删掉一条后，B 机的同一条会在下次同步被带回来
+  /// 三类实体用**同一个**比较键 `max(updatedAt, deletedAt)` —— 软删除也是一次变更。
+  /// 这是删除能跨设备传播的全部机制：库里存的是墓碑（`deleted_at`），不是硬删除。
+  ///
+  /// ⚠️ 仍然只增不删（见 [_mergeById]）：物理删除（回收站的「永久删除」）不传播，
+  /// 见 `docs/FEATURES.md`「已知限制」。
   static ({BackupSnapshot merged, BackupImportResult result}) merge(
     BackupSnapshot local,
     BackupSnapshot incoming,
@@ -260,7 +306,7 @@ class BackupSnapshot {
       local.folders,
       incoming.folders,
       (f) => f.id,
-      (f) => f.updatedAt,
+      (f) => f.version,
     );
     final notes = _mergeById(
       local.notes,
@@ -272,7 +318,7 @@ class BackupSnapshot {
       local.todos,
       incoming.todos,
       (t) => t.id,
-      (t) => t.updatedAt,
+      (t) => t.version,
     );
 
     final result = BackupImportResult(
@@ -320,7 +366,11 @@ class BackupSnapshot {
     }
   }
 
-  // 本地独有（对端没有 / 对端已永久删除）的行原样保留。
+  /// 本地独有（对端没有 / 对端已物理删除）的行原样保留。
+  ///
+  /// ⚠️ 保留不等于「不删」：**软删除的行会带着 `deletedAt` 一起被保留下来**，
+  /// 写库后仍然是回收站态 —— 删除正是这样传播的。这里保留的只是「对方没提过的
+  /// 行」，软删除是对方**提了**、且提了墓碑的那一类。
   for (final row in local) {
     if (!incomingIds.contains(idOf(row))) rows.add(row);
   }

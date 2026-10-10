@@ -135,11 +135,17 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
         .then((count) => count > 0);
   }
 
-  /// 恢复（`deleted_at` 置回 null）。返回是否命中行。
-  Future<bool> restoreById(String noteId) {
-    return (super.update(notes)..where((t) => t.id.equals(noteId)))
-        .write(const NotesCompanion(deletedAt: Value(null)))
-        .then((count) => count > 0);
+  /// 恢复（`deleted_at` 置回 null）**并刷新 `updated_at`**。返回是否命中行。
+  ///
+  /// ⚠️ `updated_at` 必须一起刷，否则恢复**同步不过去**：合并比较键是
+  /// `max(updatedAt, deletedAt)`（`BackupNote.version`），只置回 `deleted_at`
+  /// 会让 version 退回旧 `updatedAt`，比远端的 `deletedAt` 早 → 远端胜出，
+  /// 笔记在下一轮同步里自己滚回回收站。
+  /// 副作用：恢复的笔记在「按编辑日期」排序下会置顶 —— 恢复本就是最近一次改动。
+  Future<bool> restoreById(String noteId, DateTime restoredAt) {
+    return (super.update(notes)..where((t) => t.id.equals(noteId))).write(
+      NotesCompanion(deletedAt: const Value(null), updatedAt: Value(restoredAt)),
+    ).then((count) => count > 0);
   }
 
   /// 只写 `background` 列（null = 无背景），**不刷 `updated_at`** ——

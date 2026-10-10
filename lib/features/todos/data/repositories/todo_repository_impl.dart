@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/core/error/failures.dart';
@@ -25,53 +26,64 @@ class TodoRepositoryImpl implements TodoRepository {
       _localDataSource.watchAll().handleError(_toFailure);
 
   @override
-  Future<Either<Failure, Todo>> create(Todo todo) async {
-    try {
-      final toSave = todo.id.isEmpty ? _withId(todo, _uuid.v4()) : todo;
-      return Right(await _localDataSource.insert(toSave));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
-    }
-  }
+  Stream<List<Todo>> watchTrashed() =>
+      _localDataSource.watchTrashed().handleError(_toFailure);
+
+  @override
+  Future<Either<Failure, Todo>> create(Todo todo) =>
+      _guard(() async => _localDataSource.insert(
+        todo.id.isEmpty ? _withId(todo, _uuid.v4()) : todo,
+      ));
 
   /// `updatedAt` 在这里刷新。`createdAt` 同样不由本方法决定：datasource 的 update
   /// 是部分写入，不碰 `created_at`，待办不会在 `createdAt DESC` 的列表里跳位。
   @override
-  Future<Either<Failure, Todo>> update(Todo todo) async {
-    try {
-      return Right(
-        await _localDataSource.update(todo.copyWith(updatedAt: DateTime.now())),
-      );
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
-    }
-  }
+  Future<Either<Failure, Todo>> update(Todo todo) => _guard(
+    () async => _localDataSource.update(
+      todo.copyWith(updatedAt: AppClock.appNow()),
+    ),
+  );
 
   @override
-  Future<Either<Failure, Unit>> delete(String todoId) async {
-    try {
-      await _localDataSource.delete(todoId);
-      return const Right(unit);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
-    }
-  }
+Future<Either<Failure, Unit>> delete(String todoId) => _guard(() async {
+    await _localDataSource.delete(todoId);
+    return unit;
+  });
 
   @override
-  Future<Either<Failure, int>> deleteCompleted() async {
-    try {
-      return Right(await _localDataSource.deleteCompleted());
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
-    } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
-    }
+  Future<Either<Failure, Unit>> restore(String todoId) => _guard(() async {
+    await _localDataSource.restore(todoId);
+    return unit;
+  });
+
+  @override
+  Future<Either<Failure, Unit>> purge(String todoId) => _guard(() async {
+    await _localDataSource.purge(todoId);
+    return unit;
+  });
+
+  @override
+  Future<Either<Failure, Unit>> purgeAllTrashed() => _guard(() async {
+    await _localDataSource.purgeAllTrashed();
+    return unit;
+  });
+
+  @override
+  Future<Either<Failure, int>> deleteCompleted() =>
+      _guard(() async => _localDataSource.deleteCompleted());
+}
+
+/// 每个写方法的 `try/catch` 都长一个样，抄了六遍就成噪声了 —— 收在一处。
+///
+/// ⚠️ 返回 `void` 的方法要在闭包里显式 `return unit`：直接把 `Future<void>`
+/// 塞进来会让 `T` 推成 `void`，与 `Either<Failure, Unit>` 不兼容。
+Future<Either<Failure, T>> _guard<T>(Future<T> Function() body) async {
+  try {
+    return Right(await body());
+  } on CacheException catch (e) {
+    return Left(CacheFailure(message: e.message));
+  } catch (e) {
+    return Left(CacheFailure(message: e.toString()));
   }
 }
 
@@ -85,6 +97,7 @@ Todo _withId(Todo todo, String id) {
     reminderAt: todo.reminderAt,
     createdAt: todo.createdAt,
     updatedAt: todo.updatedAt,
+    deletedAt: todo.deletedAt,
   );
 }
 

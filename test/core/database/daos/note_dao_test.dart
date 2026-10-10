@@ -192,4 +192,30 @@ void main() {
 
     expect(await dao.updateBackgroundById('nope', 'paper'), isFalse);
   });
+
+  test('softDeleteById 不刷 updated_at，但 restoreById 必须刷', () async {
+    final original = (await dao.getById('n1'))!;
+    expect(original.updatedAt, DateTime.fromMillisecondsSinceEpoch(300000));
+
+    await dao.softDeleteById('n1', DateTime.fromMillisecondsSinceEpoch(400000));
+    final trashed = (await dao.getById('n1'))!;
+    expect(trashed.deletedAt, isNotNull);
+    expect(
+      trashed.updatedAt,
+      original.updatedAt,
+      reason: '删除不是编辑：updated_at 不该动，由 version=max(updatedAt,deletedAt) 兜',
+    );
+
+    // 合并比较键是 max(updatedAt, deletedAt)。恢复若不刷 updated_at，version 会
+    // 退回 300ms，早于远端的 deletedAt(400ms) → 下轮同步远端胜出、笔记自己滚回
+    // 回收站。恢复后的 version 必须严格晚于 deletedAt。
+    final restoredAt = DateTime.fromMillisecondsSinceEpoch(500000);
+    expect(await dao.restoreById('n1', restoredAt), isTrue);
+    final restored = (await dao.getById('n1'))!;
+    expect(restored.deletedAt, isNull);
+    expect(restored.updatedAt, restoredAt);
+    expect(restored.updatedAt.isAfter(trashed.deletedAt!), isTrue);
+
+    expect(await dao.restoreById('nope', restoredAt), isFalse);
+  });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynote/core/notifications/reminder_scheduler.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
@@ -72,7 +73,7 @@ class TodoListScreen extends ConsumerWidget {
                       tooltip: l10n.clearCompletedTodos,
                       onPressed: done.isEmpty
                           ? null
-                          : () => _clearCompleted(context, ref),
+                          : () => _clearCompleted(context, ref, done),
                     ),
                     AppIconButton(
                       icon: AppIcons.settings,
@@ -203,6 +204,13 @@ class TodoListScreen extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
+    // ⚠️ 必须先撤掉已排的通知：行被删掉后没有任何地方会再去 cancel 它，
+    // 结果是「删掉的待办到点照样响」。
+    // 这里**直接调 scheduler**而不是 `todoReminderProvider.clear()`：clear 会
+    // 顺手把 `reminder_at` 写成 NULL（一次全字段 update + 刷 updated_at），
+    // 而这条记录马上就要被删，那次写库纯属浪费。
+    await _cancelReminder(ref, todo);
+
     final result = await ref.read(deleteTodoUseCaseProvider)(todo.id);
     if (!context.mounted) return;
     result.fold(
@@ -211,10 +219,26 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
+  /// 撤销某条待办已排的系统通知。best-effort：撤不掉也不该拦住删除。
+  Future<void> _cancelReminder(WidgetRef ref, Todo todo) async {
+    if (todo.reminderAt == null) return;
+    try {
+      await ref
+          .read(reminderSchedulerProvider)
+          .cancel(reminderNotificationId(todo.id));
+    } catch (_) {
+      // 平台通道失败：删除照常进行，留一条无主的通知好过删不掉待办。
+    }
+  }
+
   /// 清除全部已完成（与编辑弹窗里的单条删除并列）。
   ///
   /// 成功后 `collapse()`：已空的分隔行不该留在展开态。
-  Future<void> _clearCompleted(BuildContext context, WidgetRef ref) async {
+  Future<void> _clearCompleted(
+    BuildContext context,
+    WidgetRef ref,
+    List<Todo> done,
+  ) async {
     final l10n = AppLocalizations.of(context);
     final confirmed = await _confirm(
       context,
@@ -222,6 +246,12 @@ class TodoListScreen extends ConsumerWidget {
       confirmLabel: l10n.clearCompletedTodos,
     );
     if (confirmed != true || !context.mounted) return;
+
+    // 与 [_confirmDelete] 同一个洞：批量删更要逐条撤通知，否则「清空完成后
+    // 通知还在一个个响」。逐条 await，量级是已完成条数，百级毫秒级。
+    for (final todo in done) {
+      await _cancelReminder(ref, todo);
+    }
 
     final result = await ref.read(deleteCompletedTodosUseCaseProvider)();
     if (!context.mounted) return;

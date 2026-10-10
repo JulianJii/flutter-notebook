@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/core/error/failures.dart';
@@ -63,7 +64,7 @@ class NoteRepositoryImpl implements NoteRepository {
   Future<Either<Failure, Note>> update(Note note) async {
     try {
       return Right(
-        await _localDataSource.update(note.copyWith(updatedAt: DateTime.now())),
+        await _localDataSource.update(note.copyWith(updatedAt: AppClock.appNow())),
       );
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));

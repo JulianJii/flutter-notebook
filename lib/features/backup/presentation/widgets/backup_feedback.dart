@@ -1,18 +1,16 @@
 import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 反馈色。成功绿 / 失败红。
-///
-/// ⛔ 不进 `core/theme/tokens/app_colors.dart`：只有数据与同步这两页用，进 token
-/// 会让「功能色」变成一套没人维护的第二语义色板。
-const Color feedbackSuccess = Color(0xFF34C759);
-
-const Color feedbackDanger = Color(0xFFFF3B30);
-
 /// 底部浮层提示，3 秒自动消失。
+///
+/// 反馈色取自 `context.colors.feedbackSuccess` / `feedbackDanger` —— 此前是本
+/// 文件的局部常量（注释写「只有这两页用，进 token 是浪费」）。文件夹管理的删除
+/// 菜单也要它，而 notes 不能 import backup（跨 feature），理由已不成立。
 void showFeedbackSnack(BuildContext context, String text, {required bool ok}) {
+  final colors = context.colors;
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
@@ -20,7 +18,7 @@ void showFeedbackSnack(BuildContext context, String text, {required bool ok}) {
         content: Text(
           text,
           style: context.textStyles.rowTitle.copyWith(
-            color: ok ? feedbackSuccess : feedbackDanger,
+            color: ok ? colors.feedbackSuccess : colors.feedbackDanger,
           ),
         ),
         duration: const Duration(seconds: 3),

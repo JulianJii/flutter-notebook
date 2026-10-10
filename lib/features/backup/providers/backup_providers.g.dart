@@ -349,6 +349,203 @@ final class SyncWithWebDavUseCaseProvider
 String _$syncWithWebDavUseCaseHash() =>
     r'3d398e4ea0c2d1f9cd4aaec2cee42ca5519fef2e';
 
+@ProviderFor(lanSyncRepository)
+final lanSyncRepositoryProvider = LanSyncRepositoryProvider._();
+
+final class LanSyncRepositoryProvider
+    extends
+        $FunctionalProvider<
+          LanSyncRepository,
+          LanSyncRepository,
+          LanSyncRepository
+        >
+    with $Provider<LanSyncRepository> {
+  LanSyncRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'lanSyncRepositoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$lanSyncRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<LanSyncRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  LanSyncRepository create(Ref ref) {
+    return lanSyncRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LanSyncRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LanSyncRepository>(value),
+    );
+  }
+}
+
+String _$lanSyncRepositoryHash() => r'64137d9a1b4e4a6dfbfdd478c899ec11e82f9759';
+
+/// ⛔ **必须 keepAlive**：它间接持有 `HttpServer` 与 UDP socket。被回收就等于
+/// 「服务莫名其妙停了」，而且 provider 重建会起一个**新**端口，广播出去的端口与
+/// 实际监听的对不上 —— 症状是「开了服务但别人连不上」。
+
+@ProviderFor(lanSyncUseCases)
+final lanSyncUseCasesProvider = LanSyncUseCasesProvider._();
+
+/// ⛔ **必须 keepAlive**：它间接持有 `HttpServer` 与 UDP socket。被回收就等于
+/// 「服务莫名其妙停了」，而且 provider 重建会起一个**新**端口，广播出去的端口与
+/// 实际监听的对不上 —— 症状是「开了服务但别人连不上」。
+
+final class LanSyncUseCasesProvider
+    extends
+        $FunctionalProvider<LanSyncUseCases, LanSyncUseCases, LanSyncUseCases>
+    with $Provider<LanSyncUseCases> {
+  /// ⛔ **必须 keepAlive**：它间接持有 `HttpServer` 与 UDP socket。被回收就等于
+  /// 「服务莫名其妙停了」，而且 provider 重建会起一个**新**端口，广播出去的端口与
+  /// 实际监听的对不上 —— 症状是「开了服务但别人连不上」。
+  LanSyncUseCasesProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'lanSyncUseCasesProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$lanSyncUseCasesHash();
+
+  @$internal
+  @override
+  $ProviderElement<LanSyncUseCases> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  LanSyncUseCases create(Ref ref) {
+    return lanSyncUseCases(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(LanSyncUseCases value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<LanSyncUseCases>(value),
+    );
+  }
+}
+
+String _$lanSyncUseCasesHash() => r'b79ef000c3cd256140215cc5f5941af18f280ba2';
+
+@ProviderFor(listBackupHistoryUseCase)
+final listBackupHistoryUseCaseProvider = ListBackupHistoryUseCaseProvider._();
+
+final class ListBackupHistoryUseCaseProvider
+    extends
+        $FunctionalProvider<
+          ListBackupHistoryUseCase,
+          ListBackupHistoryUseCase,
+          ListBackupHistoryUseCase
+        >
+    with $Provider<ListBackupHistoryUseCase> {
+  ListBackupHistoryUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'listBackupHistoryUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$listBackupHistoryUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<ListBackupHistoryUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ListBackupHistoryUseCase create(Ref ref) {
+    return listBackupHistoryUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ListBackupHistoryUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ListBackupHistoryUseCase>(value),
+    );
+  }
+}
+
+String _$listBackupHistoryUseCaseHash() =>
+    r'ba616218679eff3b3946da6225d4e577fb202453';
+
+@ProviderFor(restoreBackupVersionUseCase)
+final restoreBackupVersionUseCaseProvider =
+    RestoreBackupVersionUseCaseProvider._();
+
+final class RestoreBackupVersionUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RestoreBackupVersionUseCase,
+          RestoreBackupVersionUseCase,
+          RestoreBackupVersionUseCase
+        >
+    with $Provider<RestoreBackupVersionUseCase> {
+  RestoreBackupVersionUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'restoreBackupVersionUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$restoreBackupVersionUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RestoreBackupVersionUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RestoreBackupVersionUseCase create(Ref ref) {
+    return restoreBackupVersionUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RestoreBackupVersionUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RestoreBackupVersionUseCase>(value),
+    );
+  }
+}
+
+String _$restoreBackupVersionUseCaseHash() =>
+    r'0c8e5b569cfe7c2a8709adde1b98853a1f945009';
+
 @ProviderFor(testWebDavUseCase)
 final testWebDavUseCaseProvider = TestWebDavUseCaseProvider._();
 

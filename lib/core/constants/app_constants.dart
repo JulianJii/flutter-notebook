@@ -38,19 +38,10 @@ class AppConstants {
   //   `postsRoute` `postDetailRoute` `biometricDemoRoute`
   //     —— 分别随 `lib/features/auth/`、`lib/features/home/`、
   //        `lib/features/posts/` 与 `lib/core/auth/` 一并删除。
-  // Examples hub & integration pattern demo routes
-  //
-  // 已删：`advancedFeaturesRoute` —— 随 `advanced_features_showcase.dart` 与
-  // `core/images/` 一并删除（零外部引用）。
-  static const String localizationDemoScreenRoute = '/examples/localization';
-  static const String languageSelectorDemoRoute =
-      '/examples/localization/selector';
-  static const String webSocketDemoRoute = '/examples/websocket';
-  static const String webhookDemoRoute = '/examples/webhook';
-  static const String graphqlDemoRoute = '/examples/graphql';
-  static const String grpcDemoRoute = '/examples/grpc';
-  static const String backgroundTasksDemoRoute = '/examples/background-tasks';
-  static const String fileTransferDemoRoute = '/examples/file-transfer';
+  // 已删：`localizationDemoScreenRoute` `languageSelectorDemoRoute`
+  // `webSocketDemoRoute` `webhookDemoRoute` `graphqlDemoRoute` `grpcDemoRoute`
+  // `backgroundTasksDemoRoute` `fileTransferDemoRoute` —— 随 `lib/examples/`
+  // 一并删除（零外部引用）。
 
   // Hive box names
   static const String settingsBox = 'settings';

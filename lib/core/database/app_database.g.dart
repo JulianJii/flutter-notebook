@@ -62,6 +62,17 @@ class $NoteFoldersTable extends NoteFolders
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -69,6 +80,7 @@ class $NoteFoldersTable extends NoteFolders
     createdAt,
     updatedAt,
     sortIndex,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -117,6 +129,12 @@ class $NoteFoldersTable extends NoteFolders
         sortIndex.isAcceptableOrUnknown(data['sort_index']!, _sortIndexMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -146,6 +164,10 @@ class $NoteFoldersTable extends NoteFolders
         DriftSqlType.int,
         data['${effectivePrefix}sort_index'],
       )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
     );
   }
 
@@ -160,6 +182,9 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
 
   /// 重名校验由这个 UNIQUE 承担；唯一约束冲突由 Repository 映射成
   /// `Left(InputFailure)`（不新增 Failure 类型）。实体层不做校验。
+  ///
+  /// ⚠️ 回收站里的文件夹会把 `name` 改成 `<原名>#<id>` 来让出原名
+  /// （见类注释），所以这里存的不是用户看到的名字，而是「要么原名、要么让出版」。
   final String name;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -170,12 +195,23 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
   /// 写入只有两条路径：新建时取 `MAX+1`（排末尾），拖拽时整表写成 `0..n-1`
   /// （见 `FolderDao.insert` / `FolderDao.updateSortIndexes`）。
   final int sortIndex;
+
+  /// 软删除时刻。null = 正常文件夹；非 null = 在回收站里。
+  ///
+  /// 恢复即置回 null。**物理 DELETE 只由回收站的「永久删除」发起**。
+  ///
+  /// 删文件夹**不动**它下面笔记的 `folder_id`：笔记随之落进「未分类」是外键
+  /// `ON DELETE SET NULL` 的语义，但软删除下 FK 不触发，所以由
+  /// `FolderLocalDataSourceImpl.trash` 显式置 NULL（与 FK 规则冗余但原子，
+  /// 见该方法注释）。
+  final DateTime? deletedAt;
   const NoteFolderRow({
     required this.id,
     required this.name,
     required this.createdAt,
     required this.updatedAt,
     required this.sortIndex,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -185,6 +221,9 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['sort_index'] = Variable<int>(sortIndex);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
     return map;
   }
 
@@ -195,6 +234,9 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       sortIndex: Value(sortIndex),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
@@ -209,6 +251,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       sortIndex: serializer.fromJson<int>(json['sortIndex']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -220,6 +263,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'sortIndex': serializer.toJson<int>(sortIndex),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
@@ -229,12 +273,14 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     DateTime? createdAt,
     DateTime? updatedAt,
     int? sortIndex,
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => NoteFolderRow(
     id: id ?? this.id,
     name: name ?? this.name,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     sortIndex: sortIndex ?? this.sortIndex,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   NoteFolderRow copyWithCompanion(NoteFoldersCompanion data) {
     return NoteFolderRow(
@@ -243,6 +289,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       sortIndex: data.sortIndex.present ? data.sortIndex.value : this.sortIndex,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -253,13 +300,15 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           ..write('name: $name, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('sortIndex: $sortIndex')
+          ..write('sortIndex: $sortIndex, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, createdAt, updatedAt, sortIndex);
+  int get hashCode =>
+      Object.hash(id, name, createdAt, updatedAt, sortIndex, deletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -268,7 +317,8 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           other.name == this.name &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.sortIndex == this.sortIndex);
+          other.sortIndex == this.sortIndex &&
+          other.deletedAt == this.deletedAt);
 }
 
 class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
@@ -277,6 +327,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> sortIndex;
+  final Value<DateTime?> deletedAt;
   final Value<int> rowid;
   const NoteFoldersCompanion({
     this.id = const Value.absent(),
@@ -284,6 +335,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.sortIndex = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   NoteFoldersCompanion.insert({
@@ -292,6 +344,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.sortIndex = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -303,6 +356,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? sortIndex,
+    Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -311,6 +365,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (sortIndex != null) 'sort_index': sortIndex,
+      if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -321,6 +376,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? sortIndex,
+    Value<DateTime?>? deletedAt,
     Value<int>? rowid,
   }) {
     return NoteFoldersCompanion(
@@ -329,6 +385,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       sortIndex: sortIndex ?? this.sortIndex,
+      deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -351,6 +408,9 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     if (sortIndex.present) {
       map['sort_index'] = Variable<int>(sortIndex.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -365,6 +425,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('sortIndex: $sortIndex, ')
+          ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -965,6 +1026,17 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -973,6 +1045,7 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     createdAt,
     updatedAt,
     reminderAt,
+    deletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1027,6 +1100,12 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
         reminderAt.isAcceptableOrUnknown(data['reminder_at']!, _reminderAtMeta),
       );
     }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -1060,6 +1139,10 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}reminder_at'],
       ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
     );
   }
 
@@ -1082,6 +1165,13 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
   /// 提醒时刻，null = 没设提醒。⛔ 不存「是否已提醒 / 是否已响铃」这类
   /// 通知侧状态 —— 那是 `flutter_local_notifications` 的事，库里只留用户意图。
   final DateTime? reminderAt;
+
+  /// 软删除时刻。null = 正常待办；非 null = 在回收站里。恢复即置回 null。
+  ///
+  /// ⚠️ 软删除**不**清 `reminder_at`：进回收站不等于取消提醒意图，
+  /// 恢复后提醒仍在（撤掉已排的通知是平台侧的事，见 `TodoListScreen._cancelReminder`）。
+  /// 物理 DELETE 只由回收站的「永久删除」发起。
+  final DateTime? deletedAt;
   const TodoRow({
     required this.id,
     required this.title,
@@ -1089,6 +1179,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     required this.createdAt,
     required this.updatedAt,
     this.reminderAt,
+    this.deletedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1100,6 +1191,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || reminderAt != null) {
       map['reminder_at'] = Variable<DateTime>(reminderAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
     }
     return map;
   }
@@ -1114,6 +1208,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       reminderAt: reminderAt == null && nullToAbsent
           ? const Value.absent()
           : Value(reminderAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
     );
   }
 
@@ -1129,6 +1226,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       reminderAt: serializer.fromJson<DateTime?>(json['reminderAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
   }
   @override
@@ -1141,6 +1239,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'reminderAt': serializer.toJson<DateTime?>(reminderAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
   }
 
@@ -1151,6 +1250,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> reminderAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
   }) => TodoRow(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -1158,6 +1258,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     reminderAt: reminderAt.present ? reminderAt.value : this.reminderAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
   TodoRow copyWithCompanion(TodosCompanion data) {
     return TodoRow(
@@ -1169,6 +1270,7 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       reminderAt: data.reminderAt.present
           ? data.reminderAt.value
           : this.reminderAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
   }
 
@@ -1180,14 +1282,22 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           ..write('isDone: $isDone, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('reminderAt: $reminderAt')
+          ..write('reminderAt: $reminderAt, ')
+          ..write('deletedAt: $deletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, isDone, createdAt, updatedAt, reminderAt);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    isDone,
+    createdAt,
+    updatedAt,
+    reminderAt,
+    deletedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1197,7 +1307,8 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           other.isDone == this.isDone &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.reminderAt == this.reminderAt);
+          other.reminderAt == this.reminderAt &&
+          other.deletedAt == this.deletedAt);
 }
 
 class TodosCompanion extends UpdateCompanion<TodoRow> {
@@ -1207,6 +1318,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> reminderAt;
+  final Value<DateTime?> deletedAt;
   final Value<int> rowid;
   const TodosCompanion({
     this.id = const Value.absent(),
@@ -1215,6 +1327,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.reminderAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TodosCompanion.insert({
@@ -1224,6 +1337,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.reminderAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -1236,6 +1350,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? reminderAt,
+    Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1245,6 +1360,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (reminderAt != null) 'reminder_at': reminderAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1256,6 +1372,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? reminderAt,
+    Value<DateTime?>? deletedAt,
     Value<int>? rowid,
   }) {
     return TodosCompanion(
@@ -1265,6 +1382,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       reminderAt: reminderAt ?? this.reminderAt,
+      deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1290,6 +1408,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     if (reminderAt.present) {
       map['reminder_at'] = Variable<DateTime>(reminderAt.value);
     }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1305,6 +1426,7 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('reminderAt: $reminderAt, ')
+          ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1355,6 +1477,7 @@ typedef $$NoteFoldersTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> sortIndex,
+      Value<DateTime?> deletedAt,
       Value<int> rowid,
     });
 typedef $$NoteFoldersTableUpdateCompanionBuilder =
@@ -1364,6 +1487,7 @@ typedef $$NoteFoldersTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> sortIndex,
+      Value<DateTime?> deletedAt,
       Value<int> rowid,
     });
 
@@ -1422,6 +1546,11 @@ class $$NoteFoldersTableFilterComposer
 
   ColumnFilters<int> get sortIndex => $composableBuilder(
     column: $table.sortIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1484,6 +1613,11 @@ class $$NoteFoldersTableOrderingComposer
     column: $table.sortIndex,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NoteFoldersTableAnnotationComposer
@@ -1509,6 +1643,9 @@ class $$NoteFoldersTableAnnotationComposer
 
   GeneratedColumn<int> get sortIndex =>
       $composableBuilder(column: $table.sortIndex, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
   Expression<T> notesRefs<T extends Object>(
     Expression<T> Function($$NotesTableAnnotationComposer a) f,
@@ -1569,6 +1706,7 @@ class $$NoteFoldersTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> sortIndex = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion(
                 id: id,
@@ -1576,6 +1714,7 @@ class $$NoteFoldersTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 sortIndex: sortIndex,
+                deletedAt: deletedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1585,6 +1724,7 @@ class $$NoteFoldersTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> sortIndex = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion.insert(
                 id: id,
@@ -1592,6 +1732,7 @@ class $$NoteFoldersTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 sortIndex: sortIndex,
+                deletedAt: deletedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2029,6 +2170,7 @@ typedef $$TodosTableCreateCompanionBuilder =
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> reminderAt,
+      Value<DateTime?> deletedAt,
       Value<int> rowid,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
@@ -2039,6 +2181,7 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> reminderAt,
+      Value<DateTime?> deletedAt,
       Value<int> rowid,
     });
 
@@ -2077,6 +2220,11 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
 
   ColumnFilters<DateTime> get reminderAt => $composableBuilder(
     column: $table.reminderAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2119,6 +2267,11 @@ class $$TodosTableOrderingComposer
     column: $table.reminderAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TodosTableAnnotationComposer
@@ -2149,6 +2302,9 @@ class $$TodosTableAnnotationComposer
     column: $table.reminderAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 }
 
 class $$TodosTableTableManager
@@ -2185,6 +2341,7 @@ class $$TodosTableTableManager
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> reminderAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
@@ -2193,6 +2350,7 @@ class $$TodosTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 reminderAt: reminderAt,
+                deletedAt: deletedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2203,6 +2361,7 @@ class $$TodosTableTableManager
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> reminderAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
@@ -2211,6 +2370,7 @@ class $$TodosTableTableManager
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 reminderAt: reminderAt,
+                deletedAt: deletedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -3,6 +3,7 @@ import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/logging/logger_provider.dart';
 import 'package:mynote/core/usecases/usecase.dart';
 import 'package:mynote/features/backup/domain/entities/backup_import_result.dart';
+import 'package:mynote/features/backup/domain/entities/backup_version_entry.dart';
 import 'package:mynote/features/backup/presentation/providers/webdav_config_provider.dart';
 import 'package:mynote/features/backup/providers/backup_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -65,6 +66,26 @@ class BackupController extends _$BackupController {
       if (result.isRight()) ref.invalidate(webDavConfigProvider);
       return result;
     });
+  }
+
+  /// 读历史版本列表（新 → 旧）。
+  ///
+  /// ⛔ **不包在 [_run] 里**：它不写库、也没有「转圈禁用入口」的必要（历史屏自己
+  /// 有加载态）。套 `_run` 只会让数据与同步页在后台读历史时无故转圈。
+  Future<Either<Failure, List<BackupVersionEntry>>> loadHistory() {
+    return ref.read(listBackupHistoryUseCaseProvider)();
+  }
+
+  /// 把某个历史版本合并进本地。
+  ///
+  /// 成功后**失效历史列表**：恢复的是本地库，历史本身没变，但用户通常接着想
+  /// 再看一次「现在什么状态」—— 让屏自己重取，比在这里猜更准。
+  Future<Either<Failure, BackupImportResult>> restoreVersion(
+    BackupVersionEntry entry,
+  ) async {
+    final result = await ref.read(restoreBackupVersionUseCaseProvider)(entry);
+    if (result.isRight()) ref.invalidate(webDavConfigProvider);
+    return result;
   }
 
   Future<Either<Failure, T>> _run<T>(

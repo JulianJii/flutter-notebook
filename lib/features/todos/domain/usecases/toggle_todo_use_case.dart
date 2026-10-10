@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
@@ -24,7 +25,7 @@ class ToggleTodoUseCase {
         const Left(InputFailure(message: 'todoId must not be empty')),
       );
     }
-    final now = DateTime.now();
+    final now = AppClock.appNow();
     return _repository.update(
       Todo(
         id: params.todoId,

@@ -7,14 +7,23 @@ import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
+import 'package:mynote/features/notes/domain/entities/note_folder.dart';
+import 'package:mynote/features/notes/domain/repositories/folder_repository.dart';
 import 'package:mynote/features/notes/domain/repositories/note_repository.dart';
 import 'package:mynote/features/notes/presentation/screens/recently_deleted_screen.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
+import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockNoteRepository extends Mock implements NoteRepository {}
+
+class _MockFolderRepository extends Mock implements FolderRepository {}
+
+class _MockTodoRepository extends Mock implements TodoRepository {}
 
 final DateTime _deletedAt = DateTime(2026, 10, 4, 9, 30);
 
@@ -28,11 +37,33 @@ Note deletedNote(String id, {String title = '已删笔记'}) => Note(
   deletedAt: _deletedAt,
 );
 
+NoteFolder deletedFolder(String id, {String name = '已删文件夹'}) => NoteFolder(
+  id: id,
+  name: name,
+  createdAt: DateTime(2026, 10, 1),
+  updatedAt: DateTime(2026, 10, 2),
+  deletedAt: _deletedAt,
+);
+
+Todo deletedTodo(String id, {String title = '已删待办'}) => Todo(
+  id: id,
+  title: title,
+  createdAt: DateTime(2026, 10, 1),
+  updatedAt: DateTime(2026, 10, 2),
+  deletedAt: _deletedAt,
+);
+
 void main() {
   /// override 打在 **Repository** 层（data 的边界）：既验证「Screen 只经 provider
   /// 取数」，又不开真实 drift 库。
+  ///
+  /// ⚠️ **三个 repository 都要 override**：回收站页 watch 三类实体，少覆盖一个，
+  /// 那个真实 provider 就会真开一个 `AppDatabase` —— 留下 pending timer 让整个
+  /// 测试文件挂在 "A Timer is still pending" 上，而不是挂在真正的断言失败上。
   Widget app({
     required Stream<List<Note>> stream,
+    Stream<List<NoteFolder>> folders = const Stream<List<NoteFolder>>.empty(),
+    Stream<List<Todo>> todos = const Stream<List<Todo>>.empty(),
     Future<Either<Failure, Unit>> Function(String)? onRestore,
     Future<Either<Failure, Unit>> Function(String)? onPurge,
     Future<Either<Failure, Unit>> Function()? onPurgeAll,
@@ -53,6 +84,38 @@ void main() {
       (_) async => onPurgeAll?.call() ?? const Right<Failure, Unit>(unit),
     );
 
+    final folderRepo = _MockFolderRepository();
+    when(() => folderRepo.watchTrashed()).thenAnswer((_) => folders);
+    when(() => folderRepo.restore(any())).thenAnswer(
+      (invocation) async =>
+          onRestore?.call(invocation.positionalArguments.first as String) ??
+          const Right<Failure, Unit>(unit),
+    );
+    when(() => folderRepo.purge(any())).thenAnswer(
+      (invocation) async =>
+          onPurge?.call(invocation.positionalArguments.first as String) ??
+          const Right<Failure, Unit>(unit),
+    );
+    when(() => folderRepo.purgeAllTrashed()).thenAnswer(
+      (_) async => onPurgeAll?.call() ?? const Right<Failure, Unit>(unit),
+    );
+
+    final todoRepo = _MockTodoRepository();
+    when(() => todoRepo.watchTrashed()).thenAnswer((_) => todos);
+    when(() => todoRepo.restore(any())).thenAnswer(
+      (invocation) async =>
+          onRestore?.call(invocation.positionalArguments.first as String) ??
+          const Right<Failure, Unit>(unit),
+    );
+    when(() => todoRepo.purge(any())).thenAnswer(
+      (invocation) async =>
+          onPurge?.call(invocation.positionalArguments.first as String) ??
+          const Right<Failure, Unit>(unit),
+    );
+    when(() => todoRepo.purgeAllTrashed()).thenAnswer(
+      (_) async => onPurgeAll?.call() ?? const Right<Failure, Unit>(unit),
+    );
+
     final router = GoRouter(
       initialLocation: AppRoutes.noteTrash,
       routes: <RouteBase>[
@@ -65,7 +128,11 @@ void main() {
     addTearDown(router.dispose);
 
     return ProviderScope(
-      overrides: [noteRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        noteRepositoryProvider.overrideWithValue(repo),
+        folderRepositoryProvider.overrideWithValue(folderRepo),
+        todoRepositoryProvider.overrideWithValue(todoRepo),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light(),
         routerConfig: router,
@@ -83,7 +150,7 @@ void main() {
     await tester.pumpWidget(app(stream: Stream.value(const <Note>[])));
     await tester.pumpAndSettle();
 
-    expect(find.text('没有已删除的笔记'), findsOneWidget);
+    expect(find.text('回收站是空的'), findsOneWidget);
     expect(find.text('恢复'), findsNothing);
     final emptyButton = tester.widget<AppIconButton>(
       find.ancestor(
@@ -213,16 +280,25 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, '清空').last);
     await tester.pumpAndSettle();
 
-    expect(calls, 1);
+    // 三类实体各一次（笔记 / 文件夹 / 待办）。它们分属不同 feature、没有共同
+    // 事务，所以是三次独立调用而不是一次 —— 见 `_emptyTrash` 的注释。
+    expect(calls, 3);
     expect(find.text('已清空'), findsOneWidget);
   });
 
-  testWidgets('清空失败：弹 failure 文案', (tester) async {
+  /// 「清空」跨三种实体。任一步失败必须**停下并报错** —— 报「已清空」会让用户
+  /// 以为回收站空了，而实际只清了一部分。
+  testWidgets('清空失败：停在失败那一步并弹 failure 文案，不报「已清空」', (
+    tester,
+  ) async {
+    var calls = 0;
     await tester.pumpWidget(
       app(
         stream: Stream.value(<Note>[deletedNote('n1')]),
-        onPurgeAll: () async =>
-            const Left<Failure, Unit>(CacheFailure(message: 'disk full')),
+        onPurgeAll: () async {
+          calls++;
+          return const Left<Failure, Unit>(CacheFailure(message: 'disk full'));
+        },
       ),
     );
     await tester.pumpAndSettle();
@@ -233,6 +309,66 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('disk full'), findsOneWidget);
+    expect(find.text('已清空'), findsNothing, reason: '失败时不能报成功');
+    expect(calls, 1, reason: '第一步就失败 → 后两类不该被调用');
+  });
+
+  /// 三类实体各自成段，空段整个不渲染（分组而不是 TabBar）。
+  testWidgets('三类实体各自成段，空段隐藏', (tester) async {
+    await tester.pumpWidget(
+      app(
+        stream: Stream.value(<Note>[deletedNote('n1', title: '一条笔记')]),
+        folders: Stream.value(<NoteFolder>[
+          deletedFolder('f1', name: '一个文件夹'),
+        ]),
+        todos: Stream.value(<Todo>[deletedTodo('d1', title: '一条待办')]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('笔记'), findsOneWidget);
+    expect(find.text('文件夹'), findsOneWidget);
+    expect(find.text('待办'), findsOneWidget);
+    expect(find.text('一条笔记'), findsOneWidget);
+    expect(find.text('一个文件夹'), findsOneWidget);
+    expect(find.text('一条待办'), findsOneWidget);
+    expect(find.text('恢复'), findsNWidgets(3));
+  });
+
+  testWidgets('只有一类有内容：只渲染那一段', (tester) async {
+    await tester.pumpWidget(
+      app(
+        stream: Stream.value(<Note>[deletedNote('n1')]),
+        folders: Stream.value(const <NoteFolder>[]),
+        todos: Stream.value(<Todo>[deletedTodo('d1')]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('笔记'), findsOneWidget);
+    expect(find.text('待办'), findsOneWidget);
+    expect(find.text('文件夹'), findsNothing, reason: '空段不该占位');
+  });
+
+  testWidgets('文件夹恢复：调 folderRepo.restore，不是 noteRepo', (tester) async {
+    final restored = <String>[];
+    await tester.pumpWidget(
+      app(
+        stream: Stream.value(const <Note>[]),
+        folders: Stream.value(<NoteFolder>[deletedFolder('f1')]),
+        onRestore: (id) async {
+          restored.add(id);
+          return const Right<Failure, Unit>(unit);
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('恢复'));
+    await tester.pumpAndSettle();
+
+    expect(restored, <String>['f1']);
+    expect(find.text('已恢复'), findsOneWidget);
   });
 
   testWidgets('标题为空时用正文第一行顶上', (tester) async {

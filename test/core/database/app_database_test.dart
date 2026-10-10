@@ -11,10 +11,11 @@ void main() {
 
   tearDown(() => db.close());
 
-  // v5 = 给 `todos` 加 `reminder_at`（待办提醒）。⚠️ 升版本**必须**同步改这条断言：
-  // 老库靠 `onUpgrade` 的 `addColumn` 升级，版本号不一致会直接走错分支。
-  test('schemaVersion == 5', () {
-    expect(db.schemaVersion, 5);
+  // v6 = 给 `note_folders` 与 `todos` 加 `deleted_at`（软删除，让删除能跨设备传播）。
+// ⚠️ 升版本**必须**同步改这条断言：老库靠 `onUpgrade` 的 `addColumn` 升级，
+// 版本号不一致会直接走错分支。
+test('schemaVersion == 6', () {
+    expect(db.schemaVersion, 6);
   });
 
   test('beforeOpen 已打开 PRAGMA foreign_keys', () async {

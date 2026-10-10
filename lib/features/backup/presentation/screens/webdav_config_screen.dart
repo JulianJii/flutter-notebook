@@ -166,6 +166,13 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
                         trailing: _testTrailing(context, l10n),
                         onTap: _testing ? null : _test,
                       ),
+                      AppListTile(
+                        key: const Key('webdav_history'),
+                        title: l10n.webDavHistory,
+                        trailing: _chevron(context),
+                        dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.webDavHistory),
+                      ),
                     ],
                   ),
                   Padding(
@@ -201,10 +208,11 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
       );
     }
     if (_testOk == null) return const SizedBox.shrink();
+    final colors = context.colors;
     return Text(
       _testOk! ? l10n.webDavTestOk : l10n.webDavTestFailed,
       style: context.textStyles.value.copyWith(
-        color: _testOk! ? feedbackSuccess : feedbackDanger,
+        color: _testOk! ? colors.feedbackSuccess : colors.feedbackDanger,
       ),
     );
   }
@@ -301,3 +309,12 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
 const double _kLabelWidth = 96;
 
 const double _kSuffixIconSize = 20;
+
+/// 行尾 chevron。与 `DataManagementScreen._chevron` 同规格（20dp、
+/// `textSecondary`）—— 两个 screen 各写一个是因为它是**私有**的，上提到
+/// `core/ui` 只为一个调用点不值得。
+AppIcon _chevron(BuildContext context) => AppIcon(
+  icon: AppIcons.chevronRight,
+  size: _kSuffixIconSize,
+  color: context.colors.textSecondary,
+);

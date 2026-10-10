@@ -80,6 +80,18 @@ class DataManagementScreen extends ConsumerWidget {
                     ],
                   ),
                   AppSettingsGroup(
+                    title: l10n.lanTitle,
+                    children: <Widget>[
+                      AppListTile(
+                        key: const Key('data_lan_sync'),
+                        title: l10n.lanTitle,
+                        subtitle: l10n.lanAllowAccessDesc,
+                        trailing: _chevron(context),
+                        onTap: () => context.push(AppRoutes.lanSync),
+                      ),
+                    ],
+                  ),
+                  AppSettingsGroup(
                     title: l10n.dataGroupWebDav,
                     children: <Widget>[
                       AppListTile(

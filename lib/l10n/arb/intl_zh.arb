@@ -523,9 +523,38 @@
   "@noteDeleted": {
     "description": "Snackbar shown after a note is soft deleted"
   },
-  "trashEmpty": "没有已删除的笔记",
+  "trashEmpty": "回收站是空的",
   "@trashEmpty": {
     "description": "Empty state of the trash screen"
+  },
+  "trashGroupNotes": "笔记",
+  "@trashGroupNotes": {
+    "description": "Section header of the notes group in the trash"
+  },
+  "trashGroupFolders": "文件夹",
+  "@trashGroupFolders": {
+    "description": "Section header of the folders group in the trash"
+  },
+  "trashGroupTodos": "待办",
+  "@trashGroupTodos": {
+    "description": "Section header of the todos group in the trash"
+  },
+  "deleteFolderConfirm": "确定要删除「{name}」吗？其中的笔记会移到「未分类」，文件夹可在回收站恢复。",
+  "@deleteFolderConfirm": {
+    "description": "Body of the folder delete confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteFolderMenu": "删除文件夹",
+  "@deleteFolderMenu": {
+    "description": "Long-press menu item that deletes a folder"
+  },
+  "deleteFolderDone": "已移入回收站",
+  "@deleteFolderDone": {
+    "description": "Snackbar shown after a folder is moved to the trash"
   },
   "trashRestore": "恢复",
   "@trashRestore": {
@@ -533,7 +562,7 @@
   },
   "restoreDone": "已恢复",
   "@restoreDone": {
-    "description": "Snackbar shown after a note is restored"
+    "description": "Snackbar shown after an item is restored"
   },
   "trashDeleteForever": "永久删除",
   "@trashDeleteForever": {
@@ -547,7 +576,7 @@
   "@trashEmptyAction": {
     "description": "Top bar action that empties the trash, and its confirm button"
   },
-  "trashEmptyConfirm": "确定要清空所有已删除的笔记吗？此操作无法撤销。",
+  "trashEmptyConfirm": "确定要清空回收站吗？此操作无法撤销。",
   "@trashEmptyConfirm": {
     "description": "Body of the empty-trash confirmation dialog"
   },
@@ -772,6 +801,80 @@
   "@dataTitle": {
     "description": "Title of the data management screen"
   },
+  "lanTitle": "局域网同步",
+  "@lanTitle": {
+    "description": "Title of the LAN sync screen"
+  },
+  "lanAllowAccess": "允许本机被连接",
+  "@lanAllowAccess": {
+    "description": "Switch that starts/stops hosting on this device"
+  },
+  "lanAllowAccessDesc": "开启后，同一 WiFi 下的另一台设备能发现本机并直接同步。",
+  "@lanAllowAccessDesc": {
+    "description": "Subtitle of the allow-access switch"
+  },
+  "lanHostingOn": "本机正在可被连接",
+  "@lanHostingOn": {
+    "description": "Footer shown while this device is hosting"
+  },
+  "lanSearching": "正在查找同一网络下的设备…",
+  "@lanSearching": {
+    "description": "Shown while no peer has been discovered yet"
+  },
+  "lanNoPeers": "没找到设备。请确认两台设备连的是同一个 WiFi，并且另一台已打开「允许本机被连接」。",
+  "@lanNoPeers": {
+    "description": "Empty state when discovery is running but found nothing"
+  },
+  "lanSync": "同步",
+  "@lanSync": {
+    "description": "Action that syncs with one peer"
+  },
+  "lanSyncDone": "同步完成：{changed} 条更新",
+  "@lanSyncDone": {
+    "description": "Snackbar shown after a LAN sync",
+    "placeholders": {
+      "changed": {
+        "type": "int"
+      }
+    }
+  },
+  "lanClockAligned": "时钟已对齐到 {device}",
+  "@lanClockAligned": {
+    "description": "Snackbar shown after the clock offset was adjusted to match the peer",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "lanManual": "手动输入地址",
+  "@lanManual": {
+    "description": "Button opening the manual-address dialog"
+  },
+  "lanManualTitle": "连接指定设备",
+  "@lanManualTitle": {
+    "description": "Title of the manual-address dialog"
+  },
+  "lanManualIp": "对方 IP 地址",
+  "@lanManualIp": {
+    "description": "Label of the IP field in the manual-address dialog"
+  },
+  "lanManualPort": "端口",
+  "@lanManualPort": {
+    "description": "Label of the port field in the manual-address dialog"
+  },
+  "lanManualAdd": "添加",
+  "@lanManualAdd": {
+    "description": "Confirm button of the manual-address dialog"
+  },
+  "lanManualHint": "广播被路由器挡住时用这个。端口填对方屏幕上显示的那个。",
+  "@lanManualHint": {
+    "description": "Helper text of the manual-address dialog"
+  },
+  "lanSecurityNote": "局域网内是明文传输，且不需要密码 —— 只在信任的家庭网络里开启。",
+  "@lanSecurityNote": {
+    "description": "Security warning shown at the bottom of the LAN screen"
+  },
   "dataGroupExport": "导出",
   "@dataGroupExport": {
     "description": "Section header of the export group"
@@ -896,9 +999,9 @@
   "@dataErrorServer": {
     "description": "Snackbar shown when the server returns an error"
   },
-  "dataErrorInvalidFile": "这个文件不是本应用导出的数据",
+  "dataErrorInvalidFile": "这个文件不是本应用导出的数据，或文件太大",
   "@dataErrorInvalidFile": {
-    "description": "Snackbar shown when the picked file is not a snapshot"
+    "description": "Snackbar shown when the picked file is not a snapshot, or is over the size cap"
   },
   "dataErrorNotConfigured": "还没有配置 WebDAV 服务器",
   "@dataErrorNotConfigured": {
@@ -907,6 +1010,53 @@
   "dataErrorUnknown": "操作失败，请重试",
   "@dataErrorUnknown": {
     "description": "Snackbar shown for any other backup failure"
+  },
+  "webDavHistory": "历史版本",
+  "@webDavHistory": {
+    "description": "Title of the WebDAV version history screen"
+  },
+  "webDavHistoryEmpty": "还没有历史版本。每次同步改动了服务器上的数据时，会自动把覆盖前的那份存一份。",
+  "@webDavHistoryEmpty": {
+    "description": "Empty state of the version history screen"
+  },
+  "webDavHistoryEntryAt": "{date} · {count} 条",
+  "@webDavHistoryEntryAt": {
+    "description": "One row of the version history list",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "webDavHistoryRestore": "找回内容",
+  "@webDavHistoryRestore": {
+    "description": "Action that merges a historical version back into local"
+  },
+  "webDavHistoryRestoreConfirm": "将 {date} 的内容合并进来。注意：当时被删除的笔记、待办和文件夹不会回来—— 删除记录比历史版本更新。",
+  "@webDavHistoryRestoreConfirm": {
+    "description": "Body of the restore-a-history-version confirmation dialog. Warns that deletions are NOT rolled back.",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMMMd"
+      }
+    }
+  },
+  "webDavHistoryRestored": "已找回内容：新增 {inserted} 条，更新 {updated} 条",
+  "@webDavHistoryRestored": {
+    "description": "Snackbar shown after restoring a historical version",
+    "placeholders": {
+      "inserted": {
+        "type": "int"
+      },
+      "updated": {
+        "type": "int"
+      }
+    }
   },
   "webDavTitle": "WebDAV",
   "@webDavTitle": {

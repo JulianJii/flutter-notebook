@@ -1,3 +1,4 @@
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:drift/drift.dart' show DriftWrappedException, Value;
 import 'package:drift/native.dart' show SqliteException;
 import 'package:mynote/core/database/app_database.dart';
@@ -144,7 +145,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   @override
   Future<void> delete(String noteId) => _guard(() async {
     // 软删除：写 `deleted_at`，不碰 `updated_at`（删除不是编辑）。
-    final hit = await _dao.softDeleteById(noteId, DateTime.now());
+    final hit = await _dao.softDeleteById(noteId, AppClock.appNow());
     if (!hit) {
       throw CacheException(message: 'Note not found: $noteId');
     }
@@ -159,7 +160,11 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
 
   @override
   Future<void> restore(String noteId) => _guard(() async {
-    final hit = await _dao.restoreById(noteId);
+    // ⚠️ 必须同时刷 `updated_at`：`BackupNote.version` 取 `max(updatedAt, deletedAt)`
+    // 作为合并比较键。只置回 `deleted_at` 的话，恢复后的 version 会退回**旧**
+    // `updatedAt`，比远端那条的 `deletedAt` 还早 → 下次同步远端胜出，笔记自己
+    // 滚回回收站。恢复是一次变更，必须有比删除更晚的时间戳。
+    final hit = await _dao.restoreById(noteId, AppClock.appNow());
     if (!hit) {
       throw CacheException(message: 'Note not found: $noteId');
     }

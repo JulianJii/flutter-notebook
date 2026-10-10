@@ -44,6 +44,11 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
           ])
           ..addColumns([count])
           ..groupBy([noteFolders.id])
+          // ⚠️ 回收站里的文件夹要**整行消失**，所以过滤加在左表（outer select）
+          // 上，**不能**塞进上面 join 的 `Expression.and` —— LEFT JOIN 的谓词只
+          // 作用于右表，把条件放那儿只会把 count 置空，文件夹行照样显示。
+          // 这个位置写错不会报错、不会崩，只是静默地继续显示已删文件夹。
+          ..where(noteFolders.deletedAt.isNull())
           ..orderBy([
             OrderingTerm.asc(noteFolders.sortIndex),
             OrderingTerm.asc(noteFolders.createdAt),
@@ -124,21 +129,97 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
         .then((affected) => affected > 0);
   }
 
-  /// 删文件夹行，返回受影响行数。
-  ///
-  /// ⚠️ 与 [nullOutFolder] 一起放进同一个 `db.transaction()`，事务在
-  /// `TASK-021` 的 datasource 包（`REPOSITORY-MAP.md` §2.2）。DAO 内部**不开**
-  /// 事务 —— 边界散落在 DAO 里，上层无法推理。
-  Future<int> deleteById(String folderId) {
+  /// 删文件夹行（**物理**），返回受影响行数。
+///
+/// ⛔ **只由回收站的「永久删除」发起**：普通删除走 [markTrashed]（软删除），
+/// 否则删除不留痕、无法跨设备传播。
+///
+/// ⚠️ 与 [nullOutFolder] 一起放进同一个 `db.transaction()`，事务在
+/// `TASK-021` 的 datasource 包（`REPOSITORY-MAP.md` §2.2）。DAO 内部**不开**
+/// 事务 —— 边界散落在 DAO 里，上层无法推理。
+Future<int> deleteById(String folderId) {
     return (super.delete(
       noteFolders,
     )..where((t) => t.id.equals(folderId))).go();
   }
 
+  /// 清空回收站：物理删掉全部 `deleted_at IS NOT NULL` 的行，返回受影响行数。
+  ///
+  /// 单条 DELETE 而不是 N 次 [deleteById]：循环中途失败会留下删一半的
+  /// 不可解释状态。命中 0 行**不抛**（= 已清空）。
+  Future<int> deleteAllTrashed() {
+    return (super
+            .delete(noteFolders)
+          ..where((t) => t.deletedAt.isNotNull()))
+        .go();
+  }
+
+  /// 取一行。软删除流程要先读出当前 `name` 才能算出让出版，所以需要它。
+  Future<NoteFolderRow?> getById(String folderId) {
+    return (select(
+      noteFolders,
+    )..where((t) => t.id.equals(folderId))).getSingleOrNull();
+  }
+
+  /// 回收站列表：`deleted_at IS NOT NULL`，按删除时间倒序（与笔记回收站同序）。
+  ///
+  /// ⛔ **没有**「把活文件夹也列进来」的变体：列表视图有且只有两态，
+  /// 混在一起会让「文件夹管理」和「回收站」互相漏数据。
+  Stream<List<NoteFolderRow>> watchTrashed() {
+    return (select(noteFolders)
+          ..where((t) => t.deletedAt.isNotNull())
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.deletedAt),
+            (t) => OrderingTerm.desc(t.createdAt),
+          ]))
+        .watch();
+  }
+
+  /// 软删除写入：**改名让出原名** + 写 `deleted_at`。
+  ///
+  /// ⚠️ `name` 由调用方用 [trashedFolderName] 算好传进来，DAO **不读行、不取
+  /// 时钟** —— 读-改-写的事务边界在 datasource（与 [deleteById] 同一约定）。
+  /// ⚠️ 不刷 `updated_at`：删除不是编辑，靠 `max(updatedAt, deletedAt)` 传播。
+  Future<bool> markTrashed(
+    String folderId,
+    String trashedName,
+    DateTime deletedAt,
+  ) {
+    return (super.update(noteFolders)..where((t) => t.id.equals(folderId)))
+        .write(
+          NoteFoldersCompanion(
+            name: Value(trashedName),
+            deletedAt: Value(deletedAt),
+          ),
+        )
+        .then((affected) => affected > 0);
+  }
+
+  /// 恢复：`name` 改回原名 + `deleted_at` 置 null + **刷 `updated_at`**。
+  ///
+  /// ⚠️ 必须刷 `updated_at`，理由与 `NoteDao.restoreById` 完全一样：合并比较键是
+  /// `max(updatedAt, deletedAt)`，不刷的话恢复的 version 退回旧 `updatedAt`，
+  /// 比远端的 `deletedAt` 还早 → 下次同步远端胜出，文件夹自己滚回回收站。
+  Future<bool> markRestored(
+    String folderId,
+    String restoredName,
+    DateTime restoredAt,
+  ) {
+    return (super.update(noteFolders)..where((t) => t.id.equals(folderId)))
+        .write(
+          NoteFoldersCompanion(
+            name: Value(restoredName),
+            deletedAt: const Value(null),
+            updatedAt: Value(restoredAt),
+          ),
+        )
+        .then((affected) => affected > 0);
+  }
+
   /// 把某文件夹下全部笔记的 `folder_id` 置 NULL。
   ///
-  /// 与 [deleteById] 的外键 `ON DELETE SET NULL` 冗余但**显式**：不把原子性寄托
-  /// 在某个 drift / SQLite 版本的外键行为上。
+  /// 删文件夹时笔记落进「未分类」。**软删除下外键 `ON DELETE SET NULL` 不触发**
+  /// （行还在），所以必须显式调它 —— 与硬删除时的 FK 规则冗余但**不**可省。
   Future<int> nullOutFolder(String folderId) {
     return (super.update(notes)..where((t) => t.folderId.equals(folderId)))
         .write(const NotesCompanion(folderId: Value(null)))

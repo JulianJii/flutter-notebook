@@ -78,24 +78,6 @@ title: Features
 
 ## 工程能力
 
-### 分析集成
-
-```dart
-final analytics = ref.watch(analyticsProvider);
-
-// Log screen views
-analytics.logScreenView('NoteListScreen', parameters: {'referrer': 'deeplink'});
-
-// Log user actions
-analytics.logUserAction(
-  action: 'button_tap',
-  category: 'engagement',
-  label: 'new_note_button',
-);
-```
-
-详情请参见[分析指南](https://jessejii.github.io/init/analytics.html)。
-
 ### 推送通知
 
 本地通知 + 深链 + 权限申请：
@@ -115,18 +97,6 @@ await service.showLocalNotification(
   channel: 'notes',
 );
 ```
-
-### 功能开关
-
-运行时开关，用于 A/B 测试与分阶段发布。默认值集中在 `core/feature_flags/feature_flag_providers.dart` 的 `kDefaultFeatureFlags`：
-
-```dart
-if (ref.watch(featureFlagProvider('enable_dark_mode', defaultValue: true))) {
-  // 深色模式入口
-}
-```
-
-也可用 `FeatureFlag` widget 按开关挂载子树。详情请参见[功能开关指南](https://jessejii.github.io/init/feature_flags.html)。
 
 ### 路由
 

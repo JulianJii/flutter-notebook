@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mynote/core/analytics/analytics_providers.dart';
 import 'package:mynote/core/notifications/debug_notification_service.dart';
 import 'package:mynote/core/notifications/notification_service.dart';
 
@@ -8,36 +7,6 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
   // 在真实应用中，你会使用真实的通知服务实现
   // 例如 FirebaseNotificationService
   final service = DebugNotificationService();
-
-  // 将通知事件记录到 analytics
-  final analytics = ref.watch(analyticsProvider);
-
-  // 处理通知接收事件
-  service.notificationStream.listen((notification) {
-    analytics.logUserAction(
-      action: 'notification_received',
-      category: 'notification',
-      label: notification.channel ?? 'default',
-      parameters: {
-        'notification_id': notification.id,
-        'title': notification.title,
-        'foreground': notification.foreground,
-      },
-    );
-  });
-
-  // 处理通知点击事件
-  service.notificationTapStream.listen((notification) {
-    analytics.logUserAction(
-      action: 'notification_tapped',
-      category: 'notification',
-      label: notification.channel ?? 'default',
-      parameters: {
-        'notification_id': notification.id,
-        'action': notification.action,
-      },
-    );
-  });
 
   // 初始化服务
   service.init();

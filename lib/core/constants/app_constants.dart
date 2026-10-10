@@ -1,7 +1,4 @@
 class AppConstants {
-  // API 常量
-  static const String apiBaseUrl = 'https://api.yourdomain.com';
-
   // 应用常量
   static const String appName = 'MyNote';
   static const String appVersion = '1.0.0';

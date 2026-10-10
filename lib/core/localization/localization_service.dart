@@ -1,8 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:mynote/core/providers/localization_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+
+part 'localization_service.g.dart';
 
 /// 语言在其母语中的名称。gen-l10n 不提供，需自行维护。
 String localeDisplayName(Locale locale) => switch (locale.languageCode) {
@@ -17,11 +20,11 @@ class LocalizationService {
 
   final Ref ref;
 
-  /// 获取生效的语言环境（跟随系统时是解析后的系统语言）
+  /// 获取当前语言环境
   Locale get currentLocale => ref.read(appLocaleProvider);
 
-  /// 设置新的语言环境。传 `null` 回到「跟随系统」。
-  Future<void> setLocale(Locale? locale) async {
+  /// 设置新的语言环境
+  Future<void> setLocale(Locale locale) async {
     await ref.read(persistentLocaleProvider.notifier).setLocale(locale);
   }
 
@@ -87,9 +90,10 @@ class LocalizationService {
 }
 
 /// 本地化服务的 Provider
-final localizationServiceProvider = Provider<LocalizationService>((ref) {
+@Riverpod(keepAlive: true)
+LocalizationService localizationService(Ref ref) {
   return LocalizationService(ref);
-});
+}
 
 /// BuildContext 的扩展方法，用于便捷地访问本地化功能
 extension LocalizationServiceExtension on BuildContext {
@@ -97,8 +101,8 @@ extension LocalizationServiceExtension on BuildContext {
   LocalizationService get localization =>
       ProviderScope.containerOf(this).read(localizationServiceProvider);
 
-  /// 设置新的语言环境。传 `null` 回到「跟随系统」。
-  Future<void> setLocale(Locale? locale) => localization.setLocale(locale);
+  /// 设置新的语言环境
+  Future<void> setLocale(Locale locale) => localization.setLocale(locale);
 
   /// 重置为系统语言环境
   Future<void> resetToSystemLocale() => localization.resetToSystemLocale();

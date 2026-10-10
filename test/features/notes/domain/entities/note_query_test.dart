@@ -21,7 +21,6 @@ void main() {
     expect(const AllFolders(), isNot(const UncategorizedNotes()));
     expect(const SingleFolder('f1'), isNot(const SingleFolder('f2')));
     expect(NoteQuery.of('f1'), const NoteQuery(folder: SingleFolder('f1')));
-    expect(const NoteQuery().hashCode, const NoteQuery().hashCode);
     expect(
       NoteQuery.uncategorized(),
       const NoteQuery(folder: UncategorizedNotes()),

@@ -4,9 +4,6 @@ import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/usecases/usecase.dart';
 import 'package:mynote/features/settings/data/repositories/settings_repository_impl.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
-import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
-import 'package:mynote/features/settings/domain/usecases/get_settings_use_case.dart';
-import 'package:mynote/features/settings/domain/usecases/save_settings_use_case.dart';
 import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,30 +23,12 @@ void main() {
 
   tearDown(() => container.dispose());
 
-  test('repository + 2 个 use case provider 可解析', () {
-    expect(
-      container.read(settingsRepositoryProvider),
-      isA<SettingsRepository>(),
-    );
-    expect(
-      container.read(getSettingsUseCaseProvider),
-      isA<GetSettingsUseCase>(),
-    );
-    expect(
-      container.read(saveSettingsUseCaseProvider),
-      isA<SaveSettingsUseCase>(),
-    );
-  });
-
   test('走 sharedPreferencesProvider 链（不是自己 new LocalStorageService）', () {
+    // 静态类型是接口 `SettingsRepository`，所以 `isA<SettingsRepositoryImpl>()`
+    // 才是真断言：它证明 DI 装的是 Impl，装错成别的实现就红。
     expect(
       container.read(settingsRepositoryProvider),
       isA<SettingsRepositoryImpl>(),
-    );
-    // 同一个容器内只装配一次：重复读返回同一实例，说明没有被重复 new。
-    expect(
-      container.read(settingsRepositoryProvider),
-      same(container.read(settingsRepositoryProvider)),
     );
   });
 

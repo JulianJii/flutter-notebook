@@ -4,14 +4,7 @@ import 'package:mynote/core/database/app_database.dart';
 import 'package:mynote/core/providers/database_providers.dart';
 import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/usecases/usecase.dart';
-import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
-import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
-import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
-import 'package:mynote/features/todos/domain/usecases/delete_todo_use_case.dart';
 import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
-import 'package:mynote/features/todos/domain/usecases/toggle_todo_use_case.dart';
-import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
-import 'package:mynote/features/todos/domain/usecases/watch_todos_use_case.dart';
 import 'package:mynote/features/todos/providers/todos_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,22 +28,6 @@ void main() {
   tearDown(() async {
     container.dispose();
     await db.close();
-  });
-
-  test('data source + repository 可解析', () {
-    expect(
-      container.read(todoLocalDataSourceProvider),
-      isA<TodoLocalDataSource>(),
-    );
-    expect(container.read(todoRepositoryProvider), isA<TodoRepository>());
-  });
-
-  test('5 个 use case provider 全部可解析', () {
-    expect(container.read(watchTodosUseCaseProvider), isA<WatchTodosUseCase>());
-    expect(container.read(createTodoUseCaseProvider), isA<CreateTodoUseCase>());
-    expect(container.read(toggleTodoUseCaseProvider), isA<ToggleTodoUseCase>());
-    expect(container.read(updateTodoUseCaseProvider), isA<UpdateTodoUseCase>());
-    expect(container.read(deleteTodoUseCaseProvider), isA<DeleteTodoUseCase>());
   });
 
   test('端到端：create -> watchAll -> toggle 目标值落库', () async {

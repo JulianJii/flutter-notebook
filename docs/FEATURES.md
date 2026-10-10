@@ -80,23 +80,9 @@ title: Features
 
 ### 推送通知
 
-本地通知 + 深链 + 权限申请：
+⛔ **无推送**：应用纯本地，FCM 推送抽象（`notificationServiceProvider` / `NotificationMessage` / 深链处理）已随死代码清理删除。
 
-> ⚠️ **与待办提醒不是一回事**：提醒走 `reminderSchedulerProvider`（`flutter_local_notifications` 的定时通知，见「待办」一节）；本节的 `notificationServiceProvider` 是**推送**抽象，当前实现是 Debug 空壳。
-
-```dart
-final service = ref.watch(notificationServiceProvider);
-
-final status = await service.requestPermission();
-
-await service.showLocalNotification(
-  id: 'note-123',
-  title: '笔记已保存',
-  body: '你的修改已同步',
-  action: '/notes/123',
-  channel: 'notes',
-);
-```
+> 到点提醒是另一回事：走 `reminderSchedulerProvider`（`flutter_local_notifications` 的定时通知，见「待办」一节）。
 
 ### 路由
 

@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import './localization_service.dart';
 import 'package:mynote/core/providers/localization_providers.dart';
-import 'package:mynote/core/localization/localization_service.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 
 /// 允许用户从受支持的语言环境中选择语言的 widget

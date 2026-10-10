@@ -68,7 +68,7 @@ import '../domain/entities/user.dart'; // Good
 ```
 跨 feature 边界或 core 时使用 package 导入。
 ```dart
-import 'package:app/core/utils/logger.dart'; // Good
+import 'package:app/core/error/failures.dart'; // Good
 ```
 
 ---

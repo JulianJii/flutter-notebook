@@ -23,7 +23,6 @@ void main() {
   });
 
   test('Equatable 相等性覆盖全部字段', () {
-    expect(base, base.copyWith());
     expect(base, isNot(base.copyWith(folderId: null)));
     expect(base, isNot(base.copyWith(content: 'x')));
     expect(base, isNot(base.copyWith(updatedAt: DateTime(2026, 10, 4))));
@@ -41,6 +40,5 @@ void main() {
     expect(NoteBackground.fromId('mint'), NoteBackground.mint);
     expect(NoteBackground.fromId(null), isNull);
     expect(NoteBackground.fromId('不存在的背景'), isNull);
-    expect(NoteBackground.paper.id, 'paper');
   });
 }

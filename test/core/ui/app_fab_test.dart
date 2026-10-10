@@ -75,9 +75,6 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(AppCheckbox.size, 20);
-    expect(AppCheckbox.radius, 6);
-    expect(AppCheckbox.strokeWidth, 2);
   });
 
   testWidgets('AppCheckbox 点击回调收到 true', (tester) async {
@@ -136,22 +133,5 @@ void main() {
 
     await tester.tap(find.byType(Switch));
     expect(received, isTrue);
-  });
-
-  testWidgets('ui.dart 桶文件导出全部 T1 组件', (tester) async {
-    // 引用即验证：任何一个 export 缺失或文件为 0 字节，本文件都编译不过。
-    expect(AppFab, isNotNull);
-    expect(AppCheckbox, isNotNull);
-    expect(AppSwitchRow, isNotNull);
-    expect(AppListTile, isNotNull);
-    expect(AppTopBar, isNotNull);
-    expect(AppLargeTitle, isNotNull);
-    expect(AppSectionHeader, isNotNull);
-    expect(AppCard, isNotNull);
-    expect(AppFilterChip, isNotNull);
-    expect(AppIcon, isNotNull);
-    expect(AppIconButton, isNotNull);
-    expect(AppDivider, isNotNull);
-    expect(AppBottomNav, isNotNull);
   });
 }

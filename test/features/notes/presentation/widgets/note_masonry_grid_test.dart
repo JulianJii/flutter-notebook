@@ -2,7 +2,6 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
-import 'package:mynote/core/ui/app_bottom_nav.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/presentation/widgets/note_card.dart';
 import 'package:mynote/features/notes/presentation/widgets/note_masonry_grid.dart';
@@ -116,15 +115,6 @@ void main() {
         tester.getSize(find.byWidget(card.widget)).width,
     };
     expect(widths, hasLength(1), reason: '两列等宽');
-  });
-
-  testWidgets('底部导航高度只来自共享常量', (tester) async {
-    await tester.pumpWidget(
-      wrap(NoteMasonryGrid(notes: <Note>[note('1')], textScale: 1)),
-    );
-
-    expect(kBottomNavContentHeight, 64);
-    expect(tester.takeException(), isNull);
   });
 
   testGoldenWidgets('2 列瀑布流结构基线', (tester) async {

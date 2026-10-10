@@ -68,7 +68,6 @@ void main() {
         ),
       );
 
-      expect(AppListTile.gap, 8);
       expect(
         tester.getTopLeft(find.byKey(_trailingKey)).dx -
             tester.getTopRight(find.text('默认')).dx,
@@ -132,7 +131,6 @@ void main() {
 
       final divider = tester.widget<AppDivider>(find.byType(AppDivider));
       expect(divider.indent, AppListTile.indent);
-      expect(divider.indent, 16);
     });
   });
 }

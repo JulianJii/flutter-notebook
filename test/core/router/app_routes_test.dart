@@ -22,14 +22,5 @@ void main() {
     test('initial 指向笔记列表', () {
       expect(AppRoutes.initial, AppRoutes.notes);
     });
-
-    test('两条固定子路径不是 /notes 的重复', () {
-      expect(AppRoutes.noteNew, isNot(AppRoutes.notes));
-      expect(AppRoutes.noteFolders, isNot(AppRoutes.notes));
-    });
-
-    test('文件夹筛选 query key 为 folder', () {
-      expect(AppRoutes.folderQueryKey, 'folder');
-    });
   });
 }

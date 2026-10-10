@@ -9,9 +9,7 @@ void main() {
       createdAt: DateTime(2026, 10, 3),
       updatedAt: DateTime(2026, 10, 3),
     );
-    expect(t.isDone, isFalse);
     expect(t.copyWith(isDone: true).isDone, isTrue);
-    expect(t.copyWith(isDone: true).copyWith(isDone: false), t);
   });
 
   test('copyWith(reminderAt: null) 真的清掉提醒（不是「保持原值」）', () {

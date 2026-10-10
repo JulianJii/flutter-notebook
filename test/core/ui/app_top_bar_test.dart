@@ -29,7 +29,6 @@ void main() {
       ),
     );
 
-    expect(AppTopBar.height, 56);
     expect(tester.getSize(find.byType(AppTopBar)).height, 56);
   });
 

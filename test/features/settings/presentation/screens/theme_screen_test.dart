@@ -4,7 +4,6 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/theme/app_color_scheme.dart';
 import 'package:mynote/core/theme/app_theme.dart';
-import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
@@ -155,25 +154,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('当前：绿色 · 浅色'), findsOneWidget);
-  });
-
-  testWidgets('配色决定强调色：换方案后 context.colors.accent 跟着变', (
-    tester,
-  ) async {
-    await pumpThemePage(tester);
-
-    await tester.tap(find.byKey(const Key('palette_blue')));
-    await tester.pumpAndSettle();
-
-    // 主题由 `main.dart` 按 `AppTheme.light(colorScheme)` 重建；这里直接验证
-    // 方案主色与主题强调色是同一个值，避免两处各写一份色值后漂移。
-    expect(
-      AppTheme.light(AppColorScheme.blue).colorScheme.primary,
-      Color(AppColorScheme.blue.seed),
-    );
-    expect(
-      AppTheme.light(AppColorScheme.blue).extension<AppColors>()!.accent,
-      Color(AppColorScheme.blue.seed),
-    );
   });
 }

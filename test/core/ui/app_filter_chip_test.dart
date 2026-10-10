@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
-import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/ui/app_filter_chip.dart';
 import 'package:mynote/core/ui/app_section_header.dart';
 import 'package:material_ui/material_ui.dart';
@@ -20,13 +19,10 @@ void main() {
         ),
       );
 
-      expect(AppFilterChip.height, 28);
       expect(
         AppFilterChip.height,
         tester.getSize(find.byType(AppFilterChip)).height,
       );
-      expect(AppFilterChip.horizontalPadding, AppSpacing.pageH);
-      expect(AppFilterChip.horizontalPadding, 12);
 
       final material = tester.widget<Material>(
         find.descendant(
@@ -34,8 +30,6 @@ void main() {
           matching: find.byType(Material),
         ),
       );
-      expect(AppFilterChip.shape, isA<BorderRadius>());
-      expect(AppFilterChip.shape.topLeft.x, AppFilterChip.height / 2);
       expect((material.borderRadius! as BorderRadius).topLeft.x, 14);
     });
 
@@ -166,11 +160,6 @@ void main() {
         ),
       );
 
-      expect(AppSectionHeader.indent, AppSpacing.sectionHeaderIndent);
-      expect(AppSectionHeader.indent, 28);
-      expect(AppSectionHeader.topPadding, 16);
-      expect(AppSectionHeader.bottomPadding, 8);
-
       final padding = tester.widget<Padding>(
         find
             .descendant(
@@ -185,7 +174,6 @@ void main() {
       );
 
       const colors = AppColors.light();
-      expect(colors.textSectionHeader, const Color(0xFFA0A0A0));
       expect(
         tester.widget<Text>(find.text('云服务')).style?.color,
         colors.textSectionHeader,

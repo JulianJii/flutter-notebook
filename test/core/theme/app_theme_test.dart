@@ -83,7 +83,6 @@ void main() {
     });
 
     test('默认方案是设计稿强调色 #F0A020', () {
-      expect(Color(AppColorScheme.amber.seed), const Color(0xFFF0A020));
       expect(AppTheme.light().colorScheme.primary, const Color(0xFFF0A020));
     });
 

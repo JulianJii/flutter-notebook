@@ -16,7 +16,6 @@ void main() {
 
   testWidgets('默认内边距 12dp 且可被覆盖', (tester) async {
     expect(AppCard.defaultPadding, const EdgeInsets.all(AppSpacing.cardPad));
-    expect(AppCard.defaultPadding, const EdgeInsets.all(12));
 
     await tester.pumpWidget(wrap(const AppCard(child: Text('笔记'))));
     expect(

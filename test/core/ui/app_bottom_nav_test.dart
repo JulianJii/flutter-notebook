@@ -92,7 +92,6 @@ void main() {
       wrap(AppBottomNav(items: items, selectedIndex: 0, onTap: (_) {})),
     );
 
-    expect(kBottomNavContentHeight, 64);
     expect(
       tester
           .getSize(

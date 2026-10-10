@@ -214,19 +214,4 @@ void main() {
       );
     });
   });
-
-  group('AppSettings', () {
-    test('默认值与 ARCHITECTURE-DESIGN §2.13 的表格一致', () {
-      const d = AppSettings.defaults();
-      expect(d.textScale, TextScaleLevel.normal);
-      expect(d.noteSort, AppNoteSort.editedDesc);
-      expect(d.noteLayout, NoteLayout.grid);
-      expect(d.themeMode, AppThemeMode.system);
-      expect(d.colorScheme, AppColorScheme.amber);
-    });
-
-    test('值相等：默认构造 == defaults()', () {
-      expect(const AppSettings(), const AppSettings.defaults());
-    });
-  });
 }

@@ -13,7 +13,6 @@ void main() {
     testWidgets('默认视觉尺寸 24dp', (tester) async {
       await tester.pumpWidget(wrap(AppIcon(icon: AppIcons.folder)));
 
-      expect(AppIcon.defaultSize, 24);
       expect(tester.getSize(find.byIcon(AppIcons.folder)).width, 24);
     });
 
@@ -41,26 +40,27 @@ void main() {
       );
     });
 
-    test('AppIcons 15 个语义均已定义且互不重复', () {
-      final map = <String, IconData>{
-        'folder': AppIcons.folder,
-        'settings': AppIcons.settings,
-        'back': AppIcons.back,
-        'share': AppIcons.share,
-        'palette': AppIcons.palette,
-        'overflow': AppIcons.overflow,
-        'plus': AppIcons.plus,
-        'chevronRight': AppIcons.chevronRight,
-        'stepper': AppIcons.stepper,
-        'trash': AppIcons.trash,
-        'check': AppIcons.check,
-        'circlePlusOutline': AppIcons.circlePlusOutline,
-        'checkboxOutline': AppIcons.checkboxOutline,
-        'navNotes': AppIcons.navNotes,
-        'navTodo': AppIcons.navTodo,
-      };
-      expect(map, hasLength(15));
-      expect(map.values.toSet(), hasLength(15), reason: '存在重复映射');
+    test('AppIcons 15 个语义互不重复', () {
+      // 数值本身由设计稿锁，这里只守「没有两个名字指向同一个图标」——
+      // 复制粘贴错行时这条会红，转抄 15 个字面量则永远跟着源码一起绿。
+      const icons = <IconData>[
+        AppIcons.folder,
+        AppIcons.settings,
+        AppIcons.back,
+        AppIcons.share,
+        AppIcons.palette,
+        AppIcons.overflow,
+        AppIcons.plus,
+        AppIcons.chevronRight,
+        AppIcons.stepper,
+        AppIcons.trash,
+        AppIcons.check,
+        AppIcons.circlePlusOutline,
+        AppIcons.checkboxOutline,
+        AppIcons.navNotes,
+        AppIcons.navTodo,
+      ];
+      expect(icons.toSet(), hasLength(icons.length), reason: '存在重复映射');
     });
   });
 

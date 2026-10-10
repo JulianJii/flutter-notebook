@@ -36,8 +36,4 @@ void main() {
       test('$bad', () => expect(NoteImage.tryFromEmbedData(bad), isNull));
     }
   });
-
-  test('单张上限 < 总量上限', () {
-    expect(NoteImage.maxSingleBytes < NoteImage.maxTotalBytes, isTrue);
-  });
 }

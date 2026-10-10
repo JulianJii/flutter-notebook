@@ -9,8 +9,8 @@ import 'package:mynote/features/notes/domain/entities/note_image.dart';
 abstract interface class NoteImageRepository {
   /// 唤系统文件选择器挑图片，返回可直接内嵌进正文的 [NoteImage]。
   ///
-  /// [compress] = true 时，超过 [NoteImage.compressByteThreshold] 的图会被压成
-  /// JPEG（`NoteImage.compressed*` 系列常量给目标值）；false 时原图直返。
+  /// [compress] = true 时每张图都压成 JPEG（`NoteImage.compressed*` 系列常量给
+  /// 目标值），不看原始大小；false 时原图直返。
   ///
   /// 用户取消选择 → `Right([])`（不是 Failure，静默返回）。
   /// 读到 / 压缩失败 → `Left(ImageFailure)`。

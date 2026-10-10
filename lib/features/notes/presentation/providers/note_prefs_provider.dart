@@ -39,7 +39,7 @@ part 'note_prefs_provider.g.dart';
 @riverpod
 double noteTextScale(Ref ref) => ref.watch(textScaleFactorProvider);
 
-/// 插入图片前是否压缩（设置项「压缩插入的图片」）。
+/// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
 /// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
 /// `settings` 的 presentation。`select` 同样不能省。

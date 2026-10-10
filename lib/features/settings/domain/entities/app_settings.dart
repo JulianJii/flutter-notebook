@@ -68,9 +68,8 @@ class AppSettings extends Equatable {
 
   /// 插入图片前是否压缩。
   ///
-  /// true（默认）→ 超过 [NoteImage.compressByteThreshold] 的图片压成 JPEG 再
-  /// 内嵌；false → 原图直嵌，画质无损但正文字节数会大得多。
-  /// 阈值与违反上限都住在 `NoteImage`，本类不带业务常量。
+  /// true（默认）→ 每张图都压成 JPEG 再内嵌；false → 原图直嵌，画质无损但
+  /// 正文字节数会大得多。压缩目标与大小上限都住在 `NoteImage`，本类不带业务常量。
   final bool compressImages;
 
   AppSettings copyWith({

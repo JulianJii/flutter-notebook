@@ -48,14 +48,12 @@ class NoteImageRepositoryImpl implements NoteImageRepository {
     }
   }
 
-  /// [compress] = true 且超过阈值时才压。压完一律是 JPEG（PNG 的透明通道会变黑，
-  /// 这是 JPEG 的固有行为，不是 bug）。
+  /// [compress] = true 时每张图都压，不看原始大小。压完一律是 JPEG（PNG 的透明
+  /// 通道会变黑，这是 JPEG 的固有行为，不是 bug）。
   ///
   /// 压缩失败退回原字节：让用户拿到一张大图，好过让这次插入直接失败。
   Future<NoteImage> _encode(Uint8List bytes, String mime, bool compress) async {
-    if (!compress || bytes.lengthInBytes <= NoteImage.compressByteThreshold) {
-      return NoteImage(bytes: bytes, mime: mime);
-    }
+    if (!compress) return NoteImage(bytes: bytes, mime: mime);
     try {
       final compressed = await FlutterImageCompress.compressWithList(
         bytes,

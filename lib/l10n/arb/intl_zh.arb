@@ -397,13 +397,9 @@
   "@settingsNoteLayout": {
     "description": "Settings stepper row title: note list layout"
   },
-  "settingsCompressImages": "压缩插入的图片",
+  "settingsCompressImages": "图片压缩",
   "@settingsCompressImages": {
     "description": "Settings switch row title: compress images before embedding them into note content"
-  },
-  "settingsCompressImagesDesc": "大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大",
-  "@settingsCompressImagesDesc": {
-    "description": "Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals"
   },
   "settingsTextScaleSmall": "小",
   "@settingsTextScaleSmall": {

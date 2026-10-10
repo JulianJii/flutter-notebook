@@ -14,7 +14,7 @@ title: Features
 
 - **列表** `/notes`：瀑布流卡片、按标题 / 正文搜索（无结果有空态提示）、按文件夹筛选（全部 / 未分类 / 指定文件夹）、排序（编辑时间 / 创建时间 / 标题）、字数统计。
 - **详情** `/notes/:id`、`/notes/new`：标题 + 正文编辑，**自动保存**（失败弹 Snackbar，草稿不丢）、归属文件夹、删除（二次确认）。正文唯一真相源是 **Quill Delta JSON**（`flutter_quill`）。从某个分类页点 + 号进 `/notes/new?folder=<id>`（`AppRoutes.noteNewPath`），该分类随新笔记一起落库。
-- **图片**：正文工具条右端的图片按钮 → 系统文件选择器（`file_picker`，`FileType.image`，支持多选）→ 在当前光标处插入。图片**不落文件系统**，而是 base64 的 data-URI 内嵌进 Quill 的 image embed（`NoteImage.embedData`），随 `notes.content` 一起落库 —— 因此不存在「笔记还在、图片没了」的悬挂引用。设置里「压缩插入的图片」开启时（默认开），大于 2MB 的图会先压成 JPEG（`flutter_image_compress`）；关掉则原图直嵌。
+- **图片**：正文工具条右端的图片按钮 → 系统文件选择器（`file_picker`，`FileType.image`，支持多选）→ 在当前光标处插入。图片**不落文件系统**，而是 base64 的 data-URI 内嵌进 Quill 的 image embed（`NoteImage.embedData`），随 `notes.content` 一起落库 —— 因此不存在「笔记还在、图片没了」的悬挂引用。设置里「图片压缩」开启时（默认开），每张图都会先压成 JPEG（短边 1600px / quality 85，`flutter_image_compress`），不看原始大小；关掉则原图直嵌。
 - **文件夹管理** `/notes/folders`：新建 / 拖拽排序 / **长按文件夹弹菜单删除**，显示每个文件夹的笔记数。删除入口是长按而非行内图标 —— `trailing` 已被拖拽手柄占满（`FolderRow` 有测试钉住布局），而多选态要新增一整套选中 UI。长按 → 底部菜单（⚠️ 视觉无稿，`showModalBottomSheet` 默认形态）→ 二次确认框 → 软删除进回收站。⛔ 仍**不提供重命名入口**：`renameFolderUseCase` 在库里有也有测试，但设计稿没有它的位置，无稿不画。
 - **最近删除** `/notes/trash`：**笔记 / 文件夹 / 待办三类**，各自成段（`AppSpacing.lg` 的段标题，空段整个不渲染），不使用 TabBar —— 回收站量级是「几十条」，翻页比滚动慢，而 TabBar 要新增选中态与切换逻辑，零收益。每行两个动作：恢复 / 永久删除（均二次确认）。顶栏「清空」跨三类依次清空，**不是事务**（三类分属三个 feature，没有共同事务）：任一步失败就停下报错，绝不报「已清空」。
 - **回收站里的永久删除 = 物理删**，不跨设备传播（见「已知限制」）。恢复文件夹时若原名已被占用，返回 `InputFailure` 并**保留让出版** —— 不悄悄改名，用户要恢复的是原文件夹不是一个同名的空壳。
@@ -39,7 +39,7 @@ title: Features
 
 ### 设置（`lib/features/settings/`）
 
-笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、**压缩插入的图片**（见上「图片」）、最近删除入口、隐私政策 / 用户协议、**关于**（`/settings/about`：版本号 + 检测更新 + 仓库主页 + 开源许可）。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
+笔记字号、默认排序、列表布局、深色模式（跟随系统 / 浅色 / 深色）、**图片压缩**（见上「图片」）、最近删除入口、隐私政策 / 用户协议、**关于**（`/settings/about`：版本号 + 检测更新 + 仓库主页 + 开源许可）。偏好持久化在 SharedPreferences，由 `settingsProvider` 承载。
 
 「数据与同步」行是进入 `features/backup/` 的跳转入口（见下节），不把 WebDAV 配置并进 `AppSettings` —— 那是「App 长什么样」的偏好，凭据是另一回事。
 

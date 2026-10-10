@@ -400,13 +400,9 @@
   "@settingsNoteLayout": {
     "description": "Settings stepper row title: note list layout"
   },
-  "settingsCompressImages": "Compress inserted images",
+  "settingsCompressImages": "Compress images",
   "@settingsCompressImages": {
     "description": "Settings switch row title: compress images before embedding them into note content"
-  },
-  "settingsCompressImagesDesc": "Images over 2MB are re-encoded as JPEG. Turn off to keep originals, at the cost of larger notes",
-  "@settingsCompressImagesDesc": {
-    "description": "Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals"
   },
   "settingsTextScaleSmall": "Small",
   "@settingsTextScaleSmall": {

@@ -137,7 +137,6 @@ class SettingsScreen extends ConsumerWidget {
                       AppSwitchRow(
                         key: const Key('switch_compress_images'),
                         title: l10n.settingsCompressImages,
-                        subtitle: l10n.settingsCompressImagesDesc,
                         value: settings.compressImages,
                         dividerBefore: true,
                         onChanged: notifier.setCompressImages,

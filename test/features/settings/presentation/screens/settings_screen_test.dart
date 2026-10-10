@@ -183,7 +183,7 @@ void main() {
 
       expect(find.byType(AppCard), findsNWidgets(3));
       expect(find.byType(AppListTile), findsNWidgets(12));
-      // 「压缩插入的图片」是唯一一个开关行：它只有两种取值，不像明暗有三档。
+      // 「图片压缩」是唯一一个开关行：它只有两种取值，不像明暗有三档。
       expect(find.byType(Switch), findsOneWidget);
       // 7 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 /
       // 用户协议 / 关于）+ 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。

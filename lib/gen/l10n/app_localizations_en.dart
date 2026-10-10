@@ -316,11 +316,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsNoteLayout => 'Note list layout';
 
   @override
-  String get settingsCompressImages => 'Compress inserted images';
-
-  @override
-  String get settingsCompressImagesDesc =>
-      'Images over 2MB are re-encoded as JPEG. Turn off to keep originals, at the cost of larger notes';
+  String get settingsCompressImages => 'Compress images';
 
   @override
   String get settingsTextScaleSmall => 'Small';

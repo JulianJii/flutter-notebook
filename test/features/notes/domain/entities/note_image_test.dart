@@ -37,11 +37,7 @@ void main() {
     }
   });
 
-  test('阈值有意义：压缩 < 单张上限 < 总量上限', () {
-    expect(
-      NoteImage.compressByteThreshold < NoteImage.maxSingleBytes,
-      isTrue,
-    );
+  test('单张上限 < 总量上限', () {
     expect(NoteImage.maxSingleBytes < NoteImage.maxTotalBytes, isTrue);
   });
 }

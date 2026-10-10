@@ -308,10 +308,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsNoteLayout => '笔记列表布局';
 
   @override
-  String get settingsCompressImages => '压缩插入的图片';
-
-  @override
-  String get settingsCompressImagesDesc => '大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大';
+  String get settingsCompressImages => '图片压缩';
 
   @override
   String get settingsTextScaleSmall => '小';

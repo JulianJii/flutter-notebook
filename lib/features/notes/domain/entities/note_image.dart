@@ -45,13 +45,6 @@ class NoteImage {
     }
   }
 
-  /// 超过这个字节数会被压成 JPEG（设置项「压缩插入的图片」为 true 时）。
-  ///
-  /// 按**字节**而不是像素判断：取固有尺寸得先把可能 4000px 的原图解一遍，
-  /// 峰值内存几十 MB；而 `compressWithList` 本来就按目标边长降采样，不需要
-  /// 我们预先知道尺寸。
-  static const int compressByteThreshold = 2 * 1024 * 1024;
-
   /// 单张上限。base64 会再膨胀约 1/3，不设限等于允许用户把上百 MB 塞进
   /// `notes.content` 这一个 `TextColumn` 里。超过 → 整次插入拒绝并提示。
   static const int maxSingleBytes = 10 * 1024 * 1024;
@@ -59,7 +52,10 @@ class NoteImage {
   /// 一次多选的总量上限，理由同 [maxSingleBytes]。
   static const int maxTotalBytes = 20 * 1024 * 1024;
 
-  /// 压缩目标：最长边 1600px、JPEG quality 85。
+  /// 压缩目标：短边 1600px 以内、JPEG quality 85。
+  ///
+  /// 插件的 `minWidth/minHeight` 是「目标框」语义，缩放系数
+  /// `max(1, min(w/1600, h/1600))`：小图原样通过（不会放大），长边可以超过 1600。
   static const int compressedMaxDimension = 1600;
   static const int compressedQuality = 85;
 }

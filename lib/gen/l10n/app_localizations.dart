@@ -653,14 +653,8 @@ abstract class AppLocalizations {
   /// Settings switch row title: compress images before embedding them into note content
   ///
   /// In zh, this message translates to:
-  /// **'压缩插入的图片'**
+  /// **'图片压缩'**
   String get settingsCompressImages;
-
-  /// Settings switch row subtitle: explains the 2MB JPEG threshold and the cost of keeping originals
-  ///
-  /// In zh, this message translates to:
-  /// **'大于 2MB 的图会压成 JPEG；关闭则保留原图，笔记占用更大'**
-  String get settingsCompressImagesDesc;
 
   /// Font size option: small
   ///

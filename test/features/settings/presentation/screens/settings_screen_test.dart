@@ -21,13 +21,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// 设置稿的 3 个分组标题（「云服务」已按产品要求移除，「最近删除」并入「其他」，
-/// 「提醒」随「强提醒」一并移除）。
-const List<String> _groupTitles = <String>['笔记样式', '快捷功能', '其他'];
+/// 设置稿的 2 个分组标题（「云服务」已按产品要求移除，「快捷功能」随其唯一一行
+/// 「速记」移除，「最近删除」并入「其他」，「提醒」随「强提醒」一并移除）。
+const List<String> _groupTitles = <String>['笔记样式', '其他'];
 
 const List<String> _groupKeys = <String>[
   'section_note_style',
-  'section_quick',
   'section_other',
 ];
 
@@ -62,7 +61,7 @@ void main() {
   });
 
   Future<void> pumpP5(WidgetTester tester) async {
-    // 默认测试视口是 800×600，而设置的 3 个分组加起来超过 600dp 高 —— 最后一个分组会
+    // 默认测试视口是 800×600，而设置的 2 个分组加起来超过 600dp 高 —— 最后一个分组会
     // 落在 ListView 的 cacheExtent 之外**根本不被构建**，几何与计数断言会误报。
     // 这里给一个能容下整页的视口（比例 1.0，与 golden 基线同一约定）。
     tester.view.physicalSize = const Size(800, 1000);
@@ -102,7 +101,7 @@ void main() {
   }
 
   group('设置稿结构', () {
-    testWidgets('渲染出 3 个分组，顺序为 笔记样式 → 快捷功能 → 其他', (tester) async {
+    testWidgets('渲染出 2 个分组，顺序为 笔记样式 → 其他', (tester) async {
       await pumpP5(tester);
 
       for (final title in _groupTitles) {
@@ -178,16 +177,16 @@ void main() {
       expect(find.byType(AppDivider), findsNWidgets(9));
     });
 
-    testWidgets('3 张分组卡，12 行', (tester) async {
+    testWidgets('2 张分组卡，11 行', (tester) async {
       await pumpP5(tester);
 
-      expect(find.byType(AppCard), findsNWidgets(3));
-      expect(find.byType(AppListTile), findsNWidgets(12));
+      expect(find.byType(AppCard), findsNWidgets(2));
+      expect(find.byType(AppListTile), findsNWidgets(11));
       // 「图片压缩」是唯一一个开关行：它只有两种取值，不像明暗有三档。
       expect(find.byType(Switch), findsOneWidget);
-      // 7 个 chevron 行（速记 / 主题 / 数据与同步 / 最近删除 / 隐私政策 /
-      // 用户协议 / 关于）+ 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(11));
+      // 6 个 chevron 行（主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议 /
+      // 关于）+ 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
     });
   });
 
@@ -328,21 +327,20 @@ void main() {
   });
 
   group('chevron 行', () {
-    /// 仍不可点的一行（速记二级页无稿）。
-    const String deadKey = 'chevron_quick_capture';
-
-    /// 已接线的 4 行（主题 / 最近删除 / 隐私政策 / 用户协议）。
+    /// 已接线的 6 行。「速记」二级页无稿、整行已移除，故这里没有不可点行。
     const List<String> wiredKeys = <String>[
       'chevron_theme',
+      'chevron_data_management',
       'chevron_recent_deleted',
       'chevron_privacy_policy',
       'chevron_user_agreement',
+      'chevron_about',
     ];
 
-    testWidgets('每行都有右箭头；不可点行无 InkWell，接线行有', (tester) async {
+    testWidgets('每行都有右箭头，且都已接线（可点）', (tester) async {
       await pumpP5(tester);
 
-      for (final key in <String>[deadKey, ...wiredKeys]) {
+      for (final key in wiredKeys) {
         expect(
           find.descendant(
             of: find.byKey(Key(key)),
@@ -350,16 +348,6 @@ void main() {
           ),
           findsOneWidget,
         );
-      }
-      expect(
-        find.descendant(
-          of: find.byKey(const Key(deadKey)),
-          matching: find.byType(InkWell),
-        ),
-        findsNothing,
-        reason: '$deadKey 包了 InkWell → 可点，但速记二级页无稿不该可点',
-      );
-      for (final key in wiredKeys) {
         expect(
           find.descendant(
             of: find.byKey(Key(key)),
@@ -405,15 +393,20 @@ void main() {
       // `.theme` 不出现 —— 「深色模式」行接上后 `settings.themeMode` 合法命中，
       // 断言随之撤销；主题缺席的约束改由上面 `change_theme` 一项守住。
       expect(source, isNot(contains('.notifications')));
-      // 不可点行只剩「速记」；最近删除 / 隐私政策 / 用户协议已接线。
+      // 「速记」及其「快捷功能」分组已移除；所有 chevron 行均已接线。
       expect(source, contains('AppRoutes.theme'));
       expect(source, contains('AppRoutes.noteTrash'));
       expect(source, contains('AppRoutes.privacyPolicy'));
       expect(source, contains('AppRoutes.userAgreement'));
       expect(
         source,
+        isNot(contains('settingsQuickCapture')),
+        reason: '速记行已删除',
+      );
+      expect(
+        source,
         isNot(contains('onTap: null')),
-        reason: 'chevron 行的不可点语义已由「不传 onTap」表达',
+        reason: '所有 chevron 行都已接线',
       );
     });
 

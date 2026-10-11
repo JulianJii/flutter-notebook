@@ -15,19 +15,19 @@ import '../providers/settings_provider.dart';
 
 /// 设置。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **10 行 = 4 选择器 + 6 chevron**，一一对应设置稿的 3 个区块：
+/// **11 行 = 4 选择器 + 7 chevron**，一一对应设置稿的区块：
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
 /// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
 /// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
-/// | 快捷功能 | 速记 | chevron，**不可点**（二级页无稿） |
 /// | 其他 | 语言 | 选择器，三档（跟随系统 / 中文 / English），走 `core` 的语言 provider |
 /// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
 ///
 /// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
 /// 「最近删除」并入「其他」（回收站页 = `RecentlyDeletedScreen`）。
 /// 「提醒」分组随「强提醒」一并移除：待办稿待办没有日期 / 优先级字段，开关没有作用对象。
+/// 「快捷功能」分组随其唯一一行「速记」一并移除：该行的二级页无稿，是一行点不动的死行。
 ///
 /// 主题入口是设置稿之后补的一行（设置稿无主题行，见 `TASK-046` 的 Out of Scope）：
 /// 不给入口，`AppSettings.themeMode` / `colorScheme` 就只是永远读不到第二值的字段。
@@ -144,17 +144,6 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   AppSettingsGroup(
-                    key: const Key('section_quick'),
-                    title: l10n.settingsGroupQuick,
-                    children: <Widget>[
-                      _chevronTile(
-                        context,
-                        key: const Key('chevron_quick_capture'),
-                        title: l10n.settingsQuickCapture,
-                      ),
-                    ],
-                  ),
-                  AppSettingsGroup(
                     key: const Key('section_other'),
                     title: l10n.settingsGroupOther,
                     children: <Widget>[
@@ -219,13 +208,13 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  /// chevron 行。[onTap] 为 null 时保持不可点（只剩「速记」，二级页无稿）。
+  /// chevron 行。全部 chevron 行均已接线，[onTap] 必填。
   Widget _chevronTile(
     BuildContext context, {
     required String title,
+    required VoidCallback onTap,
     Key? key,
     bool dividerBefore = false,
-    VoidCallback? onTap,
   }) {
     return AppListTile(
       key: key,

@@ -240,16 +240,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsGroupNoteStyle => 'Note style';
 
   @override
-  String get settingsGroupQuick => 'Quick actions';
-
-  @override
   String get settingsGroupOther => 'Other';
 
   @override
   String get settingsRecentDeleted => 'Recently deleted';
-
-  @override
-  String get settingsQuickCapture => 'Quick capture';
 
   @override
   String get settingsPrivacyPolicy => 'Privacy policy';

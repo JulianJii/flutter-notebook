@@ -294,10 +294,6 @@
   "@settingsGroupNoteStyle": {
     "description": "Settings section header: note appearance"
   },
-  "settingsGroupQuick": "快捷功能",
-  "@settingsGroupQuick": {
-    "description": "Settings section header: quick actions"
-  },
   "settingsGroupOther": "其他",
   "@settingsGroupOther": {
     "description": "Settings section header: misc"
@@ -305,10 +301,6 @@
   "settingsRecentDeleted": "最近删除",
   "@settingsRecentDeleted": {
     "description": "Settings chevron row leading to the trash screen, and its page title"
-  },
-  "settingsQuickCapture": "速记",
-  "@settingsQuickCapture": {
-    "description": "Settings chevron row"
   },
   "settingsPrivacyPolicy": "隐私政策",
   "@settingsPrivacyPolicy": {

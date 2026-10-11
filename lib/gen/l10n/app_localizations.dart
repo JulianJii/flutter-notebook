@@ -506,12 +506,6 @@ abstract class AppLocalizations {
   /// **'笔记样式'**
   String get settingsGroupNoteStyle;
 
-  /// Settings section header: quick actions
-  ///
-  /// In zh, this message translates to:
-  /// **'快捷功能'**
-  String get settingsGroupQuick;
-
   /// Settings section header: misc
   ///
   /// In zh, this message translates to:
@@ -523,12 +517,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'最近删除'**
   String get settingsRecentDeleted;
-
-  /// Settings chevron row
-  ///
-  /// In zh, this message translates to:
-  /// **'速记'**
-  String get settingsQuickCapture;
 
   /// Settings chevron row
   ///

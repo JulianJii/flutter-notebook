@@ -267,6 +267,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       ).select((s) => s.value?.draftBackground),
     );
     final backgroundImage = noteBackgroundImageOrNull(background);
+    // 置顶 / 收藏同理：单独 select，只有真的翻了图标才重建顶栏。
+    final flags = ref.watch(
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => (s.value?.isPinned, s.value?.isFavorite)),
+    );
 
     // 首屏读库的 Loading / Error 视觉无稿，由 `AsyncValue` 承载，不画骨架屏。
     return PopScope<Object?>(
@@ -296,6 +303,27 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     onBack: _leave,
                     onShare: _share,
                     onPalette: _pickBackground,
+                    onTogglePinned: () => ref
+                        .read(
+                          noteEditorProvider(
+                            widget.noteId,
+                            folderId: widget.folderId,
+                          ).notifier,
+                        )
+                        .setFlags(isPinned: !(flags.$1 ?? false)),
+                    onToggleFavorite: () => ref
+                        .read(
+                          noteEditorProvider(
+                            widget.noteId,
+                            folderId: widget.folderId,
+                          ).notifier,
+                        )
+                        .setFlags(isFavorite: !(flags.$2 ?? false)),
+                    isPinned: flags.$1 ?? false,
+                    isFavorite: flags.$2 ?? false,
+                    // 与 canDelete 同一条约定：未落库的新笔记库里没有行，
+                    // 写置顶只会拿到一句 not found —— 置灰而不是让用户点出失败。
+                    canToggleFlags: createdAt != null,
                     // 未落库的新笔记（`/notes/new`）库里没有对应行，删除只会拿到一句
                     // 「not found」—— 图标置灰而非弹一个必然失败的确认框。
                     canDelete: createdAt != null,
@@ -524,8 +552,13 @@ class _TopBar extends ConsumerWidget {
     required this.onBack,
     required this.onShare,
     required this.onPalette,
+    required this.onTogglePinned,
+    required this.onToggleFavorite,
     required this.onDelete,
     required this.canDelete,
+    required this.isPinned,
+    required this.isFavorite,
+    required this.canToggleFlags,
   });
 
   final VoidCallback onBack;
@@ -534,35 +567,61 @@ class _TopBar extends ConsumerWidget {
 
   final VoidCallback onPalette;
 
+  final VoidCallback onTogglePinned;
+
+  final VoidCallback onToggleFavorite;
+
   final VoidCallback onDelete;
 
   /// false → 删除图标禁用（笔记尚未落库）。
   final bool canDelete;
 
+  /// 当前置顶 / 收藏态。**只影响图标与 tooltip，不影响是否可点** ——
+  /// 新建笔记尚未落库时这两个开关就该禁用，所以可点性另由 [canToggleFlags] 管。
+  final bool isPinned;
+  final bool isFavorite;
+
+  /// 笔记是否已落库。新建笔记的 id 是哨兵，写置顶会打不存在的行。
+  final bool canToggleFlags;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     return AppTopBar(
       leading: AppIconButton(
         icon: AppIcons.back,
-        tooltip: AppLocalizations.of(context).back,
+        tooltip: l10n.back,
         onPressed: onBack,
       ),
       actions: <Widget>[
         AppIconButton(
           icon: AppIcons.share,
-          tooltip: AppLocalizations.of(context).share,
+          tooltip: l10n.share,
           onPressed: onShare,
         ),
         AppIconButton(
           icon: AppIcons.palette,
-          tooltip: AppLocalizations.of(context).palette,
+          tooltip: l10n.palette,
           onPressed: onPalette,
+        ),
+        // ⚠️ 选中态用**实心**图标而不是给图标染色：`AppIconButton` 的 active 色
+        // 与主题里的其它「已开启」开关共用，用户分不清「置顶」与「已选文件夹」。
+        // 实心 / 空心是 M3 里表达 on/off 的通用约定，跨主题都认。
+        AppIconButton(
+          key: const Key('note_toggle_pin'),
+          icon: isPinned ? AppIcons.pushPinFilled : AppIcons.pushPin,
+          tooltip: isPinned ? l10n.noteUnpin : l10n.notePin,
+          onPressed: canToggleFlags ? onTogglePinned : null,
+        ),
+        AppIconButton(
+          key: const Key('note_toggle_favorite'),
+          icon: isFavorite ? AppIcons.starFilled : AppIcons.starOutline,
+          tooltip: isFavorite ? l10n.noteUnfavorite : l10n.noteFavorite,
+          onPressed: canToggleFlags ? onToggleFavorite : null,
         ),
         AppIconButton(
           icon: AppIcons.overflow,
-          tooltip: canDelete
-              ? AppLocalizations.of(context).deleteNote
-              : AppLocalizations.of(context).more,
+          tooltip: canDelete ? l10n.deleteNote : l10n.more,
           onPressed: canDelete ? onDelete : null,
         ),
       ],

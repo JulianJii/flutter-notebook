@@ -7,7 +7,7 @@ import 'package:mynote/features/notes/domain/entities/note_image.dart';
 /// 单实现也保留接口：`presentation` ⛔ 不 import `data`，应用层拿不到实现类，
 /// 这个抽象是把图片数据接进业务层的唯一入口。
 abstract interface class NoteImageRepository {
-  /// 唤系统文件选择器挑图片，返回可直接内嵌进正文的 [NoteImage]。
+  /// 唤系统相册**多选**图片，返回可直接内嵌进正文的 [NoteImage]（按用户选择顺序）。
   ///
   /// [compress] = true 时每张图都压成 JPEG（`NoteImage.compressed*` 系列常量给
   /// 目标值），不看原始大小；false 时原图直返。

@@ -10,6 +10,7 @@ import 'package:mynote/core/utils/app_utils.dart';
 import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 import 'package:mynote/features/notes/domain/usecases/create_folder_params.dart';
 import 'package:mynote/features/notes/domain/usecases/create_folder_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/rename_folder_params.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -32,11 +33,9 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// **可拖项只有真实文件夹**：「新建文件夹」装在 `ReorderableListView` 的 `footer`
 /// 固定行，拖动顺序写进库里的 `sort_index`（覆盖文件夹管理稿「本页无排序入口」）。
 ///
-/// ⛔ **仍不提供重命名入口**：`renameFolderUseCaseProvider` 在库里有、也有测试，
-/// 但设计稿没有它的位置（`UI-IMPLEMENTATION-SPEC.md` §4 P4 段「本页无」），无稿不画。
-/// 要加的话与删除同处长按菜单加一项即可。
-/// 删除入口是**长按**弹菜单：行内 `trailing` 已被拖拽手柄占满，再塞图标会挤掉
-/// 拖拽区（`FolderRow` 有测试钉住布局）。
+/// **操作入口是长按菜单**：行内 `trailing` 已被拖拽手柄占满，再塞图标会挤掉拖拽区
+///（`FolderRow` 有测试钉住布局），而多选态要新增一整套选中 UI。菜单两项：重命名
+///（复用新建的弹窗与内联校验）、删除（二次确认后软删除进回收站）。
 /// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
 class FolderManagerScreen extends ConsumerWidget {
   const FolderManagerScreen({super.key});
@@ -176,14 +175,82 @@ class FolderManagerScreen extends ConsumerWidget {
   /// 关 —— 用户直接改完再提交，不用「关弹窗 → 看报错 → 重新打开」。
   /// `CreateFolderUseCase` 里同一套校验**照旧保留**：它是领域规则，也是库外调用的
   /// 唯一防线（重名的最终判据仍是库里 `name` 的 UNIQUE 索引，弹窗只是先一步拦）。
+  /// 重命名走同一个弹窗（见 [_promptFolderName]）。
   Future<void> _promptCreateFolder(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    // ⛔ 不用 `TextEditingController`：`showDialog` 的 future 在 `pop` 时就完成，
-    // 而退出动画还在跑，立即 `dispose()` 会让仍在重建的 `TextField` 拿到已释放的
-    // controller。一个字符串足够 —— 弹窗只有一个输入框。
-    var entered = '';
+    final name = await _promptFolderName(context, ref);
+    if (name == null) return;
 
-    final name = await showDialog<String>(
+    final result = await ref
+        .read(createFolderUseCaseProvider)
+        .call(CreateFolderParams(name: name));
+    // 成功路径不需要 `ref.invalidate`：drift watch 会把新行推给 `folderProvider`，
+    // UI 自动重建（`ARCHITECTURE-DESIGN.md` §8.4）。
+    result.fold((failure) {
+      if (!context.mounted) return;
+      // 走到这里还撞重名 = 弹窗打开期间名字被占（导入 / 恢复）：把它翻成本地化
+      // 文案，别的失败（写库出错）原样透出。**空名 / 超长**在弹窗里已拦下，
+      // 所以 `InputFailure` 在本页只剩「重名」一种含义。
+      AppUtils.showSnackBar(
+        context,
+        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
+      );
+    }, (_) {});
+  }
+
+  /// 重命名文件夹：与新建共用弹窗，重名校验要**排除自己**。
+  ///
+  /// `excludeId` 是这里唯一区别于新建的参数：不动它的话，一个只改了首尾空格、
+  /// 名义上没变的文件夹会撞上自己的名字而报「已存在同名文件夹」。
+  Future<void> _promptRenameFolder(
+    BuildContext context,
+    WidgetRef ref,
+    NoteFolder folder,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final name = await _promptFolderName(
+      context,
+      ref,
+      initial: folder.name,
+      excludeId: folder.id,
+    );
+    if (name == null || name == folder.name) return;
+
+    final result = await ref
+        .read(renameFolderUseCaseProvider)
+        .call(RenameFolderParams(folderId: folder.id, name: name));
+    result.fold((failure) {
+      if (!context.mounted) return;
+      AppUtils.showSnackBar(
+        context,
+        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
+      );
+    }, (_) {
+      if (context.mounted) {
+        AppUtils.showSnackBar(context, message: l10n.renameFolderDone);
+      }
+    });
+  }
+
+  /// 名称输入弹窗，新建与重命名共用。返回 `null` = 用户取消。
+  ///
+  /// `initial` 预填当前名（重命名），`excludeId` 让重名校验跳过正在改名的那个文件夹。
+  /// ⛔ **弹窗视觉无稿**：用 `showDialog` + Material 默认样式，
+  /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
+  ///
+  /// ⛔ 不用 `TextEditingController`：`showDialog` 的 future 在 `pop` 时就完成，
+  /// 而退出动画还在跑，立即 `dispose()` 会让仍在重建的 `TextField` 拿到已释放的
+  /// controller。一个字符串足够 —— 弹窗只有一个输入框。
+  Future<String?> _promptFolderName(
+    BuildContext context,
+    WidgetRef ref, {
+    String? initial,
+    String? excludeId,
+  }) async {
+    final l10n = AppLocalizations.of(context);
+    var entered = initial ?? '';
+
+    return showDialog<String>(
       context: context,
       builder: (dialogContext) {
         // 校验态（错误文案）只活在这一个弹窗里，`StatefulBuilder` 够用 ——
@@ -202,7 +269,9 @@ class FolderManagerScreen extends ConsumerWidget {
                     CreateFolderUseCase.maxNameLength,
                   ),
                 );
-              } else if (taken.any((item) => item.folder.name == trimmed)) {
+              } else if (taken.any(
+                (item) => item.folder.name == trimmed && item.folder.id != excludeId,
+              )) {
                 setState(() => error = l10n.folderNameExists);
               } else {
                 Navigator.of(dialogContext).pop(trimmed);
@@ -210,9 +279,12 @@ class FolderManagerScreen extends ConsumerWidget {
             }
 
             return AlertDialog(
-              title: Text(l10n.createFolder),
+              title: Text(
+                initial == null ? l10n.createFolder : l10n.renameFolder,
+              ),
               content: TextField(
                 autofocus: true,
+                controller: TextEditingController(text: entered)..selection = TextSelection.collapsed(offset: entered.length),
                 decoration: InputDecoration(
                   hintText: l10n.folderName,
                   errorText: error,
@@ -235,31 +307,12 @@ class FolderManagerScreen extends ConsumerWidget {
         );
       },
     );
-
-    if (name == null) return;
-
-    final result = await ref
-        .read(createFolderUseCaseProvider)
-        .call(CreateFolderParams(name: name));
-    // 成功路径不需要 `ref.invalidate`：drift watch 会把新行推给 `folderProvider`，
-    // UI 自动重建（`ARCHITECTURE-DESIGN.md` §8.4）。
-    result.fold((failure) {
-      if (!context.mounted) return;
-      // 走到这里还撞重名 = 弹窗打开期间名字被占（导入 / 恢复）：把它翻成本地化
-      // 文案，别的失败（写库出错）原样透出。**空名 / 超长**在弹窗里已拦下，
-      // 所以 `InputFailure` 在本页只剩「重名」一种含义。
-      AppUtils.showSnackBar(
-        context,
-        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
-      );
-    }, (_) {});
   }
 
   /// 长按文件夹 → 底部操作菜单。
   ///
   /// ⚠️ **弹窗视觉无稿**：用 `showModalBottomSheet` 的 Material 默认形态，
   /// ⛔ 不建 `core/ui` 组件（同 `_promptCreateFolder` 的理由）。
-  /// 当前只有「删除」一项 —— `renameFolderUseCase` 存在但无稿可依（见类注释）。
   Future<void> _showFolderMenu(
     BuildContext context,
     WidgetRef ref,
@@ -284,6 +337,17 @@ class FolderManagerScreen extends ConsumerWidget {
             const AppDivider(),
             ListTile(
               leading: AppIcon(
+                icon: AppIcons.edit,
+                size: AppSpacing.rowIconSize,
+              ),
+              title: Text(
+                l10n.renameFolderMenu,
+                style: context.textStyles.rowTitle,
+              ),
+              onTap: () => Navigator.of(sheetContext).pop(_FolderAction.rename),
+            ),
+            ListTile(
+              leading: AppIcon(
                 icon: AppIcons.trash,
                 size: AppSpacing.rowIconSize,
                 color: context.colors.feedbackDanger,
@@ -301,8 +365,13 @@ class FolderManagerScreen extends ConsumerWidget {
       ),
     );
 
-    if (action != _FolderAction.delete || !context.mounted) return;
-    await _confirmDeleteFolder(context, ref, folder);
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case _FolderAction.rename:
+        await _promptRenameFolder(context, ref, folder);
+      case _FolderAction.delete:
+        await _confirmDeleteFolder(context, ref, folder);
+    }
   }
 
   /// 删除文件夹：二次确认 → 软删除（进回收站，可恢复）。
@@ -349,7 +418,6 @@ class FolderManagerScreen extends ConsumerWidget {
   }
 }
 
-/// 长按菜单里的动作。只有一项，但**用枚举而不是 `bool`**：返回 `true/false` 的话
-/// 弹「取消」与弹「删除」在语义上都是 false，将来加第二项时这个 bool 就说不清它
-/// 代表什么了。
-enum _FolderAction { delete }
+/// 长按菜单里的动作。用枚举而不是 `bool`：返回 `true/false` 的话
+/// 弹「取消」与弹「删除」在语义上都是 false，返回 `null` 说不清它代表什么。
+enum _FolderAction { rename, delete }

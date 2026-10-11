@@ -22,6 +22,7 @@ import 'package:mynote/features/notes/domain/usecases/restore_note_use_case.dart
 import 'package:mynote/features/notes/domain/usecases/rename_folder_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/reorder_folders_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_flags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/watch_folder_counts_use_case.dart';
@@ -82,6 +83,11 @@ UpdateNoteUseCase updateNoteUseCase(Ref ref) {
 @riverpod
 UpdateNoteBackgroundUseCase updateNoteBackgroundUseCase(Ref ref) {
   return UpdateNoteBackgroundUseCase(ref.watch(noteRepositoryProvider));
+}
+
+@riverpod
+UpdateNoteFlagsUseCase updateNoteFlagsUseCase(Ref ref) {
+  return UpdateNoteFlagsUseCase(ref.watch(noteRepositoryProvider));
 }
 
 @riverpod

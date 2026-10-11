@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:mynote/features/backup/domain/entities/backup_version_entry.dart';
 import 'package:mynote/features/backup/domain/entities/webdav_config.dart';
 
@@ -41,8 +43,10 @@ class WebDavDataSource {
         validateStatus: (status) => status != null && (status < 400 || status == 404),
       ),
     );
+    // 借这次往返顺手对时（只在主快照 GET 上做，历史读不重复校准）。
+    _absorbClockSkew(response);
     if (response.statusCode == 404) return null;
-    return response.data;
+    return _maybeGunzip(response.data);
   }
 
   /// 上传快照。目录不存在时先 MKCOL（建不建得成让随后的 PUT 说话）。
@@ -142,6 +146,9 @@ class WebDavDataSource {
 
   /// `GET` 一段文本。404 → `null`（调用方据此判断「没有」）；其余状态照常抛，
   /// 由 Repository 映射成 Failure。
+  ///
+  /// ⚠️ 不在这里对时：只有主快照的 GET（[fetch]）代表一次真实的同步往返，
+  /// 历史版本读取没有「对端时钟」语义，只是把一份本地文件取回来。
   Future<String?> _getPlain(WebDavConfig config, Uri uri) async {
     final response = await _dio.getUri<String>(
       uri,
@@ -152,20 +159,76 @@ class WebDavDataSource {
       ),
     );
     if (response.statusCode == 404) return null;
-    return response.data;
+    return _maybeGunzip(response.data);
   }
 
   Future<void> _putJson(WebDavConfig config, Uri uri, String json) {
     return _dio.putUri<String>(
       uri,
-      data: json,
+      data: _gzip(json),
       options: Options(
+        responseType: ResponseType.bytes,
         headers: <String, Object?>{
           ..._headers(config),
           Headers.contentTypeHeader: 'application/json',
+          // ⚠️ 声明了就得能兜住解码：见 [_maybeGunzip] —— 我们**不**信任服务器会
+          // 按 Content-Encoding 解压再存盘，而是靠魔数自己判（见该方法注释）。
+          Headers.contentEncodingHeader: 'gzip',
         },
       ),
     );
+  }
+
+  /// gzip 编码。正文是 JSON 且内嵌 base64 图片，压缩比可观（全量同步每次都要
+  /// 传一遍，这是最便宜的一次提速）。
+  ///
+  /// ⛔ **不做增量 / 变更日志表**：那是改 schema + 三条 DAO 全过一遍的工程，
+  /// 而 gzip 零 schema 改动就能把单次传输量降一个量级。真嫌慢再上变更日志。
+  static List<int> _gzip(String json) =>
+      ZLibCodec(level: 6).encode(utf8.encode(json));
+
+  /// 按**魔数**判断是否 gzip，是则解压。
+  ///
+  /// ⚠️ 刻意**不看** `Content-Encoding` 响应头：WebDAV 服务器对它的处理差异很大
+  /// —— 有的按头解压后原样存盘（那我们拿到的是明文）、有的原样存下压缩字节却
+  /// 丢了头（那我们拿到的是 gzip 字节但头说自己是明文）。两种都会在「信头」的
+  /// 实现里炸掉。魔数是**内容自身**的事实，不依赖任何服务器的配合。
+  static String _maybeGunzip(String? body) {
+    if (body == null) return '';
+    // 1f 8b = gzip 魔数。字符串长度 < 2 时不可能是压缩流。
+    if (body.length < 2 ||
+        body.codeUnitAt(0) != 0x1f ||
+        body.codeUnitAt(1) != 0x8b) {
+      return body;
+    }
+    // 到这里说明服务器（或 dio）把 gzip 字节塞进了 String。UTF-8 解码对非法
+    // 序列是替换而非报错，所以 latin1 能无损地把每个码元还原成一个字节。
+    final bytes = latin1.encode(body);
+    return utf8.decode(ZLibCodec().decode(bytes));
+  }
+
+  /// 借响应的 `Date` 头刷新 [AppClock] 的时钟偏差。
+  ///
+  /// 合并键是各设备自己的墙上时钟，偏差会**静默**覆盖数据。局域网同步一直在
+  /// 握手时对时，但 WebDAV 路径上此前**从不**对时 —— 于是「设备 A 用 WebDAV
+  /// 同步」的用户是完全没有时钟校正的。HTTP 响应头是免费的时钟源，用它。
+  ///
+  /// ⚠️ 精度只有「半个往返」：`Date` 头在服务器**发出响应**时生成，我们在**收完**
+  /// 时才读，所以差值里含着下行时延（同步一次几百毫秒）。这远好于「不校」，
+  /// 且**不需要**额外的 NTP 往返 —— 对一个只需消除分钟级漂移的场景是划算的。
+  ///
+  /// ⛔ **超出 [kMaxClockSkew] 一律丢弃**：这个值会静默改写此后**所有**落库
+  /// 时间戳。一个配错的服务器（时区错、时钟停在 1970）不该把整库的时间键
+  /// 拖到垃圾值上，那比不校正糟糕得多。
+  static const Duration kMaxClockSkew = Duration(days: 1);
+
+  void _absorbClockSkew(Response<Object?> response) {
+    final raw = response.headers.value('date');
+    if (raw == null) return;
+    final serverNow = HttpDate.parse(raw);
+    final skew = serverNow.difference(DateTime.now());
+    if (skew.abs() > kMaxClockSkew) return;
+    AppClock.setOffset(skew);
   }
 
   Future<void> _ensureDirectory(WebDavConfig config) async {

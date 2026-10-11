@@ -61,6 +61,15 @@ class LanSyncRepositoryImpl implements LanSyncRepository {
   bool get isHosting => _server.isRunning;
 
   @override
+  List<String> get localEndpoints {
+    final port = _server.port;
+    if (port == null) return const <String>[];
+    return <String>[
+      for (final address in _discovery.selfAddresses) '$address:$port',
+    ];
+  }
+
+  @override
   Future<Either<Failure, LanSyncReport>> syncWithPeer(LanPeer peer) {
     return _guard(() async {
       final local = await _local.read();

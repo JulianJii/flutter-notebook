@@ -28,6 +28,16 @@ abstract class NoteRepository {
     NoteBackground? background,
   );
 
+  /// 改置顶 / 收藏。`null` = 不动这一列。
+  ///
+  /// 实现内部**不刷新 `updatedAt`**，理由同 [updateBackground]：它们是视图状态
+  /// 而非内容，一次「点收藏」不该让笔记的编辑日期跳到今天。
+  Future<Either<Failure, Unit>> updateFlags(
+    String noteId, {
+    bool? isPinned,
+    bool? isFavorite,
+  });
+
   /// 删除（**软删除**）：把笔记移进「最近删除」，不物理删除。
   /// 实现内部写 `deleted_at = now()`，不刷新 `updatedAt`。
   Future<Either<Failure, Unit>> delete(String noteId);

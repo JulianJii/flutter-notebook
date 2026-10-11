@@ -62,6 +62,9 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
 
     // 软删除过滤：列表永远是「未删除」视图，回收站走 [watchDeleted]。
     query.where((t) => t.deletedAt.isNull());
+    // 墓碑过滤：已「永久删除」的行**在物理清扫之前仍在表里**（那正是删除能跨设备
+    // 传播的原因）。它们既不在列表里，也不在回收站里 —— 只在同步链路里存活。
+    query.where((t) => t.purgedAt.isNull());
 
     if (uncategorizedOnly) {
       query.where((t) => t.folderId.isNull());
@@ -78,6 +81,11 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
       );
     }
 
+    // 置顶恒在最前，且**优先于任何排序方式** —— 置顶的语义就是「无视排序规则排最前」。
+    // 放在 `_ordering` 之前，否则按标题排序时它会被字母表重新排散。
+    query.orderBy(<OrderClauseGenerator<$NotesTable>>[
+      (t) => OrderingTerm.desc(t.isPinned),
+    ]);
     query.orderBy(<OrderClauseGenerator<$NotesTable>>[_ordering(order)]);
     if (limit != null || offset > 0) {
       // drift 的 offset 只能经 limit 传入；null limit 时给一个足够大的上限。
@@ -98,11 +106,59 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
   /// 回收站页面的唯一查询入口。
   Stream<List<NoteRow>> watchDeleted() {
     return (select(notes)
-          ..where((t) => t.deletedAt.isNotNull())
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull())
           ..orderBy(<OrderClauseGenerator<$NotesTable>>[
             (t) => OrderingTerm.desc(t.deletedAt),
           ]))
         .watch();
+  }
+
+  /// **永久删除 = 写墓碑，不是物理 DELETE。**
+  ///
+  /// ⚠️ 这是 v7 的语义翻转，之前这里是 `deleteById`。原因：同步合并是**并集**，
+  /// 物理删掉的行在远端「不存在」，对端会认为「本地这条更新的」而把它带回来 ——
+  /// A 机永久删的笔记会在 B 机下次同步时复活。行必须留在快照里，并带着一个
+  /// 比任何编辑都新的 `purged_at`，删除才真正跨设备传播。
+  ///
+  /// 真正的物理删除由 [purgeExpiredTombstones] 在保留期到期后做。
+  /// ⚠️ WHERE 带 `purged_at IS NULL`：重复 purge 返回 0 而不是再打一次，
+  /// datasource 因此会报「找不到」—— 与「行不存在」同一种失败，用户不该被
+  /// 区别对待，而幂等的重入对 UI 没有价值（打上墓碑后行已不在回收站列表里）。
+  Future<int> purgeById(String noteId, DateTime purgedAt) {
+    return (super.update(notes)
+          ..where((t) => t.id.equals(noteId) & t.purgedAt.isNull()))
+        .write(
+          NotesCompanion(
+            purgedAt: Value(purgedAt),
+            // ⛔ **不刷 `updated_at`**：墓碑自己就是比较键（`BackupNote.version`
+            // 取三者较晚者），刷了会让墓碑看起来像一次编辑。
+          ),
+        )
+        .then((affected) => affected);
+  }
+
+  /// 清空回收站：给全部 `deleted_at IS NOT NULL` 的行打墓碑。
+  ///
+  /// ⚠️ 与 [purgeById] 同一条 UPDATE：**不刷 `updated_at`**，墓碑时刻自身就是键。
+  /// 已打过墓碑的行被 `purged_at IS NULL` 排除，重复调用是幂等的。
+  Future<int> purgeAllTrashed(DateTime purgedAt) {
+    return (super.update(notes)
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull()))
+        .write(NotesCompanion(purgedAt: Value(purgedAt)))
+        .then((affected) => affected);
+  }
+
+  /// 保留期清扫：物理删掉墓碑已超过 [before] 的行，返回条数。
+  ///
+  /// 这是 `purged_at` 存在的意义 —— 它让「永久删除」先是可传播的逻辑删除，
+  /// 过了保留期（默认 30 天）才真正占磁盘的消失。保留期必须**长于**最长可能
+  /// 的「设备离线时长」，否则一台离线一个月的设备重新上线时会把自己早已
+  /// 清扫掉的行重新带回来。30 天是刻意的保守取值。
+  Future<int> purgeExpiredTombstones(DateTime before) {
+    return (super.delete(notes)..where(
+          (t) => t.purgedAt.isNotNull() & t.purgedAt.isSmallerThanValue(before),
+        ))
+        .go();
   }
 
   /// 插入。用 Companion 而非行对象：`title` / `content` 有默认值、主键无自增，
@@ -157,21 +213,24 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
         .then((count) => count > 0);
   }
 
-  /// 删除，返回受影响行数。**物理删除**：只用于回收站的「永久删除」。
-  ///
-  /// ⚠️ 名字带 `ById`：同上，`delete<T>(TableInfo<T, D>)` 与 `delete(String)`
-  /// 不能同名。
-  Future<int> deleteById(String noteId) {
-    return (super.delete(notes)..where((t) => t.id.equals(noteId))).go();
-  }
-
-  /// 清空回收站：物理删除全部 `deleted_at IS NOT NULL` 的行。
-  /// 返回受影响行数。
-  Future<int> deleteAllDeleted() {
-    return (super
-            .delete(notes)
-          ..where((t) => t.deletedAt.isNotNull()))
-        .go();
+  /// 只写置顶 / 收藏两列，**不刷 `updated_at`** —— 理由同 [updateBackgroundById]：
+  /// 它们是视图状态而非内容，一次「点收藏」不该让笔记的编辑日期跳到今天，
+  /// 也不该在同步时被当成一次内容编辑而产生无意义写库。
+  Future<bool> updateFlagsById(
+    String noteId, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) {
+    return (super.update(notes)..where((t) => t.id.equals(noteId)))
+        .write(NotesCompanion(
+          isPinned: isPinned == null
+              ? const Value.absent()
+              : Value(isPinned),
+          isFavorite: isFavorite == null
+              ? const Value.absent()
+              : Value(isFavorite),
+        ))
+        .then((count) => count > 0);
   }
 
   /// 穷尽 4 个枚举值，无 `default` —— 新增枚举值时编译失败。

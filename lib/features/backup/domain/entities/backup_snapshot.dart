@@ -1,15 +1,27 @@
 import 'backup_import_result.dart';
 
+/// **v2**：文件夹与待办加 `deletedAt`（跨设备软删除）。
+///
 /// 快照格式版本。写进 JSON 的 `version` 字段。
 ///
 /// ⚠️ 读的时候**据此拒绝**比它高的版本（[BackupSnapshot.parse] 不拒绝，由
 /// Repository 判）：未来的格式我们读不懂，静默降级解析会造出一堆缺字段的
 /// 半残数据 —— 那比「无法导入」更难收拾。
 ///
-/// **v2**：文件夹与待办加 `deletedAt`（跨设备软删除）。**向后兼容** —— v1 文件
-/// 没有这两个字段，解析出来是 `null` = 未删除，与 v1 时代「全部可见」的行为
-/// 一致，所以老快照照样能导入（只有加字段、没有改语义）。
-const int backupSnapshotVersion = 2;
+/// **v4**：加 `subtasks`（子项）。**向后兼容** —— 老快照没有这个键，解析出来
+/// 是空列表，A 机尚未升级时同步不会误删 B 机的子项。
+///
+/// ⚠️ 子项**必须**进快照：不同步的话 A 机勾掉的子项会在 B 机同步后变回没勾，
+/// 那是丢数据，而本 App 的第一原则是永不丢数据。
+///
+/// **v3**：三类实体各加 `purgedAt`（**永久删除的墓碑**）。**向后兼容** ——
+/// v1 / v2 文件没有这个字段，解析出来是 `null` = 从未被永久删除，与升级前
+/// 行为一致。
+///
+/// ⚠️ v3 才是「永久删除能跨设备传播」的版本。在此之前 `purgedAt` 恒为 null，
+/// 合并是纯并集，A 机物理删掉的行在 B 机不存在 → B 判定本地更新 → 原样带回来。
+/// 老快照导入后全部视为「未永久删除」，不会误删任何东西。
+const int backupSnapshotVersion = 4;
 
 /// 快照里的一篇笔记。`content` 是 Quill Delta 的 JSON 字符串，与库里同格式
 /// （`NoteDeltaCodec` 的编解码结果），本层不做任何解释。
@@ -23,6 +35,9 @@ class BackupNote {
     required this.createdAt,
     required this.updatedAt,
     required this.deletedAt,
+    this.purgedAt,
+    this.isPinned = false,
+    this.isFavorite = false,
   });
 
   final String id;
@@ -43,14 +58,21 @@ class BackupNote {
   /// 非 null = 在回收站里。
   final DateTime? deletedAt;
 
+  /// **永久删除墓碑**。非 null = 已被「永久删除」，行只活在同步链路里。
+  final DateTime? purgedAt;
+
+  /// 置顶。参与同步（它是用户数据的一部分，不是本机视图状态）。
+  final bool isPinned;
+
+  /// 收藏。参与同步，理由同 [isPinned]。
+  final bool isFavorite;
+
   /// 合并比较键。
   ///
-  /// ⚠️ 取 `updatedAt` 与 `deletedAt` 的**较晚者**：软删除也是一次变更，只用
-  /// `updatedAt` 比的话，「A 机删除 / B 机改标题」会让一条更晚的编辑把已删除
-  /// 的笔记复活（删除不刷新 `updatedAt`，见 `NoteDao.softDeleteById`）。
-  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
-      ? updatedAt
-      : deletedAt!;
+  /// ⚠️ 取 `updatedAt` / `deletedAt` / `purgedAt` 的**较晚者**：软删除与永久删除
+  /// 都是一次变更，只用 `updatedAt` 比的话，「A 机永久删除 / B 机改标题」会让
+  /// 一条更晚的编辑把已删除的笔记复活（删除不刷新 `updatedAt`）。
+  DateTime get version => _latestOf(updatedAt, deletedAt, purgedAt);
 
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
@@ -61,6 +83,9 @@ class BackupNote {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'deletedAt': deletedAt?.toIso8601String(),
+    'purgedAt': purgedAt?.toIso8601String(),
+    'isPinned': isPinned,
+    'isFavorite': isFavorite,
   };
 
   /// 坏行返回 `null`（由 [_rows] 计入 skipped）。外部输入，逐字段 `is` 校验。
@@ -80,6 +105,9 @@ class BackupNote {
       createdAt: createdAt,
       updatedAt: updatedAt,
       deletedAt: _date(json['deletedAt']),
+      purgedAt: _date(json['purgedAt']),
+      isPinned: json['isPinned'] == true,
+      isFavorite: json['isFavorite'] == true,
     );
   }
 }
@@ -100,6 +128,7 @@ class BackupFolder {
     required this.updatedAt,
     required this.sortIndex,
     this.deletedAt,
+    this.purgedAt,
   });
 
   final String id;
@@ -115,11 +144,12 @@ class BackupFolder {
   /// 非 null = 在回收站里。
   final DateTime? deletedAt;
 
-  /// 合并比较键。语义同 [BackupNote.version]（软删除也是一次变更，且软删除不刷
-  /// `updatedAt`），抽成共用逻辑避免三处各写一遍、各错一遍。
-  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
-      ? updatedAt
-      : deletedAt!;
+  /// **永久删除墓碑**。非 null = 已被「永久删除」，行只活在同步链路里。
+  final DateTime? purgedAt;
+
+  /// 合并比较键。语义同 [BackupNote.version]（软删除与永久删除都是一次变更，
+  /// 且都不刷 `updatedAt`），抽成共用逻辑避免三处各写一遍、各错一遍。
+  DateTime get version => _latestOf(updatedAt, deletedAt, purgedAt);
 
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
@@ -128,6 +158,7 @@ class BackupFolder {
     'updatedAt': updatedAt.toIso8601String(),
     'sortIndex': sortIndex,
     'deletedAt': deletedAt?.toIso8601String(),
+    'purgedAt': purgedAt?.toIso8601String(),
   };
 
   static BackupFolder? fromJson(Map<String, Object?> json) {
@@ -149,6 +180,7 @@ class BackupFolder {
       updatedAt: updatedAt,
       sortIndex: json['sortIndex'] is int ? json['sortIndex']! as int : 0,
       deletedAt: _date(json['deletedAt']),
+      purgedAt: _date(json['purgedAt']),
     );
   }
 }
@@ -167,8 +199,11 @@ class BackupTodo {
     required this.isDone,
     required this.createdAt,
     required this.updatedAt,
+    required this.priority,
+    this.recurrence,
     this.reminderAt,
     this.deletedAt,
+    this.purgedAt,
   });
 
   final String id;
@@ -187,10 +222,17 @@ class BackupTodo {
   /// 非 null = 在回收站里。
   final DateTime? deletedAt;
 
+  /// **永久删除墓碑**。非 null = 已被「永久删除」，行只活在同步链路里。
+  final DateTime? purgedAt;
+
+  /// 优先级（存**稳定 id** 而非数值：数值重排会让老数据全错，见 `TodoPriority`）。
+  final String priority;
+
+  /// 重复规则 id。null = 不重复。
+  final String? recurrence;
+
   /// 合并比较键。语义同 [BackupNote.version]。
-  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
-      ? updatedAt
-      : deletedAt!;
+  DateTime get version => _latestOf(updatedAt, deletedAt, purgedAt);
 
   Map<String, Object?> toJson() => <String, Object?>{
     'id': id,
@@ -200,6 +242,9 @@ class BackupTodo {
     'updatedAt': updatedAt.toIso8601String(),
     'reminderAt': reminderAt?.toIso8601String(),
     'deletedAt': deletedAt?.toIso8601String(),
+    'purgedAt': purgedAt?.toIso8601String(),
+    'priority': priority,
+    'recurrence': recurrence,
   };
 
   static BackupTodo? fromJson(Map<String, Object?> json) {
@@ -222,8 +267,91 @@ class BackupTodo {
       updatedAt: updatedAt,
       reminderAt: _date(json['reminderAt']),
       deletedAt: _date(json['deletedAt']),
+      purgedAt: _date(json['purgedAt']),
+      // ⚠️ 缺字段（v3 及更早的快照）回落成 `normal`，不是 null：优先级不是
+      // 「没有」，没有优先级就是「普通」。
+      priority: _str(json['priority']) ?? 'normal',
+      recurrence: _str(json['recurrence']),
     );
   }
+}
+
+/// 快照里的一条子项。
+///
+/// ⛔ **没有 `deletedAt`**：子项没有回收站（见 `todo_subtasks_table.dart`）。
+/// 「删掉一条子项」是真的物理删 —— 而那**不跨设备传播**：对端同步后会把它原样
+/// 带回来。这是子项层有意接受的代价（父待办的墓碑仍然会传播，所以「删掉整条
+/// 待办带子项」在两台设备上是一致的）。
+class BackupTodoSubtask {
+  const BackupTodoSubtask({
+    required this.id,
+    required this.todoId,
+    required this.title,
+    required this.isDone,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+
+  final String todoId;
+
+  final String title;
+
+  final bool isDone;
+
+  final DateTime createdAt;
+
+  final DateTime updatedAt;
+
+  /// 合并比较键。子项**只加不减**（没有删除墓碑），所以只有 `updatedAt` 一项。
+  DateTime get version => updatedAt;
+
+  Map<String, Object?> toJson() => <String, Object?>{
+    'id': id,
+    'todoId': todoId,
+    'title': title,
+    'isDone': isDone,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  static BackupTodoSubtask? fromJson(Map<String, Object?> json) {
+    final id = _str(json['id']);
+    final todoId = _str(json['todoId']);
+    final title = _str(json['title']);
+    final createdAt = _date(json['createdAt']);
+    final updatedAt = _date(json['updatedAt']);
+    if (id == null ||
+        id.isEmpty ||
+        todoId == null ||
+        todoId.isEmpty ||
+        title == null ||
+        createdAt == null ||
+        updatedAt == null) {
+      return null;
+    }
+    return BackupTodoSubtask(
+      id: id,
+      todoId: todoId,
+      title: title,
+      isDone: json['isDone'] == true,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+}
+
+/// 合并比较键的共用实现：三个时间戳里取最晚者。
+///
+/// ⚠️ 这是三类实体**唯一**的版本语义出处 —— 抄成三份必然会有一份漏掉墓碑，
+/// 而漏掉的后果是「永久删除打不过对端一次更晚的编辑」，删除静默失效。
+/// `base` 非空（`updatedAt` 从不 nullable），故不需要 `max` 包的空列表。
+DateTime _latestOf(DateTime base, DateTime? a, DateTime? b) {
+  var latest = base;
+  if (a != null && a.isAfter(latest)) latest = a;
+  if (b != null && b.isAfter(latest)) latest = b;
+  return latest;
 }
 
 /// 一份完整的数据快照 = `notes` + `note_folders` + `todos` 三张表的全量。
@@ -238,6 +366,7 @@ class BackupSnapshot {
     required this.notes,
     required this.folders,
     required this.todos,
+    this.subtasks = const <BackupTodoSubtask>[],
   });
 
   /// 「远端还没有文件」的空快照。同步首推时用它当基线。
@@ -256,9 +385,17 @@ class BackupSnapshot {
 
   final List<BackupTodo> todos;
 
-  bool get isEmpty => notes.isEmpty && folders.isEmpty && todos.isEmpty;
+  /// 全部子项（**不分组**：归属靠每行的 `todoId`）。
+  final List<BackupTodoSubtask> subtasks;
 
-  int get count => notes.length + folders.length + todos.length;
+  bool get isEmpty =>
+      notes.isEmpty &&
+      folders.isEmpty &&
+      todos.isEmpty &&
+      subtasks.isEmpty;
+
+  int get count =>
+      notes.length + folders.length + todos.length + subtasks.length;
 
   Map<String, Object?> toJson() => <String, Object?>{
     'version': backupSnapshotVersion,
@@ -266,6 +403,7 @@ class BackupSnapshot {
     'notes': notes.map((n) => n.toJson()).toList(growable: false),
     'folders': folders.map((f) => f.toJson()).toList(growable: false),
     'todos': todos.map((t) => t.toJson()).toList(growable: false),
+    'subtasks': subtasks.map((s) => s.toJson()).toList(growable: false),
   };
 
   /// 解析一份 JSON 已 decode 的对象。**不校验版本**（Repository 负责）。
@@ -279,6 +417,8 @@ class BackupSnapshot {
     final notes = _rows(json['notes'], BackupNote.fromJson);
     final folders = _rows(json['folders'], BackupFolder.fromJson);
     final todos = _rows(json['todos'], BackupTodo.fromJson);
+    // ⚠️ 缺这个键（v3 及更早）不是错误，是空列表 —— `_rows` 已经这么处理了。
+    final subtasks = _rows(json['subtasks'], BackupTodoSubtask.fromJson);
 
     return (
       snapshot: BackupSnapshot(
@@ -286,18 +426,19 @@ class BackupSnapshot {
         notes: notes.rows,
         folders: folders.rows,
         todos: todos.rows,
+        subtasks: subtasks.rows,
       ),
-      skipped: notes.skipped + folders.skipped + todos.skipped,
+      skipped:
+          notes.skipped + folders.skipped + todos.skipped + subtasks.skipped,
     );
   }
 
   /// 双向合并：逐条比 [version]，新的赢；一样新保留 [local]（避免无意义写库）。
   ///
-  /// 三类实体用**同一个**比较键 `max(updatedAt, deletedAt)` —— 软删除也是一次变更。
-  /// 这是删除能跨设备传播的全部机制：库里存的是墓碑（`deleted_at`），不是硬删除。
-  ///
-  /// ⚠️ 仍然只增不删（见 [_mergeById]）：物理删除（回收站的「永久删除」）不传播，
-  /// 见 `docs/FEATURES.md`「已知限制」。
+  /// 三类实体用**同一个**比较键 `max(updatedAt, deletedAt, purgedAt)` ——
+  /// 软删除与永久删除都是一次变更。这是删除能跨设备传播的**全部**机制：
+  /// 库里存的是墓碑行，不是硬删除。没有墓碑的合并是纯并集，A 机删掉的行在
+  /// B 机「不存在」，B 会判定本地那条更新并把它原样带回来。
   static ({BackupSnapshot merged, BackupImportResult result}) merge(
     BackupSnapshot local,
     BackupSnapshot incoming,
@@ -320,10 +461,23 @@ class BackupSnapshot {
       (t) => t.id,
       (t) => t.version,
     );
+    // 子项与待办走**同一套**并集规则。它没有墓碑，所以只用 `updatedAt` 比 ——
+    // 勾选会刷它，语义与待办的 `isDone` 切换完全一致。
+    final subtasks = _mergeById(
+      local.subtasks,
+      incoming.subtasks,
+      (s) => s.id,
+      (s) => s.version,
+    );
 
     final result = BackupImportResult(
-      inserted: folders.inserted + notes.inserted + todos.inserted,
-      updated: folders.updated + notes.updated + todos.updated,
+      inserted:
+          folders.inserted +
+          notes.inserted +
+          todos.inserted +
+          subtasks.inserted,
+      updated:
+          folders.updated + notes.updated + todos.updated + subtasks.updated,
       skipped: 0,
     );
 
@@ -333,6 +487,7 @@ class BackupSnapshot {
         notes: notes.rows,
         folders: folders.rows,
         todos: todos.rows,
+        subtasks: subtasks.rows,
       ),
       result: result,
     );
@@ -366,11 +521,15 @@ class BackupSnapshot {
     }
   }
 
-  /// 本地独有（对端没有 / 对端已物理删除）的行原样保留。
+  /// 本地独有（对端没有 / 对端尚未收到墓碑）的行原样保留。
   ///
-  /// ⚠️ 保留不等于「不删」：**软删除的行会带着 `deletedAt` 一起被保留下来**，
-  /// 写库后仍然是回收站态 —— 删除正是这样传播的。这里保留的只是「对方没提过的
-  /// 行」，软删除是对方**提了**、且提了墓碑的那一类。
+  /// ⚠️ 保留不等于「不删」：**软删除与永久删除的行都会带着墓碑一起被保留下来**，
+  /// 写库后仍然是回收站态 / 已永久删除态 —— 删除正是这样传播的。这里保留的只是
+  /// 「对方没提过的行」，删除是对方**提了**、且提了墓碑的那一类。
+  ///
+  /// ⚠️ 对方**物理清扫**掉的墓碑行（超过保留期）不会出现在对方快照里，于是这里
+  /// 会把它当「本地独有」保留下来。这是刻意的：保留期必须长于任何设备的可能离线
+  /// 时长，清扫只在「对所有设备都已过期」时才执行。
   for (final row in local) {
     if (!incomingIds.contains(idOf(row))) rows.add(row);
   }

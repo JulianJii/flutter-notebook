@@ -67,13 +67,39 @@ class NoteCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Text(
-                  note.title,
-                  style: textStyles.cardTitle
-                      .scaled(textScale)
-                      .copyWith(color: colors.textPrimary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        note.title,
+                        style: textStyles.cardTitle
+                            .scaled(textScale)
+                            .copyWith(color: colors.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // 置顶 / 收藏角标。**必须显出来**：置顶把笔记顶到列表最前，
+                    // 不给标记用户会以为排序坏了；收藏更是全靠这个才看得见。
+                    if (note.isPinned)
+                      const Padding(
+                        padding: EdgeInsets.only(left: AppSpacing.sm),
+                        child: AppIcon(
+                          key: Key('note_card_pinned'),
+                          icon: AppIcons.pushPinFilled,
+                          size: 14,
+                        ),
+                      ),
+                    if (note.isFavorite)
+                      const Padding(
+                        padding: EdgeInsets.only(left: AppSpacing.sm),
+                        child: AppIcon(
+                          key: Key('note_card_favorite'),
+                          icon: AppIcons.starFilled,
+                          size: 14,
+                        ),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(

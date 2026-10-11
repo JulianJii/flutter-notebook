@@ -38,6 +38,14 @@ abstract class NoteLocalDataSource {
   /// 命中 0 行 → 抛 [CacheException]。
   Future<void> updateBackground(String noteId, NoteBackground? background);
 
+  /// 只写置顶 / 收藏两列（`null` = 不动这一列），**不刷 `updated_at`**。
+  /// 命中 0 行抛 [CacheException]。
+  Future<void> updateFlags(
+    String noteId, {
+    bool? isPinned,
+    bool? isFavorite,
+  });
+
   /// 删除（软删除：写 `deleted_at`）。命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String noteId);
 
@@ -132,6 +140,22 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   });
 
   @override
+  Future<void> updateFlags(
+    String noteId, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) => _guard(() async {
+    final hit = await _dao.updateFlagsById(
+      noteId,
+      isPinned: isPinned,
+      isFavorite: isFavorite,
+    );
+    if (!hit) {
+      throw CacheException(message: 'Note not found: $noteId');
+    }
+  });
+
+  @override
   Future<void> updateBackground(
     String noteId,
     NoteBackground? background,
@@ -170,9 +194,13 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
     }
   });
 
+  /// **永久删除 = 写墓碑**，不是物理 DELETE。理由见 `NoteDao.purgeById`。
+  ///
+  /// 行仍在表里（带 `purged_at`），但所有用户可见的列表都过滤掉了它 ——
+  /// 用户看到的效果与物理删除完全一致，差别只在磁盘和同步链路。
   @override
   Future<void> purge(String noteId) => _guard(() async {
-    final removed = await _dao.deleteById(noteId);
+    final removed = await _dao.purgeById(noteId, AppClock.appNow());
     if (removed == 0) {
       throw CacheException(message: 'Note not found: $noteId');
     }
@@ -180,7 +208,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
 
   @override
   Future<void> purgeAll() => _guard(() async {
-    await _dao.deleteAllDeleted();
+    await _dao.purgeAllTrashed(AppClock.appNow());
   });
 }
 
@@ -228,6 +256,9 @@ Note _toEntity(NoteRow row) {
     folderId: row.folderId,
     background: NoteBackground.fromId(row.background),
     deletedAt: row.deletedAt,
+    purgedAt: row.purgedAt,
+    isPinned: row.isPinned,
+    isFavorite: row.isFavorite,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   );

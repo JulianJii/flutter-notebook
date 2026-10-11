@@ -26,6 +26,11 @@ final NoteRow _row = NoteRow(
   folderId: 'f1',
   createdAt: _t1,
   updatedAt: _t2,
+  background: null,
+  deletedAt: null,
+  purgedAt: null,
+  isPinned: false,
+  isFavorite: false,
 );
 
 /// 断言 DAO 收到的**全部 6 个参数**与期望逐字一致。
@@ -412,7 +417,7 @@ void main() {
       expect(await source.watchDeleted().first, isEmpty);
     });
 
-    test('purge 物理删除已软删的笔记；purgeAll 清空回收站', () async {
+test('purge 打墓碑（不是物理删）；purgeAll 清空回收站', () async {
       for (final id in ['n1', 'n2']) {
         await source.insert(
           Note(id: id, title: id, createdAt: _t1, updatedAt: _t1),
@@ -424,8 +429,12 @@ void main() {
 
       await source.purgeAll();
       expect(await source.watchDeleted().first, isEmpty);
-      // 物理删除后 getById 抛 not found。
-      await expectLater(source.getById('n1'), throwsA(isA<CacheException>()));
+      // ⚠️ **不是** not found：墓碑行仍在表里（它得留在快照里，删除才能跨设备传播）。
+      // 永久删除后的 getById 报 not found 的是「已不在任何可见列表」，不是「查不到」。
+      final tombstone = await source.getById('n1');
+      expect(tombstone.purgedAt, isNotNull);
+      // 再 purge 一次 → 命中 0 → 报「找不到」（与行不存在同一种失败）
+      await expectLater(source.purge('n1'), throwsA(isA<CacheException>()));
     });
   });
 }

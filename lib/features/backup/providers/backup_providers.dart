@@ -6,6 +6,7 @@ import 'package:mynote/features/backup/data/datasources/webdav_data_source.dart'
 import 'package:mynote/features/backup/data/repositories/backup_repository_impl.dart';
 import 'package:mynote/features/backup/domain/repositories/backup_repository.dart';
 import 'package:mynote/features/backup/domain/usecases/export_backup_use_case.dart';
+import 'package:mynote/features/backup/domain/usecases/export_markdown_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/get_webdav_config_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/import_backup_use_case.dart';
 import 'package:mynote/features/backup/data/datasources/lan_discovery.dart';
@@ -17,6 +18,7 @@ import 'package:mynote/features/backup/domain/usecases/list_backup_history_use_c
 import 'package:mynote/features/backup/domain/usecases/restore_backup_version_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/save_webdav_config_use_case.dart';
 import 'package:mynote/features/backup/domain/usecases/sync_with_webdav_use_case.dart';
+import 'package:mynote/features/backup/data/datasources/tombstone_sweeper.dart';
 import 'package:mynote/features/backup/domain/usecases/test_webdav_use_case.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -46,6 +48,12 @@ BackupLocalDataSource backupLocalDataSource(Ref ref) {
   return BackupLocalDataSource(ref.watch(appDatabaseProvider));
 }
 
+/// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+@riverpod
+TombstoneSweeper tombstoneSweeper(Ref ref) {
+  return TombstoneSweeper(ref.watch(appDatabaseProvider));
+}
+
 @Riverpod(keepAlive: true)
 WebDavDataSource webDavDataSource(Ref ref) {
   return WebDavDataSource(ref.watch(webDavDioProvider));
@@ -64,6 +72,11 @@ BackupRepository backupRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 ExportBackupUseCase exportBackupUseCase(Ref ref) {
   return ExportBackupUseCase(ref.watch(backupRepositoryProvider));
+}
+
+@Riverpod(keepAlive: true)
+ExportMarkdownUseCase exportMarkdownUseCase(Ref ref) {
+  return ExportMarkdownUseCase(ref.watch(backupRepositoryProvider));
 }
 
 @Riverpod(keepAlive: true)

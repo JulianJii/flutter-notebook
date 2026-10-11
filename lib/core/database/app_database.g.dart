@@ -73,6 +73,17 @@ class $NoteFoldersTable extends NoteFolders
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _purgedAtMeta = const VerificationMeta(
+    'purgedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> purgedAt = GeneratedColumn<DateTime>(
+    'purged_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -81,6 +92,7 @@ class $NoteFoldersTable extends NoteFolders
     updatedAt,
     sortIndex,
     deletedAt,
+    purgedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -135,6 +147,12 @@ class $NoteFoldersTable extends NoteFolders
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('purged_at')) {
+      context.handle(
+        _purgedAtMeta,
+        purgedAt.isAcceptableOrUnknown(data['purged_at']!, _purgedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -167,6 +185,10 @@ class $NoteFoldersTable extends NoteFolders
       deletedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
+      ),
+      purgedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}purged_at'],
       ),
     );
   }
@@ -205,6 +227,10 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
   /// `FolderLocalDataSourceImpl.trash` 显式置 NULL（与 FK 规则冗余但原子，
   /// 见该方法注释）。
   final DateTime? deletedAt;
+
+  /// **永久删除的墓碑时刻**。语义同 `notes.purged_at`：写这一列而不是物理 DELETE，
+  /// 让「永久删除」能跨设备传播。物理删除由保留期清扫在墓碑过期后做。
+  final DateTime? purgedAt;
   const NoteFolderRow({
     required this.id,
     required this.name,
@@ -212,6 +238,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     required this.updatedAt,
     required this.sortIndex,
     this.deletedAt,
+    this.purgedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -223,6 +250,9 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     map['sort_index'] = Variable<int>(sortIndex);
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || purgedAt != null) {
+      map['purged_at'] = Variable<DateTime>(purgedAt);
     }
     return map;
   }
@@ -237,6 +267,9 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      purgedAt: purgedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(purgedAt),
     );
   }
 
@@ -252,6 +285,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       sortIndex: serializer.fromJson<int>(json['sortIndex']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      purgedAt: serializer.fromJson<DateTime?>(json['purgedAt']),
     );
   }
   @override
@@ -264,6 +298,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'sortIndex': serializer.toJson<int>(sortIndex),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'purgedAt': serializer.toJson<DateTime?>(purgedAt),
     };
   }
 
@@ -274,6 +309,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     DateTime? updatedAt,
     int? sortIndex,
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> purgedAt = const Value.absent(),
   }) => NoteFolderRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -281,6 +317,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
     updatedAt: updatedAt ?? this.updatedAt,
     sortIndex: sortIndex ?? this.sortIndex,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    purgedAt: purgedAt.present ? purgedAt.value : this.purgedAt,
   );
   NoteFolderRow copyWithCompanion(NoteFoldersCompanion data) {
     return NoteFolderRow(
@@ -290,6 +327,7 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       sortIndex: data.sortIndex.present ? data.sortIndex.value : this.sortIndex,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      purgedAt: data.purgedAt.present ? data.purgedAt.value : this.purgedAt,
     );
   }
 
@@ -301,14 +339,22 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('sortIndex: $sortIndex, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purgedAt: $purgedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, createdAt, updatedAt, sortIndex, deletedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    sortIndex,
+    deletedAt,
+    purgedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -318,7 +364,8 @@ class NoteFolderRow extends DataClass implements Insertable<NoteFolderRow> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.sortIndex == this.sortIndex &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.purgedAt == this.purgedAt);
 }
 
 class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
@@ -328,6 +375,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
   final Value<DateTime> updatedAt;
   final Value<int> sortIndex;
   final Value<DateTime?> deletedAt;
+  final Value<DateTime?> purgedAt;
   final Value<int> rowid;
   const NoteFoldersCompanion({
     this.id = const Value.absent(),
@@ -336,6 +384,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     this.updatedAt = const Value.absent(),
     this.sortIndex = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.purgedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   NoteFoldersCompanion.insert({
@@ -345,6 +394,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     required DateTime updatedAt,
     this.sortIndex = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.purgedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -357,6 +407,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Expression<DateTime>? updatedAt,
     Expression<int>? sortIndex,
     Expression<DateTime>? deletedAt,
+    Expression<DateTime>? purgedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -366,6 +417,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (sortIndex != null) 'sort_index': sortIndex,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (purgedAt != null) 'purged_at': purgedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -377,6 +429,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     Value<DateTime>? updatedAt,
     Value<int>? sortIndex,
     Value<DateTime?>? deletedAt,
+    Value<DateTime?>? purgedAt,
     Value<int>? rowid,
   }) {
     return NoteFoldersCompanion(
@@ -386,6 +439,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
       updatedAt: updatedAt ?? this.updatedAt,
       sortIndex: sortIndex ?? this.sortIndex,
       deletedAt: deletedAt ?? this.deletedAt,
+      purgedAt: purgedAt ?? this.purgedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -411,6 +465,9 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (purgedAt.present) {
+      map['purged_at'] = Variable<DateTime>(purgedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -426,6 +483,7 @@ class NoteFoldersCompanion extends UpdateCompanion<NoteFolderRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('sortIndex: $sortIndex, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('purgedAt: $purgedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -526,6 +584,47 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isPinnedMeta = const VerificationMeta(
+    'isPinned',
+  );
+  @override
+  late final GeneratedColumn<bool> isPinned = GeneratedColumn<bool>(
+    'is_pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
+    'isFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _purgedAtMeta = const VerificationMeta(
+    'purgedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> purgedAt = GeneratedColumn<DateTime>(
+    'purged_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -536,6 +635,9 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     updatedAt,
     deletedAt,
     background,
+    isPinned,
+    isFavorite,
+    purgedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -600,6 +702,24 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         background.isAcceptableOrUnknown(data['background']!, _backgroundMeta),
       );
     }
+    if (data.containsKey('is_pinned')) {
+      context.handle(
+        _isPinnedMeta,
+        isPinned.isAcceptableOrUnknown(data['is_pinned']!, _isPinnedMeta),
+      );
+    }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
+    if (data.containsKey('purged_at')) {
+      context.handle(
+        _purgedAtMeta,
+        purgedAt.isAcceptableOrUnknown(data['purged_at']!, _purgedAtMeta),
+      );
+    }
     return context;
   }
 
@@ -641,6 +761,18 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         DriftSqlType.string,
         data['${effectivePrefix}background'],
       ),
+      isPinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pinned'],
+      )!,
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      purgedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}purged_at'],
+      ),
     );
   }
 
@@ -671,6 +803,24 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
   /// 存 id 而非下标：资源列表顺序变化不会让老数据错位，未知值降级为「无背景」。
   /// 只由 `NoteDao.updateBackgroundById` 写，整行 `update` 不碰这一列。
   final String? background;
+
+  /// 置顶。列表排序时排在未置顶之前（`NoteDao.watch`），置顶笔记不改变创建时间。
+  final bool isPinned;
+
+  /// 收藏。与置顶是**两个正交维度**：置顶管「最近要看的在前面」，收藏管「重要的
+  /// 找得到」，一条笔记可以只收藏不置顶。
+  final bool isFavorite;
+
+  /// **永久删除的墓碑时刻**。null = 没被永久删除过。
+  ///
+  /// ⚠️ 「永久删除」写的是这一列而**不是**物理 DELETE：合并是并集，物理删掉的行
+  /// 在远端「不存在」，对端因此判定「本地这条更新的」而把它原样带回来 ——
+  /// A 机永久删的笔记会在 B 机下次同步时复活。要让删除真正跨设备传播，
+  /// 被删的行必须**留在快照里**并带着一个比任何编辑都新的时刻。
+  ///
+  /// 真正的物理删除由保留期清扫（`BackupLocalDataSource.purgeExpired`）在
+  /// [purgedAt] 超过保留期后做，那时它对所有设备都已过期。
+  final DateTime? purgedAt;
   const NoteRow({
     required this.id,
     required this.title,
@@ -680,6 +830,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     required this.updatedAt,
     this.deletedAt,
     this.background,
+    required this.isPinned,
+    required this.isFavorite,
+    this.purgedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -697,6 +850,11 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     }
     if (!nullToAbsent || background != null) {
       map['background'] = Variable<String>(background);
+    }
+    map['is_pinned'] = Variable<bool>(isPinned);
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    if (!nullToAbsent || purgedAt != null) {
+      map['purged_at'] = Variable<DateTime>(purgedAt);
     }
     return map;
   }
@@ -717,6 +875,11 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       background: background == null && nullToAbsent
           ? const Value.absent()
           : Value(background),
+      isPinned: Value(isPinned),
+      isFavorite: Value(isFavorite),
+      purgedAt: purgedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(purgedAt),
     );
   }
 
@@ -734,6 +897,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       background: serializer.fromJson<String?>(json['background']),
+      isPinned: serializer.fromJson<bool>(json['isPinned']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      purgedAt: serializer.fromJson<DateTime?>(json['purgedAt']),
     );
   }
   @override
@@ -748,6 +914,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'background': serializer.toJson<String?>(background),
+      'isPinned': serializer.toJson<bool>(isPinned),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'purgedAt': serializer.toJson<DateTime?>(purgedAt),
     };
   }
 
@@ -760,6 +929,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<String?> background = const Value.absent(),
+    bool? isPinned,
+    bool? isFavorite,
+    Value<DateTime?> purgedAt = const Value.absent(),
   }) => NoteRow(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -769,6 +941,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     background: background.present ? background.value : this.background,
+    isPinned: isPinned ?? this.isPinned,
+    isFavorite: isFavorite ?? this.isFavorite,
+    purgedAt: purgedAt.present ? purgedAt.value : this.purgedAt,
   );
   NoteRow copyWithCompanion(NotesCompanion data) {
     return NoteRow(
@@ -782,6 +957,11 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       background: data.background.present
           ? data.background.value
           : this.background,
+      isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      purgedAt: data.purgedAt.present ? data.purgedAt.value : this.purgedAt,
     );
   }
 
@@ -795,7 +975,10 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('background: $background')
+          ..write('background: $background, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('purgedAt: $purgedAt')
           ..write(')'))
         .toString();
   }
@@ -810,6 +993,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     updatedAt,
     deletedAt,
     background,
+    isPinned,
+    isFavorite,
+    purgedAt,
   );
   @override
   bool operator ==(Object other) =>
@@ -822,7 +1008,10 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
-          other.background == this.background);
+          other.background == this.background &&
+          other.isPinned == this.isPinned &&
+          other.isFavorite == this.isFavorite &&
+          other.purgedAt == this.purgedAt);
 }
 
 class NotesCompanion extends UpdateCompanion<NoteRow> {
@@ -834,6 +1023,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String?> background;
+  final Value<bool> isPinned;
+  final Value<bool> isFavorite;
+  final Value<DateTime?> purgedAt;
   final Value<int> rowid;
   const NotesCompanion({
     this.id = const Value.absent(),
@@ -844,6 +1036,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.background = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.purgedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   NotesCompanion.insert({
@@ -855,6 +1050,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
     this.background = const Value.absent(),
+    this.isPinned = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.purgedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        createdAt = Value(createdAt),
@@ -868,6 +1066,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<String>? background,
+    Expression<bool>? isPinned,
+    Expression<bool>? isFavorite,
+    Expression<DateTime>? purgedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -879,6 +1080,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (background != null) 'background': background,
+      if (isPinned != null) 'is_pinned': isPinned,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (purgedAt != null) 'purged_at': purgedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -892,6 +1096,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
     Value<String?>? background,
+    Value<bool>? isPinned,
+    Value<bool>? isFavorite,
+    Value<DateTime?>? purgedAt,
     Value<int>? rowid,
   }) {
     return NotesCompanion(
@@ -903,6 +1110,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       background: background ?? this.background,
+      isPinned: isPinned ?? this.isPinned,
+      isFavorite: isFavorite ?? this.isFavorite,
+      purgedAt: purgedAt ?? this.purgedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -934,6 +1144,15 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     if (background.present) {
       map['background'] = Variable<String>(background.value);
     }
+    if (isPinned.present) {
+      map['is_pinned'] = Variable<bool>(isPinned.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (purgedAt.present) {
+      map['purged_at'] = Variable<DateTime>(purgedAt.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -951,6 +1170,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('background: $background, ')
+          ..write('isPinned: $isPinned, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('purgedAt: $purgedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1037,6 +1259,40 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _purgedAtMeta = const VerificationMeta(
+    'purgedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> purgedAt = GeneratedColumn<DateTime>(
+    'purged_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _priorityMeta = const VerificationMeta(
+    'priority',
+  );
+  @override
+  late final GeneratedColumn<int> priority = GeneratedColumn<int>(
+    'priority',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _recurrenceMeta = const VerificationMeta(
+    'recurrence',
+  );
+  @override
+  late final GeneratedColumn<String> recurrence = GeneratedColumn<String>(
+    'recurrence',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1046,6 +1302,9 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
     updatedAt,
     reminderAt,
     deletedAt,
+    purgedAt,
+    priority,
+    recurrence,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1106,6 +1365,24 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('purged_at')) {
+      context.handle(
+        _purgedAtMeta,
+        purgedAt.isAcceptableOrUnknown(data['purged_at']!, _purgedAtMeta),
+      );
+    }
+    if (data.containsKey('priority')) {
+      context.handle(
+        _priorityMeta,
+        priority.isAcceptableOrUnknown(data['priority']!, _priorityMeta),
+      );
+    }
+    if (data.containsKey('recurrence')) {
+      context.handle(
+        _recurrenceMeta,
+        recurrence.isAcceptableOrUnknown(data['recurrence']!, _recurrenceMeta),
+      );
+    }
     return context;
   }
 
@@ -1143,6 +1420,18 @@ class $TodosTable extends Todos with TableInfo<$TodosTable, TodoRow> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      purgedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}purged_at'],
+      ),
+      priority: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}priority'],
+      )!,
+      recurrence: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recurrence'],
+      ),
     );
   }
 
@@ -1172,6 +1461,25 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
   /// 恢复后提醒仍在（撤掉已排的通知是平台侧的事，见 `TodoListScreen._cancelReminder`）。
   /// 物理 DELETE 只由回收站的「永久删除」发起。
   final DateTime? deletedAt;
+
+  /// **永久删除的墓碑时刻**。语义同 `notes.purged_at`：回收站的「永久删除」写这一列
+  /// 而不物理 DELETE，否则 A 机删掉的待办会在 B 机下次同步时原样回来。
+  /// 物理删除由保留期清扫在墓碑过期后做。
+  final DateTime? purgedAt;
+
+  /// 优先级。**数值越大越靠前**（`TodoPriority` 是有序枚举，0 = 普通）。
+  ///
+  /// 存 int 而不是文本：排序要的是比较而不是显示，而排序在 SQL 里做
+  /// （`TodoDao.watchAll`），文本枚举每次比较都要 `CASE WHEN`，而 drift 的
+  /// `BoolColumn` 只有两档表达不了三档。
+  final int priority;
+
+  /// 重复规则的稳定 id（`TodoRecurrence.id`）。null = 不重复（绝大多数待办）。
+  ///
+  /// ⛔ 存 id 字符串而非 `FREQ=` 那种 RRULE 片段：只支持三种，写解析器、
+  /// 校验语法、还要处理「不支持的 RRULE」这种分支，全是为了一个我们自己
+  /// 不会生成的输入。真要支持任意 RRULE 时换掉这一列（迁移只影响本列）。
+  final String? recurrence;
   const TodoRow({
     required this.id,
     required this.title,
@@ -1180,6 +1488,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     required this.updatedAt,
     this.reminderAt,
     this.deletedAt,
+    this.purgedAt,
+    required this.priority,
+    this.recurrence,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1194,6 +1505,13 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || purgedAt != null) {
+      map['purged_at'] = Variable<DateTime>(purgedAt);
+    }
+    map['priority'] = Variable<int>(priority);
+    if (!nullToAbsent || recurrence != null) {
+      map['recurrence'] = Variable<String>(recurrence);
     }
     return map;
   }
@@ -1211,6 +1529,13 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       deletedAt: deletedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(deletedAt),
+      purgedAt: purgedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(purgedAt),
+      priority: Value(priority),
+      recurrence: recurrence == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recurrence),
     );
   }
 
@@ -1227,6 +1552,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       reminderAt: serializer.fromJson<DateTime?>(json['reminderAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      purgedAt: serializer.fromJson<DateTime?>(json['purgedAt']),
+      priority: serializer.fromJson<int>(json['priority']),
+      recurrence: serializer.fromJson<String?>(json['recurrence']),
     );
   }
   @override
@@ -1240,6 +1568,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'reminderAt': serializer.toJson<DateTime?>(reminderAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'purgedAt': serializer.toJson<DateTime?>(purgedAt),
+      'priority': serializer.toJson<int>(priority),
+      'recurrence': serializer.toJson<String?>(recurrence),
     };
   }
 
@@ -1251,6 +1582,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     DateTime? updatedAt,
     Value<DateTime?> reminderAt = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
+    Value<DateTime?> purgedAt = const Value.absent(),
+    int? priority,
+    Value<String?> recurrence = const Value.absent(),
   }) => TodoRow(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -1259,6 +1593,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     updatedAt: updatedAt ?? this.updatedAt,
     reminderAt: reminderAt.present ? reminderAt.value : this.reminderAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    purgedAt: purgedAt.present ? purgedAt.value : this.purgedAt,
+    priority: priority ?? this.priority,
+    recurrence: recurrence.present ? recurrence.value : this.recurrence,
   );
   TodoRow copyWithCompanion(TodosCompanion data) {
     return TodoRow(
@@ -1271,6 +1608,11 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           ? data.reminderAt.value
           : this.reminderAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      purgedAt: data.purgedAt.present ? data.purgedAt.value : this.purgedAt,
+      priority: data.priority.present ? data.priority.value : this.priority,
+      recurrence: data.recurrence.present
+          ? data.recurrence.value
+          : this.recurrence,
     );
   }
 
@@ -1283,7 +1625,10 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('reminderAt: $reminderAt, ')
-          ..write('deletedAt: $deletedAt')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('purgedAt: $purgedAt, ')
+          ..write('priority: $priority, ')
+          ..write('recurrence: $recurrence')
           ..write(')'))
         .toString();
   }
@@ -1297,6 +1642,9 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
     updatedAt,
     reminderAt,
     deletedAt,
+    purgedAt,
+    priority,
+    recurrence,
   );
   @override
   bool operator ==(Object other) =>
@@ -1308,7 +1656,10 @@ class TodoRow extends DataClass implements Insertable<TodoRow> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.reminderAt == this.reminderAt &&
-          other.deletedAt == this.deletedAt);
+          other.deletedAt == this.deletedAt &&
+          other.purgedAt == this.purgedAt &&
+          other.priority == this.priority &&
+          other.recurrence == this.recurrence);
 }
 
 class TodosCompanion extends UpdateCompanion<TodoRow> {
@@ -1319,6 +1670,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
   final Value<DateTime> updatedAt;
   final Value<DateTime?> reminderAt;
   final Value<DateTime?> deletedAt;
+  final Value<DateTime?> purgedAt;
+  final Value<int> priority;
+  final Value<String?> recurrence;
   final Value<int> rowid;
   const TodosCompanion({
     this.id = const Value.absent(),
@@ -1328,6 +1682,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     this.updatedAt = const Value.absent(),
     this.reminderAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.purgedAt = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.recurrence = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TodosCompanion.insert({
@@ -1338,6 +1695,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     required DateTime updatedAt,
     this.reminderAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
+    this.purgedAt = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.recurrence = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        title = Value(title),
@@ -1351,6 +1711,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? reminderAt,
     Expression<DateTime>? deletedAt,
+    Expression<DateTime>? purgedAt,
+    Expression<int>? priority,
+    Expression<String>? recurrence,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1361,6 +1724,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (reminderAt != null) 'reminder_at': reminderAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (purgedAt != null) 'purged_at': purgedAt,
+      if (priority != null) 'priority': priority,
+      if (recurrence != null) 'recurrence': recurrence,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1373,6 +1739,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     Value<DateTime>? updatedAt,
     Value<DateTime?>? reminderAt,
     Value<DateTime?>? deletedAt,
+    Value<DateTime?>? purgedAt,
+    Value<int>? priority,
+    Value<String?>? recurrence,
     Value<int>? rowid,
   }) {
     return TodosCompanion(
@@ -1383,6 +1752,9 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
       updatedAt: updatedAt ?? this.updatedAt,
       reminderAt: reminderAt ?? this.reminderAt,
       deletedAt: deletedAt ?? this.deletedAt,
+      purgedAt: purgedAt ?? this.purgedAt,
+      priority: priority ?? this.priority,
+      recurrence: recurrence ?? this.recurrence,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1411,6 +1783,15 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
+    if (purgedAt.present) {
+      map['purged_at'] = Variable<DateTime>(purgedAt.value);
+    }
+    if (priority.present) {
+      map['priority'] = Variable<int>(priority.value);
+    }
+    if (recurrence.present) {
+      map['recurrence'] = Variable<String>(recurrence.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1427,6 +1808,423 @@ class TodosCompanion extends UpdateCompanion<TodoRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('reminderAt: $reminderAt, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('purgedAt: $purgedAt, ')
+          ..write('priority: $priority, ')
+          ..write('recurrence: $recurrence, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $TodoSubtasksTable extends TodoSubtasks
+    with TableInfo<$TodoSubtasksTable, TodoSubtaskRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TodoSubtasksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _todoIdMeta = const VerificationMeta('todoId');
+  @override
+  late final GeneratedColumn<String> todoId = GeneratedColumn<String>(
+    'todo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES todos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isDoneMeta = const VerificationMeta('isDone');
+  @override
+  late final GeneratedColumn<bool> isDone = GeneratedColumn<bool>(
+    'is_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    todoId,
+    title,
+    isDone,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'todo_subtasks';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TodoSubtaskRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('todo_id')) {
+      context.handle(
+        _todoIdMeta,
+        todoId.isAcceptableOrUnknown(data['todo_id']!, _todoIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_todoIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('is_done')) {
+      context.handle(
+        _isDoneMeta,
+        isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TodoSubtaskRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TodoSubtaskRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      todoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}todo_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      isDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_done'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TodoSubtasksTable createAlias(String alias) {
+    return $TodoSubtasksTable(attachedDatabase, alias);
+  }
+}
+
+class TodoSubtaskRow extends DataClass implements Insertable<TodoSubtaskRow> {
+  final String id;
+
+  /// 所属待办。`ON DELETE CASCADE` 只在父待办**物理删除**时触发（软删除不触发，
+  /// 符合「子项跟着父待办隐藏、恢复时一起回来」的语义）。
+  final String todoId;
+  final String title;
+  final bool isDone;
+  final DateTime createdAt;
+
+  /// **合并比较键**用的时间戳。勾选是一次变更，必须刷 —— 不刷的话 A 机勾完
+  /// 同步过去，B 机那条 `updatedAt` 更老，会被判成本地胜出并把勾选抹掉。
+  final DateTime updatedAt;
+  const TodoSubtaskRow({
+    required this.id,
+    required this.todoId,
+    required this.title,
+    required this.isDone,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['todo_id'] = Variable<String>(todoId);
+    map['title'] = Variable<String>(title);
+    map['is_done'] = Variable<bool>(isDone);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  TodoSubtasksCompanion toCompanion(bool nullToAbsent) {
+    return TodoSubtasksCompanion(
+      id: Value(id),
+      todoId: Value(todoId),
+      title: Value(title),
+      isDone: Value(isDone),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory TodoSubtaskRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TodoSubtaskRow(
+      id: serializer.fromJson<String>(json['id']),
+      todoId: serializer.fromJson<String>(json['todoId']),
+      title: serializer.fromJson<String>(json['title']),
+      isDone: serializer.fromJson<bool>(json['isDone']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'todoId': serializer.toJson<String>(todoId),
+      'title': serializer.toJson<String>(title),
+      'isDone': serializer.toJson<bool>(isDone),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  TodoSubtaskRow copyWith({
+    String? id,
+    String? todoId,
+    String? title,
+    bool? isDone,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => TodoSubtaskRow(
+    id: id ?? this.id,
+    todoId: todoId ?? this.todoId,
+    title: title ?? this.title,
+    isDone: isDone ?? this.isDone,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  TodoSubtaskRow copyWithCompanion(TodoSubtasksCompanion data) {
+    return TodoSubtaskRow(
+      id: data.id.present ? data.id.value : this.id,
+      todoId: data.todoId.present ? data.todoId.value : this.todoId,
+      title: data.title.present ? data.title.value : this.title,
+      isDone: data.isDone.present ? data.isDone.value : this.isDone,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoSubtaskRow(')
+          ..write('id: $id, ')
+          ..write('todoId: $todoId, ')
+          ..write('title: $title, ')
+          ..write('isDone: $isDone, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, todoId, title, isDone, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TodoSubtaskRow &&
+          other.id == this.id &&
+          other.todoId == this.todoId &&
+          other.title == this.title &&
+          other.isDone == this.isDone &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class TodoSubtasksCompanion extends UpdateCompanion<TodoSubtaskRow> {
+  final Value<String> id;
+  final Value<String> todoId;
+  final Value<String> title;
+  final Value<bool> isDone;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const TodoSubtasksCompanion({
+    this.id = const Value.absent(),
+    this.todoId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.isDone = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TodoSubtasksCompanion.insert({
+    required String id,
+    required String todoId,
+    required String title,
+    this.isDone = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       todoId = Value(todoId),
+       title = Value(title),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<TodoSubtaskRow> custom({
+    Expression<String>? id,
+    Expression<String>? todoId,
+    Expression<String>? title,
+    Expression<bool>? isDone,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (todoId != null) 'todo_id': todoId,
+      if (title != null) 'title': title,
+      if (isDone != null) 'is_done': isDone,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TodoSubtasksCompanion copyWith({
+    Value<String>? id,
+    Value<String>? todoId,
+    Value<String>? title,
+    Value<bool>? isDone,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return TodoSubtasksCompanion(
+      id: id ?? this.id,
+      todoId: todoId ?? this.todoId,
+      title: title ?? this.title,
+      isDone: isDone ?? this.isDone,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (todoId.present) {
+      map['todo_id'] = Variable<String>(todoId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (isDone.present) {
+      map['is_done'] = Variable<bool>(isDone.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TodoSubtasksCompanion(')
+          ..write('id: $id, ')
+          ..write('todoId: $todoId, ')
+          ..write('title: $title, ')
+          ..write('isDone: $isDone, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1439,6 +2237,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $NoteFoldersTable noteFolders = $NoteFoldersTable(this);
   late final $NotesTable notes = $NotesTable(this);
   late final $TodosTable todos = $TodosTable(this);
+  late final $TodoSubtasksTable todoSubtasks = $TodoSubtasksTable(this);
   late final Index idxNotesFolderId = Index(
     'idx_notes_folder_id',
     'CREATE INDEX idx_notes_folder_id ON notes (folder_id)',
@@ -1446,6 +2245,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final Index idxNotesUpdatedAt = Index(
     'idx_notes_updated_at',
     'CREATE INDEX idx_notes_updated_at ON notes (updated_at)',
+  );
+  late final Index idxTodoSubtasksTodoId = Index(
+    'idx_todo_subtasks_todo_id',
+    'CREATE INDEX idx_todo_subtasks_todo_id ON todo_subtasks (todo_id)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -1455,8 +2258,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     noteFolders,
     notes,
     todos,
+    todoSubtasks,
     idxNotesFolderId,
     idxNotesUpdatedAt,
+    idxTodoSubtasksTodoId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1466,6 +2271,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('notes', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'todos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('todo_subtasks', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -1478,6 +2290,7 @@ typedef $$NoteFoldersTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<int> sortIndex,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> purgedAt,
       Value<int> rowid,
     });
 typedef $$NoteFoldersTableUpdateCompanionBuilder =
@@ -1488,6 +2301,7 @@ typedef $$NoteFoldersTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<int> sortIndex,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> purgedAt,
       Value<int> rowid,
     });
 
@@ -1551,6 +2365,11 @@ class $$NoteFoldersTableFilterComposer
 
   ColumnFilters<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1618,6 +2437,11 @@ class $$NoteFoldersTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$NoteFoldersTableAnnotationComposer
@@ -1646,6 +2470,9 @@ class $$NoteFoldersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get purgedAt =>
+      $composableBuilder(column: $table.purgedAt, builder: (column) => column);
 
   Expression<T> notesRefs<T extends Object>(
     Expression<T> Function($$NotesTableAnnotationComposer a) f,
@@ -1707,6 +2534,7 @@ class $$NoteFoldersTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> sortIndex = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion(
                 id: id,
@@ -1715,6 +2543,7 @@ class $$NoteFoldersTableTableManager
                 updatedAt: updatedAt,
                 sortIndex: sortIndex,
                 deletedAt: deletedAt,
+                purgedAt: purgedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -1725,6 +2554,7 @@ class $$NoteFoldersTableTableManager
                 required DateTime updatedAt,
                 Value<int> sortIndex = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NoteFoldersCompanion.insert(
                 id: id,
@@ -1733,6 +2563,7 @@ class $$NoteFoldersTableTableManager
                 updatedAt: updatedAt,
                 sortIndex: sortIndex,
                 deletedAt: deletedAt,
+                purgedAt: purgedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -1797,6 +2628,9 @@ typedef $$NotesTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
       Value<String?> background,
+      Value<bool> isPinned,
+      Value<bool> isFavorite,
+      Value<DateTime?> purgedAt,
       Value<int> rowid,
     });
 typedef $$NotesTableUpdateCompanionBuilder =
@@ -1809,6 +2643,9 @@ typedef $$NotesTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
       Value<String?> background,
+      Value<bool> isPinned,
+      Value<bool> isFavorite,
+      Value<DateTime?> purgedAt,
       Value<int> rowid,
     });
 
@@ -1874,6 +2711,21 @@ class $$NotesTableFilterComposer extends Composer<_$AppDatabase, $NotesTable> {
 
   ColumnFilters<String> get background => $composableBuilder(
     column: $table.background,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1945,6 +2797,21 @@ class $$NotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isPinned => $composableBuilder(
+    column: $table.isPinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$NoteFoldersTableOrderingComposer get folderId {
     final $$NoteFoldersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -2000,6 +2867,17 @@ class $$NotesTableAnnotationComposer
     column: $table.background,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get isPinned =>
+      $composableBuilder(column: $table.isPinned, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get purgedAt =>
+      $composableBuilder(column: $table.purgedAt, builder: (column) => column);
 
   $$NoteFoldersTableAnnotationComposer get folderId {
     final $$NoteFoldersTableAnnotationComposer composer = $composerBuilder(
@@ -2061,6 +2939,9 @@ class $$NotesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<String?> background = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NotesCompanion(
                 id: id,
@@ -2071,6 +2952,9 @@ class $$NotesTableTableManager
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 background: background,
+                isPinned: isPinned,
+                isFavorite: isFavorite,
+                purgedAt: purgedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2083,6 +2967,9 @@ class $$NotesTableTableManager
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<String?> background = const Value.absent(),
+                Value<bool> isPinned = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => NotesCompanion.insert(
                 id: id,
@@ -2093,6 +2980,9 @@ class $$NotesTableTableManager
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 background: background,
+                isPinned: isPinned,
+                isFavorite: isFavorite,
+                purgedAt: purgedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2171,6 +3061,9 @@ typedef $$TodosTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<DateTime?> reminderAt,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> purgedAt,
+      Value<int> priority,
+      Value<String?> recurrence,
       Value<int> rowid,
     });
 typedef $$TodosTableUpdateCompanionBuilder =
@@ -2182,8 +3075,34 @@ typedef $$TodosTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<DateTime?> reminderAt,
       Value<DateTime?> deletedAt,
+      Value<DateTime?> purgedAt,
+      Value<int> priority,
+      Value<String?> recurrence,
       Value<int> rowid,
     });
+
+final class $$TodosTableReferences
+    extends BaseReferences<_$AppDatabase, $TodosTable, TodoRow> {
+  $$TodosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TodoSubtasksTable, List<TodoSubtaskRow>>
+  _todoSubtasksRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.todoSubtasks,
+    aliasName: 'todos__id__todo_subtasks__todo_id',
+  );
+
+  $$TodoSubtasksTableProcessedTableManager get todoSubtasksRefs {
+    final manager = $$TodoSubtasksTableTableManager(
+      $_db,
+      $_db.todoSubtasks,
+    ).filter((f) => f.todoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_todoSubtasksRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
   $$TodosTableFilterComposer({
@@ -2227,6 +3146,46 @@ class $$TodosTableFilterComposer extends Composer<_$AppDatabase, $TodosTable> {
     column: $table.deletedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> todoSubtasksRefs(
+    Expression<bool> Function($$TodoSubtasksTableFilterComposer f) f,
+  ) {
+    final $$TodoSubtasksTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todoSubtasks,
+      getReferencedColumn: (t) => t.todoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoSubtasksTableFilterComposer(
+            $db: $db,
+            $table: $db.todoSubtasks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TodosTableOrderingComposer
@@ -2272,6 +3231,21 @@ class $$TodosTableOrderingComposer
     column: $table.deletedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<DateTime> get purgedAt => $composableBuilder(
+    column: $table.purgedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get priority => $composableBuilder(
+    column: $table.priority,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TodosTableAnnotationComposer
@@ -2305,6 +3279,42 @@ class $$TodosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get purgedAt =>
+      $composableBuilder(column: $table.purgedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get priority =>
+      $composableBuilder(column: $table.priority, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrence => $composableBuilder(
+    column: $table.recurrence,
+    builder: (column) => column,
+  );
+
+  Expression<T> todoSubtasksRefs<T extends Object>(
+    Expression<T> Function($$TodoSubtasksTableAnnotationComposer a) f,
+  ) {
+    final $$TodoSubtasksTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.todoSubtasks,
+      getReferencedColumn: (t) => t.todoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodoSubtasksTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todoSubtasks,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$TodosTableTableManager
@@ -2318,9 +3328,9 @@ class $$TodosTableTableManager
           $$TodosTableAnnotationComposer,
           $$TodosTableCreateCompanionBuilder,
           $$TodosTableUpdateCompanionBuilder,
-          (TodoRow, BaseReferences<_$AppDatabase, $TodosTable, TodoRow>),
+          (TodoRow, $$TodosTableReferences),
           TodoRow,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool todoSubtasksRefs})
         > {
   $$TodosTableTableManager(_$AppDatabase db, $TodosTable table)
     : super(
@@ -2342,6 +3352,9 @@ class $$TodosTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> reminderAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<String?> recurrence = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion(
                 id: id,
@@ -2351,6 +3364,9 @@ class $$TodosTableTableManager
                 updatedAt: updatedAt,
                 reminderAt: reminderAt,
                 deletedAt: deletedAt,
+                purgedAt: purgedAt,
+                priority: priority,
+                recurrence: recurrence,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2362,6 +3378,9 @@ class $$TodosTableTableManager
                 required DateTime updatedAt,
                 Value<DateTime?> reminderAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
+                Value<DateTime?> purgedAt = const Value.absent(),
+                Value<int> priority = const Value.absent(),
+                Value<String?> recurrence = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TodosCompanion.insert(
                 id: id,
@@ -2371,21 +3390,48 @@ class $$TodosTableTableManager
                 updatedAt: updatedAt,
                 reminderAt: reminderAt,
                 deletedAt: deletedAt,
+                purgedAt: purgedAt,
+                priority: priority,
+                recurrence: recurrence,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable<$TodosTable, TodoRow>(table),
-                  BaseReferences<_$AppDatabase, $TodosTable, TodoRow>(
-                    db,
-                    table,
-                    e,
-                  ),
+                  $$TodosTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({todoSubtasksRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (todoSubtasksRefs) db.todoSubtasks],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (todoSubtasksRefs)
+                    await $_getPrefetchedData<
+                      TodoRow,
+                      $TodosTable,
+                      TodoSubtaskRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$TodosTableReferences
+                          ._todoSubtasksRefsTable(db),
+                      managerFromTypedResult: (p0) => $$TodosTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).todoSubtasksRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.todoId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
@@ -2400,9 +3446,345 @@ typedef $$TodosTableProcessedTableManager =
       $$TodosTableAnnotationComposer,
       $$TodosTableCreateCompanionBuilder,
       $$TodosTableUpdateCompanionBuilder,
-      (TodoRow, BaseReferences<_$AppDatabase, $TodosTable, TodoRow>),
+      (TodoRow, $$TodosTableReferences),
       TodoRow,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool todoSubtasksRefs})
+    >;
+typedef $$TodoSubtasksTableCreateCompanionBuilder =
+    TodoSubtasksCompanion Function({
+      required String id,
+      required String todoId,
+      required String title,
+      Value<bool> isDone,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$TodoSubtasksTableUpdateCompanionBuilder =
+    TodoSubtasksCompanion Function({
+      Value<String> id,
+      Value<String> todoId,
+      Value<String> title,
+      Value<bool> isDone,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$TodoSubtasksTableReferences
+    extends BaseReferences<_$AppDatabase, $TodoSubtasksTable, TodoSubtaskRow> {
+  $$TodoSubtasksTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $TodosTable _todoIdTable(_$AppDatabase db) =>
+      db.todos.createAlias('todo_subtasks__todo_id__todos__id');
+
+  $$TodosTableProcessedTableManager get todoId {
+    final $_column = $_itemColumn<String>('todo_id')!;
+
+    final manager = $$TodosTableTableManager(
+      $_db,
+      $_db.todos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_todoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TodoSubtasksTableFilterComposer
+    extends Composer<_$AppDatabase, $TodoSubtasksTable> {
+  $$TodoSubtasksTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$TodosTableFilterComposer get todoId {
+    final $$TodosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.todoId,
+      referencedTable: $db.todos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosTableFilterComposer(
+            $db: $db,
+            $table: $db.todos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodoSubtasksTableOrderingComposer
+    extends Composer<_$AppDatabase, $TodoSubtasksTable> {
+  $$TodoSubtasksTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$TodosTableOrderingComposer get todoId {
+    final $$TodosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.todoId,
+      referencedTable: $db.todos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosTableOrderingComposer(
+            $db: $db,
+            $table: $db.todos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodoSubtasksTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TodoSubtasksTable> {
+  $$TodoSubtasksTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDone =>
+      $composableBuilder(column: $table.isDone, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$TodosTableAnnotationComposer get todoId {
+    final $$TodosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.todoId,
+      referencedTable: $db.todos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TodosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.todos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TodoSubtasksTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TodoSubtasksTable,
+          TodoSubtaskRow,
+          $$TodoSubtasksTableFilterComposer,
+          $$TodoSubtasksTableOrderingComposer,
+          $$TodoSubtasksTableAnnotationComposer,
+          $$TodoSubtasksTableCreateCompanionBuilder,
+          $$TodoSubtasksTableUpdateCompanionBuilder,
+          (TodoSubtaskRow, $$TodoSubtasksTableReferences),
+          TodoSubtaskRow,
+          PrefetchHooks Function({bool todoId})
+        > {
+  $$TodoSubtasksTableTableManager(_$AppDatabase db, $TodoSubtasksTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TodoSubtasksTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TodoSubtasksTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TodoSubtasksTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> todoId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<bool> isDone = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TodoSubtasksCompanion(
+                id: id,
+                todoId: todoId,
+                title: title,
+                isDone: isDone,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String todoId,
+                required String title,
+                Value<bool> isDone = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TodoSubtasksCompanion.insert(
+                id: id,
+                todoId: todoId,
+                title: title,
+                isDone: isDone,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$TodoSubtasksTable, TodoSubtaskRow>(table),
+                  $$TodoSubtasksTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({todoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (todoId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.todoId,
+                                referencedTable: $$TodoSubtasksTableReferences
+                                    ._todoIdTable(db),
+                                referencedColumn: $$TodoSubtasksTableReferences
+                                    ._todoIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$TodoSubtasksTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TodoSubtasksTable,
+      TodoSubtaskRow,
+      $$TodoSubtasksTableFilterComposer,
+      $$TodoSubtasksTableOrderingComposer,
+      $$TodoSubtasksTableAnnotationComposer,
+      $$TodoSubtasksTableCreateCompanionBuilder,
+      $$TodoSubtasksTableUpdateCompanionBuilder,
+      (TodoSubtaskRow, $$TodoSubtasksTableReferences),
+      TodoSubtaskRow,
+      PrefetchHooks Function({bool todoId})
     >;
 
 class $AppDatabaseManager {
@@ -2414,4 +3796,6 @@ class $AppDatabaseManager {
       $$NotesTableTableManager(_db, _db.notes);
   $$TodosTableTableManager get todos =>
       $$TodosTableTableManager(_db, _db.todos);
+  $$TodoSubtasksTableTableManager get todoSubtasks =>
+      $$TodoSubtasksTableTableManager(_db, _db.todoSubtasks);
 }

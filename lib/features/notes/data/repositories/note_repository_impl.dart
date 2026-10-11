@@ -75,6 +75,26 @@ class NoteRepositoryImpl implements NoteRepository {
 
   /// 只改背景：**不**刷新 `updatedAt`（换背景不是编辑，排序键不该跳变）。
   @override
+  Future<Either<Failure, Unit>> updateFlags(
+    String noteId, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) async {
+    try {
+      await _localDataSource.updateFlags(
+        noteId,
+        isPinned: isPinned,
+        isFavorite: isFavorite,
+      );
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> updateBackground(
     String noteId,
     NoteBackground? background,

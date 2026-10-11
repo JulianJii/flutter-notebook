@@ -398,6 +398,30 @@ abstract class AppLocalizations {
   /// **'配色'**
   String get palette;
 
+  /// Tooltip of the note detail top bar pin toggle when unpinned
+  ///
+  /// In zh, this message translates to:
+  /// **'置顶'**
+  String get notePin;
+
+  /// Tooltip of the note detail top bar pin toggle when pinned
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get noteUnpin;
+
+  /// Tooltip of the note detail top bar favorite toggle when not favorited
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get noteFavorite;
+
+  /// Tooltip of the note detail top bar favorite toggle when favorited
+  ///
+  /// In zh, this message translates to:
+  /// **'取消收藏'**
+  String get noteUnfavorite;
+
   /// Title of the note detail background picker sheet and the accessibility label of a background thumbnail
   ///
   /// In zh, this message translates to:
@@ -464,6 +488,24 @@ abstract class AppLocalizations {
   /// **'已存在同名文件夹'**
   String get folderNameExists;
 
+  /// Title of the rename-folder dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名文件夹'**
+  String get renameFolder;
+
+  /// Long-press menu item that opens the rename-folder dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get renameFolderMenu;
+
+  /// Snackbar shown after a folder was renamed
+  ///
+  /// In zh, this message translates to:
+  /// **'已重命名'**
+  String get renameFolderDone;
+
   /// Title of the create-todo dialog opened by the to-do list FAB
   ///
   /// In zh, this message translates to:
@@ -475,6 +517,90 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'待办标题'**
   String get todoTitle;
+
+  /// Section label of the priority picker in the to-do edit dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'优先级'**
+  String get todoPriority;
+
+  /// Priority chip for the normal level
+  ///
+  /// In zh, this message translates to:
+  /// **'普通'**
+  String get todoPriorityNormal;
+
+  /// Priority chip for the important level
+  ///
+  /// In zh, this message translates to:
+  /// **'重要'**
+  String get todoPriorityImportant;
+
+  /// Priority chip for the urgent level
+  ///
+  /// In zh, this message translates to:
+  /// **'紧急'**
+  String get todoPriorityUrgent;
+
+  /// Section label of the recurrence picker in the to-do edit dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'重复'**
+  String get todoRepeat;
+
+  /// Recurrence chip meaning the reminder does not repeat
+  ///
+  /// In zh, this message translates to:
+  /// **'不重复'**
+  String get todoRecurrenceNone;
+
+  /// Recurrence chip for daily reminders
+  ///
+  /// In zh, this message translates to:
+  /// **'每天'**
+  String get todoRecurrenceDaily;
+
+  /// Recurrence chip for weekly reminders
+  ///
+  /// In zh, this message translates to:
+  /// **'每周'**
+  String get todoRecurrenceWeekly;
+
+  /// Recurrence chip for monthly reminders
+  ///
+  /// In zh, this message translates to:
+  /// **'每月'**
+  String get todoRecurrenceMonthly;
+
+  /// Section label of the subtask list in the to-do edit dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'子任务'**
+  String get todoSubtasks;
+
+  /// Hint text of the inline field that creates a subtask
+  ///
+  /// In zh, this message translates to:
+  /// **'添加子任务'**
+  String get todoSubtaskAddHint;
+
+  /// Tooltip of the button that creates a subtask
+  ///
+  /// In zh, this message translates to:
+  /// **'添加子任务'**
+  String get todoSubtaskAdd;
+
+  /// Progress counter shown next to the subtask section label
+  ///
+  /// In zh, this message translates to:
+  /// **'已完成 {done}/{total}'**
+  String todoSubtaskProgress(int done, int total);
+
+  /// Shown when the user picks a repeat rule while no reminder is set
+  ///
+  /// In zh, this message translates to:
+  /// **'先设提醒时间，再选重复规则'**
+  String get todoRecurrenceNeedsReminder;
 
   /// Confirm button of the create-folder dialog (folder manager)
   ///
@@ -1232,6 +1358,12 @@ abstract class AppLocalizations {
   /// **'本机正在可被连接'**
   String get lanHostingOn;
 
+  /// Prefix of the local ip:port list, so the other device can type it in when discovery fails
+  ///
+  /// In zh, this message translates to:
+  /// **'在同一个 WiFi 下输入：'**
+  String get lanHostingAddress;
+
   /// Shown while no peer has been discovered yet
   ///
   /// In zh, this message translates to:
@@ -1321,6 +1453,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'把全部笔记、文件夹与待办存成一份 JSON 快照文件'**
   String get dataExportDesc;
+
+  /// Data management row that exports the whole notebook as one Markdown document (readable format, no images, no trash)
+  ///
+  /// In zh, this message translates to:
+  /// **'导出为 Markdown'**
+  String get dataExportMarkdown;
+
+  /// Subtitle of the Markdown export row
+  ///
+  /// In zh, this message translates to:
+  /// **'导出一份 .md 文件，便于阅读和迁移；图片与回收站内容不包含在内'**
+  String get dataExportMarkdownDesc;
+
+  /// Snackbar after a successful Markdown export
+  ///
+  /// In zh, this message translates to:
+  /// **'已导出 {count} 条笔记'**
+  String dataExportMarkdownDone(int count);
+
+  /// Snackbar when there is nothing to export as Markdown
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可导出的笔记'**
+  String get dataExportMarkdownEmpty;
 
   /// Section header of the import group
   ///

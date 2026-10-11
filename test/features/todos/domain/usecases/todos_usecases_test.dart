@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/usecases/usecase.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
 import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
 import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
 import 'package:mynote/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
@@ -44,6 +45,8 @@ void main() {
         todoId: 't',
         title: 'x',
         isDone: false,
+      priority: TodoPriority.normal,
+      recurrence: null,
         reminderAt: null,
       ),
     );
@@ -189,6 +192,8 @@ void main() {
             todoId: '',
             title: 'x',
             isDone: false,
+      priority: TodoPriority.normal,
+      recurrence: null,
             reminderAt: null,
           ),
         ),
@@ -203,6 +208,8 @@ void main() {
             todoId: 't1',
             title: '   ',
             isDone: false,
+      priority: TodoPriority.normal,
+      recurrence: null,
             reminderAt: null,
           ),
         ),
@@ -219,6 +226,8 @@ void main() {
           todoId: 't1',
           title: '  写周报 ',
           isDone: true,
+      priority: TodoPriority.normal,
+      recurrence: null,
           reminderAt: null,
         ),
       );
@@ -237,6 +246,8 @@ void main() {
           todoId: 't1',
           title: 'x',
           isDone: false,
+      priority: TodoPriority.normal,
+      recurrence: null,
           reminderAt: null,
         ),
       );

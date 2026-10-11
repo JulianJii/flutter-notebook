@@ -62,7 +62,7 @@ final class NoteEditorProvider
   }
 }
 
-String _$noteEditorHash() => r'54a79fcffd92f91a08f6feef02aad554ed838336';
+String _$noteEditorHash() => r'42b8ce7d28f8857485096c89099ed0cf42e4b55e';
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///

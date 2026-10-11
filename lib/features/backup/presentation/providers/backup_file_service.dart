@@ -50,3 +50,22 @@ Future<String?> pickSnapshotJson() async {
   // 这里不碰 `path`（Web 上它是 null）。
   return utf8.decode(await files.first.readAsBytes());
 }
+
+/// Markdown 导出的文件名。与 [snapshotFileName] 同款命名法。
+String markdownFileName(DateTime now) {
+  final y = now.year.toString().padLeft(4, '0');
+  final m = now.month.toString().padLeft(2, '0');
+  final d = now.day.toString().padLeft(2, '0');
+  return 'notebook-$y$m$d.md';
+}
+
+/// 把 Markdown 写成临时文件并调起系统分享面板。与 [shareSnapshotJson] 同一条路，
+/// 只是换了扩展名 —— 复用同一个分享动作而不是新开一个。
+Future<void> shareMarkdown(String markdown, String fileName) async {
+  final directory = await getTemporaryDirectory();
+  final file = File(p.join(directory.path, fileName));
+  await file.writeAsString(markdown, flush: true);
+  await SharePlus.instance.share(
+    ShareParams(files: <XFile>[XFile(file.path)], subject: fileName),
+  );
+}

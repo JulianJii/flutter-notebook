@@ -29,6 +29,10 @@
 	<!-- 局域网同步：iOS 14+ 首次访问本地网络必须向用户申请授权，缺这条
 	     Info.plist 项则请求直接失败（不弹窗、无报错）。文案会出现在系统弹窗上，
 	     必须说清用途。 -->
+	<!-- 相册多选（image_picker → PHPicker）。PHPicker 本身不需要授权，但审核要求
+	     声明用途；缺这条会导致 iOS 14+ 之前的回退路径拿不到图片。 -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>用于从相册挑选图片插入笔记正文，图片只保存在本机，不会上传。</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>用于在同一局域网内查找并连接你的其他设备，直接同步笔记与待办，不会上传到互联网。</string>
 	<key>NSBonjourServices</key>

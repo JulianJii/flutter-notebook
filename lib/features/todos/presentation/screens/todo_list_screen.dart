@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mynote/core/notifications/reminder_scheduler.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
@@ -11,10 +10,13 @@ import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../domain/entities/todo.dart';
+import '../../domain/entities/todo_priority.dart';
+import '../../domain/entities/todo_recurrence.dart';
 import '../../domain/usecases/update_todo_params.dart';
 import '../../providers/todos_providers.dart';
 import '../providers/todo_list_provider.dart';
 import '../widgets/todo_card.dart';
+import '../widgets/todo_edit_controls.dart';
 import '../widgets/todo_reminder_sheet.dart';
 
 /// 待办列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
@@ -129,7 +131,13 @@ class TodoListScreen extends ConsumerWidget {
     final title = outcome?.title;
     if (title == null || title.trim().isEmpty) return;
 
-    final result = await ref.read(createTodoUseCaseProvider).call(title);
+    // ⛔ **不传 recurrence**：新建时 `reminderAt` 必为 null（提醒只能在待办落库
+    // 之后、拿到真实 id 才能设），而「没提醒就重复」是无意义状态 —— 弹窗里已经
+    // 用提示拦掉了，这里再兜一道是因为它不依赖 UI。
+    final result = await ref.read(createTodoUseCaseProvider).call(
+      title,
+      priority: outcome!.priority,
+    );
     result.fold((failure) {
       if (context.mounted) {
         AppUtils.showSnackBar(context, message: failure.message);
@@ -164,6 +172,10 @@ class TodoListScreen extends ConsumerWidget {
       titleText: l10n.editTodo,
       initialValue: todo.title,
       withDelete: true,
+      initialPriority: todo.priority,
+      initialRecurrence: todo.recurrence,
+      hasReminder: todo.reminderAt != null,
+      subtaskTodoId: todo.id,
     );
     if (outcome == null || !context.mounted) return;
 
@@ -175,12 +187,18 @@ class TodoListScreen extends ConsumerWidget {
     final title = outcome.title;
     if (title == null || title.trim().isEmpty) return;
 
+    // ⛔ 不在这里另写一条「改优先级」的路径：优先级与标题同属一次全字段覆盖写，
+    // 分成两次写会让中间态被 `ReminderReconciler` 看见（它订阅待办流）而白对账一次。
+    // 想「不改标题只改优先级」也不行 —— `update` 是全字段覆盖，但**都带上原值**
+    // 就等价于只改一个字段。
     final result = await ref.read(updateTodoUseCaseProvider)(
       UpdateTodoParams(
         todoId: todo.id,
         title: title,
         isDone: todo.isDone,
         reminderAt: todo.reminderAt,
+        priority: outcome.priority,
+        recurrence: outcome.recurrence,
       ),
     );
     if (!context.mounted) return;
@@ -204,13 +222,9 @@ class TodoListScreen extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    // ⚠️ 必须先撤掉已排的通知：行被删掉后没有任何地方会再去 cancel 它，
-    // 结果是「删掉的待办到点照样响」。
-    // 这里**直接调 scheduler**而不是 `todoReminderProvider.clear()`：clear 会
-    // 顺手把 `reminder_at` 写成 NULL（一次全字段 update + 刷 updated_at），
-    // 而这条记录马上就要被删，那次写库纯属浪费。
-    await _cancelReminder(ref, todo);
-
+    // ⛔ 不在这里撤通知：平台通知的真相源是库，`ReminderReconciler` 订阅着待办流，
+    // 软删除写完 `deleted_at` 就会触发一次全量对账，`cancelAll` 顺手带走这条。
+    // 单独撤一次在这里是重复的真相源 —— 而重复的真相源正是「恢复后不响」漏掉的原因。
     final result = await ref.read(deleteTodoUseCaseProvider)(todo.id);
     if (!context.mounted) return;
     result.fold(
@@ -219,21 +233,11 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
-  /// 撤销某条待办已排的系统通知。best-effort：撤不掉也不该拦住删除。
-  Future<void> _cancelReminder(WidgetRef ref, Todo todo) async {
-    if (todo.reminderAt == null) return;
-    try {
-      await ref
-          .read(reminderSchedulerProvider)
-          .cancel(reminderNotificationId(todo.id));
-    } catch (_) {
-      // 平台通道失败：删除照常进行，留一条无主的通知好过删不掉待办。
-    }
-  }
-
   /// 清除全部已完成（与编辑弹窗里的单条删除并列）。
   ///
   /// 成功后 `collapse()`：已空的分隔行不该留在展开态。
+  /// ⛔ 不逐条撤通知：同 [_confirmDelete]，`ReminderReconciler` 的全量对账已经覆盖
+  /// （`deleteCompleted` 是**单条 SQL**，对账只需等一次 emit，而逐条 await 是 N 次平台往返）。
   Future<void> _clearCompleted(
     BuildContext context,
     WidgetRef ref,
@@ -246,12 +250,6 @@ class TodoListScreen extends ConsumerWidget {
       confirmLabel: l10n.clearCompletedTodos,
     );
     if (confirmed != true || !context.mounted) return;
-
-    // 与 [_confirmDelete] 同一个洞：批量删更要逐条撤通知，否则「清空完成后
-    // 通知还在一个个响」。逐条 await，量级是已完成条数，百级毫秒级。
-    for (final todo in done) {
-      await _cancelReminder(ref, todo);
-    }
 
     final result = await ref.read(deleteCompletedTodosUseCaseProvider)();
     if (!context.mounted) return;
@@ -299,42 +297,110 @@ class TodoListScreen extends ConsumerWidget {
   /// 在 `pop` 时就完成，立即 dispose 会让仍在退场动画里的输入框拿到已释放的
   /// controller。预填交给 `TextFormField.initialValue`，它的 controller 随 widget
   /// 生命周期走，不需要我们管。
-  Future<({String? title, bool remove})?> _titleDialog(
+  /// 新建 / 编辑共用的弹窗。返回 `(title, priority, recurrence, remove)`；
+  /// 取消返回 null，`remove: true` 表示走了删除分支。
+  ///
+  /// **优先级与重复规则在这一栏里改**，而不是等到保存 —— 它们是「这条待办长什么样」
+  /// 的一部分，与标题同级；放进标题下方的单行输入框会让弹窗变成只能改一个字段。
+  ///
+  /// ⛔ **子任务不在这栏**：子项要立刻写库（drift watch 推回），而新建的待办
+  /// 还没有 id（`create` 之后才有），外键会拒绝 —— 所以它只在 [withDelete] 的
+  /// 编辑态渲染（`TodoSubtaskSection` 收一个已有的 todoId）。
+  Future<({String? title, TodoPriority priority, TodoRecurrence? recurrence, bool remove})?>
+  _titleDialog(
     BuildContext context, {
     required String titleText,
     String initialValue = '',
     bool withDelete = false,
+    TodoPriority initialPriority = TodoPriority.normal,
+    TodoRecurrence? initialRecurrence,
+    bool hasReminder = false,
+    String? subtaskTodoId,
   }) {
     final l10n = AppLocalizations.of(context);
     var entered = initialValue;
-    return showDialog<({String? title, bool remove})>(
+    var priority = initialPriority;
+    var recurrence = initialRecurrence;
+    return showDialog<
+      ({String? title, TodoPriority priority, TodoRecurrence? recurrence, bool remove})
+    >(
       context: context,
       builder: (dialogContext) {
-        void submit() =>
-            Navigator.of(dialogContext).pop((title: entered, remove: false));
-        return AlertDialog(
-          title: Text(titleText),
-          content: TextFormField(
-            autofocus: true,
-            initialValue: initialValue,
-            decoration: InputDecoration(hintText: l10n.todoTitle),
-            onChanged: (value) => entered = value,
-            onFieldSubmitted: (_) => submit(),
-          ),
-          actions: <Widget>[
-            if (withDelete)
-              TextButton(
-                onPressed: () => Navigator.of(
-                  dialogContext,
-                ).pop((title: null, remove: true)),
-                child: Text(l10n.deleteTodo),
+        // ⚠️ 选择器要重建才能反映选择 → 用 `StatefulBuilder`。
+        // 与 `folder_manager_screen` 的名称弹窗同一取舍（一个弹窗一个 StatefulBuilder，
+        // 不为它建一个 StatefulWidget）。
+        void submit() => Navigator.of(dialogContext).pop(
+          (title: entered, priority: priority, recurrence: recurrence, remove: false),
+        );
+
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(titleText),
+            content: SizedBox(
+              // 弹窗内容一多（标题 + 两组 chip + 子任务）就会溢出，加这一行滚动。
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    TextFormField(
+                      key: const Key('todo_dialog_title'),
+                      autofocus: true,
+                      initialValue: initialValue,
+                      decoration: InputDecoration(hintText: l10n.todoTitle),
+                      onChanged: (value) => entered = value,
+                      onFieldSubmitted: (_) => submit(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(l10n.todoPriority, style: context.textStyles.meta),
+                    const SizedBox(height: AppSpacing.sm),
+                    TodoPriorityPicker(
+                      value: priority,
+                      onChanged: (value) => setState(() => priority = value),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(l10n.todoRepeat, style: context.textStyles.meta),
+                    const SizedBox(height: AppSpacing.sm),
+                    TodoRecurrencePicker(
+                      value: recurrence,
+                      onChanged: (value) {
+                        // ⛔ **没设提醒就不让选重复**：重复的是提醒时刻，而
+                        // `reminder_at` 为 null 时重复规则没有任何东西可作用。
+                        // 提示而不是静默忽略 —— 静默忽略会让用户以为规则已生效。
+                        if (value != null && !hasReminder) {
+                          AppUtils.showSnackBar(
+                            context,
+                            message: l10n.todoRecurrenceNeedsReminder,
+                          );
+                          return;
+                        }
+                        setState(() => recurrence = value);
+                      },
+                    ),
+                    if (subtaskTodoId != null) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      TodoSubtaskSection(todoId: subtaskTodoId),
+                    ],
+                  ],
+                ),
               ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.cancel),
             ),
-            TextButton(onPressed: submit, child: Text(l10n.save)),
-          ],
+            actions: <Widget>[
+              if (withDelete)
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(
+                    (title: null, priority: priority, recurrence: recurrence, remove: true),
+                  ),
+                  child: Text(l10n.deleteTodo),
+                ),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.cancel),
+              ),
+              TextButton(onPressed: submit, child: Text(l10n.save)),
+            ],
+          ),
         );
       },
     );
@@ -434,6 +500,7 @@ class _TodoList extends StatelessWidget {
           title: todo.title,
           checked: todo.isDone,
           reminderAt: todo.reminderAt,
+          priority: todo.priority,
           onChanged: (value) => onChanged(todo, value),
           onTap: () => onEdit(todo),
         );

@@ -101,11 +101,27 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
                             horizontal: AppSpacing.rowPadH,
                             vertical: AppSpacing.sm,
                           ),
-                          child: Text(
-                            l10n.lanHostingOn,
-                            style: context.textStyles.meta.copyWith(
-                              color: context.colors.textTertiary,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                l10n.lanHostingOn,
+                                style: context.textStyles.meta.copyWith(
+                                  color: context.colors.textTertiary,
+                                ),
+                              ),
+                              // 广播被路由器 / AP 隔离丢掉时，对方搜不到本机，
+                              // 「手动输入地址」是唯一出路 —— 而端口是随机绑定的，
+                              // 不显示这串字就等于让用户凭空编一个端口。
+                              if (_useCases.localEndpoints.isNotEmpty)
+                                Text(
+                                  '${l10n.lanHostingAddress} ${_useCases.localEndpoints.join('  ')}',
+                                  key: const Key('lan_local_endpoints'),
+                                  style: context.textStyles.meta.copyWith(
+                                    color: context.colors.textSecondary,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                     ],

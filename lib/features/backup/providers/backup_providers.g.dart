@@ -113,6 +113,57 @@ final class BackupLocalDataSourceProvider
 String _$backupLocalDataSourceHash() =>
     r'f9bc85dc3a52bfe63827231b4dd7baf6a7debbb0';
 
+/// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+
+@ProviderFor(tombstoneSweeper)
+final tombstoneSweeperProvider = TombstoneSweeperProvider._();
+
+/// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+
+final class TombstoneSweeperProvider
+    extends
+        $FunctionalProvider<
+          TombstoneSweeper,
+          TombstoneSweeper,
+          TombstoneSweeper
+        >
+    with $Provider<TombstoneSweeper> {
+  /// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+  TombstoneSweeperProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tombstoneSweeperProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tombstoneSweeperHash();
+
+  @$internal
+  @override
+  $ProviderElement<TombstoneSweeper> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TombstoneSweeper create(Ref ref) {
+    return tombstoneSweeper(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TombstoneSweeper value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TombstoneSweeper>(value),
+    );
+  }
+}
+
+String _$tombstoneSweeperHash() => r'0fb332337bf687075aeab00b9a4cc95111cc159f';
+
 @ProviderFor(webDavDataSource)
 final webDavDataSourceProvider = WebDavDataSourceProvider._();
 
@@ -252,6 +303,54 @@ final class ExportBackupUseCaseProvider
 
 String _$exportBackupUseCaseHash() =>
     r'cc8958e7d6fa3e9a660245b2431201ae899932f5';
+
+@ProviderFor(exportMarkdownUseCase)
+final exportMarkdownUseCaseProvider = ExportMarkdownUseCaseProvider._();
+
+final class ExportMarkdownUseCaseProvider
+    extends
+        $FunctionalProvider<
+          ExportMarkdownUseCase,
+          ExportMarkdownUseCase,
+          ExportMarkdownUseCase
+        >
+    with $Provider<ExportMarkdownUseCase> {
+  ExportMarkdownUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'exportMarkdownUseCaseProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$exportMarkdownUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<ExportMarkdownUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ExportMarkdownUseCase create(Ref ref) {
+    return exportMarkdownUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ExportMarkdownUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ExportMarkdownUseCase>(value),
+    );
+  }
+}
+
+String _$exportMarkdownUseCaseHash() =>
+    r'a713b65f0f0d001c8d9a28794cd3c5c31a10652c';
 
 @ProviderFor(importBackupUseCase)
 final importBackupUseCaseProvider = ImportBackupUseCaseProvider._();

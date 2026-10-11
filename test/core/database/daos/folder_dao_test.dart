@@ -102,11 +102,13 @@ void main() {
     expect(await dao.watchUncategorizedCount().first, 3);
   });
 
-  test('deleteById + nullOutFolder 同事务 → 笔记落未分类', () async {
+  test('nullOutFolder + purgeById 同事务 → 笔记落未分类', () async {
     // 真实编排在 TASK-021 的 datasource（db.transaction）；这里只验两个原子操作各自可用。
+    // ⚠️ 永久删除写墓碑不删行（v7 语义，见 NoteDao.purgeById），所以仍要显式
+    // nullOutFolder —— 外键 ON DELETE SET NULL 在墓碑路径下不会触发。
     await db.transaction(() async {
       await dao.nullOutFolder('f1');
-      await dao.deleteById('f1');
+      await dao.purgeById('f1', DateTime(2026, 10, 11));
     });
 
     final rows = await db
@@ -117,10 +119,15 @@ void main() {
         .get();
     expect(rows.single.data['folder_id'], isNull);
     expect((await dao.watchWithCounts().first).length, 1);
+    expect(
+      (await dao.getById('f1'))!.purgedAt,
+      isNotNull,
+      reason: '行仍在表里，但所有可见列表都过滤掉它',
+    );
   });
 
-  test('只 deleteById（靠外键 ON DELETE SET NULL）也落未分类', () async {
-    expect(await dao.deleteById('f1'), 1);
+  test('只打墓碑不碰 notes.folder_id（外键只由物理 DELETE 触发）', () async {
+    expect(await dao.purgeById('f1', DateTime(2026, 10, 11)), 1);
 
     final rows = await db
         .customSelect(
@@ -128,7 +135,13 @@ void main() {
           variables: [Variable('n1')],
         )
         .get();
-    expect(rows.single.data['folder_id'], isNull);
+    // ⛔ 仍是 'f1'：墓碑不是 DELETE，外键不触发。所以置空必须由 datasource 显式做
+    // （`FolderLocalDataSourceImpl.purge` 的事务里），DAO 层不代劳。
+    expect(
+      rows.single.data['folder_id'],
+      'f1',
+      reason: 'DAO 的 purgeById 不碰 notes —— 置空是 datasource 的职责',
+    );
   });
 
   test('rename 撞 UNIQUE 时抛异常（不静默失败）', () async {

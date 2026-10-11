@@ -5,6 +5,7 @@ import 'package:mynote/core/logging/logger_provider.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_flags_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/utils/note_delta.dart';
 import 'package:mynote/features/notes/domain/utils/word_counter.dart';
@@ -34,6 +35,8 @@ class NoteEditorState {
     this.savedBackground,
     this.createdAt,
     this.lastFailure,
+    this.isPinned = false,
+    this.isFavorite = false,
   });
 
   /// 所属文件夹（null = 未分类）。
@@ -70,6 +73,15 @@ class NoteEditorState {
   /// 清空，避免 debounce 期间重复弹。
   final Failure? lastFailure;
 
+  /// 置顶 / 收藏。与 [draftBackground] 同理：**不是草稿**，走窄通道即时落库，
+  /// 不计入 [isDirty]（勾一下收藏不该让「未保存」的提示冒出来）。
+  ///
+  /// ⛔ **不另存 `saved*` 副本**：这两个值没有「写失败了要回滚」的语义 ——
+  /// 失败时 UI 已经提示，而下一次点击会重发目标值。与背景不同（背景失败会
+  /// 留下一个「看着选中了但没存上」的错位，���要 saved 侧对照）。
+  final bool isPinned;
+  final bool isFavorite;
+
   bool get isDirty => draftTitle != savedTitle || draftContent != savedContent;
 
   /// `draftContent` 是 Quill Delta JSON，需先还原纯文本再计数。
@@ -87,6 +99,8 @@ class NoteEditorState {
     Object? savedBackground = _unset,
     Object? createdAt = _unset,
     Object? lastFailure = _unset,
+    bool? isPinned,
+    bool? isFavorite,
   }) {
     return NoteEditorState(
       // 落库位置不参与草稿编辑，没有对外 set 方法，copyWith 一律原样带过去。
@@ -107,6 +121,8 @@ class NoteEditorState {
       lastFailure: identical(lastFailure, _unset)
           ? this.lastFailure
           : lastFailure as Failure?,
+      isPinned: isPinned ?? this.isPinned,
+      isFavorite: isFavorite ?? this.isFavorite,
     );
   }
 }
@@ -155,6 +171,8 @@ class NoteEditor extends _$NoteEditor {
               draftBackground: note.background,
               savedBackground: note.background,
               createdAt: note.createdAt,
+              isPinned: note.isPinned,
+              isFavorite: note.isFavorite,
             ),
           ),
         );
@@ -199,6 +217,51 @@ class NoteEditor extends _$NoteEditor {
           return latest.copyWith(lastFailure: failure);
         },
         (_) => latest.copyWith(savedBackground: value, lastFailure: null),
+      ),
+    );
+  }
+
+  /// 改置顶 / 收藏。走窄通道即时落库，与 [setBackground] 同一条约定：
+  /// 不计入 [isDirty]，不刷 `updatedAt`。
+  ///
+  /// ⛔ **新笔记直接忽略**：库里还没有行，写了必然 not found。UI 侧把两个按钮
+  /// 置灰（`canToggleFlags`）而不是等到这里报错 —— 用户不该靠一次失败点击
+  /// 才知道这个功能对新笔记不可用。
+  Future<void> setFlags({bool? isPinned, bool? isFavorite}) async {
+    final current = state.value;
+    if (current == null) return;
+    final nextPinned = isPinned ?? current.isPinned;
+    final nextFavorite = isFavorite ?? current.isFavorite;
+    if (nextPinned == current.isPinned && nextFavorite == current.isFavorite) {
+      return;
+    }
+    // 先更新内存（图标立刻翻转），落库失败再由 UI 提示。
+    state = AsyncData(
+      current.copyWith(isPinned: nextPinned, isFavorite: nextFavorite),
+    );
+    if (current.isNew) return;
+
+    final result = await ref.read(updateNoteFlagsUseCaseProvider)(
+      UpdateNoteFlagsParams(
+        noteId: _savedId ?? _noteId,
+        isPinned: isPinned,
+        isFavorite: isFavorite,
+      ),
+    );
+    // 同 setBackground：合并进**最新**的 state，别把 `current` 整份写回去。
+    final latest = state.value;
+    if (latest == null) return;
+    state = AsyncData(
+      result.fold(
+        (failure) {
+          ref
+              .read(taggedLoggerProvider('notes'))
+              .w('note flags save failed', error: failure);
+          // ⚠️ **不回滚图标**：这与 setBackground 同理 —— 回滚会让用户的下一次
+          // 点击从「再点一次关掉」变成「点一下却又开」，比不��滚更难预测。
+          return latest.copyWith(lastFailure: failure);
+        },
+        (_) => latest.copyWith(lastFailure: null),
       ),
     );
   }

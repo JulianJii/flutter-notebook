@@ -19,6 +19,14 @@ abstract class LanSyncRepository {
 
   bool get isHosting;
 
+  /// 本机当前对外的 `ip:port` 列表，供 UI 显示给用户手动抄。
+  ///
+  /// 未在托管时返回空列表。
+  ///
+  /// ⚠️ 这是「手动输入地址」兜底路径的**唯一**前提：端口是随机绑定的，而广播
+  /// 可能被 AP 隔离丢掉 —— 对方搜不到本机时，用户只能看着这串字抄到对方那边。
+  List<String> get localEndpoints;
+
   /// 与一台设备同步：一次 `POST /sync` 往返即双方收敛，**顺带完成一次对时**。
   Future<Either<Failure, LanSyncReport>> syncWithPeer(LanPeer peer);
 

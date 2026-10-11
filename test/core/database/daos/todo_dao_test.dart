@@ -99,15 +99,30 @@ void main() {
     expect(row.isDone, isFalse);
   });
 
-  test('update 未命中返回 false；delete 返回受影响行数', () async {
+  test('update 未命中返回 false；purge 写墓碑（不是物理删）', () async {
     expect(
       await dao.updateById(
         TodosCompanion(id: const Value('nope'), isDone: const Value(true)),
       ),
       isFalse,
     );
-    expect(await dao.deleteById('t1'), 1);
-    expect(await dao.deleteById('t1'), 0);
+    final purgedAt = DateTime(2026, 10, 11);
+    expect(await dao.purgeById('t1', purgedAt), 1);
+    expect((await dao.getById('t1'))!.purgedAt, purgedAt);
+    expect(
+      await dao.watchAll().first,
+      isNot(contains(predicate<TodoRow>((r) => r.id == 't1'))),
+      reason: '墓碑行不再出现在待办列表',
+    );
+  });
+
+  test('保留期清扫只物理删过期墓碑', () async {
+    await dao.purgeById('t1', DateTime(2026, 1, 1));
+    await dao.purgeById('t2', DateTime(2026, 10, 10));
+
+    expect(await dao.purgeExpiredTombstones(DateTime(2026, 6, 1)), 1);
+    expect(await dao.getById('t1'), isNull);
+    expect(await dao.getById('t2'), isNotNull);
   });
 
   test('is_done 默认 false（Companion 省略该列）', () async {

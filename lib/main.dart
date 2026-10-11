@@ -8,6 +8,7 @@ import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/updates/update_providers.dart';
 import 'package:mynote/features/backup/presentation/providers/startup_sync_provider.dart';
+import 'package:mynote/features/todos/presentation/providers/reminder_reconciler.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
@@ -63,27 +64,31 @@ class MyApp extends ConsumerWidget {
     // 开关没开时它立刻返回。失败静默（用户此刻可能在任何页面）。
     ref.watch(startupSyncProvider);
 
-    return UpdateChecker(
+return UpdateChecker(
       autoPrompt: true,
-      child: MaterialApp.router(
-        title: AppConstants.appName,
-        theme: AppTheme.light(colorScheme),
-        darkTheme: AppTheme.dark(colorScheme),
-        themeMode: themeMode,
-        routerConfig: router,
-        debugShowCheckedModeBanner: false,
+      child: ReminderReconciler(
+        // ⚠️ 必须挂在 MaterialApp.router **之外**（与 UpdateChecker 同层）：对账要
+        // 覆盖冷启动，而那时 MaterialApp 的子树还没建。
+        child: MaterialApp.router(
+          title: AppConstants.appName,
+          theme: AppTheme.light(colorScheme),
+          darkTheme: AppTheme.dark(colorScheme),
+          themeMode: themeMode,
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
 
-        // 本地化设置
-        locale: locale,
-        localizationsDelegates: [
-          ...AppLocalizations.localizationsDelegates,
-          // material_ui 是 flutter/material 的 fork，自带一套 Localizations，
-          // gen-l10n 生成的列表里只有 flutter_localizations 那套，缺它会崩
-          ...GlobalMaterialLocalizations.delegates,
-          // Quill 工具栏/编辑器的本地化，缺它编辑页会崩
-          FlutterQuillLocalizations.delegate,
-        ],
-        supportedLocales: AppLocalizations.supportedLocales,
+          // 屏幕适配
+          locale: locale,
+          localizationsDelegates: [
+            ...AppLocalizations.localizationsDelegates,
+            // material_ui 是 flutter/material 的 fork，自身不带 Localizations，
+            // gen-l10n 生成的这套只含 flutter_localizations 的那几份，缺会崩
+            ...GlobalMaterialLocalizations.delegates,
+            // Quill 工具栏/编辑框文本本地化，缺会崩编辑页
+            FlutterQuillLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
     );
   }

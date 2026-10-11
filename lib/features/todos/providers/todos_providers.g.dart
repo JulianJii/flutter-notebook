@@ -98,6 +98,103 @@ final class TodoRepositoryProvider
 
 String _$todoRepositoryHash() => r'c2b32b33f48c50277b13163c91976fe9a978eb4c';
 
+@ProviderFor(todoSubtaskLocalDataSource)
+final todoSubtaskLocalDataSourceProvider =
+    TodoSubtaskLocalDataSourceProvider._();
+
+final class TodoSubtaskLocalDataSourceProvider
+    extends
+        $FunctionalProvider<
+          TodoSubtaskLocalDataSource,
+          TodoSubtaskLocalDataSource,
+          TodoSubtaskLocalDataSource
+        >
+    with $Provider<TodoSubtaskLocalDataSource> {
+  TodoSubtaskLocalDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'todoSubtaskLocalDataSourceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$todoSubtaskLocalDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<TodoSubtaskLocalDataSource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  TodoSubtaskLocalDataSource create(Ref ref) {
+    return todoSubtaskLocalDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TodoSubtaskLocalDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TodoSubtaskLocalDataSource>(value),
+    );
+  }
+}
+
+String _$todoSubtaskLocalDataSourceHash() =>
+    r'cd1331b4b2180ca82187d536eb8a17242d8f82d7';
+
+@ProviderFor(todoSubtaskRepository)
+final todoSubtaskRepositoryProvider = TodoSubtaskRepositoryProvider._();
+
+final class TodoSubtaskRepositoryProvider
+    extends
+        $FunctionalProvider<
+          TodoSubtaskRepository,
+          TodoSubtaskRepository,
+          TodoSubtaskRepository
+        >
+    with $Provider<TodoSubtaskRepository> {
+  TodoSubtaskRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'todoSubtaskRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$todoSubtaskRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<TodoSubtaskRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  TodoSubtaskRepository create(Ref ref) {
+    return todoSubtaskRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TodoSubtaskRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TodoSubtaskRepository>(value),
+    );
+  }
+}
+
+String _$todoSubtaskRepositoryHash() =>
+    r'af7bb2779d5174e6fb7061746c9e6101a58c4ae7';
+
 @ProviderFor(watchTodosUseCase)
 final watchTodosUseCaseProvider = WatchTodosUseCaseProvider._();
 

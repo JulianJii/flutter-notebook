@@ -9,8 +9,9 @@ import 'package:timezone/timezone.dart' as tz;
 /// ⛔ 不做通用「通知服务」抽象：推送（FCM）那套没有定时能力，实现也只是 Debug
 /// 空壳（已随死代码清理删除）。本类是**本地定时通知**，只服务待办。
 ///
-/// ⛔ 不做「重复提醒」/「重启后恢复」：前者待办稿没有入口，后者要原生 boot
-/// receiver + 重排逻辑，收益 < 复杂度（重启后提醒丢失是可接受的当前行为）。
+/// ⛔ 不做「重复提醒」：待办稿没有入口，真要做要加 recurrence 列 + RRULE 解析。
+/// ✅ 做「重启后恢复」，但**不走原生 boot receiver** —— 见 [ReminderScheduler.rescheduleAll]
+/// 的说明：库是唯一真相源，对账就够了，不需要在开机时抢一次平台通道。
 ///
 /// ⚠️ **失败一律抛出**（平台异常 / `ArgumentError`），不在这里吞也不映射 `Failure`
 /// —— 那是调用方（presentation）的活，它才有 l10n 与 Snackbar。
@@ -109,11 +110,87 @@ class ReminderScheduler {
     await _plugin.cancel(id: id);
   }
 
+  /// **全量对账**：先撤光所有已排通知，再按 [entries] 重建。
+  ///
+  /// 库是平台通知的唯一真相源，本方法是「把库投影到平台」这一件事的**唯一**入口。
+  /// 它取代了「谁改谁去撤」的散点调用 —— 那套做法有三个必然的漏点：
+  /// 设备重启后平台侧全丢（没有 boot receiver）、软删除 / 恢复各有各的调用点、
+  /// 批量清除要逐条撤。漏一个 = 一条无主通知，表现为「删掉的待办到点照响」。
+  ///
+  /// ⚠️ 用的是 `cancelAll` 而非逐条 [cancel]：本 App 唯一的定时通知就是待办提醒
+  /// （推送抽象已删除），撤光等价于撤全。将来若引入别的通知种类，这里要改成
+  /// 按 id 集合求差。
+  ///
+  /// 单条失败不中断其余 —— 一条提醒排不上不该让其他待办集体失去提醒。整批失败也
+  /// **不抛**：调用点是后台对账，没有 UI 能接住异常，抛了只会变成一条无主的日志。
+  Future<void> rescheduleAll(List<ReminderEntry> entries) async {
+    await init();
+    await _plugin.cancelAll();
+    for (final entry in entries) {
+      try {
+        await _plugin.zonedSchedule(
+          id: entry.id,
+          title: entry.title,
+          body: entry.body,
+          scheduledDate: tz.TZDateTime.from(entry.at, tz.local),
+          notificationDetails: const NotificationDetails(
+            android: AndroidNotificationDetails(_channelId, _channelName),
+            iOS: DarwinNotificationDetails(),
+            macOS: DarwinNotificationDetails(),
+          ),
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        );
+      } catch (_) {
+        // 排不上就跳过这一条，其余照排。
+      }
+    }
+  }
+
   /// 通知渠道。⚠️ 渠道名**故意不本地化**：它显示在系统设置里，且 Android 上渠道
   /// 一旦创建就改不了名字 —— 随语言变只会留下两个名字不一致的僵尸渠道。
   static const String _channelId = 'todo_reminders';
   static const String _channelName = 'Todo reminders';
 }
+
+/// 一条应当已排好的提醒。[ReminderScheduler.rescheduleAll] 的输入单元。
+///
+/// 用 record 而不是 class：四个字段全部按名访问、只在构造与解构处出现，
+/// 没有第二个消费者，因此不值得一个具名类型。
+typedef ReminderEntry = ({
+  int id,
+  String title,
+  String body,
+  DateTime at,
+});
+
+/// 同一串重复提醒的后续第 `index` 次（index ≥ 1）的通知 id。
+///
+/// 重复提醒要**一次排多场**（见 [ReminderScheduler.rescheduleAll] 的说明），所以
+/// 每场得有自己的 id。做法是在基 id 上加一个**很大的步长** `kOccurrenceStride`
+/// 而不是连续 +1 —— 连续加会让「第 1 次重复」和别的待办撞 id（两者的基 id 本来
+/// 就可能只差 1），撞了就是互相顶掉提醒。步长远大于待办数量级（10 万）时，
+/// 同一条待办的各次之间与不同待办之间都不会重叠。
+int occurrenceNotificationId(String todoId, int index) =>
+    reminderNotificationId(todoId) + index * kOccurrenceStride;
+
+/// 重复提醒各次之间的 id 步长。见 [occurrenceNotificationId]。
+///
+/// ⚠️ 上限约束：插件要求 id 落在 32 位有符号整数内。基 id 掩码到 31 位，
+/// 加上 `index * 100000` 后要仍 < 2^31，因此 [kOccurrenceHorizon] 不能太大。
+const int kOccurrenceStride = 100000;
+
+/// 一次预排多少场重复提醒。
+///
+/// ponytail: 本地通知**没有可靠的「响了就回调」**（`flutter_local_notifications`
+/// 只有「用户点了通知」的回调，用户永远不点就永远不触发），所以「响完再排下一场」
+/// 做不到 —— 用户三天不开 App，重复就在第一次之后就断了。
+///
+/// 折中：**一次把未来 N 场全排上**。每次冷启动的对账会把已经响过的场次往前滚，
+/// 再补满 N 场。代价是系统通知队列里躺着 N 条待触发记录（N ≤ 5，量级可忽略）；
+/// 收益是「设了每天提醒，用户一周不开 App 也能收到 5 次」—— 这已经覆盖了
+/// 绝大多数人的实际使用。真要无限重复就得接 `workmanager` 或 `exact alarm` 的
+/// 自续期，那是另一个量级的工程。
+const int kOccurrenceHorizon = 5;
 
 /// 通知 id：由待办 id 派生，⛔ 不另存一列。
 ///

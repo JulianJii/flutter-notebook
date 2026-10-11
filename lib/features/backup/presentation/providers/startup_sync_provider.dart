@@ -19,6 +19,7 @@ part 'startup_sync_provider.g.dart';
 class StartupSync extends _$StartupSync {
   @override
   Future<void> build() async {
+    await _sweepExpiredTombstones();
     final result = await ref.read(getWebDavConfigUseCaseProvider)(NoParams());
     final config = result.fold((_) => const WebDavConfig(), (c) => c);
     if (!config.autoSyncOnStart || !config.isConfigured) return;
@@ -30,5 +31,24 @@ class StartupSync extends _$StartupSync {
         (result) => 'startup sync: +${result.inserted} ~${result.updated}',
       ),
     );
+  }
+
+  /// 清扫过期的永久删除墓碑（`TombstoneSweeper`）。
+  ///
+  /// ⛔ **无条件跑，不看有没有配同步**：这是本地磁盘维护，与 WebDAV 无关 ——
+  /// 没配同步的用户照样会积累墓碑行。
+  /// ⛔ **best-effort**：失败只记日志。清扫是「释放磁盘」的优化，失败一次
+  /// 不该让启动同步整个放弃。硬删永远发生在保留期之后，漏一次没有正确性风险。
+  Future<void> _sweepExpiredTombstones() async {
+    try {
+      final removed = await ref.read(tombstoneSweeperProvider).sweep();
+      if (removed > 0) {
+        ref.read(taggedLoggerProvider('backup')).i(
+          'purged $removed expired tombstones',
+        );
+      }
+    } catch (e) {
+      ref.read(taggedLoggerProvider('backup')).w('tombstone sweep failed: $e');
+    }
   }
 }

@@ -1,11 +1,15 @@
 import 'package:equatable/equatable.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
+import 'package:mynote/features/todos/domain/entities/todo_recurrence.dart';
 
 /// 一条待办（待办稿的一行）。
 ///
-/// ⛔ **不加** `dueDate` / `priority`：待办稿「无日期、无优先级」。
+/// ⛔ **不加** `dueDate`：待办稿明确否掉了「截止日」。
 /// ⚠️ **`reminderAt` 是提醒的时刻，不是截止日期** —— 命名上刻意避开 `dueAt`，
 /// 免得被当成待办稿明确否掉的「截止日」重新长回实体里。
-/// ⛔ **不加** `sortIndex`（待办无排序入口，排序固定 `createdAt DESC`，在 DAO 做）。
+/// ✅ **加了** `priority` / `recurrence`：这两项是对「待办稿那版只有标题和完成态」
+/// 的后续补充（见 `TodoPriority` / `TodoRecurrence`）。
+/// ⛔ **不加** `sortIndex`（排序固定，在 DAO 做）。
 /// ⛔ **不加** `folderId`：待办与笔记无关联，待办稿没有任何「关联笔记」入口。
 ///
 /// ## `deletedAt`：曾经明确不加，现在加
@@ -22,6 +26,9 @@ class Todo extends Equatable {
     this.isDone = false,
     this.reminderAt,
     this.deletedAt,
+    this.purgedAt,
+    this.priority = TodoPriority.normal,
+    this.recurrence,
   });
 
   final String id;
@@ -45,6 +52,22 @@ class Todo extends Equatable {
   /// 参数就是第二套真相源。
   final DateTime? deletedAt;
 
+  /// 永久删除墓碑时刻。**UI 与业务逻辑都不看它** —— 只活在数据层与同步链路里，
+  /// 让「永久删除」能跨设备传播。与 [deletedAt] 同样不参与 [copyWith]。
+  final DateTime? purgedAt;
+
+  /// 优先级。列表排序里在「未完成 / 已完成」**之内**再按它分层。
+  ///
+  /// ⚠️ 优先级**不参与** [copyWith]：它与 [deletedAt] 一样只由
+  /// `TodoLocalDataSource` 直连 DAO 写（要连带写 `updated_at`，而勾选/删除
+  /// 路径不该顺带改优先级），没有「先在内存里改实体再落库」的路径。
+  final TodoPriority priority;
+
+  /// 重复提醒规则。null = 不重复。
+  ///
+  /// ⚠️ 同 [priority]：不参与 [copyWith]。
+  final TodoRecurrence? recurrence;
+
   /// [isDone] 是非空 bool，`?? this.isDone` 即可 —— 哨兵只用于「显式置 null」。
   ///
   /// [reminderAt] 反过来：它是可空的，`copyWith(reminderAt: null)` 必须真的把提醒
@@ -66,6 +89,9 @@ class Todo extends Equatable {
           ? this.reminderAt
           : reminderAt as DateTime?,
       deletedAt: deletedAt,
+      purgedAt: purgedAt,
+      priority: priority,
+      recurrence: recurrence,
     );
   }
 
@@ -78,6 +104,9 @@ class Todo extends Equatable {
     createdAt,
     updatedAt,
     deletedAt,
+    purgedAt,
+    priority,
+    recurrence,
   ];
 }
 

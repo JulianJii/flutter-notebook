@@ -12,6 +12,13 @@ abstract class BackupRepository {
   /// 读本地全量 → 快照 JSON 字符串 + 记录条数（页面要报「导出了多少条」）。
   Future<Either<Failure, ({String json, int count})>> exportSnapshotJson();
 
+  /// 全库导出成**一份 Markdown 文档**（给人看 / 往别的工具搬）。
+  ///
+  /// ⛔ 与 [exportSnapshotJson] 是**两种东西**，不能互相替代：JSON 是备份格式
+  /// （含 base64 图片与删除墓碑，能原样还原），Markdown 是阅读格式（纯文本、
+  /// 不含回收站、不含图片）。
+  Future<Either<Failure, ({String markdown, int count})>> exportMarkdown();
+
   /// 把一份快照 JSON 合并进本地库。
   Future<Either<Failure, BackupImportResult>> importSnapshotJson(String json);
 

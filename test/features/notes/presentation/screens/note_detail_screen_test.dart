@@ -18,6 +18,8 @@ import 'package:mynote/features/notes/domain/usecases/delete_note_use_case.dart'
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_flags_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_flags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
@@ -40,6 +42,18 @@ class MockDeleteNote extends Mock implements DeleteNoteUseCase {}
 
 class _MockUpdateNoteBackground extends Mock
     implements UpdateNoteBackgroundUseCase {}
+
+/// 记录置顶 / 收藏写入的参数。用 [calls] 而不是 `verify`，因为同一测试里会连点
+/// 两次 —— 要断言的是「第二次写的是另一列、且没把第一列抹掉」。
+class MockUpdateNoteFlags extends Mock implements UpdateNoteFlagsUseCase {
+  final List<UpdateNoteFlagsParams> calls = <UpdateNoteFlagsParams>[];
+
+  @override
+  Future<Either<Failure, Unit>> call(UpdateNoteFlagsParams params) async {
+    calls.add(params);
+    return const Right(unit);
+  }
+}
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
@@ -92,6 +106,7 @@ void main() {
     MockUpdateNote? update,
     MockDeleteNote? delete,
     _MockUpdateNoteBackground? updateBackground,
+    MockUpdateNoteFlags? updateFlags,
   }) {
     final router = GoRouter(
       initialLocation: '/notes/n1',
@@ -126,6 +141,9 @@ void main() {
       when(() => updateBg(any())).thenAnswer((_) async => const Right(unit));
     }
 
+    // 同上：置顶 / 收藏窄通道默认成功。
+    final flags = updateFlags ?? MockUpdateNoteFlags();
+
     // 笔记详情从 `settingsProvider` 读「文字大小」（TASK-047），而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
     // **Repository** 层 override（同 `settings_screen_test`）。
@@ -144,6 +162,7 @@ void main() {
         createNoteUseCaseProvider.overrideWithValue(MockCreateNote()),
         deleteNoteUseCaseProvider.overrideWithValue(del),
         updateNoteBackgroundUseCaseProvider.overrideWithValue(updateBg),
+      updateNoteFlagsUseCaseProvider.overrideWithValue(flags),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
       ],
       child: MaterialApp.router(
@@ -176,18 +195,59 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 3 个图标，无标题', (tester) async {
+testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标题', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 顶栏 4 个 + 正文工具条右端的「插入图片」1 个。
-    expect(find.byType(AppIconButton), findsNWidgets(5));
+    // 共 7 个按钮：back + 5 个 actions + 正文工具条的「插入图片」
+    expect(find.byType(AppIconButton), findsNWidgets(7));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.share), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
-    expect(find.byType(AppBottomNav), findsNothing, reason: '笔记详情是二级 Push 页');
+
+    // 未置顶 / 未收藏时显示空心字形，选中态靠实心区分（见 _TopBar 注释）
+    expect(find.byIcon(AppIcons.pushPin), findsOneWidget);
+    expect(find.byIcon(AppIcons.pushPinFilled), findsNothing);
+    expect(find.byIcon(AppIcons.starOutline), findsOneWidget);
+    expect(find.byIcon(AppIcons.starFilled), findsNothing);
+    expect(find.byType(AppBottomNav), findsNothing, reason: '整页盖在嵌套 Push 页');
+  });
+
+  testWidgets('置顶 / 收藏：点击写库并翻成实心字形', (tester) async {
+    final updateFlags = MockUpdateNoteFlags();
+    await tester.pumpWidget(app('n1', stubbedGet(), updateFlags: updateFlags));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('note_toggle_pin')));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(AppIcons.pushPinFilled), findsOneWidget);
+    expect(
+      updateFlags.calls.single.isPinned,
+      isTrue,
+      reason: '只写置顶列，收藏列传 null（= 不动）',
+    );
+    expect(updateFlags.calls.single.isFavorite, isNull);
+
+    await tester.tap(find.byKey(const Key('note_toggle_favorite')));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(AppIcons.starFilled), findsOneWidget);
+    expect(updateFlags.calls.last.isFavorite, isTrue);
+  });
+
+  testWidgets('新笔记未落库：置顶 / 收藏按钮禁用', (tester) async {
+    await tester.pumpWidget(app(kNewNoteId, MockGetNote()));
+    await tester.pumpAndSettle();
+
+    final pin = tester.widget<AppIconButton>(
+      find.byKey(const Key('note_toggle_pin')),
+    );
+    final star = tester.widget<AppIconButton>(
+      find.byKey(const Key('note_toggle_favorite')),
+    );
+    expect(pin.onPressed, isNull, reason: '库里还没有行，写了必然 not found');
+    expect(star.onPressed, isNull);
   });
 
   testWidgets('页面底色为白（surface），与笔记列表的灰底不同', (tester) async {

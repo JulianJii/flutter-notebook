@@ -5,6 +5,8 @@ import 'package:mynote/core/database/app_database.dart';
 import 'package:mynote/core/database/daos/todo_dao.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
+import 'package:mynote/features/todos/domain/entities/todo_recurrence.dart';
 
 /// 待办的本地数据源。待办稿是一张平铺列表：⛔ 无筛选、无搜索、无分页、无排序入口
 /// （`created_at DESC` 在 [TodoDao] 的 SQL 里排完，这里不二次排序）。
@@ -71,6 +73,8 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         createdAt: todo.createdAt,
         updatedAt: todo.updatedAt,
         reminderAt: Value(todo.reminderAt),
+        priority: Value(todo.priority.level),
+        recurrence: Value(todo.recurrence?.id),
       ),
     );
     return _toEntity(row);
@@ -87,6 +91,12 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         isDone: Value(todo.isDone),
         updatedAt: Value(todo.updatedAt),
         reminderAt: Value(todo.reminderAt),
+        // ⚠️ 这两列**必须显式写**：编辑弹窗保存时会带上它们，而 `update` 是全字段
+        // 覆盖 —— 漏了就会在用户只改标题时把优先级静默重置成「普通」。
+        // （对比 `Todo.priority` 的注释说「不参与 copyWith」：那约束的是**内存实体**
+        // 的复制，不是这条 SQL。）
+        priority: Value(todo.priority.level),
+        recurrence: Value(todo.recurrence?.id),
       ),
     );
     if (!hit) {
@@ -125,16 +135,19 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
     );
   }
 
+  /// 回收站的「永久删除」：**写墓碑**而非物理 DELETE，语义理由见
+  /// `NoteDao.purgeById`。
   @override
   Future<void> purge(String todoId) => _guard(() async {
-    final removed = await _dao.deleteById(todoId);
+    final removed = await _dao.purgeById(todoId, AppClock.appNow());
     if (removed == 0) {
       throw CacheException(message: 'Todo not found: $todoId');
     }
   });
 
   @override
-  Future<void> purgeAllTrashed() => _guard(() => _dao.deleteAllTrashed());
+  Future<void> purgeAllTrashed() =>
+      _guard(() => _dao.purgeAllTrashed(AppClock.appNow()));
 
   @override
   Future<int> deleteCompleted() =>
@@ -160,6 +173,9 @@ Todo _toEntity(TodoRow row) {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     deletedAt: row.deletedAt,
+    purgedAt: row.purgedAt,
+    priority: TodoPriority.fromLevel(row.priority),
+    recurrence: TodoRecurrence.fromId(row.recurrence),
   );
 }
 

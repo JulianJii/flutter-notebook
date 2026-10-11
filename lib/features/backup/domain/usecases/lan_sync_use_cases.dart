@@ -30,6 +30,9 @@ class LanSyncUseCases {
 
   bool get isHosting => _repository.isHosting;
 
+  /// 本机对外的 `ip:port`，供 UI 显示（让「手动输入地址」那条兜底真能用）。
+  List<String> get localEndpoints => _repository.localEndpoints;
+
   /// 与一台设备同步（一次往返即双方收敛，顺带完成一次对时）。
   Future<Either<Failure, LanSyncReport>> syncWithPeer(LanPeer peer) =>
       _repository.syncWithPeer(peer);

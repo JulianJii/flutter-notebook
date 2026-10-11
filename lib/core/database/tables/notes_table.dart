@@ -59,4 +59,22 @@ class Notes extends Table {
   /// 存 id 而非下标：资源列表顺序变化不会让老数据错位，未知值降级为「无背景」。
   /// 只由 `NoteDao.updateBackgroundById` 写，整行 `update` 不碰这一列。
   TextColumn get background => text().nullable()();
+
+  /// 置顶。列表排序时排在未置顶之前（`NoteDao.watch`），置顶笔记不改变创建时间。
+  BoolColumn get isPinned => boolean().withDefault(const Constant(false))();
+
+  /// 收藏。与置顶是**两个正交维度**：置顶管「最近要看的在前面」，收藏管「重要的
+  /// 找得到」，一条笔记可以只收藏不置顶。
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
+
+  /// **永久删除的墓碑时刻**。null = 没被永久删除过。
+  ///
+  /// ⚠️ 「永久删除」写的是这一列而**不是**物理 DELETE：合并是并集，物理删掉的行
+  /// 在远端「不存在」，对端因此判定「本地这条更新的」而把它原样带回来 ——
+  /// A 机永久删的笔记会在 B 机下次同步时复活。要让删除真正跨设备传播，
+  /// 被删的行必须**留在快照里**并带着一个比任何编辑都新的时刻。
+  ///
+  /// 真正的物理删除由保留期清扫（`BackupLocalDataSource.purgeExpired`）在
+  /// [purgedAt] 超过保留期后做，那时它对所有设备都已过期。
+  DateTimeColumn get purgedAt => dateTime().nullable()();
 }

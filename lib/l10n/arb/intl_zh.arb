@@ -212,6 +212,22 @@
   "@palette": {
     "description": "Tooltip of the note detail top bar palette icon"
   },
+  "notePin": "置顶",
+  "@notePin": {
+    "description": "Tooltip of the note detail top bar pin toggle when unpinned"
+  },
+  "noteUnpin": "取消置顶",
+  "@noteUnpin": {
+    "description": "Tooltip of the note detail top bar pin toggle when pinned"
+  },
+  "noteFavorite": "收藏",
+  "@noteFavorite": {
+    "description": "Tooltip of the note detail top bar favorite toggle when not favorited"
+  },
+  "noteUnfavorite": "取消收藏",
+  "@noteUnfavorite": {
+    "description": "Tooltip of the note detail top bar favorite toggle when favorited"
+  },
   "noteBackground": "背景",
   "@noteBackground": {
     "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
@@ -261,6 +277,18 @@
   "@folderNameExists": {
     "description": "Inline error / snackbar of the create-folder dialog when the name is already taken"
   },
+  "renameFolder": "重命名文件夹",
+  "@renameFolder": {
+    "description": "Title of the rename-folder dialog"
+  },
+  "renameFolderMenu": "重命名",
+  "@renameFolderMenu": {
+    "description": "Long-press menu item that opens the rename-folder dialog"
+  },
+  "renameFolderDone": "已重命名",
+  "@renameFolderDone": {
+    "description": "Snackbar shown after a folder was renamed"
+  },
   "createTodo": "新建待办",
   "@createTodo": {
     "description": "Title of the create-todo dialog opened by the to-do list FAB"
@@ -268,6 +296,70 @@
   "todoTitle": "待办标题",
   "@todoTitle": {
     "description": "Hint text of the create-todo dialog text field (to-do list)"
+  },
+  "todoPriority": "优先级",
+  "@todoPriority": {
+    "description": "Section label of the priority picker in the to-do edit dialog"
+  },
+  "todoPriorityNormal": "普通",
+  "@todoPriorityNormal": {
+    "description": "Priority chip for the normal level"
+  },
+  "todoPriorityImportant": "重要",
+  "@todoPriorityImportant": {
+    "description": "Priority chip for the important level"
+  },
+  "todoPriorityUrgent": "紧急",
+  "@todoPriorityUrgent": {
+    "description": "Priority chip for the urgent level"
+  },
+  "todoRepeat": "重复",
+  "@todoRepeat": {
+    "description": "Section label of the recurrence picker in the to-do edit dialog"
+  },
+  "todoRecurrenceNone": "不重复",
+  "@todoRecurrenceNone": {
+    "description": "Recurrence chip meaning the reminder does not repeat"
+  },
+  "todoRecurrenceDaily": "每天",
+  "@todoRecurrenceDaily": {
+    "description": "Recurrence chip for daily reminders"
+  },
+  "todoRecurrenceWeekly": "每周",
+  "@todoRecurrenceWeekly": {
+    "description": "Recurrence chip for weekly reminders"
+  },
+  "todoRecurrenceMonthly": "每月",
+  "@todoRecurrenceMonthly": {
+    "description": "Recurrence chip for monthly reminders"
+  },
+  "todoSubtasks": "子任务",
+  "@todoSubtasks": {
+    "description": "Section label of the subtask list in the to-do edit dialog"
+  },
+  "todoSubtaskAddHint": "添加子任务",
+  "@todoSubtaskAddHint": {
+    "description": "Hint text of the inline field that creates a subtask"
+  },
+  "todoSubtaskAdd": "添加子任务",
+  "@todoSubtaskAdd": {
+    "description": "Tooltip of the button that creates a subtask"
+  },
+  "todoSubtaskProgress": "已完成 {done}/{total}",
+  "@todoSubtaskProgress": {
+    "description": "Progress counter shown next to the subtask section label",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "todoRecurrenceNeedsReminder": "先设提醒时间，再选重复规则",
+  "@todoRecurrenceNeedsReminder": {
+    "description": "Shown when the user picks a repeat rule while no reminder is set"
   },
   "save": "保存",
   "@save": {
@@ -822,6 +914,10 @@
   "@lanHostingOn": {
     "description": "Footer shown while this device is hosting"
   },
+  "lanHostingAddress": "在同一个 WiFi 下输入：",
+  "@lanHostingAddress": {
+    "description": "Prefix of the local ip:port list, so the other device can type it in when discovery fails"
+  },
   "lanSearching": "正在查找同一网络下的设备…",
   "@lanSearching": {
     "description": "Shown while no peer has been discovered yet"
@@ -891,6 +987,27 @@
   "dataExportDesc": "把全部笔记、文件夹与待办存成一份 JSON 快照文件",
   "@dataExportDesc": {
     "description": "Subtitle of the export row"
+  },
+  "dataExportMarkdown": "导出为 Markdown",
+  "@dataExportMarkdown": {
+    "description": "Data management row that exports the whole notebook as one Markdown document (readable format, no images, no trash)"
+  },
+  "dataExportMarkdownDesc": "导出一份 .md 文件，便于阅读和迁移；图片与回收站内容不包含在内",
+  "@dataExportMarkdownDesc": {
+    "description": "Subtitle of the Markdown export row"
+  },
+  "dataExportMarkdownDone": "已导出 {count} 条笔记",
+  "@dataExportMarkdownDone": {
+    "description": "Snackbar after a successful Markdown export",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportMarkdownEmpty": "没有可导出的笔记",
+  "@dataExportMarkdownEmpty": {
+    "description": "Snackbar when there is nothing to export as Markdown"
   },
   "dataGroupImport": "导入",
   "@dataGroupImport": {

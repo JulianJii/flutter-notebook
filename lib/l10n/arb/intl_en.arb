@@ -215,6 +215,22 @@
   "@palette": {
     "description": "Tooltip of the note detail top bar palette icon"
   },
+  "notePin": "Pin to top",
+  "@notePin": {
+    "description": "Tooltip of the note detail top bar pin toggle when unpinned"
+  },
+  "noteUnpin": "Unpin",
+  "@noteUnpin": {
+    "description": "Tooltip of the note detail top bar pin toggle when pinned"
+  },
+  "noteFavorite": "Favorite",
+  "@noteFavorite": {
+    "description": "Tooltip of the note detail top bar favorite toggle when not favorited"
+  },
+  "noteUnfavorite": "Remove from favorites",
+  "@noteUnfavorite": {
+    "description": "Tooltip of the note detail top bar favorite toggle when favorited"
+  },
   "noteBackground": "Background",
   "@noteBackground": {
     "description": "Title of the note detail background picker sheet and the accessibility label of a background thumbnail"
@@ -264,11 +280,87 @@
   "@folderNameExists": {
     "description": "Inline error / snackbar of the create-folder dialog when the name is already taken"
   },
+  "renameFolder": "Rename folder",
+  "@renameFolder": {
+    "description": "Title of the rename-folder dialog"
+  },
+  "renameFolderMenu": "Rename",
+  "@renameFolderMenu": {
+    "description": "Long-press menu item that opens the rename-folder dialog"
+  },
+  "renameFolderDone": "Renamed",
+  "@renameFolderDone": {
+    "description": "Snackbar shown after a folder was renamed"
+  },
   "createTodo": "New todo",
   "@createTodo": {
     "description": "Title of the create-todo dialog opened by the to-do list FAB"
   },
   "todoTitle": "Todo title",
+  "todoPriority": "Priority",
+  "@todoPriority": {
+    "description": "Section label of the priority picker in the to-do edit dialog"
+  },
+  "todoPriorityNormal": "Normal",
+  "@todoPriorityNormal": {
+    "description": "Priority chip for the normal level"
+  },
+  "todoPriorityImportant": "Important",
+  "@todoPriorityImportant": {
+    "description": "Priority chip for the important level"
+  },
+  "todoPriorityUrgent": "Urgent",
+  "@todoPriorityUrgent": {
+    "description": "Priority chip for the urgent level"
+  },
+  "todoRepeat": "Repeat",
+  "@todoRepeat": {
+    "description": "Section label of the recurrence picker in the to-do edit dialog"
+  },
+  "todoRecurrenceNone": "Never",
+  "@todoRecurrenceNone": {
+    "description": "Recurrence chip meaning the reminder does not repeat"
+  },
+  "todoRecurrenceDaily": "Daily",
+  "@todoRecurrenceDaily": {
+    "description": "Recurrence chip for daily reminders"
+  },
+  "todoRecurrenceWeekly": "Weekly",
+  "@todoRecurrenceWeekly": {
+    "description": "Recurrence chip for weekly reminders"
+  },
+  "todoRecurrenceMonthly": "Monthly",
+  "@todoRecurrenceMonthly": {
+    "description": "Recurrence chip for monthly reminders"
+  },
+  "todoSubtasks": "Subtasks",
+  "@todoSubtasks": {
+    "description": "Section label of the subtask list in the to-do edit dialog"
+  },
+  "todoSubtaskAddHint": "Add a subtask",
+  "@todoSubtaskAddHint": {
+    "description": "Hint text of the inline field that creates a subtask"
+  },
+  "todoSubtaskAdd": "Add subtask",
+  "@todoSubtaskAdd": {
+    "description": "Tooltip of the button that creates a subtask"
+  },
+  "todoSubtaskProgress": "{done}/{total} done",
+  "@todoSubtaskProgress": {
+    "description": "Progress counter shown next to the subtask section label",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "todoRecurrenceNeedsReminder": "Set a reminder first, then choose when it repeats",
+  "@todoRecurrenceNeedsReminder": {
+    "description": "Shown when the user picks a repeat rule while no reminder is set"
+  },
   "@todoTitle": {
     "description": "Hint text of the create-todo dialog text field (to-do list)"
   },
@@ -825,6 +917,10 @@
   "@lanHostingOn": {
     "description": "Footer shown while this device is hosting"
   },
+  "lanHostingAddress": "On this WiFi, enter:",
+  "@lanHostingAddress": {
+    "description": "Prefix of the local ip:port list, so the other device can type it in when discovery fails"
+  },
   "lanSearching": "Looking for devices on this network…",
   "@lanSearching": {
     "description": "Shown while no peer has been discovered yet"
@@ -897,6 +993,27 @@
   "dataExportDesc": "Save all notes, folders and to-dos into one JSON snapshot file",
   "@dataExportDesc": {
     "description": "Subtitle of the export row"
+  },
+  "dataExportMarkdown": "Export as Markdown",
+  "@dataExportMarkdown": {
+    "description": "Data management row that exports the whole notebook as one Markdown document (readable format, no images, no trash)"
+  },
+  "dataExportMarkdownDesc": "Save a .md file for reading and moving elsewhere; images and trashed notes are not included",
+  "@dataExportMarkdownDesc": {
+    "description": "Subtitle of the Markdown export row"
+  },
+  "dataExportMarkdownDone": "Exported {count} notes",
+  "@dataExportMarkdownDone": {
+    "description": "Snackbar after a successful Markdown export",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dataExportMarkdownEmpty": "No notes to export",
+  "@dataExportMarkdownEmpty": {
+    "description": "Snackbar when there is nothing to export as Markdown"
   },
   "dataGroupImport": "Import",
   "@dataGroupImport": {

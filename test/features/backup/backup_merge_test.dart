@@ -47,7 +47,10 @@ BackupTodo todo(
   String title, {
   DateTime? updatedAt,
   DateTime? deletedAt,
+  DateTime? purgedAt,
   DateTime? reminderAt,
+  String priority = 'normal',
+  String? recurrence,
 }) =>
     BackupTodo(
       id: id,
@@ -56,19 +59,40 @@ BackupTodo todo(
       createdAt: t1,
       updatedAt: updatedAt ?? t2,
       deletedAt: deletedAt,
+      purgedAt: purgedAt,
       reminderAt: reminderAt,
+      priority: priority,
+      recurrence: recurrence,
+    );
+
+BackupTodoSubtask subtask(
+  String id,
+  String todoId, {
+  String? title,
+  bool isDone = false,
+  DateTime? updatedAt,
+}) =>
+    BackupTodoSubtask(
+      id: id,
+      todoId: todoId,
+      title: title ?? id,
+      isDone: isDone,
+      createdAt: t1,
+      updatedAt: updatedAt ?? t2,
     );
 
 BackupSnapshot snapshot({
   List<BackupNote> notes = const <BackupNote>[],
   List<BackupFolder> folders = const <BackupFolder>[],
   List<BackupTodo> todos = const <BackupTodo>[],
+  List<BackupTodoSubtask> subtasks = const <BackupTodoSubtask>[],
 }) =>
     BackupSnapshot(
       exportedAt: t3,
       notes: notes,
       folders: folders,
       todos: todos,
+      subtasks: subtasks,
     );
 
 void main() {
@@ -280,8 +304,88 @@ void main() {
       expect(read.folders.single.name, '工作');
     });
 
-    /// `note_folders.name` 是 UNIQUE，跨设备各建同名文件夹必然撞车。撞了改名，
-    /// 不丢数据。
+    /// ⚠️ 子项必须进快照，否则「A 机勾掉的子项」在 B 机同步后会变回没勾 —— 那是丢数据，
+/// 而它只在两台设备之间来回同步时才显形，单元测试不钉住就一定会漏。
+group('子任务同步', () {
+  late AppDatabase db;
+  late BackupLocalDataSource source;
+
+  setUp(() {
+    db = AppDatabase.memory();
+    source = BackupLocalDataSource(db);
+  });
+
+  tearDown(() => db.close());
+
+  test('子项往返：勾选状态与归属不丢', () async {
+    await source.write(
+      snapshot(
+        todos: <BackupTodo>[todo('d1', '买牛奶')],
+        subtasks: <BackupTodoSubtask>[
+          subtask('s1', 'd1', isDone: true),
+          subtask('s2', 'd1'),
+        ],
+      ),
+    );
+
+    final read = await source.read();
+    expect(read.subtasks, hasLength(2));
+    final s1 = read.subtasks.firstWhere((s) => s.id == 's1');
+    expect(s1.isDone, isTrue, reason: '勾选状态丢了 = 静默丢数据');
+    expect(s1.todoId, 'd1');
+  });
+
+  test('合并：勾过的那条赢，未勾的保留本地', () {
+    final local = snapshot(
+      todos: <BackupTodo>[todo('d1', '买牛奶')],
+      subtasks: <BackupTodoSubtask>[subtask('s1', 'd1'), subtask('s2', 'd1', isDone: true)],
+    );
+    final incoming = snapshot(
+      todos: <BackupTodo>[todo('d1', '买牛奶')],
+      subtasks: <BackupTodoSubtask>[
+        subtask('s1', 'd1', isDone: true, updatedAt: t3),
+      ],
+    );
+
+    final merged = BackupSnapshot.merge(local, incoming).merged;
+    expect(
+      merged.subtasks.firstWhere((s) => s.id == 's1').isDone,
+      isTrue,
+      reason: '远端更晚 → 勾选生效',
+    );
+    expect(
+      merged.subtasks.firstWhere((s) => s.id == 's2').isDone,
+      isTrue,
+      reason: '远端没提到的行原样保留',
+    );
+  });
+
+  test('合并：远端更旧 → 保留本地勾选（不会被对端抹掉）', () {
+    final local = snapshot(
+      todos: <BackupTodo>[todo('d1', '买牛奶')],
+      subtasks: <BackupTodoSubtask>[subtask('s1', 'd1', isDone: true, updatedAt: t3)],
+    );
+    final incoming = snapshot(
+      todos: <BackupTodo>[todo('d1', '买牛奶')],
+      subtasks: <BackupTodoSubtask>[subtask('s1', 'd1', isDone: false, updatedAt: t1)],
+    );
+
+    final merged = BackupSnapshot.merge(local, incoming).merged;
+    expect(merged.subtasks.single.isDone, isTrue);
+  });
+
+  test('解析 v3 快照（没有 subtasks 键）→ 空列表，不报错', () {
+    final parsed = BackupSnapshot.parse(<String, Object?>{
+      'version': 3,
+      'exportedAt': t3.toIso8601String(),
+      'notes': <Object?>[],
+      'folders': <Object?>[],
+      'todos': <Object?>[],
+    });
+    expect(parsed.skipped, 0);
+    expect(parsed.snapshot.subtasks, isEmpty);
+  });
+});
     test('同名文件夹改名而不是丢弃', () async {
       final skipped = await source.write(
         snapshot(
@@ -346,6 +450,7 @@ void main() {
             createdAt: t1,
             updatedAt: t2,
             reminderAt: t3,
+            priority: 'normal',
           ),
         ],
       );
@@ -373,6 +478,7 @@ void main() {
               isDone: true,
               createdAt: t1,
               updatedAt: t2,
+              priority: 'normal',
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:mynote/core/database/tables/note_folders_table.dart';
 import 'package:mynote/core/database/tables/notes_table.dart';
+import 'package:mynote/core/database/tables/todo_subtasks_table.dart';
 import 'package:mynote/core/database/tables/todos_table.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -17,13 +18,18 @@ part 'app_database.g.dart';
 /// 可空 = 无背景）；v3 → v4 给 `note_folders` 加 `sort_index` 列（文件夹管理拖拽排序）；
 /// v4 → v5 给 `todos` 加 `reminder_at` 列（待办提醒时刻，可空 = 无提醒）；
 /// v5 → v6 给 `note_folders` 与 `todos` 加 `deleted_at` 列（**软删除**，
-/// 让删除能跨设备传播 —— 硬删除不留痕，见两张表的类注释）。
+/// 让删除能跨设备传播 —— 硬删除不留痕，见两张表的类注释）；
+/// v6 → v7 做两件事：① 三张表各加 `purged_at`（「永久删除」的墓碑，见各表列注释），
+/// 否则 A 机永久删的笔记会在 B 机下次同步时复活；② `notes` 加 `is_pinned` /
+/// `is_favorite` 两个置位布尔列，老数据默认 false = 都不置顶不收藏；
+/// v7 → v8 加待办的 `priority`（默认 0 = 普通）与 `recurrence`（null = 不重复），
+/// 并**新建** `todo_subtasks` 表（子任务，有自己的主键与外键）。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///
 /// 三张表（`notes` / `note_folders` / `todos`）在 `@DriftDatabase` 注解里声明，
 /// drift 同时在本文件的 part 里生成 `NoteRow` / `NoteFolderRow` / `TodoRow`
 /// 三个行类与对应 companion。
-@DriftDatabase(tables: [Notes, NoteFolders, Todos])
+@DriftDatabase(tables: [Notes, NoteFolders, Todos, TodoSubtasks])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -31,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -60,6 +66,27 @@ class AppDatabase extends _$AppDatabase {
       if (from < 6) {
         await m.addColumn(noteFolders, noteFolders.deletedAt);
         await m.addColumn(todos, todos.deletedAt);
+      }
+      // v6 → v7：永久删除的墓碑列。老数据为 null = 从未被永久删除过，与升级前
+      // 「回收站里的行会真的消失」这个状态等价，**无需回填**。
+      // 同批加的两个置位布尔列默认值 false = 都不置顶不收藏。
+      if (from < 7) {
+        await m.addColumn(notes, notes.purgedAt);
+        await m.addColumn(noteFolders, noteFolders.purgedAt);
+        await m.addColumn(todos, todos.purgedAt);
+        await m.addColumn(notes, notes.isPinned);
+        await m.addColumn(notes, notes.isFavorite);
+      }
+      // v7 → v8：待办优先级 / 重复规则 + 子任务表。
+      // 老数据 priority = 0（普通）、recurrence = null（不重复），与升级前的
+      // 「待办稿只有标题和完成态」一致，**无需回填**。
+      // `todo_subtasks` 是新表：drift 的 `onCreate` 会建它，`onUpgrade` 里
+      // **不能**用 `m.createTable`（新装的用户走 onCreate，升级的走 onUpgrade，
+      // 两条路都要有 —— createAll 在 onCreate 里已覆盖，这里只为老库补建）。
+      if (from < 8) {
+        await m.addColumn(todos, todos.priority);
+        await m.addColumn(todos, todos.recurrence);
+        await m.createTable(todoSubtasks);
       }
     },
     beforeOpen: (details) async {

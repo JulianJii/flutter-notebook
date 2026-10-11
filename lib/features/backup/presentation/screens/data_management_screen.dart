@@ -63,6 +63,15 @@ class DataManagementScreen extends ConsumerWidget {
                             ? () => _export(context, ref)
                             : null,
                       ),
+                      AppListTile(
+                        key: const Key('data_export_markdown'),
+                        title: l10n.dataExportMarkdown,
+                        subtitle: l10n.dataExportMarkdownDesc,
+                        titleWeight: AppSwitchRow.titleWeight,
+                        onTap: running == null
+                            ? () => _exportMarkdown(context, ref)
+                            : null,
+                      ),
                     ],
                   ),
                   AppSettingsGroup(
@@ -153,6 +162,25 @@ class DataManagementScreen extends ConsumerWidget {
       (failure) => showFailureSnack(context, failure, isImport: false),
       (count) =>
           showFeedbackSnack(context, l10n.dataExportDone(count), ok: true),
+    );
+  }
+
+  Future<void> _exportMarkdown(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final result = await ref
+        .read(backupControllerProvider.notifier)
+        .exportMarkdown();
+    if (!context.mounted) return;
+    result.fold(
+      (failure) => showFailureSnack(context, failure, isImport: false),
+      // 0 = 一条笔记都没有，controller 已经跳过了分享面板。
+      (count) => showFeedbackSnack(
+        context,
+        count == 0
+            ? l10n.dataExportMarkdownEmpty
+            : l10n.dataExportMarkdownDone(count),
+        ok: true,
+      ),
     );
   }
 

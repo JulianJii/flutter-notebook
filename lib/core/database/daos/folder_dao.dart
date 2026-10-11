@@ -48,7 +48,8 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
           // 上，**不能**塞进上面 join 的 `Expression.and` —— LEFT JOIN 的谓词只
           // 作用于右表，把条件放那儿只会把 count 置空，文件夹行照样显示。
           // 这个位置写错不会报错、不会崩，只是静默地继续显示已删文件夹。
-          ..where(noteFolders.deletedAt.isNull())
+          // `purged_at` 同理：墓碑行只活在同步链路里，任何用户可见的列表都不列它。
+          ..where(noteFolders.deletedAt.isNull() & noteFolders.purgedAt.isNull())
           ..orderBy([
             OrderingTerm.asc(noteFolders.sortIndex),
             OrderingTerm.asc(noteFolders.createdAt),
@@ -129,28 +130,36 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
         .then((affected) => affected > 0);
   }
 
-  /// 删文件夹行（**物理**），返回受影响行数。
-///
-/// ⛔ **只由回收站的「永久删除」发起**：普通删除走 [markTrashed]（软删除），
-/// 否则删除不留痕、无法跨设备传播。
-///
-/// ⚠️ 与 [nullOutFolder] 一起放进同一个 `db.transaction()`，事务在
-/// `TASK-021` 的 datasource 包（`REPOSITORY-MAP.md` §2.2）。DAO 内部**不开**
-/// 事务 —— 边界散落在 DAO 里，上层无法推理。
-Future<int> deleteById(String folderId) {
-    return (super.delete(
-      noteFolders,
-    )..where((t) => t.id.equals(folderId))).go();
+/// **永久删除 = 写墓碑，不是物理 DELETE**（语义理由同 `NoteDao.purgeById`）。
+  ///
+  /// ⚠️ 与 [nullOutFolder] 一起放进同一个 `db.transaction()`，事务在 datasource
+  /// 包里。DAO 内部**不开**事务 —— 边界散落在 DAO 里，上层无法推理。
+  ///
+  /// 回收站里的 `name` 保持让出版（`工作#<id>`）不动：墓碑行不再被任何人读到，
+  /// 但它仍在表里占着名字 —— 让它继续占着反而省掉一次改名写库。
+  Future<int> purgeById(String folderId, DateTime purgedAt) {
+    return (super.update(noteFolders)
+          ..where((t) => t.id.equals(folderId) & t.purgedAt.isNull()))
+        .write(NoteFoldersCompanion(purgedAt: Value(purgedAt)))
+        .then((affected) => affected);
   }
 
-  /// 清空回收站：物理删掉全部 `deleted_at IS NOT NULL` 的行，返回受影响行数。
+  /// 清空回收站：给全部 `deleted_at IS NOT NULL` 的行打墓碑，返回受影响行数。
   ///
-  /// 单条 DELETE 而不是 N 次 [deleteById]：循环中途失败会留下删一半的
-  /// 不可解释状态。命中 0 行**不抛**（= 已清空）。
-  Future<int> deleteAllTrashed() {
-    return (super
-            .delete(noteFolders)
-          ..where((t) => t.deletedAt.isNotNull()))
+  /// ⚠️ 与 [purgeById] 同一条 UPDATE：墓碑时刻自身就是比较键，不刷 `updated_at`。
+  /// 命中 0 行**不抛**（= 已清空）。
+  Future<int> purgeAllTrashed(DateTime purgedAt) {
+    return (super.update(noteFolders)
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull()))
+        .write(NoteFoldersCompanion(purgedAt: Value(purgedAt)))
+        .then((affected) => affected);
+  }
+
+  /// 保留期清扫：物理删掉墓碑早于 [before] 的行（见 `NoteDao.purgeExpiredTombstones`）。
+  Future<int> purgeExpiredTombstones(DateTime before) {
+    return (super.delete(noteFolders)..where(
+          (t) => t.purgedAt.isNotNull() & t.purgedAt.isSmallerThanValue(before),
+        ))
         .go();
   }
 
@@ -167,7 +176,7 @@ Future<int> deleteById(String folderId) {
   /// 混在一起会让「文件夹管理」和「回收站」互相漏数据。
   Stream<List<NoteFolderRow>> watchTrashed() {
     return (select(noteFolders)
-          ..where((t) => t.deletedAt.isNotNull())
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull())
           ..orderBy([
             (t) => OrderingTerm.desc(t.deletedAt),
             (t) => OrderingTerm.desc(t.createdAt),

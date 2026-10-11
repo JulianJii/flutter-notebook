@@ -9,9 +9,7 @@ const Object _unset = Object();
 ///
 /// ⛔ **不落库的派生字段一律不加**：`wordCount`（用 `WordCounter` 现算）、
 /// `snippet`、`folderName`。派生值落库 = 同步 bug 来源。
-/// ⛔ **不预留字段**：`sortIndex` / `isPinned` / `isFavorite` / `color` /
-/// `hasAttachment`（原 CONFLICT-10 对 `deletedAt` 的保留已随「最近删除」
-/// 功能落地解除，见 `notes_table.dart` 头注）。
+/// ⛔ **不预留字段**：`sortIndex` / `color` / `hasAttachment`。
 /// ⛔ **不建状态枚举**（§6.1）：设计稿对 `Note` 无任何状态描述。
 /// ⛔ **无 getter**：`isEmpty` / `hasContent` 等一律不加，需要时在 UI 层现算。
 class Note extends Equatable {
@@ -24,6 +22,9 @@ class Note extends Equatable {
     this.folderId,
     this.background,
     this.deletedAt,
+    this.isPinned = false,
+    this.isFavorite = false,
+    this.purgedAt,
   });
 
   final String id;
@@ -56,16 +57,30 @@ class Note extends Equatable {
   /// 由 Repository / DataSource 写定，UI 只读不派生。
   final DateTime? deletedAt;
 
+  /// 置顶。列表排序里恒排未置顶之前，**与 [createdAt] / [updatedAt] 无关**。
+  final bool isPinned;
+
+  /// 收藏。与 [isPinned] 是两个正交维度：置顶管「最近要看的在前面」，
+  /// 收藏管「重要的找得到」。
+  final bool isFavorite;
+
+  /// 永久删除墓碑时刻。UI 与业务逻辑都**不看它** —— 它只活在数据层与同步链路里，
+  /// 让「永久删除」能跨设备传播（见 `notes_table.dart` 的列注释）。
+  final DateTime? purgedAt;
+
   /// [folderId] 用哨兵而非 `?? this.folderId` —— 否则
   /// `copyWith(folderId: null)`（显式移回「未分类」）会失效。
-  /// [background] / [deletedAt] 同理：都需要「显式置回 null」。
+  /// [background] / [deletedAt] / [purgedAt] 同理：都需要「显式置回 null」。
   Note copyWith({
     String? title,
     String? content,
     Object? folderId = _unset,
     Object? background = _unset,
     Object? deletedAt = _unset,
+    Object? purgedAt = _unset,
     DateTime? updatedAt,
+    bool? isPinned,
+    bool? isFavorite,
   }) {
     return Note(
       id: id,
@@ -80,6 +95,11 @@ class Note extends Equatable {
       deletedAt: identical(deletedAt, _unset)
           ? this.deletedAt
           : deletedAt as DateTime?,
+      purgedAt: identical(purgedAt, _unset)
+          ? this.purgedAt
+          : purgedAt as DateTime?,
+      isPinned: isPinned ?? this.isPinned,
+      isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -93,6 +113,9 @@ class Note extends Equatable {
     folderId,
     background,
     deletedAt,
+    purgedAt,
+    isPinned,
+    isFavorite,
     createdAt,
     updatedAt,
   ];

@@ -123,13 +123,18 @@ void main() {
     );
   });
 
-  test('purge 是物理删（回收站的「永久删除」）', () async {
+  test('purge 打墓碑（回收站的「永久删除」）', () async {
     await source.insert(_todo('t1'));
     await source.delete('t1');
 
     await source.purge('t1');
 
     expect(await source.watchTrashed().first, isEmpty);
+    // 墓碑行仍在表里 —— 它必须留在快照里，删除才能跨设备传播。
+    final tombstone = await db
+        .select(db.todos)
+        .getSingle();
+    expect(tombstone.purgedAt, isNotNull);
     await expectLater(source.purge('t1'), throwsA(isA<CacheException>()));
   });
 }

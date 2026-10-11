@@ -51,6 +51,10 @@ class NoteFolders extends Table {
   /// `FolderLocalDataSourceImpl.trash` 显式置 NULL（与 FK 规则冗余但原子，
   /// 见该方法注释）。
   DateTimeColumn get deletedAt => dateTime().nullable()();
+
+  /// **永久删除的墓碑时刻**。语义同 `notes.purged_at`：写这一列而不是物理 DELETE，
+  /// 让「永久删除」能跨设备传播。物理删除由保留期清扫在墓碑过期后做。
+  DateTimeColumn get purgedAt => dateTime().nullable()();
 }
 
 /// 回收站里文件夹的 `name` 存成 `<原名>#<id>`，以此**让出原名**。

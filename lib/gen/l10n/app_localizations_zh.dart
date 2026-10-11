@@ -176,6 +176,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get palette => '配色';
 
   @override
+  String get notePin => '置顶';
+
+  @override
+  String get noteUnpin => '取消置顶';
+
+  @override
+  String get noteFavorite => '收藏';
+
+  @override
+  String get noteUnfavorite => '取消收藏';
+
+  @override
   String get noteBackground => '背景';
 
   @override
@@ -211,10 +223,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folderNameExists => '已存在同名文件夹';
 
   @override
+  String get renameFolder => '重命名文件夹';
+
+  @override
+  String get renameFolderMenu => '重命名';
+
+  @override
+  String get renameFolderDone => '已重命名';
+
+  @override
   String get createTodo => '新建待办';
 
   @override
   String get todoTitle => '待办标题';
+
+  @override
+  String get todoPriority => '优先级';
+
+  @override
+  String get todoPriorityNormal => '普通';
+
+  @override
+  String get todoPriorityImportant => '重要';
+
+  @override
+  String get todoPriorityUrgent => '紧急';
+
+  @override
+  String get todoRepeat => '重复';
+
+  @override
+  String get todoRecurrenceNone => '不重复';
+
+  @override
+  String get todoRecurrenceDaily => '每天';
+
+  @override
+  String get todoRecurrenceWeekly => '每周';
+
+  @override
+  String get todoRecurrenceMonthly => '每月';
+
+  @override
+  String get todoSubtasks => '子任务';
+
+  @override
+  String get todoSubtaskAddHint => '添加子任务';
+
+  @override
+  String get todoSubtaskAdd => '添加子任务';
+
+  @override
+  String todoSubtaskProgress(int done, int total) {
+    return '已完成 $done/$total';
+  }
+
+  @override
+  String get todoRecurrenceNeedsReminder => '先设提醒时间，再选重复规则';
 
   @override
   String get save => '保存';
@@ -625,6 +690,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lanHostingOn => '本机正在可被连接';
 
   @override
+  String get lanHostingAddress => '在同一个 WiFi 下输入：';
+
+  @override
   String get lanSearching => '正在查找同一网络下的设备…';
 
   @override
@@ -672,6 +740,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dataExportDesc => '把全部笔记、文件夹与待办存成一份 JSON 快照文件';
+
+  @override
+  String get dataExportMarkdown => '导出为 Markdown';
+
+  @override
+  String get dataExportMarkdownDesc => '导出一份 .md 文件，便于阅读和迁移；图片与回收站内容不包含在内';
+
+  @override
+  String dataExportMarkdownDone(int count) {
+    return '已导出 $count 条笔记';
+  }
+
+  @override
+  String get dataExportMarkdownEmpty => '没有可导出的笔记';
 
   @override
   String get dataGroupImport => '导入';

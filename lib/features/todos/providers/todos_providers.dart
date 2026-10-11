@@ -1,7 +1,11 @@
+import 'package:mynote/core/database/daos/todo_subtask_dao.dart';
 import 'package:mynote/core/providers/database_providers.dart';
 import 'package:mynote/features/todos/data/datasources/todo_local_data_source.dart';
+import 'package:mynote/features/todos/data/datasources/todo_subtask_local_data_source.dart';
 import 'package:mynote/features/todos/data/repositories/todo_repository_impl.dart';
+import 'package:mynote/features/todos/data/repositories/todo_subtask_repository_impl.dart';
 import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_subtask_repository.dart';
 import 'package:mynote/features/todos/domain/usecases/create_todo_use_case.dart';
 import 'package:mynote/features/todos/domain/usecases/delete_completed_todos_use_case.dart';
 import 'package:mynote/features/todos/domain/usecases/delete_todo_use_case.dart';
@@ -29,6 +33,19 @@ TodoLocalDataSource todoLocalDataSource(Ref ref) {
 @riverpod
 TodoRepository todoRepository(Ref ref) {
   return TodoRepositoryImpl(ref.watch(todoLocalDataSourceProvider));
+}
+
+// ---- 子项（从属数据，独立一条装配线）----
+@riverpod
+TodoSubtaskLocalDataSource todoSubtaskLocalDataSource(Ref ref) {
+  return TodoSubtaskLocalDataSourceImpl(
+    TodoSubtaskDao(ref.watch(appDatabaseProvider)),
+  );
+}
+
+@riverpod
+TodoSubtaskRepository todoSubtaskRepository(Ref ref) {
+  return TodoSubtaskRepositoryImpl(ref.watch(todoSubtaskLocalDataSourceProvider));
 }
 
 // ---- use case ----

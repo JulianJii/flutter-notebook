@@ -13,7 +13,7 @@ import 'backup_file_service.dart';
 part 'backup_controller.g.dart';
 
 /// 正在进行的操作。null = 空闲（页面据此转圈并禁用入口）。
-enum BackupOperation { export, import, sync }
+enum BackupOperation { export, exportMarkdown, import, sync }
 
 /// 数据管理页的三个动作。
 ///
@@ -46,8 +46,31 @@ class BackupController extends _$BackupController {
     });
   }
 
-  /// 导入 → 文件选择器 → 合并。
+/// 导出为 Markdown → 系统分享面板。返回导出的笔记条数。
   ///
+  /// ⛔ **不与 [export] 共用 `BackupOperation`**：两个入口可能同时点，各占一个
+  /// 枚举值才能让页面只把正在跑的那个转圈。
+  Future<Either<Failure, int>> exportMarkdown() async {
+    return _run(BackupOperation.exportMarkdown, () async {
+      final exported = await ref.read(exportMarkdownUseCaseProvider)(NoParams());
+      return exported.fold(
+        (failure) => Future<Either<Failure, int>>.value(Left(failure)),
+        (document) async {
+          // ⛔ 一条笔记都没有时**不弹分享面板**：面板里是一个空文件，用户只会
+          // 以为自己哪里按错了。交给页面提示「没有可导出的笔记」。
+          if (document.count == 0) return const Right(0);
+          try {
+            await shareMarkdown(document.markdown, markdownFileName(DateTime.now()));
+            return Right(document.count);
+          } catch (e) {
+            return Left(CacheFailure(message: e.toString()));
+          }
+        },
+      );
+    });
+  }
+
+  /// 导入 → 文件选择器 → 合并。
   /// 用户在选择器里取消时返回 `Right(null)`：那是「什么都没发生」，不是失败，
   /// 不该弹错误提示。
   Future<Either<Failure, BackupImportResult?>> import() async {

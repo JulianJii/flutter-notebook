@@ -184,18 +184,34 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
     _dao.watchTrashed().map((rows) => rows.map(_toEntity).toList()),
   );
 
-  /// 回收站的「永久删除」：物理删行。
+  /// 回收站的「永久删除」：**写墓碑**（行仍在表里，但所有可见列表都过滤掉它），
+  /// 语义理由见 `NoteDao.purgeById`。
+  ///
+  /// ⚠️ **必须显式 `nullOutFolder`**：软删除时已经这么做过一遍（见 [trash]），
+  /// 但那时文件夹还「活着」；这里再确认一次是因为 ——
+  /// `notes.folder_id` 的 `ON DELETE SET NULL` **只由物理 DELETE 触发**，
+  /// 而墓碑路径没有 DELETE。没有这次显式置空，本地的笔记会指向一个已被永久删除
+  /// 的文件夹 id，在「未分类」计数与同步清洗里变成悬挂引用。
+  ///
+  /// 两个原子操作必须同事务：置空成功而墓碑失败（或反之）都会留下不一致状态。
   @override
   Future<void> purge(String folderId) => _guard(() async {
-    final removed = await _dao.deleteById(folderId);
-    if (removed == 0) {
+    final purged = await _db.transaction(() async {
+      await _dao.nullOutFolder(folderId);
+      return _dao.purgeById(folderId, AppClock.appNow());
+    });
+    if (purged == 0) {
       throw CacheException(message: 'Folder not found: $folderId');
     }
   });
 
   /// 清空回收站。命中 0 行**不抛**（= 已清空），与 [purge] 的语义不同。
+  ///
+  /// ⚠️ 不做 `nullOutFolder` 的全表扫描：软删除时每条路径都已经把它做过了
+  /// （[trash]），回收站里**不可能**存在 folder_id 仍指着活文件夹的行。
   @override
-  Future<void> purgeAllTrashed() => _guard(() => _dao.deleteAllTrashed());
+  Future<void> purgeAllTrashed() =>
+      _guard(() => _dao.purgeAllTrashed(AppClock.appNow()));
 
   /// 恢复写入的唯一入口：UNIQUE 冲突在这里就地判掉，翻译成「名字被占」。
   ///
@@ -243,6 +259,7 @@ NoteFolder _toEntity(NoteFolderRow row) {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     deletedAt: row.deletedAt,
+    purgedAt: row.purgedAt,
   );
 }
 

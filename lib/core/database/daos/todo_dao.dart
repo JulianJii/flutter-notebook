@@ -30,9 +30,16 @@ part 'todo_dao.g.dart';
   /// **先加 `is_done, created_at` 复合索引再加排序入口**。
   Stream<List<TodoRow>> watchAll() {
     return (select(todos)
-          ..where((t) => t.deletedAt.isNull())
+          ..where((t) => t.deletedAt.isNull() & t.purgedAt.isNull())
+          // `is_done ASC` 让已完成沉到列表底部（待办的「已完成 N」折叠分组靠这条
+          // 顺序免费得到「已完成在后」，Screen 只切分不重排）。
+          //
+          // ⚠️ `priority DESC` 排在 `is_done` **之内**而不是整体最前：优先级答的是
+          // 「先做哪个」，而「已完成沉底」是分区规则。两者混在一起排会让一条已完成的
+          // 紧急待办浮到未完成的普通待办上面，把折叠分组直接拆散。
           ..orderBy([
             (t) => OrderingTerm.asc(t.isDone),
+            (t) => OrderingTerm.desc(t.priority),
             (t) => OrderingTerm.desc(t.createdAt),
           ]))
         .watch();
@@ -41,7 +48,7 @@ part 'todo_dao.g.dart';
   /// 回收站列表：`deleted_at IS NOT NULL`，按删除时间倒序（与笔记回收站同序）。
   Stream<List<TodoRow>> watchTrashed() {
     return (select(todos)
-          ..where((t) => t.deletedAt.isNotNull())
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull())
           ..orderBy([
             (t) => OrderingTerm.desc(t.deletedAt),
             (t) => OrderingTerm.desc(t.createdAt),
@@ -97,22 +104,32 @@ part 'todo_dao.g.dart';
     ).then((affected) => affected > 0);
   }
 
-  /// 物理删除，返回受影响行数。
+  /// **永久删除 = 写墓碑，不是物理 DELETE**（语义理由同 `NoteDao.purgeById`）。
   ///
-  /// ⛔ **只由回收站的「永久删除」发起**：普通删除走 [markTrashed]，
-  /// 否则删除不留痕、无法跨设备传播。
-  Future<int> deleteById(String todoId) {
-    return (super.delete(todos)..where((t) => t.id.equals(todoId))).go();
+  /// ⚠️ 只由回收站的「永久删除」发起：普通删除走 [markTrashed]。
+  Future<int> purgeById(String todoId, DateTime purgedAt) {
+    return (super.update(todos)
+          ..where((t) => t.id.equals(todoId) & t.purgedAt.isNull()))
+        .write(TodosCompanion(purgedAt: Value(purgedAt)))
+        .then((affected) => affected);
   }
 
-  /// 清空回收站：物理删掉全部 `deleted_at IS NOT NULL` 的行，返回受影响行数。
+  /// 清空回收站：给全部 `deleted_at IS NOT NULL` 的行打墓碑，返回受影响行数。
   ///
-  /// 单条 DELETE 而不是 N 次 [deleteById]：循环中途失败会留下删一半的
+  /// 单条 UPDATE 而不是 N 次 [purgeById]：循环中途失败会留下删一半的
   /// 不可解释状态。命中 0 行**不抛**（= 已清空）。
-  Future<int> deleteAllTrashed() {
-    return (super
-            .delete(todos)
-          ..where((t) => t.deletedAt.isNotNull()))
+  Future<int> purgeAllTrashed(DateTime purgedAt) {
+    return (super.update(todos)
+          ..where((t) => t.deletedAt.isNotNull() & t.purgedAt.isNull()))
+        .write(TodosCompanion(purgedAt: Value(purgedAt)))
+        .then((affected) => affected);
+  }
+
+  /// 保留期清扫：物理删掉墓碑早于 [before] 的行（见 `NoteDao.purgeExpiredTombstones`）。
+  Future<int> purgeExpiredTombstones(DateTime before) {
+    return (super.delete(todos)..where(
+          (t) => t.purgedAt.isNotNull() & t.purgedAt.isSmallerThanValue(before),
+        ))
         .go();
   }
 
@@ -124,11 +141,14 @@ part 'todo_dao.g.dart';
   /// ⚠️ `deleted_at IS NULL` 是必需的：`is_done = 1` 会连带命中**回收站里**的
   /// 已完成待办，不加这个条件会把它们的时间戳改写成「又删了一次」，
   /// 它们就会在回收站里「越来越新」，且再次同步时被当作刚删的。
+  /// `purged_at IS NULL` 同理：墓碑行不该再被任何写路径碰到。
   Future<int> trashCompleted(DateTime deletedAt) {
     return (super.update(
       todos,
-    )..where((t) => t.isDone.equals(true) & t.deletedAt.isNull())).write(
-      TodosCompanion(deletedAt: Value(deletedAt)),
-    ).then((affected) => affected);
+    )..where(
+      (t) => t.isDone.equals(true) &
+          t.deletedAt.isNull() &
+          t.purgedAt.isNull(),
+    )).write(TodosCompanion(deletedAt: Value(deletedAt))).then((affected) => affected);
   }
 }

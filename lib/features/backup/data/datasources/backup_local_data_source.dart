@@ -3,6 +3,7 @@ import 'package:drift/native.dart' show SqliteException;
 import 'package:mynote/core/database/app_database.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/backup/domain/entities/backup_snapshot.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
 
 /// 三张表 ↔ [BackupSnapshot] 的双向通道。
 ///
@@ -18,12 +19,16 @@ class BackupLocalDataSource {
 
   final AppDatabase _db;
 
-  /// 全量读。**含回收站里的软删除笔记** —— 删除也是数据，不同步过去的话，
-  /// 换台设备就会看到「删掉的笔记又回来了」。
+  /// 全量读。**含回收站里的软删除笔记与已永久删除的墓碑行** —— 删除也是数据，
+  /// 不同步过去的话，换台设备就会看到「删掉的笔记又回来了」。
+  ///
+  /// ⚠️ 墓碑行**必须**读出来：它们是「永久删除」能跨设备传播的唯一载体。
+  /// 这里若加一个 `purged_at IS NULL` 过滤，删除就静默退化成 v2 的行为。
   Future<BackupSnapshot> read() => _guard(() async {
     final notes = await _db.select(_db.notes).get();
     final folders = await _db.select(_db.noteFolders).get();
     final todos = await _db.select(_db.todos).get();
+    final subtasks = await _db.select(_db.todoSubtasks).get();
 
     return BackupSnapshot(
       exportedAt: DateTime.now(),
@@ -38,6 +43,9 @@ class BackupLocalDataSource {
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             deletedAt: row.deletedAt,
+            purgedAt: row.purgedAt,
+            isPinned: row.isPinned,
+            isFavorite: row.isFavorite,
           ),
       ],
       folders: <BackupFolder>[
@@ -52,6 +60,7 @@ class BackupLocalDataSource {
             updatedAt: row.updatedAt,
             sortIndex: row.sortIndex,
             deletedAt: row.deletedAt,
+            purgedAt: row.purgedAt,
           ),
       ],
       todos: <BackupTodo>[
@@ -64,10 +73,29 @@ class BackupLocalDataSource {
             updatedAt: row.updatedAt,
             reminderAt: row.reminderAt,
             deletedAt: row.deletedAt,
+            purgedAt: row.purgedAt,
+            priority: TodoPriority.fromLevel(row.priority).id,
+            recurrence: row.recurrence,
+          ),
+      ],
+      // ⚠️ 子项**无条件全量读**：不同步的话 A 机勾掉的勾会在 B 机同步后被抹掉。
+      subtasks: <BackupTodoSubtask>[
+        for (final row in subtasks)
+          BackupTodoSubtask(
+            id: row.id,
+            todoId: row.todoId,
+            title: row.title,
+            isDone: row.isDone,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
           ),
       ],
     );
   });
+
+  /// 保留期清扫不在这里 —— 那个方法需要**本地时钟**（判据是「本机现在」），
+  /// 而本文件的每条时间戳都必须来自对端。两者的边界由
+  /// `test/core/utils/app_clock_usage_test.dart` 钉住，见 `TombstoneSweeper`。
 
   /// 写回一份**已合并**的快照，返回因文件夹重名而跳过的条数。
   ///
@@ -84,6 +112,9 @@ class BackupLocalDataSource {
       final knownFolderIds = await _knownFolderIds();
       await _writeNotes(snapshot.notes, knownFolderIds);
       await _writeTodos(snapshot.todos);
+      // ⚠️ 子项**必须最后写**：它的外键指向 `todos`，而 `PRAGMA foreign_keys = ON`
+      // 在事务内是即时生效的 —— 先写子项会整批失败。
+      await _writeSubtasks(snapshot.subtasks);
     });
     return skipped;
   });
@@ -124,6 +155,9 @@ class BackupLocalDataSource {
       // ⚠️ 必须显式写：`deletedAt` 漏掉的话，来端「已删」的文件夹会被当成正常的
       // 插入 —— 每同步一次，回收站里的文件夹就复活一批。
       deletedAt: Value(folder.deletedAt),
+      // ⚠️ 同理：漏了 `purgedAt`，来端的永久删除会被抹掉，对端已删的文件夹
+      // 会在本机复活。
+      purgedAt: Value(folder.purgedAt),
     );
     try {
       if (exists) {
@@ -167,6 +201,13 @@ class BackupLocalDataSource {
             createdAt: Value(note.createdAt),
             updatedAt: Value(note.updatedAt),
             deletedAt: Value(note.deletedAt),
+            // ⚠️ 墓碑必须显式写出：`insertOrReplace` 是 DELETE+INSERT，漏掉的列
+            // 取默认值（NULL）。漏 `purgedAt` = 每同步一次就把接收端「已永久删除」
+            // 的笔记复活一批 —— 与漏 `deletedAt` 同一类错误，只是更晚才被发现。
+            purgedAt: Value(note.purgedAt),
+            // 同理：置顶与收藏是用户数据，漏了会被同步静默清零。
+            isPinned: Value(note.isPinned),
+            isFavorite: Value(note.isFavorite),
             background: Value(note.background),
           ),
           // `insertOrReplace`：主键撞车时整行替换。两张表都只按主键判重
@@ -193,9 +234,39 @@ class BackupLocalDataSource {
             // ⚠️ 同理：`insertOrReplace` 会把未列出的列清成 NULL，漏了 `deletedAt`
             // 就等于每次同步清空全部「已删」状态。
             deletedAt: Value(todo.deletedAt),
+            // ⚠️ 墓碑，同理。漏了它，接收端「已永久删除」的待办每次同步复活一批。
+            purgedAt: Value(todo.purgedAt),
+            // ⚠️ 同样必须显式写：漏了 `priority` 等于每次同步把接收端全部待办的
+            // 优先级重置成「普通」；漏了 `recurrence` 等于全部重复提醒消失。
+            priority: Value(TodoPriority.fromId(todo.priority).level),
+            recurrence: Value(todo.recurrence),
           ),
           // ⚠️ `reminderAt` 必须显式写出：`insertOrReplace` 是 DELETE+INSERT，
           // 漏掉的列取默认值（NULL），等于每次同步都把接收端的提醒时间清零。
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  /// 写子项。⚠️ **排在 [write] 的最后**：外键指向 `todos`，`PRAGMA foreign_keys = ON`
+  /// 在事务内即时生效，先写会整批失败。
+  ///
+  /// `insertOrReplace` 的 DELETE+INSERT 语义在这里**是想要的**：它让「父待办被对端
+  /// 物理清扫掉」这类情况自动把子项一并带走（外键 CASCADE），不用手工对账。
+  Future<void> _writeSubtasks(List<BackupTodoSubtask> subtasks) {
+    return _db.batch((batch) {
+      for (final subtask in subtasks) {
+        batch.insert(
+          _db.todoSubtasks,
+          TodoSubtasksCompanion.insert(
+            id: subtask.id,
+            todoId: subtask.todoId,
+            title: subtask.title,
+            isDone: Value(subtask.isDone),
+            createdAt: subtask.createdAt,
+            updatedAt: subtask.updatedAt,
+          ),
           mode: InsertMode.insertOrReplace,
         );
       }

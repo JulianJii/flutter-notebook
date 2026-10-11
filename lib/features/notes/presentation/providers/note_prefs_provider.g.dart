@@ -140,7 +140,7 @@ final class NoteTextScaleProvider
 
 String _$noteTextScaleHash() => r'c2bcca03d9facebefe0c51b0af2c1eda0d1c5aec';
 
-/// 插入图片前是否压缩（设置项「压缩插入的图片」）。
+/// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
 /// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
 /// `settings` 的 presentation。`select` 同样不能省。
@@ -148,7 +148,7 @@ String _$noteTextScaleHash() => r'c2bcca03d9facebefe0c51b0af2c1eda0d1c5aec';
 @ProviderFor(noteCompressImages)
 final noteCompressImagesProvider = NoteCompressImagesProvider._();
 
-/// 插入图片前是否压缩（设置项「压缩插入的图片」）。
+/// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
 /// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
 /// `settings` 的 presentation。`select` 同样不能省。
@@ -156,7 +156,7 @@ final noteCompressImagesProvider = NoteCompressImagesProvider._();
 final class NoteCompressImagesProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  /// 插入图片前是否压缩（设置项「压缩插入的图片」）。
+  /// 插入图片前是否压缩（设置项「图片压缩」）。
   ///
   /// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
   /// `settings` 的 presentation。`select` 同样不能省。

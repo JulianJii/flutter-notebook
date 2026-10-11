@@ -53,7 +53,7 @@ final class BackupControllerProvider
   }
 }
 
-String _$backupControllerHash() => r'e1bb8d18b6e18ea5d0fc6aa761b61de4c6ee0ad6';
+String _$backupControllerHash() => r'530d811b92543eabf13b2cf35d33e351c13cedbb';
 
 /// 数据管理页的三个动作。
 ///

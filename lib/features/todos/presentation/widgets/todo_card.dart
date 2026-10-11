@@ -3,6 +3,7 @@ import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 待办稿的待办卡：左复选框 + 右标题，此外什么都没有（待办稿明确「无日期、无优先级、
@@ -21,6 +22,7 @@ class TodoCard extends StatelessWidget {
     required this.checked,
     super.key,
     this.reminderAt,
+    this.priority = TodoPriority.normal,
     this.onChanged,
     this.onTap,
   });
@@ -33,6 +35,10 @@ class TodoCard extends StatelessWidget {
 
   /// 提醒时刻。null = 没设提醒 → 不渲染提醒标记。
   final DateTime? reminderAt;
+
+  /// 优先级。[TodoPriority.normal] 不渲染任何标记（大多数待办都不设优先级，
+  /// 给每条都画一根色条等于什么都没说）。
+  final TodoPriority priority;
 
   /// 勾选变更。null → 复选框禁用。
   final ValueChanged<bool>? onChanged;
@@ -67,17 +73,37 @@ class TodoCard extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(
-              title,
-              style: context.textStyles.rowTitle.copyWith(
-                // 完成态：灰字 + 删除线。只改本组件，不动 Screen。
-                color: checked
-                    ? context.colors.textTertiary
-                    : context.colors.textPrimary,
-                decoration: checked ? TextDecoration.lineThrough : null,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: Row(
+              children: <Widget>[
+                // 优先级色条。**只标非普通**，且只用「色条」不用文字标签 ——
+                // 一行里塞「重要」两个字会把标题挤到换行，而列表一屏能看十几条，
+                // 色条扫视就够了，精确文案在编辑弹窗里。
+                if (priority != TodoPriority.normal)
+                  Container(
+                    key: const Key('todo_card_priority'),
+                    width: _priorityBarWidth,
+                    height: AppSpacing.rowIconSize,
+                    margin: const EdgeInsets.only(right: AppSpacing.sm),
+                    decoration: BoxDecoration(
+                      color: _priorityColor(context),
+                      borderRadius: BorderRadius.circular(_priorityBarWidth),
+                    ),
+                  ),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: context.textStyles.rowTitle.copyWith(
+                      // 完成态：灰字 + 删除线。只改本组件，不动 Screen。
+                      color: checked
+                          ? context.colors.textTertiary
+                          : context.colors.textPrimary,
+                      decoration: checked ? TextDecoration.lineThrough : null,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
           // 提醒标记：让人一眼看出哪条设了提醒。⛔ 不单独给它一个点击区 ——
@@ -106,10 +132,29 @@ class TodoCard extends StatelessWidget {
     );
   }
 
+  /// 优先级色条的粗细。3dp 是「能看见但不抢标题」的量级；更粗会与提醒图标
+  /// 在视觉上等重，而那才是真正要突出的信息。
+  static const double _priorityBarWidth = 3;
+
   /// 卡片上下内边距。待办稿实测卡高 ≈60dp、内含 20dp 复选框 → `(60 − 20) / 2 = 20dp`。
   ///
   /// ⚠️ 写成 `cardPad`(12) + `sm`(8) 的具名 token 组合而不是单值 20：
   /// `AppSpacing` 没有 20 这一档，为一个组件新造 token 是纯仪式（且 20 会被待办稿的
   /// 复核结论推翻，届时改这一行比改 token + 它的 dartdoc 便宜）。
   static const double _verticalPad = AppSpacing.cardPad + AppSpacing.sm;
+
+  /// 优先级配色。
+  ///
+  /// ⚠️ **不新造 warning token**：`AppColors` 只有 success / danger 两个语义色，
+  /// 「重要」借用 `accent`（跟着配色方案走，用户会觉得是自己的选择），
+  /// 「紧急」用 `feedbackDanger`。为一个只有两档的映射往 design token 里加
+  /// 一个色，是让 token 集合朝着「每个组件一个颜色」的方向腐化。
+  Color _priorityColor(BuildContext context) {
+    if (checked) return context.colors.textTertiary;
+    return switch (priority) {
+      TodoPriority.urgent => context.colors.feedbackDanger,
+      TodoPriority.important => context.colors.accent,
+      TodoPriority.normal => context.colors.textTertiary,
+    };
+  }
 }

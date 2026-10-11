@@ -39,6 +39,12 @@ class LanDiscovery {
   /// 「换了网络后可能要重启本机服务才能被搜到」，可接受。
   List<String> _selfAddresses = const <String>[];
 
+  /// 本机的 IPv4 地址（[start] 时取的一次快照，未启动时为空）。
+  ///
+  /// 暴露它是为了「手动输入地址」那条兜底路径：广播被路由器 / AP 隔离丢掉时，
+  /// 用户需要从对方屏幕上抄下 `ip:port` 才能连上。没有它这条兜底形同虚设。
+  List<String> get selfAddresses => _selfAddresses;
+
   /// 发现的设备流。**已经在听的订阅者会立刻拿到当前已知列表**。
   Stream<List<LanPeer>> get peers => _controller.stream;
 

@@ -141,7 +141,7 @@ void main() {
     await sub.cancel();
   });
 
-  test('insert / updateById / deleteById', () async {
+  test('insert / updateById / purgeById', () async {
     final inserted = await dao.insert(
       NotesCompanion.insert(
         id: 'n4',
@@ -168,9 +168,48 @@ void main() {
       reason: '未命中行',
     );
 
-    expect(await dao.deleteById('n4'), 1);
-    expect(await dao.deleteById('n4'), 0);
-    expect(await dao.getById('n4'), isNull);
+    // ⚠️ 永久删除写**墓碑**而不是物理 DELETE：行必须留在表里并带着 purged_at，
+    // 否则同步时对端看不到它 → 判定本地更新 → 把它原样带回来。
+    final purgedAt = DateTime(2026, 10, 11);
+    expect(await dao.purgeById('n4', purgedAt), 1);
+    expect(
+      await dao.purgeById('n4', purgedAt),
+      0,
+      reason: '已打过墓碑的行不再可 purge（上层据此报「找不到」）',
+    );
+    final tombstone = (await dao.getById('n4'))!;
+    expect(tombstone.purgedAt, purgedAt);
+    expect(tombstone.deletedAt, isNull, reason: '墓碑不代替软删除');
+  });
+
+  test('墓碑行不在列表也不在回收站，但仍在库里', () async {
+    await dao.purgeById('n2', DateTime(2026, 10, 11));
+
+    final listed = await dao.watch().first;
+    expect(listed.map((r) => r.id), isNot(contains('n2')));
+    final trashed = await dao.watchDeleted().first;
+    expect(trashed.map((r) => r.id), isNot(contains('n2')));
+    expect(await dao.getById('n2'), isNotNull, reason: '同步链路仍能读到它');
+  });
+
+  test('保留期清扫只物理删过期墓碑', () async {
+    final old = DateTime(2026, 1, 1);
+    final recent = DateTime(2026, 10, 10);
+    await dao.purgeById('n2', old);
+    await dao.purgeById('n3', recent);
+
+    expect(await dao.purgeExpiredTombstones(DateTime(2026, 6, 1)), 1);
+    expect(await dao.getById('n2'), isNull, reason: '过期的物理删除');
+    expect(await dao.getById('n3'), isNotNull, reason: '未到期必须留着');
+  });
+
+  test('purgeAllTrashed 只给回收站里的行打墓碑', () async {
+    await dao.softDeleteById('n2', DateTime(2026, 10, 10));
+    final purgedAt = DateTime(2026, 10, 11);
+
+    expect(await dao.purgeAllTrashed(purgedAt), 1);
+    expect((await dao.getById('n2'))!.purgedAt, purgedAt);
+    expect((await dao.getById('n3'))!.purgedAt, isNull, reason: '活笔记不受影响');
   });
 
   test('updateBackgroundById 只写 background 列，不刷 updated_at', () async {

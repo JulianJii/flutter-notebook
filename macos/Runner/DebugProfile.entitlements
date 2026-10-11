@@ -8,5 +8,9 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- image_picker 在 macOS 上是 file_selector 的壳，读用户选中的文件需要这条。
+	     缺了会直接读不到（不是没弹窗，是拿到路径但读不出来）。 -->
+	<key>com.apple.security.files.user-selected.read-only</key>
+	<true/>
 </dict>
 </plist>

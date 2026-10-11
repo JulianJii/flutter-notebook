@@ -34,6 +34,18 @@ abstract final class AppIcons {
   /// 取平台惯例的 `drag_handle`。
   static const IconData drag = Icons.drag_handle;
 
+  /// 笔记置顶。空心 / 实心一对，区分「未置顶 / 已置顶」——
+  /// 置顶没有入口也没有设计稿，取 Material 惯例字形。
+  static const IconData pushPin = Icons.push_pin_outlined;
+  static const IconData pushPinFilled = Icons.push_pin;
+
+  /// 笔记收藏。同样是空心 / 实心一对。
+  static const IconData starOutline = Icons.star_outline;
+  static const IconData starFilled = Icons.star;
+
+  /// 子任务行的「删除这条子项」。无稿，取平台惯例的叉。
+  static const IconData close = Icons.close;
+
   // ---- 提醒（待办小窗）----
   //
   // ⚠️ 这三个**不在设计稿的 15 个语义里**：待办稿原本「无日期、无提醒」，小窗是后加

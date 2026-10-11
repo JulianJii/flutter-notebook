@@ -18,6 +18,7 @@ class NoteFolder extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
+    this.purgedAt,
   });
 
   final String id;
@@ -38,13 +39,21 @@ class NoteFolder extends Equatable {
   /// copyWith 表达不了），没有「先改实体再落库」的路径。
   final DateTime? deletedAt;
 
+  /// 永久删除墓碑时刻。**UI 与业务逻辑都不看它** —— 它只活在数据层与同步链路里。
+  /// 与 [deletedAt] 同样的约束：不参与 [copyWith]，写入全由 datasource 直连 DAO。
+  final DateTime? purgedAt;
+
   /// 合并比较键 —— 快照合并（`BackupFolder.version`）的语义来源。
   ///
-  /// ⚠️ 取 `updatedAt` 与 `deletedAt` 的**较晚者**：软删除也是一次变更，而
-  /// 软删除**不刷** `updatedAt`（见 `FolderDao.markTrashed`）。
-  DateTime get version => deletedAt == null || deletedAt!.isBefore(updatedAt)
-      ? updatedAt
-      : deletedAt!;
+  /// ⚠️ 取 `updatedAt` / `deletedAt` / `purgedAt` 的**较晚者**：软删除与永久删除
+  /// 都是一次变更，而它们都**不刷** `updatedAt`（见 `FolderDao.markTrashed`）。
+  /// 漏掉 [purgedAt] 会让「永久删除」打不过对端一次更晚的编辑，墓碑形同虚设。
+  DateTime get version {
+    var latest = updatedAt;
+    if (deletedAt != null && deletedAt!.isAfter(latest)) latest = deletedAt!;
+    if (purgedAt != null && purgedAt!.isAfter(latest)) latest = purgedAt!;
+    return latest;
+  }
 
   NoteFolder copyWith({String? name, DateTime? updatedAt}) {
     return NoteFolder(
@@ -53,9 +62,17 @@ class NoteFolder extends Equatable {
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt,
+      purgedAt: purgedAt,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, createdAt, updatedAt, deletedAt];
+  List<Object?> get props => [
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    purgedAt,
+  ];
 }

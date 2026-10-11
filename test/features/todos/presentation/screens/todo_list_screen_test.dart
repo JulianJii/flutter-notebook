@@ -11,7 +11,9 @@ import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/entities/todo_subtask.dart';
 import 'package:mynote/features/todos/domain/repositories/todo_repository.dart';
+import 'package:mynote/features/todos/domain/repositories/todo_subtask_repository.dart';
 import 'package:mynote/features/todos/presentation/screens/todo_list_screen.dart';
 import 'package:mynote/features/todos/presentation/widgets/todo_card.dart';
 import 'package:mynote/features/todos/providers/todos_providers.dart';
@@ -20,6 +22,14 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockTodoRepository extends Mock implements TodoRepository {}
+
+/// 子项仓储。不覆盖的话编辑弹窗会经 provider 拿到**真实**实现，在测试里
+/// 打开一个真的 SQLite 文件库（并留下未结束的 Timer）。
+class _MockTodoSubtaskRepository extends Mock implements TodoSubtaskRepository {
+  _MockTodoSubtaskRepository() {
+    when(() => watchByTodo(any())).thenAnswer((_) => Stream.value(const <TodoSubtask>[]));
+  }
+}
 
 /// `ToggleTodoUseCase` 在 `repo.update` 之前会 `DateTime.now()`，所以只能断言
 /// 落到 Repository 层的 `Todo` 的业务字段（id / title / isDone）。
@@ -69,7 +79,10 @@ void main() {
     );
 
     return ProviderScope(
-      overrides: [todoRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        todoRepositoryProvider.overrideWithValue(repo),
+        todoSubtaskRepositoryProvider.overrideWithValue(_MockTodoSubtaskRepository()),
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light(),
         routerConfig: router,
@@ -278,7 +291,7 @@ void main() {
     expect(find.byType(AlertDialog), findsOneWidget);
     expect(find.text('新建待办'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), '  买牛奶  ');
+    await tester.enterText(find.byKey(const Key('todo_dialog_title')), '  买牛奶  ');
     await tester.tap(find.text('保存'));
     await tester.pumpAndSettle();
 
@@ -312,7 +325,7 @@ void main() {
 
     await tester.tap(find.byType(AppFab));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '   ');
+    await tester.enterText(find.byKey(const Key('todo_dialog_title')), '   ');
     await tester.tap(find.text('保存'));
     await tester.pumpAndSettle();
 
@@ -334,7 +347,7 @@ void main() {
 
     await tester.tap(find.byType(AppFab));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '买牛奶');
+    await tester.enterText(find.byKey(const Key('todo_dialog_title')), '买牛奶');
     await tester.tap(find.text('保存'));
     await tester.pumpAndSettle();
 
@@ -429,11 +442,24 @@ void main() {
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text('编辑待办'), findsOneWidget);
       expect(
-        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        tester
+            .widget<EditableText>(
+              find.descendant(
+                of: find.byKey(const Key('todo_dialog_title')),
+                matching: find.byType(EditableText),
+              ),
+            )
+            .controller
+            .text,
         '待办 t1',
         reason: '输入框预填当前标题',
       );
       expect(find.text('删除待办'), findsOneWidget);
+      // 编辑态多两栏：优先级与重复规则。
+      expect(find.byKey(const Key('todo_priority_urgent')), findsOneWidget);
+      expect(find.byKey(const Key('todo_recurrence_none')), findsOneWidget);
+      // 子任务只在编辑态渲染（新建的待办还没有 id，外键会拒绝）
+      expect(find.byKey(const Key('todo_subtask_input')), findsOneWidget);
     });
 
     testWidgets('改标题保存：update 收到新标题，且保留 isDone', (tester) async {
@@ -452,7 +478,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await openEditDialog(tester);
-      await tester.enterText(find.byType(TextField), '买牛奶');
+      await tester.enterText(find.byKey(const Key('todo_dialog_title')), '买牛奶');
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
 
@@ -485,7 +511,7 @@ void main() {
       // 小窗没关，再点铅笔就能重新开编辑弹窗（不用退到列表）。
       await tester.tap(find.byTooltip('编辑待办'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField), '   ');
+      await tester.enterText(find.byKey(const Key('todo_dialog_title')), '   ');
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
 
@@ -502,7 +528,7 @@ void main() {
       );
 
       await openEditDialog(tester);
-      await tester.enterText(find.byType(TextField), '买牛奶');
+      await tester.enterText(find.byKey(const Key('todo_dialog_title')), '买牛奶');
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
 

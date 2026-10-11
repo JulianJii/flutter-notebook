@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/notifications/reminder_scheduler.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
+import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
 import 'package:mynote/features/todos/domain/usecases/update_todo_params.dart';
 import 'package:mynote/features/todos/domain/usecases/update_todo_use_case.dart';
 import 'package:mynote/features/todos/presentation/providers/todo_reminder_provider.dart';
@@ -31,6 +32,8 @@ void main() {
         todoId: 't1',
         title: '',
         isDone: false,
+      priority: TodoPriority.normal,
+      recurrence: null,
         reminderAt: null,
       ),
     );

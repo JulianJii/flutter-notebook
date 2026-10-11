@@ -181,6 +181,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get palette => 'Palette';
 
   @override
+  String get notePin => 'Pin to top';
+
+  @override
+  String get noteUnpin => 'Unpin';
+
+  @override
+  String get noteFavorite => 'Favorite';
+
+  @override
+  String get noteUnfavorite => 'Remove from favorites';
+
+  @override
   String get noteBackground => 'Background';
 
   @override
@@ -217,10 +229,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folderNameExists => 'A folder with this name already exists';
 
   @override
+  String get renameFolder => 'Rename folder';
+
+  @override
+  String get renameFolderMenu => 'Rename';
+
+  @override
+  String get renameFolderDone => 'Renamed';
+
+  @override
   String get createTodo => 'New todo';
 
   @override
   String get todoTitle => 'Todo title';
+
+  @override
+  String get todoPriority => 'Priority';
+
+  @override
+  String get todoPriorityNormal => 'Normal';
+
+  @override
+  String get todoPriorityImportant => 'Important';
+
+  @override
+  String get todoPriorityUrgent => 'Urgent';
+
+  @override
+  String get todoRepeat => 'Repeat';
+
+  @override
+  String get todoRecurrenceNone => 'Never';
+
+  @override
+  String get todoRecurrenceDaily => 'Daily';
+
+  @override
+  String get todoRecurrenceWeekly => 'Weekly';
+
+  @override
+  String get todoRecurrenceMonthly => 'Monthly';
+
+  @override
+  String get todoSubtasks => 'Subtasks';
+
+  @override
+  String get todoSubtaskAddHint => 'Add a subtask';
+
+  @override
+  String get todoSubtaskAdd => 'Add subtask';
+
+  @override
+  String todoSubtaskProgress(int done, int total) {
+    return '$done/$total done';
+  }
+
+  @override
+  String get todoRecurrenceNeedsReminder =>
+      'Set a reminder first, then choose when it repeats';
 
   @override
   String get save => 'Save';
@@ -644,6 +710,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lanHostingOn => 'This device is reachable';
 
   @override
+  String get lanHostingAddress => 'On this WiFi, enter:';
+
+  @override
   String get lanSearching => 'Looking for devices on this network…';
 
   @override
@@ -695,6 +764,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dataExportDesc =>
       'Save all notes, folders and to-dos into one JSON snapshot file';
+
+  @override
+  String get dataExportMarkdown => 'Export as Markdown';
+
+  @override
+  String get dataExportMarkdownDesc =>
+      'Save a .md file for reading and moving elsewhere; images and trashed notes are not included';
+
+  @override
+  String dataExportMarkdownDone(int count) {
+    return 'Exported $count notes';
+  }
+
+  @override
+  String get dataExportMarkdownEmpty => 'No notes to export';
 
   @override
   String get dataGroupImport => 'Import';

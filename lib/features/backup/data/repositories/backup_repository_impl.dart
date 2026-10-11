@@ -12,6 +12,8 @@ import 'package:mynote/features/backup/domain/entities/backup_import_result.dart
 import 'package:mynote/features/backup/domain/entities/backup_snapshot.dart';
 import 'package:mynote/features/backup/domain/entities/backup_version_entry.dart';
 import 'package:mynote/features/backup/domain/entities/webdav_config.dart';
+import 'package:mynote/features/notes/domain/utils/note_markdown.dart';
+
 import 'package:mynote/features/backup/domain/repositories/backup_repository.dart';
 
 /// 配置在 `SharedPreferences` 里的 key。单 key JSON（与 `app_settings` 同套路）。
@@ -50,6 +52,39 @@ class BackupRepositoryImpl implements BackupRepository {
     return _guard(() async {
       final snapshot = await _local.read();
       return (json: jsonEncode(snapshot.toJson()), count: snapshot.count);
+    });
+  }
+
+  /// 全库导出成**一份 Markdown 文档**。
+  ///
+  /// ⛔ **不复用 [exportSnapshotJson] 的 JSON** —— 那份是备份格式（内嵌 base64
+  /// 图片、含回收站墓碑），用户打不开也搬不动。给人看的那一份必须是纯文本。
+  ///
+  /// ⛔ **不含回收站里的笔记**：导出是「把我的东西拿走」，用户不会想拿走自己
+  /// 已经删掉的内容。JSON 备份相反 —— 它必须含删除，否则换设备会复活旧数据。
+  ///
+  /// ⚠️ 图片导出成 `[图片]` 占位（见 `NoteMarkdown._renderEmbed`）：base64 图
+  /// 塞进 .md 会让文件涨到几十 MB 且多数渲染器拒收。要带图用 JSON 备份。
+  @override
+  Future<Either<Failure, ({String markdown, int count})>> exportMarkdown() {
+    return _guard(() async {
+      final snapshot = await _local.read();
+      final live = snapshot.notes.where((n) => n.deletedAt == null).toList()
+        // 按创建时间正序：导出的是「一本笔记」，从最早的开始读更像一本书。
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      if (live.isEmpty) return (markdown: '', count: 0);
+
+      final buffer = StringBuffer()
+        ..writeln('# $kMarkdownDocTitle')
+        ..writeln()
+// 笔记之间用 `---` 分隔：Markdown 里它是唯一的横向分隔线，比多空几行
+        // 更紧凑。
+        ..write(
+          live
+              .map((n) => NoteMarkdown.convert(n.content, title: n.title))
+              .join('\n\n---\n\n'),
+        );
+      return (markdown: buffer.toString().trim(), count: live.length);
     });
   }
 
@@ -354,3 +389,7 @@ WebDavConfig _configFromJson(Map<String, Object?> json) {
     },
   );
 }
+
+/// Markdown 文档的标题行。用户导出的是「一本书」，标题固定、不问用户 —— 问一次
+/// 就要多一个输入弹窗与一次取消处理，而文件名已经带了日期。
+const String kMarkdownDocTitle = 'MyNote';

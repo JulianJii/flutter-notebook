@@ -14,9 +14,6 @@ import 'package:path/path.dart' as p;
 /// 转发代码。⛔ 也不碰 `path_provider` —— 图片不落我们自己的文件系统，整段路都在
 /// 内存里走完，最后变成 embed 里的一个字符串。
 ///
-/// ⛔ **不请求任何权限**：相册的选择动作本身就是授权。Android 13+ 走系统 Photo
-/// Picker，12 及以下走 `ACTION_GET_CONTENT`；iOS 14+ 走 PHPicker。三条路都不需要
-/// 媒体库运行时权限，所以**不要**为此引入 `permission_handler`。
 class NoteImageRepositoryImpl implements NoteImageRepository {
   /// [picker] 可注入，测试用（生产永远走默认的 [ImagePicker]）。
   NoteImageRepositoryImpl({ImagePicker? picker}) : _picker = picker ?? ImagePicker();

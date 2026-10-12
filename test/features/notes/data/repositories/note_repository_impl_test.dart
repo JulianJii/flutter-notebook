@@ -186,6 +186,48 @@ void main() {
     });
   });
 
+  group('updateEditorFont', () {
+    test('成功 -> Right(unit)，且只走窄通道（不碰整行 update）', () async {
+      when(() => ds.updateEditorFont(any(), any())).thenAnswer((_) async {});
+      expect(
+        await repo.updateEditorFont('n1', 'smileySans'),
+        const Right<Failure, Unit>(unit),
+      );
+      verify(() => ds.updateEditorFont('n1', 'smileySans')).called(1);
+      // 整行 update 会刷新 updatedAt，换字体不该走它。
+      verifyNever(() => ds.update(any()));
+    });
+
+    test('换回系统默认（null）原样透传', () async {
+      when(() => ds.updateEditorFont('n1', null)).thenAnswer((_) async {});
+      expect(
+        await repo.updateEditorFont('n1', null),
+        const Right<Failure, Unit>(unit),
+      );
+    });
+
+    test('CacheException -> CacheFailure', () async {
+      when(
+        () => ds.updateEditorFont(any(), any()),
+      ).thenThrow(CacheException(message: 'Note not found: nope'));
+      expect(
+        await repo.updateEditorFont('nope', 'smileySans'),
+        const Left<Failure, Unit>(CacheFailure(message: 'Note not found: nope')),
+      );
+    });
+
+    test('未知异常 -> CacheFailure，且不 rethrow', () async {
+      when(
+        () => ds.updateEditorFont(any(), any()),
+      ).thenThrow(StateError('boom'));
+      final result = await repo.updateEditorFont('n1', 'smileySans');
+      result.fold(
+        (f) => expect(f, isA<CacheFailure>()),
+        (_) => fail('应为 Left'),
+      );
+    });
+  });
+
   group('delete', () {
     test('成功 -> Right(unit)', () async {
       when(() => ds.delete(any())).thenAnswer((_) async {});

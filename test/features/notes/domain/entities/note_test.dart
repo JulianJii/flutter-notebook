@@ -36,6 +36,14 @@ void main() {
     expect(paper, isNot(base));
   });
 
+  test('editorFontId 也是哨兵字段：不传保留，显式 null 清回系统默认', () {
+    final withFont = base.copyWith(editorFontId: 'lxgwWenKai');
+    expect(withFont.editorFontId, 'lxgwWenKai');
+    expect(withFont.copyWith(title: '改标题').editorFontId, 'lxgwWenKai');
+    expect(withFont.copyWith(editorFontId: null).editorFontId, isNull);
+    expect(withFont, isNot(base));
+  });
+
   test('NoteBackground.fromId 未知值与 null 都降级为无背景', () {
     expect(NoteBackground.fromId('mint'), NoteBackground.mint);
     expect(NoteBackground.fromId(null), isNull);

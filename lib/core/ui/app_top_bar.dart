@@ -35,7 +35,8 @@ class AppTopBar extends StatelessWidget {
   /// 居中标题，通常是 `Text`。null → 不渲染标题（形态 A / C）。
   final Widget? centerTitle;
 
-  /// 右侧图标组，按给定顺序排列（笔记列表稿: folder → settings；笔记详情稿: share → palette → overflow）。
+  /// 右侧图标组，按给定顺序排列（笔记列表稿: folder → settings；
+  /// 笔记详情: palette → 字体 → overflow，分享 / 置顶 / 收藏收在 overflow 菜单里）。
   final List<Widget> actions;
 
   /// 顶栏底边是否画 1dp 分隔线。

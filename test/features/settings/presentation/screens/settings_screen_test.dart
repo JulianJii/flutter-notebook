@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
+import 'package:mynote/core/fonts/font_loader_service.dart';
+import 'package:mynote/core/fonts/font_providers.dart';
 import 'package:mynote/core/providers/localization_providers.dart';
 import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/theme/app_theme.dart';
@@ -18,6 +20,8 @@ import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../../support/fake_font_registrar.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
@@ -59,6 +63,11 @@ void main() {
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repo),
         sharedPreferencesProvider.overrideWithValue(prefs),
+        // 字体行选中一款字体会真去 `DynamicFont.url(...)` 下载字体文件，
+        // 测试里换成「立刻成功」的替身（真实加载逻辑由 core/fonts 的单测覆盖）。
+        fontLoaderServiceProvider.overrideWithValue(
+          FontLoaderService(FakeFontRegistrar()),
+        ),
       ],
     );
     addTearDown(container.dispose);
@@ -272,15 +281,15 @@ void main() {
     testWidgets('3 个选择器行各自只改自己的字段，且各落盘一次', (tester) async {
       await pumpP5(tester);
 
-      await pick(tester, 'select_font_family', '宋体');
+      await pick(tester, 'select_font_family', '得意黑');
       await pick(tester, 'select_note_sort', '按编辑日期（最早）');
       await pick(tester, 'select_note_layout', '列表模式');
 
       final settings = container.read(settingsProvider);
-      expect(settings.fontFamily, AppFontFamily.serif);
+      expect(settings.uiFontId, 'smileySans');
       expect(settings.noteSort, AppNoteSort.editedAsc);
       expect(settings.noteLayout, NoteLayout.list);
-      expect(find.text('宋体'), findsOneWidget);
+      expect(find.text('得意黑'), findsOneWidget);
       expect(find.text('按编辑日期（最早）'), findsOneWidget);
       expect(find.text('列表模式'), findsOneWidget);
       verify(() => repo.save(any())).called(3);
@@ -288,13 +297,13 @@ void main() {
 
     testWidgets('新值走 provider 而非本地 state：离开页面再进入仍是新值', (tester) async {
       await pumpP5(tester);
-      await pick(tester, 'select_font_family', '宋体');
+      await pick(tester, 'select_font_family', '得意黑');
 
       // 销毁整个页面再重建（provider 是 keepAlive，state 不该被丢弃）
       await tester.pumpWidget(const SizedBox.shrink());
       await pumpP5(tester);
 
-      expect(find.text('宋体'), findsOneWidget);
+      expect(find.text('得意黑'), findsOneWidget);
       expect(find.text('系统默认'), findsNothing);
     });
 

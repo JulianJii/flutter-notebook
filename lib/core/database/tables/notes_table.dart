@@ -60,6 +60,12 @@ class Notes extends Table {
   /// 只由 `NoteDao.updateBackgroundById` 写，整行 `update` 不碰这一列。
   TextColumn get background => text().nullable()();
 
+  /// 这篇笔记的编辑器字体 id（`core/fonts` 目录里的 id）。null = 系统默认。
+  ///
+  /// ⚠️ 与 [background] 同类：**每篇笔记独立**的视觉属性。存 id 而非族名（族名由
+  /// 字体目录现算）。只由 `NoteDao.updateEditorFontById` 写，整行 `update` 不碰这一列。
+  TextColumn get editorFontId => text().nullable()();
+
   /// 置顶。列表排序时排在未置顶之前（`NoteDao.watch`），置顶笔记不改变创建时间。
   BoolColumn get isPinned => boolean().withDefault(const Constant(false))();
 

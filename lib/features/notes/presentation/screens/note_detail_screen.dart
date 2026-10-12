@@ -1,6 +1,7 @@
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mynote/core/fonts/font_providers.dart';
 import 'package:mynote/core/logging/logger_provider.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
@@ -195,6 +196,30 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         .setBackground(picked == 0 ? null : NoteBackground.values[picked - 1]);
   }
 
+  /// 字体：弹出字体选择弹层，选中后落到**这篇笔记**（标题 + 正文一起换）。
+  ///
+  /// 弹层返回的是下标：`0` = 系统默认字体、`null` = 取消 —— ⛔ 不能判
+  /// `picked != null`（`0` 是合法取值），与 palette 弹层同一个坑。
+  ///
+  /// ⚠️ 字体文件的下载/注册在弹层里就做完了（失败会留在弹层里让用户重试），
+  /// 这里只落一个 id，⛔ 不碰任何字体文件。
+  Future<void> _pickFont() async {
+    final current = ref
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
+        .value
+        ?.draftEditorFontId;
+    final picked = await showAppFontPickerSheet(
+      context,
+      selected: appFontIndexOf(current),
+    );
+    if (picked == null || !mounted) return;
+    await ref
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
+        .setEditorFontId(appFontIdAt(picked));
+  }
+
   /// 分享当前草稿到系统分享面板。
   ///
   /// 分享的是**草稿**不是库里那份：用户看到什么就分享什么，因此不先 `flush`。
@@ -284,6 +309,19 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       ).select((s) => s.value?.draftBackground),
     );
     final backgroundImage = noteBackgroundImageOrNull(background);
+    // 编辑器字体同样单独 select：只有真的换了字体才重建本页（它下面挂着 Quill）。
+    final editorFontId = ref.watch(
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => s.value?.draftEditorFontId),
+    );
+    // 字体 id → 族名。首次选中时字体已在弹层里注册完，这里是**冷启动后重开
+    // 这篇笔记**的路径：读本地缓存文件期间 `value` 为 null，先用系统默认渲染，
+    // 加载完自动换过来（⛔ 不阻塞打开笔记）；真读不出来也照样可编辑。
+    final editorFontFamily = ref
+        .watch(fontFamilyOfProvider(editorFontId))
+        .value;
     // 置顶 / 收藏同理：单独 select，只有真的翻了图标才重建顶栏。
     final flags = ref.watch(
       noteEditorProvider(
@@ -319,6 +357,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   _TopBar(
                     onBack: _leave,
                     onShare: _share,
+                    onFont: _pickFont,
                     onPalette: _pickBackground,
                     onTogglePinned: () => ref
                         .read(
@@ -353,7 +392,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           const SizedBox(height: AppSpacing.sm),
-                          _titleField(context),
+                          _titleField(context, editorFontFamily),
                           const SizedBox(height: AppSpacing.sm),
                           if (createdAt != null)
                             _NoteMetaSlot(
@@ -365,7 +404,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                           // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
                           // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
                           // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
-                          Expanded(child: _contentField(context)),
+                          Expanded(
+                            child: _contentField(context, editorFontFamily),
+                          ),
                           _EditorToolbar(controller: _contentController),
                           const SizedBox(height: AppSpacing.sm),
                         ],
@@ -381,11 +422,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
   }
 
-  Widget _titleField(BuildContext context) {
-    // ⚠️ 标题与正文都取 `AppTextStyles.editor`（**无 UI 字体族**的那份基线）：
-    // 设置里的「字体」只管 UI 文字，笔记文字的字体由工具栏的「字体」按钮按选中
-    // 范围决定。取 `context.textStyles` 会让标题跟着 UI 字体走。
-    const editorStyles = AppTextStyles.editor;
+  Widget _titleField(BuildContext context, String? fontFamily) {
+    // ⚠️ 标题与正文都取 `AppTextStyles.editor`（**不带 UI 字体族**的那份基线）
+    // 再套上**这篇笔记自己的**字体：设置里的「字体」只管 UI 文字，取
+    // `context.textStyles` 会让标题跟着 UI 字体走。
+    // 族名的套用一律走 `withFontFamily`（13 级一次套完），⛔ 不在这里散 `copyWith`。
+    final editorStyles = AppTextStyles.editor.withFontFamily(fontFamily);
     return TextField(
       controller: _titleController,
       focusNode: _titleFocus,
@@ -411,10 +453,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
   }
 
-  Widget _contentField(BuildContext context) {
-    // ⚠️ 正文同样取 `AppTextStyles.editor`：设置里的「字体」**不管编辑器文字**，
-    // 正文的族名由工具栏的「字体」按钮按选中范围决定（Delta 里的 `font` 属性）。
-    // 若这里改用 `context.textStyles.body`，用户选的 UI 字体就会盖到正文上。
+  Widget _contentField(BuildContext context, String? fontFamily) {
+    // ⚠️ 正文同样取 `AppTextStyles.editor` + 本篇笔记的字体：设置里的「字体」
+    // **不管编辑器文字**。改用 `context.textStyles.body` 会让 UI 字体盖到正文上。
+    // ⚠️ Delta 里已有的 `font` 属性（旧版工具栏按选中范围写的）**优先级更高**，
+    // 本行只是「没有逐段指定字体时」的基准 —— 历史数据不做迁移。
     // 段落间距**不额外实现**：笔记详情稿的段落间距 = 2×行距，是正文内容里本来就有
     // 的 `\n\n`。手写 `ParagraphStyle` 插空行会与用户输入的换行叠加成双倍空行。
     //
@@ -423,9 +466,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     // 基准样式，而它读的是 **flutter SDK** 的 Theme —— 本项目用 `material_ui`
     // 的 Theme，两套互不相通，不显式喂就是默认字号 + 暗色模式下黑字黑底。
     return DefaultTextStyle(
-      style: AppTextStyles.editor.body.copyWith(
-        color: context.colors.textPrimary,
-      ),
+      style: AppTextStyles.editor
+          .withFontFamily(fontFamily)
+          .body
+          .copyWith(color: context.colors.textPrimary),
       child: QuillEditor.basic(
         controller: _contentController,
         config: const QuillEditorConfig(
@@ -450,11 +494,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 /// 编辑页（见本文件头注），常驻一行 42dp 不引入任何新状态。
 ///
 /// 按钮集对齐 flutter-quill 官方 `example/lib/custom_toolbar.dart`：
-/// 撤销 / 重做 / 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字体 / 字号 ｜
+/// 撤销 / 重做 / 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字号 ｜
 /// 文字色 / 背景色 ｜ 标题样式 ｜ 行高 ｜ 复选框清单 / 有序 / 无序 / 缩进 / 行内代码 /
 /// 引用 ｜ 链接；图片按钮由本类自绘（见 [_insertImage]），钉在工具条右端。
 ///
-/// ⛔ 仍然关着的几项与理由：小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
+/// ⛔ 仍然关着的几项与理由：**字体**（改成每篇笔记一个整篇设置，入口在本页顶栏 ——
+/// 按选中范围改字体与「整篇默认字体」是两套心智，同时留着会互相打架）、
+/// 小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
 /// 代码块（行内代码已够）、上下标 / 剪贴板 / 搜索（笔记正文无此语义）。
 class _EditorToolbar extends ConsumerWidget {
   const _EditorToolbar({required this.controller});
@@ -500,16 +546,12 @@ class _EditorToolbar extends ConsumerWidget {
         color: context.colors.surface,
         showDividers: true,
         sectionDividerColor: context.colors.divider,
-        // 字体：清单换成 [_fontFamilyItems]（Quill 默认清单里大半是官方示例
-        // 打包的字体，本项目没有）。
-        buttonOptions: QuillSimpleToolbarButtonOptions(
-          fontFamily: QuillToolbarFontFamilyButtonOptions(
-            items: _fontFamilyItems(context),
-          ),
-        ),
-        // 字体 / 字号：**编辑器内的文字**归这两个按钮管；页面级设置「字体」
-        // 只管 UI 文字，两者互不干扰（见 `AppTextStyles.editor`）。
-        showFontFamily: true,
+        // 字号：**编辑器内的文字**归它管；字体不在这里 —— 字体是**每篇笔记**
+        // 一个整篇设置（本页顶栏的「字体」按钮），不是按选中范围的富文本属性。
+        // ⛔ 保留 `showFontFamily: false`（默认即 false，显式写出来是防止有人
+        // 顺手打开它：Quill 自带的字体清单里大半是官方示例打包的字体，本项目没有，
+        // 选中后只会静默回落）。
+        showFontFamily: false,
         showFontSize: true,
         showUndo: true,
         showRedo: true,
@@ -541,26 +583,6 @@ class _EditorToolbar extends ConsumerWidget {
         showSearchButton: false,
       ),
     );
-  }
-
-  /// 编辑器「字体」按钮的下拉清单。
-  ///
-  /// ⛔ **不沿用 Quill 的默认清单**：里面的 `Ibarra Real Nova` / `Pacifico` /
-  /// `Nunito` 等是官方示例工程打包的字体，本项目没有 —— 选中后静默回落成默认字体，
-  /// 表现为「点了没反应」。这里只列**平台能解析**的族名，与设置里的「字体」
-  /// （`AppFontFamily`）同一组取值。
-  ///
-  /// ⚠️ 「清除」项不能省：`'Clear'` 是 Quill 认的字面量（列表项的值必须逐字等于它），
-  /// 它是选中范围里去「字体」属性的唯一入口 —— 等同于设置里的「系统默认」。
-  /// 文案取 Quill 自己的本地化，与它其余菜单一致。
-  Map<String, String> _fontFamilyItems(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return <String, String>{
-      l10n.fontFamilySerif: 'serif',
-      l10n.fontFamilySansSerif: 'sans-serif',
-      l10n.fontFamilyMonospace: 'monospace',
-      FlutterQuillLocalizations.of(context)?.clear ?? 'Clear': 'Clear',
-    };
   }
 
   /// 选图 → 压缩 → 插进正文。
@@ -603,15 +625,18 @@ class _EditorToolbar extends ConsumerWidget {
   }
 }
 
-/// 笔记详情稿的顶栏：左 `back` + 右 2 个入口，无标题。
+/// 笔记详情稿的顶栏：左 `back` + 右 3 个入口，无标题。
 ///
 /// palette 接了「切换正文背景图」（循环：无背景 ↔ 3 张纸张纹理，见
 /// [noteBackgroundImages]）。「配色 / 样式」的语义尚无稿，先以背景切换落地。
+/// 「字体」（`AppIcons.fontFamily`）是笔记详情稿之后补的入口：**整篇**笔记的标题与
+/// 正文字体，选完随这篇笔记落库 —— 无稿，取 Material 惯例字形。
 /// 「更多」下拉里是四个有确定语义的动作：置顶 / 收藏 / 分享 / 删除。
 class _TopBar extends ConsumerWidget {
   const _TopBar({
     required this.onBack,
     required this.onShare,
+    required this.onFont,
     required this.onPalette,
     required this.onTogglePinned,
     required this.onToggleFavorite,
@@ -624,6 +649,9 @@ class _TopBar extends ConsumerWidget {
   final VoidCallback onBack;
 
   final VoidCallback onShare;
+
+  /// 弹出字体选择（改的是**这篇笔记**的标题 + 正文，不是 UI 字体）。
+  final VoidCallback onFont;
 
   final VoidCallback onPalette;
 
@@ -657,6 +685,11 @@ class _TopBar extends ConsumerWidget {
           icon: AppIcons.palette,
           tooltip: l10n.palette,
           onPressed: onPalette,
+        ),
+        AppIconButton(
+          icon: AppIcons.fontFamily,
+          tooltip: l10n.settingsFontFamily,
+          onPressed: onFont,
         ),
         PopupMenuButton<_NoteMoreAction>(
           key: const Key('note_more'),

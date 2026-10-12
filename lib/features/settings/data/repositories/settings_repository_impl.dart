@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/exceptions.dart';
+import 'package:mynote/core/fonts/app_font.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/storage/local_storage_service.dart';
 import 'package:mynote/core/theme/app_color_scheme.dart';
@@ -14,7 +15,10 @@ const String settingsStorageKey = 'app_settings';
 ///
 /// ⚠️ 读的时候**不据此拒绝**：比当前高的版本走逐字段回落（认识的字段照读，
 /// 不认识的忽略），不删 key、不整份重置 —— 整份重置会静默清掉用户的主题选择。
-const int settingsSchemaVersion = 1;
+///
+/// v2：`fontFamily`（系统族名 4 档）→ `uiFontId`（字体目录 id）。旧 key 由
+/// 「未知 key 一律忽略」自然丢掉，旧值不需要迁移代码。
+const int settingsSchemaVersion = 2;
 
 /// `SettingsRepository` 的唯一实现。⛔ **不注入 logger**：Repository 没有 `Ref`，
 /// 为它注入一个日志回调是纯样板；读失败静默回落默认值的理由写在 [load] 上。
@@ -59,7 +63,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 Map<String, Object?> _toJson(AppSettings s) {
   return <String, Object?>{
     'schemaVersion': settingsSchemaVersion,
-    'fontFamily': s.fontFamily.name,
+    'uiFontId': s.uiFontId,
     'noteSort': s.noteSort.name,
     'noteLayout': s.noteLayout.name,
     'themeMode': s.themeMode.name,
@@ -78,8 +82,7 @@ Map<String, Object?> _toJson(AppSettings s) {
 AppSettings _fromJson(Map<String, Object?> json) {
   const d = AppSettings.defaults();
   return AppSettings(
-    fontFamily:
-        _byName(AppFontFamily.values, json['fontFamily']) ?? d.fontFamily,
+    uiFontId: _fontId(json['uiFontId']),
     noteSort: _byName(AppNoteSort.values, json['noteSort']) ?? d.noteSort,
     noteLayout: _byName(NoteLayout.values, json['noteLayout']) ?? d.noteLayout,
     // ⚠️ `locale` 字段已下线（语言真源在 `core`），旧数据里残留的 `locale` key
@@ -97,3 +100,11 @@ AppSettings _fromJson(Map<String, Object?> json) {
 T? _byName<T extends Enum>(List<T> values, Object? raw) {
   return raw is String ? values.asNameMap()[raw] : null;
 }
+
+/// UI 字体 id：类型不是 `String`、或字符串**不在 `core/fonts` 目录里**，都返回
+/// `null`（= 系统默认）。
+///
+/// ⚠️ 第二道校验不是多余的：字体目录会被裁剪 / 换源，落着一个目录里不存在的 id
+/// 只会换来一个永远解析不到的族名 —— 那时用户看到的是「设置里写着某字体，
+/// 显示却是系统字体」，比直接回落更难解释。
+String? _fontId(Object? raw) => raw is String ? appFontById(raw)?.id : null;

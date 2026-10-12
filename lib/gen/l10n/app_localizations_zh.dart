@@ -387,13 +387,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fontFamilySystem => '系统默认';
 
   @override
-  String get fontFamilySerif => '宋体';
-
-  @override
-  String get fontFamilySansSerif => '黑体';
-
-  @override
-  String get fontFamilyMonospace => '等宽';
+  String get fontLoadFailed => '字体下载失败，请检查网络后重试';
 
   @override
   String get settingsSortEditedDesc => '按编辑日期';

@@ -23,7 +23,9 @@ part 'app_database.g.dart';
 /// 否则 A 机永久删的笔记会在 B 机下次同步时复活；② `notes` 加 `is_pinned` /
 /// `is_favorite` 两个置位布尔列，老数据默认 false = 都不置顶不收藏；
 /// v7 → v8 加待办的 `priority`（默认 0 = 普通）与 `recurrence`（null = 不重复），
-/// 并**新建** `todo_subtasks` 表（子任务，有自己的主键与外键）。
+/// 并**新建** `todo_subtasks` 表（子任务，有自己的主键与外键）；
+/// v8 → v9 给 `notes` 加 `editor_font_id` 列（每篇笔记的编辑器字体 id，可空 =
+/// 系统默认，见 `notes_table.dart` 的列注释）。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///
 /// 三张表（`notes` / `note_folders` / `todos`）在 `@DriftDatabase` 注解里声明，
@@ -37,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -87,6 +89,12 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(todos, todos.priority);
         await m.addColumn(todos, todos.recurrence);
         await m.createTable(todoSubtasks);
+      }
+      // v8 → v9：`notes` 加编辑器字体列。老数据为 null = 系统默认字体，与升级前
+      // 「正文的族名由工具栏按选中范围写在 Delta 里」共存，**无需回填**
+      // （Delta 里已有的 font 属性照旧渲染）。
+      if (from < 9) {
+        await m.addColumn(notes, notes.editorFontId);
       }
     },
     beforeOpen: (details) async {

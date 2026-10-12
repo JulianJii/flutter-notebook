@@ -584,6 +584,17 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _editorFontIdMeta = const VerificationMeta(
+    'editorFontId',
+  );
+  @override
+  late final GeneratedColumn<String> editorFontId = GeneratedColumn<String>(
+    'editor_font_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _isPinnedMeta = const VerificationMeta(
     'isPinned',
   );
@@ -635,6 +646,7 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     updatedAt,
     deletedAt,
     background,
+    editorFontId,
     isPinned,
     isFavorite,
     purgedAt,
@@ -702,6 +714,15 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         background.isAcceptableOrUnknown(data['background']!, _backgroundMeta),
       );
     }
+    if (data.containsKey('editor_font_id')) {
+      context.handle(
+        _editorFontIdMeta,
+        editorFontId.isAcceptableOrUnknown(
+          data['editor_font_id']!,
+          _editorFontIdMeta,
+        ),
+      );
+    }
     if (data.containsKey('is_pinned')) {
       context.handle(
         _isPinnedMeta,
@@ -761,6 +782,10 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         DriftSqlType.string,
         data['${effectivePrefix}background'],
       ),
+      editorFontId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}editor_font_id'],
+      ),
       isPinned: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_pinned'],
@@ -804,6 +829,12 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
   /// 只由 `NoteDao.updateBackgroundById` 写，整行 `update` 不碰这一列。
   final String? background;
 
+  /// 这篇笔记的编辑器字体 id（`core/fonts` 目录里的 id）。null = 系统默认。
+  ///
+  /// ⚠️ 与 [background] 同类：**每篇笔记独立**的视觉属性。存 id 而非族名（族名由
+  /// 字体目录现算）。只由 `NoteDao.updateEditorFontById` 写，整行 `update` 不碰这一列。
+  final String? editorFontId;
+
   /// 置顶。列表排序时排在未置顶之前（`NoteDao.watch`），置顶笔记不改变创建时间。
   final bool isPinned;
 
@@ -830,6 +861,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     required this.updatedAt,
     this.deletedAt,
     this.background,
+    this.editorFontId,
     required this.isPinned,
     required this.isFavorite,
     this.purgedAt,
@@ -850,6 +882,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     }
     if (!nullToAbsent || background != null) {
       map['background'] = Variable<String>(background);
+    }
+    if (!nullToAbsent || editorFontId != null) {
+      map['editor_font_id'] = Variable<String>(editorFontId);
     }
     map['is_pinned'] = Variable<bool>(isPinned);
     map['is_favorite'] = Variable<bool>(isFavorite);
@@ -875,6 +910,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       background: background == null && nullToAbsent
           ? const Value.absent()
           : Value(background),
+      editorFontId: editorFontId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(editorFontId),
       isPinned: Value(isPinned),
       isFavorite: Value(isFavorite),
       purgedAt: purgedAt == null && nullToAbsent
@@ -897,6 +935,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       background: serializer.fromJson<String?>(json['background']),
+      editorFontId: serializer.fromJson<String?>(json['editorFontId']),
       isPinned: serializer.fromJson<bool>(json['isPinned']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       purgedAt: serializer.fromJson<DateTime?>(json['purgedAt']),
@@ -914,6 +953,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'background': serializer.toJson<String?>(background),
+      'editorFontId': serializer.toJson<String?>(editorFontId),
       'isPinned': serializer.toJson<bool>(isPinned),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'purgedAt': serializer.toJson<DateTime?>(purgedAt),
@@ -929,6 +969,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
     Value<String?> background = const Value.absent(),
+    Value<String?> editorFontId = const Value.absent(),
     bool? isPinned,
     bool? isFavorite,
     Value<DateTime?> purgedAt = const Value.absent(),
@@ -941,6 +982,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
     background: background.present ? background.value : this.background,
+    editorFontId: editorFontId.present ? editorFontId.value : this.editorFontId,
     isPinned: isPinned ?? this.isPinned,
     isFavorite: isFavorite ?? this.isFavorite,
     purgedAt: purgedAt.present ? purgedAt.value : this.purgedAt,
@@ -957,6 +999,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       background: data.background.present
           ? data.background.value
           : this.background,
+      editorFontId: data.editorFontId.present
+          ? data.editorFontId.value
+          : this.editorFontId,
       isPinned: data.isPinned.present ? data.isPinned.value : this.isPinned,
       isFavorite: data.isFavorite.present
           ? data.isFavorite.value
@@ -976,6 +1021,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('background: $background, ')
+          ..write('editorFontId: $editorFontId, ')
           ..write('isPinned: $isPinned, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('purgedAt: $purgedAt')
@@ -993,6 +1039,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     updatedAt,
     deletedAt,
     background,
+    editorFontId,
     isPinned,
     isFavorite,
     purgedAt,
@@ -1009,6 +1056,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
           other.background == this.background &&
+          other.editorFontId == this.editorFontId &&
           other.isPinned == this.isPinned &&
           other.isFavorite == this.isFavorite &&
           other.purgedAt == this.purgedAt);
@@ -1023,6 +1071,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String?> background;
+  final Value<String?> editorFontId;
   final Value<bool> isPinned;
   final Value<bool> isFavorite;
   final Value<DateTime?> purgedAt;
@@ -1036,6 +1085,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.background = const Value.absent(),
+    this.editorFontId = const Value.absent(),
     this.isPinned = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.purgedAt = const Value.absent(),
@@ -1050,6 +1100,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
     this.background = const Value.absent(),
+    this.editorFontId = const Value.absent(),
     this.isPinned = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.purgedAt = const Value.absent(),
@@ -1066,6 +1117,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<String>? background,
+    Expression<String>? editorFontId,
     Expression<bool>? isPinned,
     Expression<bool>? isFavorite,
     Expression<DateTime>? purgedAt,
@@ -1080,6 +1132,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (background != null) 'background': background,
+      if (editorFontId != null) 'editor_font_id': editorFontId,
       if (isPinned != null) 'is_pinned': isPinned,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (purgedAt != null) 'purged_at': purgedAt,
@@ -1096,6 +1149,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
     Value<String?>? background,
+    Value<String?>? editorFontId,
     Value<bool>? isPinned,
     Value<bool>? isFavorite,
     Value<DateTime?>? purgedAt,
@@ -1110,6 +1164,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       background: background ?? this.background,
+      editorFontId: editorFontId ?? this.editorFontId,
       isPinned: isPinned ?? this.isPinned,
       isFavorite: isFavorite ?? this.isFavorite,
       purgedAt: purgedAt ?? this.purgedAt,
@@ -1144,6 +1199,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     if (background.present) {
       map['background'] = Variable<String>(background.value);
     }
+    if (editorFontId.present) {
+      map['editor_font_id'] = Variable<String>(editorFontId.value);
+    }
     if (isPinned.present) {
       map['is_pinned'] = Variable<bool>(isPinned.value);
     }
@@ -1170,6 +1228,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('background: $background, ')
+          ..write('editorFontId: $editorFontId, ')
           ..write('isPinned: $isPinned, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('purgedAt: $purgedAt, ')
@@ -2628,6 +2687,7 @@ typedef $$NotesTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
       Value<String?> background,
+      Value<String?> editorFontId,
       Value<bool> isPinned,
       Value<bool> isFavorite,
       Value<DateTime?> purgedAt,
@@ -2643,6 +2703,7 @@ typedef $$NotesTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
       Value<String?> background,
+      Value<String?> editorFontId,
       Value<bool> isPinned,
       Value<bool> isFavorite,
       Value<DateTime?> purgedAt,
@@ -2711,6 +2772,11 @@ class $$NotesTableFilterComposer extends Composer<_$AppDatabase, $NotesTable> {
 
   ColumnFilters<String> get background => $composableBuilder(
     column: $table.background,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get editorFontId => $composableBuilder(
+    column: $table.editorFontId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2797,6 +2863,11 @@ class $$NotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get editorFontId => $composableBuilder(
+    column: $table.editorFontId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isPinned => $composableBuilder(
     column: $table.isPinned,
     builder: (column) => ColumnOrderings(column),
@@ -2865,6 +2936,11 @@ class $$NotesTableAnnotationComposer
 
   GeneratedColumn<String> get background => $composableBuilder(
     column: $table.background,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get editorFontId => $composableBuilder(
+    column: $table.editorFontId,
     builder: (column) => column,
   );
 
@@ -2939,6 +3015,7 @@ class $$NotesTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<String?> background = const Value.absent(),
+                Value<String?> editorFontId = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
                 Value<bool> isFavorite = const Value.absent(),
                 Value<DateTime?> purgedAt = const Value.absent(),
@@ -2952,6 +3029,7 @@ class $$NotesTableTableManager
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 background: background,
+                editorFontId: editorFontId,
                 isPinned: isPinned,
                 isFavorite: isFavorite,
                 purgedAt: purgedAt,
@@ -2967,6 +3045,7 @@ class $$NotesTableTableManager
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<String?> background = const Value.absent(),
+                Value<String?> editorFontId = const Value.absent(),
                 Value<bool> isPinned = const Value.absent(),
                 Value<bool> isFavorite = const Value.absent(),
                 Value<DateTime?> purgedAt = const Value.absent(),
@@ -2980,6 +3059,7 @@ class $$NotesTableTableManager
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 background: background,
+                editorFontId: editorFontId,
                 isPinned: isPinned,
                 isFavorite: isFavorite,
                 purgedAt: purgedAt,

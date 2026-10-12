@@ -78,3 +78,11 @@ class NotificationFailure extends Failure {
 class ImageFailure extends Failure {
   const ImageFailure({super.message = 'Image failure', super.statusCode});
 }
+
+/// 字体加载失败：字体文件下载不下来（首次需联网）或本地缓存文件已损坏。
+///
+/// ⚠️ message 是**英文兜底**，不是给用户看的文案：UI 侧的提示走 ARB
+/// （`fontLoadFailed`），本类只负责给 `AsyncValue.error` / 日志一个类型化的原因。
+class FontFailure extends Failure {
+  const FontFailure({super.message = 'Font load failed', super.statusCode});
+}

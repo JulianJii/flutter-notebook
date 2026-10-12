@@ -20,9 +20,9 @@ import 'tokens/app_text_styles.dart';
 class AppTheme {
   const AppTheme._();
 
-  /// [fontFamily] 是设置「字体」解析出的**系统字体族名**（`null` = 平台默认），
-  /// 由 `main.dart` 从 `uiFontFamilyProvider` 读出来传进这里 —— core 不认识
-  /// `AppFontFamily`（R1）。
+  /// [fontFamily] 是设置「字体」解析出的**字体族名**（`null` = 平台默认），
+  /// 由 `main.dart` 从 `core/fonts` 的 `fontFamilyOfProvider` 读出来传进这里 ——
+  /// 「字体 id → 族名」的解析与注册都在那儿，本文件只收一个 `String?`。
   static ThemeData light([
     AppColorScheme scheme = AppColorScheme.amber,
     String? fontFamily,

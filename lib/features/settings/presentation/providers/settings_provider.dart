@@ -56,11 +56,11 @@ class Settings extends _$Settings {
     );
   }
 
-  /// UI 文字字体。写入口在设置页的「字体」行。
+  /// UI 文字字体。写入口在设置页的「字体」行（弹出字体选择弹层）。
   ///
-  /// ⛔ 不动编辑器里的笔记标题 / 正文：它们走 `AppTextStyles.editor`（无族名基线）。
-  void setFontFamily(AppFontFamily value) =>
-      _write(state.copyWith(fontFamily: value));
+  /// 存的是 `core/fonts` 目录里的**字体 id**，`null` = 系统默认。
+  /// ⛔ 不动编辑器里的笔记标题 / 正文：它们走 `Note.editorFontId`。
+  void setUiFontId(String? value) => _write(state.copyWith(uiFontId: value));
 
   void setNoteSort(AppNoteSort value) =>
       _write(state.copyWith(noteSort: value));
@@ -108,20 +108,7 @@ class Settings extends _$Settings {
       ref.read(taggedLoggerProvider('settings')).i(message);
 }
 
-/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
-///
-/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
-/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
-/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
-/// 只 watch 一个 `String?`。
-///
-/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
-/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
-@Riverpod(keepAlive: true)
-String? uiFontFamily(Ref ref) =>
-    switch (ref.watch(settingsProvider).fontFamily) {
-      AppFontFamily.system => null,
-      AppFontFamily.serif => 'serif',
-      AppFontFamily.sansSerif => 'sans-serif',
-      AppFontFamily.monospace => 'monospace',
-    };
+// ⛔ **不再有 `uiFontFamily` provider**：原来是「`AppFontFamily` → 系统族名」的
+// 映射桥，现在 id → 族名（含首次下载并注册字体）整条链路都在 `core/fonts`
+// （`fontFamilyOfProvider`），消费方（`main.dart`）直接
+// `settingsProvider.select((s) => s.uiFontId)` 取 id 就够了，中间再架一层是空转。

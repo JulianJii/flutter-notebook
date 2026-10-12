@@ -138,7 +138,7 @@ void main() {
     expect(queries.last.sort, NoteSort.editedDesc);
   });
 
-  testWidgets('fontFamily 不进 URL query（偏好不放 URL）', (tester) async {
+  testWidgets('字体偏好不进 URL query（偏好不放 URL）', (tester) async {
     final router = GoRouter(
       initialLocation: '/notes',
       routes: <RouteBase>[
@@ -154,7 +154,7 @@ void main() {
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => Right(
         _default.copyWith(
-          fontFamily: AppFontFamily.serif,
+          uiFontId: 'lxgwWenKai',
           noteSort: AppNoteSort.titleAsc,
         ),
       ),

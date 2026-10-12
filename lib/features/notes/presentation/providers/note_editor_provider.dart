@@ -5,6 +5,7 @@ import 'package:mynote/core/logging/logger_provider.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_flags_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/utils/note_delta.dart';
@@ -33,6 +34,8 @@ class NoteEditorState {
     this.savedContent = '',
     this.draftBackground,
     this.savedBackground,
+    this.draftEditorFontId,
+    this.savedEditorFontId,
     this.createdAt,
     this.lastFailure,
     this.isPinned = false,
@@ -62,6 +65,16 @@ class NoteEditorState {
 
   /// 上次成功落库的背景。与 [draftBackground] 对称，便于判断是否需要补写。
   final NoteBackground? savedBackground;
+
+  /// 这篇笔记的编辑器字体：`core/fonts` 目录里的 id，null = 系统默认字体。
+  ///
+  /// ⛔ **不计入 [isDirty]**，与 [draftBackground] 同一条约定：换字体不是编辑，
+  /// 已有笔记由 [NoteEditor.setEditorFontId] 走「只写字体列」的窄通道即时落库，
+  /// 新笔记随首次 `create` 一并写入。
+  final String? draftEditorFontId;
+
+  /// 上次成功落库的字体。与 [draftEditorFontId] 对称。
+  final String? savedEditorFontId;
 
   final DateTime? createdAt;
 
@@ -97,6 +110,8 @@ class NoteEditorState {
     String? savedContent,
     Object? draftBackground = _unset,
     Object? savedBackground = _unset,
+    Object? draftEditorFontId = _unset,
+    Object? savedEditorFontId = _unset,
     Object? createdAt = _unset,
     Object? lastFailure = _unset,
     bool? isPinned,
@@ -115,6 +130,13 @@ class NoteEditorState {
       savedBackground: identical(savedBackground, _unset)
           ? this.savedBackground
           : savedBackground as NoteBackground?,
+      // 字体 id 与背景同理：null 是合法取值（系统默认字体），故都走哨兵。
+      draftEditorFontId: identical(draftEditorFontId, _unset)
+          ? this.draftEditorFontId
+          : draftEditorFontId as String?,
+      savedEditorFontId: identical(savedEditorFontId, _unset)
+          ? this.savedEditorFontId
+          : savedEditorFontId as String?,
       createdAt: identical(createdAt, _unset)
           ? this.createdAt
           : createdAt as DateTime?,
@@ -170,6 +192,8 @@ class NoteEditor extends _$NoteEditor {
               savedContent: note.content,
               draftBackground: note.background,
               savedBackground: note.background,
+              draftEditorFontId: note.editorFontId,
+              savedEditorFontId: note.editorFontId,
               createdAt: note.createdAt,
               isPinned: note.isPinned,
               isFavorite: note.isFavorite,
@@ -215,6 +239,41 @@ class NoteEditor extends _$NoteEditor {
         // 草稿保留用户的选择（视觉已生效），失败信号交给 UI 弹提示。
         return latest.copyWith(lastFailure: failure);
       }, (_) => latest.copyWith(savedBackground: value, lastFailure: null)),
+    );
+  }
+
+  /// 切换这篇笔记的编辑器字体（`core/fonts` 目录里的 id，null = 系统默认）。
+  ///
+  /// 与 [setBackground] 同一条约定：已有笔记走窄通道**即时落库**（只写字体列、
+  /// 不刷新 `updatedAt`，因此不计入 [isDirty]）；新笔记只更新草稿，随首次
+  /// `create` 一并写库。
+  ///
+  /// ⚠️ **字体文件不在这里下载**：弹层在用户点中某一款时就已 `await` 注册完成
+  /// （见 `AppFontPickerSheet`），本方法只落一个 id。
+  Future<void> setEditorFontId(String? value) async {
+    final current = state.value;
+    if (current == null || current.draftEditorFontId == value) return;
+    state = AsyncData(current.copyWith(draftEditorFontId: value));
+    if (current.isNew) return;
+
+    final result = await ref.read(updateNoteEditorFontUseCaseProvider)(
+      UpdateNoteEditorFontParams(
+        // `create` 过一次就用真实 id（与 `flush` 同一条约定）。
+        noteId: _savedId ?? _noteId,
+        fontId: value,
+      ),
+    );
+    // 同 setBackground：合并进**最新**的 state，别把 `current` 整份写回去。
+    final latest = state.value;
+    if (latest == null) return;
+    state = AsyncData(
+      result.fold((failure) {
+        ref
+            .read(taggedLoggerProvider('notes'))
+            .w('note editor font save failed', error: failure);
+        // 草稿保留用户的选择（视觉已生效），失败信号交给 UI 弹提示。
+        return latest.copyWith(lastFailure: failure);
+      }, (_) => latest.copyWith(savedEditorFontId: value, lastFailure: null)),
     );
   }
 
@@ -290,6 +349,8 @@ class NoteEditor extends _$NoteEditor {
               folderId: current.folderId,
               // 先选背景、后写内容：首次落库时把背景一起带上。
               background: current.draftBackground,
+              // 字体同理：新笔记上先挑字体、再写正文是正常路径。
+              editorFontId: current.draftEditorFontId,
             ),
           )
         : await ref.read(updateNoteUseCaseProvider)(

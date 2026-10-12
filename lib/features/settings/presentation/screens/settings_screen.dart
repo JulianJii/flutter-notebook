@@ -97,18 +97,22 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('section_appearance'),
                     title: l10n.settingsGroupAppearance,
                     children: <Widget>[
-                      // UI 字体。⛔ **只作用于 UI 文字**：编辑器里的笔记标题 / 正文
-                      // 不吃这一项（`AppTextStyles.editor`），它们的字体由编辑器
-                      // 工具栏的「字体」按钮按选中范围决定。
-                      _selectTile<AppFontFamily>(
-                        context,
+                      // UI 字体。⛔ **只作用于 UI 文字**：每篇笔记的标题 / 正文走
+                      // 该篇笔记自己的 `editorFontId`（笔记详情页顶栏的「字体」按钮）。
+                      //
+                      // 不走 `_selectTile` 的通用选项单：选中一款字体要先把字体文件
+                      // 下载并注册进引擎，失败要留在弹层里让用户重试 —— 通用选项单
+                      // 没有这个环节，它的选项是「立刻就能用」的枚举值。
+                      AppListTile(
                         key: const Key('select_font_family'),
                         title: l10n.settingsFontFamily,
-                        valueText: _fontFamilyLabel(l10n, settings.fontFamily),
-                        options: AppFontFamily.values,
-                        current: settings.fontFamily,
-                        labelOf: (family) => _fontFamilyLabel(l10n, family),
-                        onSelected: notifier.setFontFamily,
+                        trailingValue: appFontLabel(l10n, settings.uiFontId),
+                        trailing: AppIcon(
+                          icon: AppIcons.chevronRight,
+                          size: _kRowTrailingIconSize,
+                          color: context.colors.textSecondary,
+                        ),
+                        onTap: () => _pickFont(context, ref),
                       ),
                       // 主题：明暗 × 配色两个维度都在独立的主题页里选
                       // （三档分段控件 + 配色列表），这里只留入口。
@@ -302,18 +306,22 @@ class SettingsScreen extends ConsumerWidget {
 /// 提成文件内私有常量而不是散落 8 个字面量（⛔ 不改 `core/theme/tokens/`）。
 const double _kRowTrailingIconSize = 20;
 
-/// UI 字体 → 当前值文案。
+/// 弹出字体选择 → 写回 UI 字体。
 ///
-/// ⛔ **不直接上屏 `AppFontFamily.name`**：那会显示英文 `sansSerif`。
-/// 文案 key 不带 `settings` 前缀：编辑器工具栏的「字体」按钮复用同一组文案
-/// （两处说的是同一种字体，各写一份迟早会分叉）。
-String _fontFamilyLabel(AppLocalizations l10n, AppFontFamily family) =>
-    switch (family) {
-      AppFontFamily.system => l10n.fontFamilySystem,
-      AppFontFamily.serif => l10n.fontFamilySerif,
-      AppFontFamily.sansSerif => l10n.fontFamilySansSerif,
-      AppFontFamily.monospace => l10n.fontFamilyMonospace,
-    };
+/// ⚠️ **不能判 `picked != null`**：弹层的 `0` 就是「系统默认」这一档，判空会让它
+/// 永远选不中（与设置页其余 `_selectTile` 同一个坑）。`null` 才是「用户取消了」。
+///
+/// ⚠️ 落库只写 id：id → 族名（含首次下载并注册）由 `core/fonts` 的
+/// `fontFamilyOfProvider` 负责，本页不碰字体文件。
+Future<void> _pickFont(BuildContext context, WidgetRef ref) async {
+  final picked = await showAppFontPickerSheet(
+    context,
+    selected: appFontIndexOf(ref.read(settingsProvider).uiFontId),
+  );
+  if (picked == null) return;
+  // `_write` 内部对「值没变」短路，重复选同一档不会产生一次 IO。
+  ref.read(settingsProvider.notifier).setUiFontId(appFontIdAt(picked));
+}
 
 /// 排序方式 → 当前值文案。4 值穷尽 `switch`，无 `default`（新增枚举值编译失败）。
 String _noteSortLabel(AppLocalizations l10n, AppNoteSort sort) =>

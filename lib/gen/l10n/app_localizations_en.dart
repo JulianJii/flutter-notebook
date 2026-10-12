@@ -396,13 +396,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fontFamilySystem => 'System default';
 
   @override
-  String get fontFamilySerif => 'Serif';
-
-  @override
-  String get fontFamilySansSerif => 'Sans serif';
-
-  @override
-  String get fontFamilyMonospace => 'Monospace';
+  String get fontLoadFailed =>
+      'Failed to download the font. Check your network and try again.';
 
   @override
   String get settingsSortEditedDesc => 'Last edited';

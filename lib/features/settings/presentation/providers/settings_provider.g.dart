@@ -100,7 +100,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'a31ad2a3ddba1bd177735f1b2f7142f863c3e845';
+String _$settingsHash() => r'dc1ce1779ec99654f56b6fbe91d9b24895ae22b3';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///
@@ -140,73 +140,3 @@ abstract class _$Settings extends $Notifier<AppSettings> {
     return element.handleCreate(ref, build);
   }
 }
-
-/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
-///
-/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
-/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
-/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
-/// 只 watch 一个 `String?`。
-///
-/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
-/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
-
-@ProviderFor(uiFontFamily)
-final uiFontFamilyProvider = UiFontFamilyProvider._();
-
-/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
-///
-/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
-/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
-/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
-/// 只 watch 一个 `String?`。
-///
-/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
-/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
-
-final class UiFontFamilyProvider
-    extends $FunctionalProvider<String?, String?, String?>
-    with $Provider<String?> {
-  /// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
-  ///
-  /// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
-  /// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
-  /// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
-  /// 只 watch 一个 `String?`。
-  ///
-  /// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
-  /// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
-  UiFontFamilyProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'uiFontFamilyProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$uiFontFamilyHash();
-
-  @$internal
-  @override
-  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  String? create(Ref ref) {
-    return uiFontFamily(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String?>(value),
-    );
-  }
-}
-
-String _$uiFontFamilyHash() => r'aa9c8eb2d06d7280df83fb0172b6deead33cbe34';

@@ -109,6 +109,22 @@ class NoteRepositoryImpl implements NoteRepository {
     }
   }
 
+  /// 只改编辑器字体：**不**刷新 `updatedAt`（换字体不是编辑，排序键不该跳变）。
+  @override
+  Future<Either<Failure, Unit>> updateEditorFont(
+    String noteId,
+    String? fontId,
+  ) async {
+    try {
+      await _localDataSource.updateEditorFont(noteId, fontId);
+      return const Right(unit);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
   /// 软删除：进「最近删除」。`deleted_at` 由 datasource 写 `now()`，
   /// **不**刷新 `updatedAt`（删除不是编辑，列表排序键不该因删除而跳变）。
   @override
@@ -168,6 +184,9 @@ class NoteRepositoryImpl implements NoteRepository {
 ///
 /// ⛔ 不用 `copyWith`：它刻意不带 `id`（id 是实体的身份，`TASK-014` 的设计），
 /// 而改实体属 `TASK-014` 的 Scope。已有的 id 直接原样返回。
+///
+/// ⚠️ **逐字段列举**，加字段时必须补上 —— 漏一个就是「新建时静默丢掉这个字段」
+/// （`background` 与 `editorFontId` 都踩过这条路径：用户先挑外观、后写正文）。
 Note _withId(Note note, String id) {
   return Note(
     id: id,
@@ -175,6 +194,7 @@ Note _withId(Note note, String id) {
     content: note.content,
     folderId: note.folderId,
     background: note.background,
+    editorFontId: note.editorFontId,
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,
   );

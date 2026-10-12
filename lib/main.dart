@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:mynote/core/constants/app_constants.dart';
+import 'package:mynote/core/fonts/font_providers.dart';
 import 'package:mynote/core/providers/localization_providers.dart';
 import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/router/app_router.dart';
@@ -61,9 +62,13 @@ class MyApp extends ConsumerWidget {
       settingsProvider.select((s) => s.colorScheme),
     );
 
-    // UI 字体：只 watch 一个族名（`null` = 平台默认）。⛔ 只作用于 UI 文字 ——
-    // 编辑器里的笔记标题 / 正文走 `AppTextStyles.editor`，不经过这个值。
-    final fontFamily = ref.watch(uiFontFamilyProvider);
+    // UI 字体。偏好里存的是字体 **id**（`null` = 系统默认），族名与「首次下载并
+    // 注册进引擎」都在 `core/fonts` 现算 —— `AsyncValue.value` 在加载期间与失败时
+    // 给 `null`，于是这一帧回落系统字体、加载完自动换过来（⛔ 不阻塞 `main()`。
+    // 代价只是冷启动时一次短暂的字形切换）。
+    // ⛔ 只作用于 UI 文字：每篇笔记的标题 / 正文走该篇笔记自己的 `editorFontId`。
+    final uiFontId = ref.watch(settingsProvider.select((s) => s.uiFontId));
+    final fontFamily = ref.watch(fontFamilyOfProvider(uiFontId)).value;
 
     // 监听生效的语言环境：用户选择 → 系统语言 → 中文
     final locale = ref.watch(appLocaleProvider);

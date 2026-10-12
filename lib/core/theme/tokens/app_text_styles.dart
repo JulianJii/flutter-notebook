@@ -113,11 +113,12 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   /// 按选中范围决定 —— 两者互不干扰。
   static const AppTextStyles editor = AppTextStyles.light();
 
-  /// 把设置里的「字体」套到 13 级字阶上。**族名在本项目只出现这一处**。
+  /// 把字体族名套到 13 级字阶上。**套用动作在本项目只出现这一处**。
   ///
-  /// ⚠️ [fontFamily] 直接进 `TextStyle.fontFamily`，取值是**系统字体族名**
-  /// （`serif` / `sans-serif` / `monospace`），`null` = 平台默认。非 Android 平台上
-  /// 这些族名多半不存在，会静默回落到系统默认字体（见 `docs/FEATURES.md`「已知限制」）。
+  /// ⚠️ [fontFamily] 直接进 `TextStyle.fontFamily`：取值由 `core/fonts` 的
+  /// `fontFamilyOfProvider` 给出（已注册进引擎的族名），`null` = 平台默认。
+  /// ⛔ 调用方不要自己写 `copyWith(fontFamily:)` —— 逐级套用漏掉一级就会
+  /// 出现「标题换了、副标题没换」这种半吊子状态。
   AppTextStyles withFontFamily(String? fontFamily) {
     TextStyle f(TextStyle style) => style.copyWith(fontFamily: fontFamily);
     return AppTextStyles(

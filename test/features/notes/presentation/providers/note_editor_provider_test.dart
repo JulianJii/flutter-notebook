@@ -9,6 +9,8 @@ import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart'
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_params.dart';
+import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
@@ -24,16 +26,21 @@ class _MockUpdateNote extends Mock implements UpdateNoteUseCase {}
 class _MockUpdateNoteBackground extends Mock
     implements UpdateNoteBackgroundUseCase {}
 
+class _MockUpdateNoteEditorFont extends Mock
+    implements UpdateNoteEditorFontUseCase {}
+
 Note _note({
   String title = '标题',
   String content = '正文',
   NoteBackground? background,
+  String? editorFontId,
   String? folderId,
 }) => Note(
   id: 'n1',
   title: title,
   content: content,
   background: background,
+  editorFontId: editorFontId,
   folderId: folderId,
   createdAt: DateTime(2026, 10, 3, 6, 40),
   updatedAt: DateTime(2026, 10, 3, 6, 40),
@@ -52,6 +59,9 @@ void main() {
         background: NoteBackground.paper,
       ),
     );
+    registerFallbackValue(
+      const UpdateNoteEditorFontParams(noteId: 'n1', fontId: 'smileySans'),
+    );
   });
 
   ProviderContainer containerFor(
@@ -59,6 +69,7 @@ void main() {
     CreateNoteUseCase? create,
     UpdateNoteUseCase? update,
     UpdateNoteBackgroundUseCase? updateBackground,
+    UpdateNoteEditorFontUseCase? updateFont,
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -69,6 +80,8 @@ void main() {
           updateNoteBackgroundUseCaseProvider.overrideWithValue(
             updateBackground,
           ),
+        if (updateFont != null)
+          updateNoteEditorFontUseCaseProvider.overrideWithValue(updateFont),
       ],
     );
     addTearDown(container.dispose);
@@ -551,6 +564,123 @@ void main() {
     final s = container.read(noteEditorProvider('n1')).value!;
     expect(s.draftBackground, NoteBackground.mint);
     expect(s.savedBackground, isNull);
+    expect(s.lastFailure, isA<CacheFailure>());
+  });
+
+  test('既有笔记：build 把库里的字体灌进 draft 与 saved', () async {
+    final get = _MockGetNote();
+    when(
+      () => get('n1'),
+    ).thenAnswer((_) async => Right(_note(editorFontId: 'lxgwWenKai')));
+    final container = containerFor(get);
+    keepAlive(container, 'n1');
+
+    final s = await container.read(noteEditorProvider('n1').future);
+
+    expect(s.draftEditorFontId, 'lxgwWenKai');
+    expect(s.savedEditorFontId, 'lxgwWenKai');
+    expect(s.isDirty, isFalse, reason: '字体不参与 isDirty');
+  });
+
+  test('既有笔记：setEditorFontId 走窄通道即时落库，不标脏也不碰整行 update', () async {
+    final get = _MockGetNote();
+    final update = _MockUpdateNote();
+    final updateFont = _MockUpdateNoteEditorFont();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => updateFont(any()),
+    ).thenAnswer((_) async => const Right(unit));
+    final container = containerFor(get, update: update, updateFont: updateFont);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setEditorFontId('smileySans');
+
+    final s = container.read(noteEditorProvider('n1')).value!;
+    expect(s.draftEditorFontId, 'smileySans');
+    expect(s.savedEditorFontId, 'smileySans');
+    expect(s.isDirty, isFalse, reason: '换字体不是编辑，不该触发自动保存');
+    final params =
+        verify(() => updateFont(captureAny())).captured.single
+            as UpdateNoteEditorFontParams;
+    expect(params.noteId, 'n1');
+    expect(params.fontId, 'smileySans');
+    verifyNever(() => update(any()));
+  });
+
+  /// `editorFontId` 是**可空**字段：`copyWith` 用 `??` 兜底会让「换回系统默认」
+  /// 静默失效（写入的还是旧 id）。
+  test('既有笔记：选回系统默认（null）也即时落库', () async {
+    final get = _MockGetNote();
+    final updateFont = _MockUpdateNoteEditorFont();
+    when(
+      () => get('n1'),
+    ).thenAnswer((_) async => Right(_note(editorFontId: 'smileySans')));
+    when(
+      () => updateFont(any()),
+    ).thenAnswer((_) async => const Right(unit));
+    final container = containerFor(get, updateFont: updateFont);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setEditorFontId(null);
+
+    expect(
+      container.read(noteEditorProvider('n1')).value!.draftEditorFontId,
+      isNull,
+    );
+    final params =
+        verify(() => updateFont(captureAny())).captured.single
+            as UpdateNoteEditorFontParams;
+    expect(params.fontId, isNull);
+  });
+
+  test('新笔记：setEditorFontId 只改草稿，flush 的 create 带上字体', () async {
+    final get = _MockGetNote();
+    final create = _MockCreateNote();
+    final updateFont = _MockUpdateNoteEditorFont();
+    when(
+      () => create(any()),
+    ).thenAnswer((_) async => Right(_note(title: '新标题')));
+    final container = containerFor(get, create: create, updateFont: updateFont);
+    keepAlive(container, kNewNoteId);
+    await container.read(noteEditorProvider(kNewNoteId).future);
+
+    final notifier = container.read(noteEditorProvider(kNewNoteId).notifier);
+    await notifier.setEditorFontId('notoSansSc');
+    // 库里还没有这一行，窄通道无从下手。
+    verifyNever(() => updateFont(any()));
+
+    notifier.setTitle('新标题');
+    await notifier.flush();
+
+    final params =
+        verify(() => create(captureAny())).captured.single as CreateNoteParams;
+    expect(params.editorFontId, 'notoSansSc');
+  });
+
+  test('setEditorFontId 失败：lastFailure 带 Failure，草稿保留用户的选择', () async {
+    final get = _MockGetNote();
+    final updateFont = _MockUpdateNoteEditorFont();
+    when(() => get('n1')).thenAnswer((_) async => Right(_note()));
+    when(
+      () => updateFont(any()),
+    ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
+    final container = containerFor(get, updateFont: updateFont);
+    keepAlive(container, 'n1');
+    await container.read(noteEditorProvider('n1').future);
+
+    await container
+        .read(noteEditorProvider('n1').notifier)
+        .setEditorFontId('zcoolKuaiLe');
+
+    final s = container.read(noteEditorProvider('n1')).value!;
+    expect(s.draftEditorFontId, 'zcoolKuaiLe');
+    expect(s.savedEditorFontId, isNull);
     expect(s.lastFailure, isA<CacheFailure>());
   });
 }

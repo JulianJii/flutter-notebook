@@ -1,17 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:mynote/core/theme/app_color_scheme.dart';
 
-/// UI 文字字体。4 档，默认 `system`。
-///
-/// 取值是**系统字体族名**（`AppTextStyles.withFontFamily` 是唯一落点）：不打包字体
-/// 文件、不引 `google_fonts`，族名交给平台解析。非 Android 平台上 `serif` /
-/// `sans-serif` / `monospace` 多半解析不到，会静默回落到系统默认字体
-/// —— 见 `docs/FEATURES.md`「已知限制」。
-///
-/// ⛔ **只管 UI 文字**：笔记标题与正文（编辑器内部）不走这一项，它们的字体由
-/// 编辑器工具栏的「字体」按钮按选中范围决定（`AppTextStyles.editor`）。
-enum AppFontFamily { system, serif, sansSerif, monospace }
-
 /// 设置「选择排序方式」。默认 `editedDesc`（按编辑日期）。
 ///
 /// ⚠️ **不是 `NoteSort`**：`NoteSort` 住在 `features/notes/`，而 features 之间
@@ -29,15 +18,18 @@ enum NoteLayout { grid, list }
 /// 映射成 `ThemeMode` 在 `main.dart` 的 `MyApp` 里（3↔3 一一对应）。
 enum AppThemeMode { system, light, dark }
 
+/// 「显式置 null」哨兵。与 `Note._unset` 同一个理由与写法。
+const Object _unset = Object();
+
 /// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
 /// 需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
 ///
 /// ⛔ **不预留字段**：字段集与设置页的行逐项对齐，⛔ **不落派生值**
-/// （字体族的解析由 `AppTextStyles.withFontFamily` 现算）。
+/// （字体 id → 字体族的解析由 `core/fonts` 的 `fontFamilyOf` 现算）。
 class AppSettings extends Equatable {
   const AppSettings({
-    this.fontFamily = AppFontFamily.system,
+    this.uiFontId,
     this.noteSort = AppNoteSort.editedDesc,
     this.noteLayout = NoteLayout.grid,
     this.themeMode = AppThemeMode.system,
@@ -47,15 +39,25 @@ class AppSettings extends Equatable {
 
   /// 默认值入口。设置稿上显示的正是这几个值。
   const AppSettings.defaults()
-    : fontFamily = AppFontFamily.system,
+    : uiFontId = null,
       noteSort = AppNoteSort.editedDesc,
       noteLayout = NoteLayout.grid,
       themeMode = AppThemeMode.system,
       colorScheme = AppColorScheme.amber,
       compressImages = true;
 
-  /// UI 文字字体。⛔ 编辑器文字（笔记标题 + 正文）不吃它，见 [AppFontFamily]。
-  final AppFontFamily fontFamily;
+  /// UI 文字字体：`core/fonts` 目录里某个字体的 **id**，`null` = 系统默认。
+  ///
+  /// ⛔ **存 id 不存族名**：族名是 `DynamicFont` 注册进引擎时用的名字，属于
+  /// `core/fonts` 的目录数据；换字体版本时族名可能变，id 不变。也因此本文件
+  /// ⛔ 不 import `core/fonts` —— domain 只认一个字符串。
+  ///
+  /// ⛔ **只管 UI 文字**：每篇笔记的标题与正文走 `Note.editorFontId`，由笔记详情页
+  /// 顶栏的「字体」按钮改。
+  ///
+  /// ⚠️ 取值在读取时被校验（必须是目录里存在的 id），历史残留 / 被下线字体的旧值
+  /// 一律回落系统默认 —— 见 `SettingsRepositoryImpl._fromJson`。
+  final String? uiFontId;
 
   final AppNoteSort noteSort;
 
@@ -79,8 +81,10 @@ class AppSettings extends Equatable {
   /// 正文字节数会大得多。压缩目标与大小上限都住在 `NoteImage`，本类不带业务常量。
   final bool compressImages;
 
+  /// [uiFontId] 用哨兵默认值而不是 `String?`：`null` 是**合法取值**（系统默认），
+  /// 用 `??` 兜底会让「选回系统默认」被静默忽略（`Note.copyWith` 同款问题、同款写法）。
   AppSettings copyWith({
-    AppFontFamily? fontFamily,
+    Object? uiFontId = _unset,
     AppNoteSort? noteSort,
     NoteLayout? noteLayout,
     AppThemeMode? themeMode,
@@ -88,7 +92,9 @@ class AppSettings extends Equatable {
     bool? compressImages,
   }) {
     return AppSettings(
-      fontFamily: fontFamily ?? this.fontFamily,
+      uiFontId: identical(uiFontId, _unset)
+          ? this.uiFontId
+          : uiFontId as String?,
       noteSort: noteSort ?? this.noteSort,
       noteLayout: noteLayout ?? this.noteLayout,
       themeMode: themeMode ?? this.themeMode,
@@ -99,7 +105,7 @@ class AppSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-    fontFamily,
+    uiFontId,
     noteSort,
     noteLayout,
     themeMode,

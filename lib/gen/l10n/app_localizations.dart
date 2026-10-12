@@ -770,7 +770,7 @@ abstract class AppLocalizations {
   /// **'立即更新'**
   String get updateDialogUpdate;
 
-  /// Settings row title: UI font family (does not affect the note editor text)
+  /// Font picker: settings row title (UI font) + note detail top bar button tooltip (editor font)
   ///
   /// In zh, this message translates to:
   /// **'字体'**
@@ -794,29 +794,17 @@ abstract class AppLocalizations {
   /// **'图片压缩'**
   String get settingsCompressImages;
 
-  /// Font option: platform default font (settings row + editor toolbar)
+  /// Font option: platform default font, no font is loaded (font picker sheet)
   ///
   /// In zh, this message translates to:
   /// **'系统默认'**
   String get fontFamilySystem;
 
-  /// Font option: serif family (settings row + editor toolbar)
+  /// Font picker sheet: the selected font could not be downloaded; the selection is unchanged
   ///
   /// In zh, this message translates to:
-  /// **'宋体'**
-  String get fontFamilySerif;
-
-  /// Font option: sans-serif family (settings row + editor toolbar)
-  ///
-  /// In zh, this message translates to:
-  /// **'黑体'**
-  String get fontFamilySansSerif;
-
-  /// Font option: monospace family (settings row + editor toolbar)
-  ///
-  /// In zh, this message translates to:
-  /// **'等宽'**
-  String get fontFamilyMonospace;
+  /// **'字体下载失败，请检查网络后重试'**
+  String get fontLoadFailed;
 
   /// Sort option: most recently edited
   ///

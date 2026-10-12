@@ -495,7 +495,7 @@
   },
   "settingsFontFamily": "Font",
   "@settingsFontFamily": {
-    "description": "Settings row title: UI font family (does not affect the note editor text)"
+    "description": "Font picker: settings row title (UI font) + note detail top bar button tooltip (editor font)"
   },
   "settingsNoteSort": "Sort by",
   "@settingsNoteSort": {
@@ -511,19 +511,11 @@
   },
   "fontFamilySystem": "System default",
   "@fontFamilySystem": {
-    "description": "Font option: platform default font (settings row + editor toolbar)"
+    "description": "Font option: platform default font, no font is loaded (font picker sheet)"
   },
-  "fontFamilySerif": "Serif",
-  "@fontFamilySerif": {
-    "description": "Font option: serif family (settings row + editor toolbar)"
-  },
-  "fontFamilySansSerif": "Sans serif",
-  "@fontFamilySansSerif": {
-    "description": "Font option: sans-serif family (settings row + editor toolbar)"
-  },
-  "fontFamilyMonospace": "Monospace",
-  "@fontFamilyMonospace": {
-    "description": "Font option: monospace family (settings row + editor toolbar)"
+  "fontLoadFailed": "Failed to download the font. Check your network and try again.",
+  "@fontLoadFailed": {
+    "description": "Font picker sheet: the selected font could not be downloaded; the selection is unchanged"
   },
   "settingsSortEditedDesc": "Last edited",
   "@settingsSortEditedDesc": {

@@ -43,7 +43,7 @@ void main() {
 
   test('加载成功：state 被替换为持久化值', () async {
     const stored = AppSettings(
-      fontFamily: AppFontFamily.serif,
+      uiFontId: 'lxgwWenKai',
       noteLayout: NoteLayout.list,
     );
     when(
@@ -68,20 +68,15 @@ void main() {
   test('加载落地前用户已改过偏好：旧快照不覆盖用户的选择', () async {
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(
-        AppSettings(fontFamily: AppFontFamily.serif),
+        AppSettings(uiFontId: 'lxgwWenKai'),
       ),
     );
 
     container.read(settingsProvider);
-    container
-        .read(settingsProvider.notifier)
-        .setFontFamily(AppFontFamily.monospace);
+    container.read(settingsProvider.notifier).setUiFontId('notoSansSc');
     await settle();
 
-    expect(
-      container.read(settingsProvider).fontFamily,
-      AppFontFamily.monospace,
-    );
+    expect(container.read(settingsProvider).uiFontId, 'notoSansSc');
   });
 
   test('setNoteSort 立即改变 state（不等 IO，同一事件循环内）', () async {
@@ -98,7 +93,7 @@ void main() {
         verify(() => repo.save(captureAny())).captured.single as AppSettings;
     expect(captured.noteLayout, NoteLayout.list);
     // 关键回归：set* 只改一个字段，其余**不能**被 copyWith 清空。
-    expect(captured.fontFamily, AppSettings.defaults().fontFamily);
+    expect(captured.uiFontId, AppSettings.defaults().uiFontId);
     expect(captured.noteSort, AppSettings.defaults().noteSort);
     expect(captured.themeMode, AppSettings.defaults().themeMode);
   });
@@ -117,13 +112,13 @@ void main() {
 
   test('3 个 setter 各改各的字段', () async {
     final n = container.read(settingsProvider.notifier);
-    n.setFontFamily(AppFontFamily.monospace);
+    n.setUiFontId('notoSansSc');
     n.setNoteSort(AppNoteSort.createdDesc);
     n.setNoteLayout(NoteLayout.list);
     await settle();
 
     final s = container.read(settingsProvider);
-    expect(s.fontFamily, AppFontFamily.monospace);
+    expect(s.uiFontId, 'notoSansSc');
     expect(s.noteSort, AppNoteSort.createdDesc);
     expect(s.noteLayout, NoteLayout.list);
     verify(() => repo.save(any())).called(3);
@@ -141,31 +136,29 @@ void main() {
       () => repo.save(any()),
     ).thenAnswer((_) async => const Left(CacheFailure(message: 'disk full')));
 
-    container
-        .read(settingsProvider.notifier)
-        .setFontFamily(AppFontFamily.serif);
+    container.read(settingsProvider.notifier).setUiFontId('notoSansSc');
     await settle();
 
-    expect(container.read(settingsProvider).fontFamily, AppFontFamily.serif);
+    expect(container.read(settingsProvider).uiFontId, 'notoSansSc');
   });
 
-  test('uiFontFamily 随 fontFamily 变化（4 → 4，system = null）', () async {
-    expect(container.read(uiFontFamilyProvider), isNull, reason: '默认 system');
-
+  /// `uiFontId` 是**可空**字段，「选回系统默认」必须真的写得进去 ——
+  /// `copyWith` 用 `??` 兜底会让这一档静默失效（`AppSettings.copyWith` 用哨兵）。
+  test('setUiFontId(null) 把字体清回系统默认', () async {
     final n = container.read(settingsProvider.notifier);
-    n.setFontFamily(AppFontFamily.serif);
-    expect(container.read(uiFontFamilyProvider), 'serif');
-    n.setFontFamily(AppFontFamily.sansSerif);
-    expect(container.read(uiFontFamilyProvider), 'sans-serif');
-    n.setFontFamily(AppFontFamily.monospace);
-    expect(container.read(uiFontFamilyProvider), 'monospace');
-    n.setFontFamily(AppFontFamily.system);
-    expect(
-      container.read(uiFontFamilyProvider),
-      isNull,
-      reason: 'null = 平台默认，⛔ 不写死成某个族名',
-    );
+
+    n.setUiFontId('lxgwWenKai');
+    expect(container.read(settingsProvider).uiFontId, 'lxgwWenKai');
+
+    n.setUiFontId(null);
+    expect(container.read(settingsProvider).uiFontId, isNull);
+
     await settle();
+    expect(
+      verify(() => repo.save(captureAny())).captured.last,
+      const AppSettings(),
+      reason: '落盘的应是「除字体外全默认」的完整对象',
+    );
   });
 
   test('公开面：provider 文件不 re-export repository / use case', () {

@@ -11,11 +11,11 @@ void main() {
 
   tearDown(() => db.close());
 
-  // v6 = 给 `note_folders` 与 `todos` 加 `deleted_at`（软删除，让删除能跨设备传播）。
+  // v9 = 给 `notes` 加 `editor_font_id`（每篇笔记的编辑器字体，可空 = 系统默认）。
 // ⚠️ 升版本**必须**同步改这条断言：老库靠 `onUpgrade` 的 `addColumn` 升级，
 // 版本号不一致会直接走错分支。
-test('schemaVersion == 8', () {
-  expect(db.schemaVersion, 8);
+test('schemaVersion == 9', () {
+  expect(db.schemaVersion, 9);
 });
 
   test('beforeOpen 已打开 PRAGMA foreign_keys', () async {
@@ -48,6 +48,20 @@ test('schemaVersion == 8', () {
       rows.map((r) => r.read<String>('name')),
       containsAll(<String>['idx_notes_folder_id', 'idx_notes_updated_at']),
     );
+  });
+
+  test('notes.editor_font_id 存在且默认 null（= 系统默认字体）', () async {
+    final now = DateTime(2026, 10, 12);
+    await db
+        .into(db.notes)
+        .insert(
+          NotesCompanion.insert(id: 'n1', createdAt: now, updatedAt: now),
+        );
+
+    final note = await (db.select(
+      db.notes,
+    )..where((t) => t.id.equals('n1'))).getSingle();
+    expect(note.editorFontId, isNull);
   });
 
   test('note_folders.name 唯一约束存在', () async {

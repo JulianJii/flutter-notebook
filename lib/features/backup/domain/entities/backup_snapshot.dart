@@ -21,7 +21,12 @@ import 'backup_import_result.dart';
 /// ⚠️ v3 才是「永久删除能跨设备传播」的版本。在此之前 `purgedAt` 恒为 null，
 /// 合并是纯并集，A 机物理删掉的行在 B 机不存在 → B 判定本地更新 → 原样带回来。
 /// 老快照导入后全部视为「未永久删除」，不会误删任何东西。
-const int backupSnapshotVersion = 4;
+///
+/// ⚠️ v5 只加了一列 `editorFontId`。**必须升版本号**：不升的话，旧版 App 会照读
+/// 新版快照、把不认识的那一列丢掉，用户换台设备或回滚版本就静默丢掉全部笔记字体；
+/// 升了之后旧版 App 会明确拒绝导入（`BackupRepositoryImpl` 的版本门）。
+/// 反方向（新版读 v4 老快照）不受影响：字段缺失就是 null = 系统默认字体。
+const int backupSnapshotVersion = 5;
 
 /// 快照里的一篇笔记。`content` 是 Quill Delta 的 JSON 字符串，与库里同格式
 /// （`NoteDeltaCodec` 的编解码结果），本层不做任何解释。
@@ -32,6 +37,7 @@ class BackupNote {
     required this.content,
     required this.folderId,
     required this.background,
+    this.editorFontId,
     required this.createdAt,
     required this.updatedAt,
     required this.deletedAt,
@@ -50,6 +56,12 @@ class BackupNote {
   final String? folderId;
 
   final String? background;
+
+  /// 这篇笔记的编辑器字体 id（`core/fonts` 目录里的 id）。null = 系统默认。
+  ///
+  /// ⚠️ **参与同步**（v5 起）：它是用户数据的一部分，与 [background] 同类 ——
+  /// 漏掉的话，换台设备恢复后字体全被清零。
+  final String? editorFontId;
 
   final DateTime createdAt;
 
@@ -80,6 +92,7 @@ class BackupNote {
     'content': content,
     'folderId': folderId,
     'background': background,
+    'editorFontId': editorFontId,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'deletedAt': deletedAt?.toIso8601String(),
@@ -102,6 +115,7 @@ class BackupNote {
       content: _str(json['content']) ?? '',
       folderId: _str(json['folderId']),
       background: _str(json['background']),
+      editorFontId: _str(json['editorFontId']),
       createdAt: createdAt,
       updatedAt: updatedAt,
       deletedAt: _date(json['deletedAt']),

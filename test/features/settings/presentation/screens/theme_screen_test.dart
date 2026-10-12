@@ -95,7 +95,7 @@ void main() {
     final settings = container.read(settingsProvider);
     expect(settings.themeMode, AppThemeMode.light);
     expect(settings.colorScheme, AppColorScheme.amber);
-    expect(settings.fontFamily, AppFontFamily.system);
+    expect(settings.uiFontId, isNull, reason: '换明暗不该动字体（默认 = 系统字体）');
   });
 
   testWidgets('配色方案 4 行，只有当前方案带勾', (tester) async {

@@ -39,7 +39,7 @@ void main() {
 
     test('往返一致：save(X) -> load() == X（逐字段相等）', () async {
       const x = AppSettings(
-        fontFamily: AppFontFamily.monospace,
+        uiFontId: 'lxgwWenKai',
         noteSort: AppNoteSort.titleAsc,
         noteLayout: NoteLayout.list,
         themeMode: AppThemeMode.dark,
@@ -54,12 +54,12 @@ void main() {
     test('未知字段被忽略，其余字段正常读出', () async {
       final real = await realRepo({
         settingsStorageKey:
-            '{"schemaVersion":1,"fontFamily":"serif","foo":1,"bar":{"a":2}}',
+            '{"schemaVersion":1,"uiFontId":"notoSansSc","foo":1,"bar":{"a":2}}',
       });
       final result = await real.load();
       result.fold(
         (f) => fail('应为 Right，实际 $f'),
-        (s) => expect(s.fontFamily, AppFontFamily.serif),
+        (s) => expect(s.uiFontId, 'notoSansSc'),
       );
     });
 
@@ -70,7 +70,7 @@ void main() {
       });
       final result = await real.load();
       result.fold((f) => fail('应为 Right，实际 $f'), (s) {
-        expect(s.fontFamily, AppFontFamily.system, reason: '识别不了的键 → 默认');
+        expect(s.uiFontId, isNull, reason: '识别不了的键 → 系统默认');
         expect(s.noteLayout, NoteLayout.list, reason: '其余字段照读');
       });
     });
@@ -78,12 +78,12 @@ void main() {
     test('单字段类型错 -> 只有该字段回落，其余字段正确（绝不整份重置）', () async {
       final real = await realRepo({
         settingsStorageKey:
-            '{"schemaVersion":1,"fontFamily":123,"noteSort":"NOPE",'
+            '{"schemaVersion":1,"uiFontId":123,"noteSort":"NOPE",'
             '"noteLayout":"list","themeMode":"light"}',
       });
       final result = await real.load();
       result.fold((f) => fail('应为 Right，实际 $f'), (s) {
-        expect(s.fontFamily, AppFontFamily.system, reason: '类型错 → 默认');
+        expect(s.uiFontId, isNull, reason: '类型错 → 系统默认');
         expect(s.noteSort, AppNoteSort.editedDesc, reason: 'enum 名不认识 → 默认');
         expect(s.noteLayout, NoteLayout.list, reason: '正确的字段必须保留');
         expect(s.themeMode, AppThemeMode.light, reason: '正确的字段必须保留');
@@ -105,7 +105,7 @@ void main() {
       final result = await real.load();
       result.fold((f) => fail('应为 Right，实际 $f'), (s) {
         expect(s.noteLayout, NoteLayout.list, reason: '认识的字段照读');
-        expect(s.fontFamily, AppFontFamily.system);
+        expect(s.uiFontId, isNull, reason: '没写字体 → 系统默认');
       });
       (await real.load()).fold(
         (f) => fail('应为 Right，实际 $f'),
@@ -153,9 +153,9 @@ void main() {
       return (await real.load()).fold((f) => fail('应为 Right，实际 $f'), (s) => s);
     }
 
-    test('fontFamily 写成 int', () async {
-      final s = await loadWith('{"fontFamily":1,"noteSort":"titleAsc"}');
-      expect(s.fontFamily, AppFontFamily.system);
+    test('uiFontId 写成 int', () async {
+      final s = await loadWith('{"uiFontId":1,"noteSort":"titleAsc"}');
+      expect(s.uiFontId, isNull);
       expect(s.noteSort, AppNoteSort.titleAsc);
     });
 
@@ -182,9 +182,25 @@ void main() {
     });
 
     test('enum 名不认识（未来值 / 被改名）', () async {
-      final s = await loadWith('{"fontFamily":"huge","noteLayout":"list"}');
-      expect(s.fontFamily, AppFontFamily.system);
+      final s = await loadWith('{"noteSort":"huge","noteLayout":"list"}');
+      expect(s.noteSort, AppNoteSort.editedDesc);
       expect(s.noteLayout, NoteLayout.list);
+    });
+
+    test('字体 id 不在目录里（字体下线 / 手改数据）-> 系统默认', () async {
+      final s = await loadWith('{"uiFontId":"huge","noteLayout":"list"}');
+      expect(s.uiFontId, isNull);
+      expect(s.noteLayout, NoteLayout.list);
+    });
+
+    /// 旧版（schema v1）存的是 `fontFamily` 系统族名 4 档。⛔ 不写迁移代码：
+    /// 键名已换，旧键由「未知 key 一律忽略」自然丢掉 = 回落系统默认。
+    test('旧 fontFamily 键（宋体 / 黑体 / 等宽）全部失效为系统默认', () async {
+      for (final raw in <String>['"serif"', '"sansSerif"', '"monospace"']) {
+        final s = await loadWith('{"fontFamily":$raw,"noteLayout":"list"}');
+        expect(s.uiFontId, isNull, reason: 'raw=$raw');
+        expect(s.noteLayout, NoteLayout.list, reason: '其余字段照读');
+      }
     });
   });
 

@@ -9,6 +9,7 @@ class CreateNoteParams extends Equatable {
     required this.content,
     this.folderId,
     this.background,
+    this.editorFontId,
   });
 
   final String title;
@@ -22,6 +23,16 @@ class CreateNoteParams extends Equatable {
   /// null = 无背景。
   final NoteBackground? background;
 
+  /// 新建时已选中的编辑器字体（`core/fonts` 目录里的 id）。
+  /// null = 系统默认字体。
+  final String? editorFontId;
+
   @override
-  List<Object?> get props => [title, content, folderId, background];
+  List<Object?> get props => [
+    title,
+    content,
+    folderId,
+    background,
+    editorFontId,
+  ];
 }

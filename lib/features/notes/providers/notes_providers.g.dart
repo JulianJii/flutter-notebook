@@ -423,6 +423,55 @@ final class UpdateNoteBackgroundUseCaseProvider
 String _$updateNoteBackgroundUseCaseHash() =>
     r'2514d35bad4c50fec7ebe56ba4df3a24695df3c8';
 
+@ProviderFor(updateNoteEditorFontUseCase)
+final updateNoteEditorFontUseCaseProvider =
+    UpdateNoteEditorFontUseCaseProvider._();
+
+final class UpdateNoteEditorFontUseCaseProvider
+    extends
+        $FunctionalProvider<
+          UpdateNoteEditorFontUseCase,
+          UpdateNoteEditorFontUseCase,
+          UpdateNoteEditorFontUseCase
+        >
+    with $Provider<UpdateNoteEditorFontUseCase> {
+  UpdateNoteEditorFontUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'updateNoteEditorFontUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$updateNoteEditorFontUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<UpdateNoteEditorFontUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  UpdateNoteEditorFontUseCase create(Ref ref) {
+    return updateNoteEditorFontUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(UpdateNoteEditorFontUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<UpdateNoteEditorFontUseCase>(value),
+    );
+  }
+}
+
+String _$updateNoteEditorFontUseCaseHash() =>
+    r'e60cd6b1891f957b09e279c10ec835887f435730';
+
 @ProviderFor(updateNoteFlagsUseCase)
 final updateNoteFlagsUseCaseProvider = UpdateNoteFlagsUseCaseProvider._();
 

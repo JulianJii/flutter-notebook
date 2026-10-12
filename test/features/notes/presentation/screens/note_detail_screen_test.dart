@@ -301,6 +301,35 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
     );
   });
 
+  testWidgets('编辑窗口占满剩余空间、工具条在其下方：点正文下方空白也能落光标', (tester) async {
+    await tester.pumpWidget(app('n1', stubbedGet()));
+    await tester.pumpAndSettle();
+
+    final editor = find.byType(QuillEditor);
+    final editorRect = tester.getRect(editor);
+    expect(
+      editorRect.height,
+      greaterThan(200),
+      reason: '正文只有一行，编辑窗口也要占满剩余空间（默认最大化）',
+    );
+    expect(
+      tester.getTopLeft(find.byType(QuillSimpleToolbar)).dy,
+      greaterThanOrEqualTo(editorRect.bottom),
+      reason: '工具条在编辑窗口下面，不是上面',
+    );
+
+    // 点在正文最后一行**下方**的空白区：编辑器没有占满高度时这里点不进光标。
+    await tester.tapAt(Offset(editorRect.center.dx, editorRect.bottom - 20));
+    await tester.pump();
+
+    final controller = tester.findRawEditor(editor).controller;
+    expect(
+      controller.selection.baseOffset,
+      greaterThan(0),
+      reason: '空白区的点击要落到编辑器上（光标移到最近一行），不是打在空白上',
+    );
+  });
+
   testWidgets('新建笔记：不显示元信息行，build 不读库', (tester) async {
     final get = MockGetNote();
     when(() => get(any())).thenAnswer((_) async => Right(_emptyTitleNote));

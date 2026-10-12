@@ -38,17 +38,17 @@ class $AssetsImagesGen {
 class $AssetsImagesBackgroundsGen {
   const $AssetsImagesBackgroundsGen();
 
-  /// File path: assets/images/backgrounds/note_bg_blush.png
+  /// File path: assets/images/backgrounds/note_bg_blush.jpg
   AssetGenImage get noteBgBlush =>
-      const AssetGenImage('assets/images/backgrounds/note_bg_blush.png');
+      const AssetGenImage('assets/images/backgrounds/note_bg_blush.jpg');
 
-  /// File path: assets/images/backgrounds/note_bg_mint.png
+  /// File path: assets/images/backgrounds/note_bg_mint.jpg
   AssetGenImage get noteBgMint =>
-      const AssetGenImage('assets/images/backgrounds/note_bg_mint.png');
+      const AssetGenImage('assets/images/backgrounds/note_bg_mint.jpg');
 
-  /// File path: assets/images/backgrounds/note_bg_paper.png
+  /// File path: assets/images/backgrounds/note_bg_paper.jpg
   AssetGenImage get noteBgPaper =>
-      const AssetGenImage('assets/images/backgrounds/note_bg_paper.png');
+      const AssetGenImage('assets/images/backgrounds/note_bg_paper.jpg');
 
   /// List of all assets
   List<AssetGenImage> get values => [noteBgBlush, noteBgMint, noteBgPaper];

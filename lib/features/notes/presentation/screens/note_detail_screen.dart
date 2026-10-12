@@ -330,33 +330,31 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     onDelete: _delete,
                   ),
                   Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.only(
-                        bottom: AppSpacing.bottomSafe,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.pageH,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.pageH,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            const SizedBox(height: AppSpacing.sm),
-                            _titleField(context, textScale),
-                            const SizedBox(height: AppSpacing.sm),
-                            if (createdAt != null)
-                              _NoteMetaSlot(
-                                noteId: widget.noteId,
-                                folderId: widget.folderId,
-                                createdAt: createdAt,
-                                textScale: textScale,
-                              ),
-                            const SizedBox(height: AppSpacing.lg),
-                            _EditorToolbar(controller: _contentController),
-                            const SizedBox(height: AppSpacing.sm),
-                            _contentField(context, textScale),
-                          ],
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const SizedBox(height: AppSpacing.sm),
+                          _titleField(context, textScale),
+                          const SizedBox(height: AppSpacing.sm),
+                          if (createdAt != null)
+                            _NoteMetaSlot(
+                              noteId: widget.noteId,
+                              folderId: widget.folderId,
+                              createdAt: createdAt,
+                              textScale: textScale,
+                            ),
+                          const SizedBox(height: AppSpacing.lg),
+                          // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
+                          // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
+                          // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
+                          Expanded(child: _contentField(context, textScale)),
+                          _EditorToolbar(controller: _contentController),
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
                       ),
                     ),
                   ),
@@ -403,8 +401,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       child: QuillEditor.basic(
         controller: _contentController,
         config: const QuillEditorConfig(
-          // 外层已有 SingleChildScrollView，编辑器内不再自带滚动。
-          scrollable: false,
+          // 外层 `Expanded` 给足高度，编辑器自己滚 —— `scrollable: false` 时
+          // 它只有文字那么高，下方空白点不进光标（`expands` 只在 scrollable
+          // 为 true 时生效）。
+          scrollable: true,
+          expands: true,
           padding: EdgeInsets.zero,
           // 正文里图片的渲染器。不注册的话 image embed 会走 Quill 的
           // `unknownEmbedBuilder`，画成一块占位文字。
@@ -431,10 +432,11 @@ class _EditorToolbar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DecoratedBox(
-      // 底边一条分隔线把工具条与正文分开。页面 `Column` 的交叉轴是 `start`，
-      // 故要显式撑满，否则这条线只盖住工具条本身那一段。
+      // 顶边一条分隔线把工具条与正文分开（工具条在编辑窗口**下面**）。页面
+      // `Column` 的交叉轴是 `start`，故要显式撑满，否则这条线只盖住工具条
+      // 本身那一段。
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: context.colors.divider)),
+        border: Border(top: BorderSide(color: context.colors.divider)),
       ),
       child: SizedBox(
         width: double.infinity,

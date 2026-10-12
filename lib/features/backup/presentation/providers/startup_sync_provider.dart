@@ -20,18 +20,31 @@ part 'startup_sync_provider.g.dart';
 class StartupSync extends _$StartupSync {
   @override
   Future<void> build() async {
-    await _sweepExpiredTombstones();
-    final result = await ref.read(getWebDavConfigUseCaseProvider)(NoParams());
-    final config = result.fold((_) => const WebDavConfig(), (c) => c);
-    if (!config.autoSyncOnStart || !config.isConfigured) return;
+    try {
+      await _sweepExpiredTombstones();
+      final result = await ref.read(getWebDavConfigUseCaseProvider)(NoParams());
+      final config = result.fold((_) => const WebDavConfig(), (c) => c);
+      if (!config.autoSyncOnStart || !config.isConfigured) return;
 
-    final synced = await ref.read(syncWithWebDavUseCaseProvider)(NoParams());
-    ref.read(taggedLoggerProvider('backup')).i(
-      synced.fold(
-        (failure) => 'startup sync failed: ${failure.message}',
-        (result) => 'startup sync: +${result.inserted} ~${result.updated}',
-      ),
-    );
+      final synced = await ref.read(syncWithWebDavUseCaseProvider)(NoParams());
+      // 同步成功会写 `lastSyncAt`。`webDavConfigProvider` 是 keepAlive 的，不失效
+      // 就一直是旧时间戳 —— 数据页那一行「上次同步」会当场显示错（同
+      // `BackupController.sync`）。
+      if (synced.isRight()) ref.invalidate(webDavConfigProvider);
+
+      ref.read(taggedLoggerProvider('backup')).i(
+        synced.fold(
+          (failure) => 'startup sync failed: ${failure.message}',
+          (result) => 'startup sync: +${result.inserted} ~${result.updated}',
+        ),
+      );
+    } catch (e) {
+      // 兜底，保「失败静默」的契约（见类注释）：异常逃出 build 会把 provider 打成
+      // AsyncError，并触发 Riverpod 3 的默认自动重试（最多 10 次指数退避）—— 一次
+      // 顺手的后台同步会变成一串重试。用例层已把预期错误折进 `Either`，这里只接
+      // 意外（如数据库打不开时 `ref.read` 抛出的 ProviderException）。
+      ref.read(taggedLoggerProvider('backup')).w('startup sync aborted: $e');
+    }
   }
 
   /// 清扫过期的永久删除墓碑（`TombstoneSweeper`）。

@@ -8,8 +8,7 @@ import 'package:mynote/features/backup/domain/entities/lan_peer.dart';
 ///
 /// **为什么是 UDP 广播而不是 mDNS**：`multicast_dns` 只会「查」不会「发布」——
 /// 它的 `lib/src/` 里只有 `encodeMDnsQuery` / `decodeMDnsResponse`，**没有任何应答
-/// 编码器**，`MDnsClient` 也没有注册服务的 API（源码里留着
-/// `// TODO: Support queries coming in for published entries.`）。要真用 mDNS，A 机
+/// 编码器**，`MDnsClient` 也没有注册服务的 API。要真用 mDNS，A 机
 /// 得手写 DNS 应答包（PTR + SRV + TXT + A，还要处理 cache-flush 位与 name 压缩，
 /// 约 120 行线格式），外加 Android 的 `CHANGE_WIFI_MULTICAST_STATE` 与 iOS 的
 /// `NSBonjourServices`，而组播在公司 WiFi / 访客网络 / Android 省电模式下照样不通。

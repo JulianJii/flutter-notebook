@@ -60,7 +60,7 @@ final class StartupSyncProvider
   StartupSync create() => StartupSync();
 }
 
-String _$startupSyncHash() => r'ad05d65cd64bc8c0b65aa7ebf988bd75c6cca3f1';
+String _$startupSyncHash() => r'4e2358b50c7df6c6d9410958f3686dc9a71dc863';
 
 /// App 启动时的一次自动同步。
 ///

@@ -88,78 +88,26 @@ final class NoteListPrefsProvider
 
 String _$noteListPrefsHash() => r'38ebd0c6d0be614a1b68fbb915e4a40918d89b65';
 
-/// 文本缩放。settings 侧导出的是 `double`（原始值，不带 settings 的任何类型），
-/// 这一层只是把订阅点收进本文件 —— notes 的页面因此不必 import settings 的
-/// presentation，跨 feature 依赖只剩这一个文件。
-
-@ProviderFor(noteTextScale)
-final noteTextScaleProvider = NoteTextScaleProvider._();
-
-/// 文本缩放。settings 侧导出的是 `double`（原始值，不带 settings 的任何类型），
-/// 这一层只是把订阅点收进本文件 —— notes 的页面因此不必 import settings 的
-/// presentation，跨 feature 依赖只剩这一个文件。
-
-final class NoteTextScaleProvider
-    extends $FunctionalProvider<double, double, double>
-    with $Provider<double> {
-  /// 文本缩放。settings 侧导出的是 `double`（原始值，不带 settings 的任何类型），
-  /// 这一层只是把订阅点收进本文件 —— notes 的页面因此不必 import settings 的
-  /// presentation，跨 feature 依赖只剩这一个文件。
-  NoteTextScaleProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'noteTextScaleProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$noteTextScaleHash();
-
-  @$internal
-  @override
-  $ProviderElement<double> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  double create(Ref ref) {
-    return noteTextScale(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(double value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<double>(value),
-    );
-  }
-}
-
-String _$noteTextScaleHash() => r'c2bcca03d9facebefe0c51b0af2c1eda0d1c5aec';
-
 /// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
-/// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
-/// `settings` 的 presentation。`select` 同样不能省。
+/// 把订阅点收进本文件（同 [noteListPrefs]），笔记详情页因此不必 import
+/// `settings` 的 presentation。`select` 不能省。
 
 @ProviderFor(noteCompressImages)
 final noteCompressImagesProvider = NoteCompressImagesProvider._();
 
 /// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
-/// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
-/// `settings` 的 presentation。`select` 同样不能省。
+/// 把订阅点收进本文件（同 [noteListPrefs]），笔记详情页因此不必 import
+/// `settings` 的 presentation。`select` 不能省。
 
 final class NoteCompressImagesProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
   /// 插入图片前是否压缩（设置项「图片压缩」）。
   ///
-  /// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
-  /// `settings` 的 presentation。`select` 同样不能省。
+  /// 把订阅点收进本文件（同 [noteListPrefs]），笔记详情页因此不必 import
+  /// `settings` 的 presentation。`select` 不能省。
   NoteCompressImagesProvider._()
     : super(
         from: null,

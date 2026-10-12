@@ -20,30 +20,48 @@ import 'tokens/app_text_styles.dart';
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData light([AppColorScheme scheme = AppColorScheme.amber]) =>
-      _cached(Brightness.light, scheme);
+  /// [fontFamily] 是设置「字体」解析出的**系统字体族名**（`null` = 平台默认），
+  /// 由 `main.dart` 从 `uiFontFamilyProvider` 读出来传进这里 —— core 不认识
+  /// `AppFontFamily`（R1）。
+  static ThemeData light([
+    AppColorScheme scheme = AppColorScheme.amber,
+    String? fontFamily,
+  ]) => _cached(Brightness.light, scheme, fontFamily);
 
-  static ThemeData dark([AppColorScheme scheme = AppColorScheme.amber]) =>
-      _cached(Brightness.dark, scheme);
+  static ThemeData dark([
+    AppColorScheme scheme = AppColorScheme.amber,
+    String? fontFamily,
+  ]) => _cached(Brightness.dark, scheme, fontFamily);
 
-  /// 2 明暗 × 4 方案 = 8 份，用到才构建。
+  /// 2 明暗 × 4 方案 × N 字体 = 用到才构建（同一份只建一次）。
   ///
   /// ⚠️ **缓存不可省**：`MaterialApp` 每次 build 都读 `theme` / `darkTheme`，
   /// 每次重建 `ThemeData` 会让整个 App 的 inherited 主题换新实例。
-  static final Map<(Brightness, AppColorScheme), ThemeData> _cache =
-      <(Brightness, AppColorScheme), ThemeData>{};
+  static final Map<(Brightness, AppColorScheme, String?), ThemeData> _cache =
+      <(Brightness, AppColorScheme, String?), ThemeData>{};
 
-  static ThemeData _cached(Brightness brightness, AppColorScheme scheme) =>
-      _cache.putIfAbsent((brightness, scheme), () => _build(brightness, scheme));
+  static ThemeData _cached(
+    Brightness brightness,
+    AppColorScheme scheme,
+    String? fontFamily,
+  ) => _cache.putIfAbsent((
+    brightness,
+    scheme,
+    fontFamily,
+  ), () => _build(brightness, scheme, fontFamily));
 
-  static ThemeData _build(Brightness brightness, AppColorScheme scheme) {
+  static ThemeData _build(
+    Brightness brightness,
+    AppColorScheme scheme,
+    String? fontFamily,
+  ) {
     final isLight = brightness == Brightness.light;
     final colors = isLight
         ? AppColors.light(accent: Color(scheme.seed))
         : AppColors.dark(accent: Color(scheme.seed));
-    final textStyles = isLight
-        ? const AppTextStyles.light()
-        : const AppTextStyles.dark();
+    final textStyles =
+        (isLight ? const AppTextStyles.light() : const AppTextStyles.dark())
+            .withFontFamily(fontFamily);
 
     // 方案 C（`ARCHITECTURE-DESIGN.md` §7.3 / TASK-006 §1）：保留 M3 的协调色，
     // 只覆盖设计稿明确给出的 7 个值。其余 surface 阶留 FCS 派生 —— 凭空设计
@@ -79,6 +97,10 @@ class AppTheme {
         surfaceContainerLowest: colors.bg,
       ),
       scaffoldBackgroundColor: colors.bg,
+      // 字体族也要挂到 `ThemeData.textTheme`：全 App 有 2 处文字读 Material 默认
+      // 字阶（更新弹窗 / 语言选择器），只挂 `AppTextStyles` 会让那两处漏掉这次设置。
+      // ⚠️ `apply(fontFamily: null)` 原样返回，默认档不会改动任何字阶。
+      textTheme: base.textTheme.apply(fontFamily: fontFamily),
       // ↓ 语义色 + 字阶的读取入口。缺这两行 context.colors 会走降级分支。
       extensions: <ThemeExtension<dynamic>>[colors, textStyles],
       appBarTheme: AppBarTheme(

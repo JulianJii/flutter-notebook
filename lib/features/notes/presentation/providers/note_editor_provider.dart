@@ -208,16 +208,13 @@ class NoteEditor extends _$NoteEditor {
     final latest = state.value;
     if (latest == null) return;
     state = AsyncData(
-      result.fold(
-        (failure) {
-          ref
-              .read(taggedLoggerProvider('notes'))
-              .w('note background save failed', error: failure);
-          // 草稿保留用户的选择（视觉已生效），失败信号交给 UI 弹提示。
-          return latest.copyWith(lastFailure: failure);
-        },
-        (_) => latest.copyWith(savedBackground: value, lastFailure: null),
-      ),
+      result.fold((failure) {
+        ref
+            .read(taggedLoggerProvider('notes'))
+            .w('note background save failed', error: failure);
+        // 草稿保留用户的选择（视觉已生效），失败信号交给 UI 弹提示。
+        return latest.copyWith(lastFailure: failure);
+      }, (_) => latest.copyWith(savedBackground: value, lastFailure: null)),
     );
   }
 
@@ -252,17 +249,14 @@ class NoteEditor extends _$NoteEditor {
     final latest = state.value;
     if (latest == null) return;
     state = AsyncData(
-      result.fold(
-        (failure) {
-          ref
-              .read(taggedLoggerProvider('notes'))
-              .w('note flags save failed', error: failure);
-          // ⚠️ **不回滚图标**：这与 setBackground 同理 —— 回滚会让用户的下一次
-          // 点击从「再点一次关掉」变成「点一下却又开」，比不��滚更难预测。
-          return latest.copyWith(lastFailure: failure);
-        },
-        (_) => latest.copyWith(lastFailure: null),
-      ),
+      result.fold((failure) {
+        ref
+            .read(taggedLoggerProvider('notes'))
+            .w('note flags save failed', error: failure);
+        // ⚠️ **不回滚图标**：这与 setBackground 同理 —— 回滚会让用户的下一次
+        // 点击从「再点一次关掉」变成「点一下却又开」，比不��滚更难预测。
+        return latest.copyWith(lastFailure: failure);
+      }, (_) => latest.copyWith(lastFailure: null)),
     );
   }
 
@@ -306,7 +300,7 @@ class NoteEditor extends _$NoteEditor {
               content: current.draftContent,
               // 必填：不传会被当成「移回未分类」，改一个字就把笔记搬出原分类。
               folderId: current.folderId,
-              ),
+            ),
           );
 
     // 标题与正文都为空时不做特殊处理：交给 UseCase 的 `InputFailure`，

@@ -39,9 +39,7 @@ void main() {
   );
 
   testWidgets('空列表渲染零尺寸占位，不抛异常', (tester) async {
-    await tester.pumpWidget(
-      wrap(const NoteMasonryGrid(notes: <Note>[], textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(const NoteMasonryGrid(notes: <Note>[])));
 
     expect(tester.takeException(), isNull);
     expect(find.byType(NoteCard), findsNothing);
@@ -49,7 +47,7 @@ void main() {
 
   testWidgets('2 列均分，列间距与页边距来自 token', (tester) async {
     await tester.pumpWidget(
-      wrap(NoteMasonryGrid(notes: <Note>[note('1'), note('2')], textScale: 1)),
+      wrap(NoteMasonryGrid(notes: <Note>[note('1'), note('2')])),
     );
 
     final first = tester.getTopLeft(find.byKey(const ValueKey<String>('1')));
@@ -69,9 +67,7 @@ void main() {
   });
 
   testWidgets('底部留白含底部导航高度 + 12dp，不被裁切', (tester) async {
-    await tester.pumpWidget(
-      wrap(NoteMasonryGrid(notes: <Note>[note('1')], textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(NoteMasonryGrid(notes: <Note>[note('1')])));
     await tester.pumpAndSettle();
 
     final size = tester.getSize(find.byType(MasonryGridView));
@@ -85,7 +81,6 @@ void main() {
       wrap(
         NoteMasonryGrid(
           notes: <Note>[note('1'), note('2')],
-          textScale: 1,
           onTapNote: (n) => tapped = n,
         ),
       ),
@@ -96,9 +91,7 @@ void main() {
   });
 
   testWidgets('onTapNote 为 null 时点击不崩', (tester) async {
-    await tester.pumpWidget(
-      wrap(NoteMasonryGrid(notes: <Note>[note('1')], textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(NoteMasonryGrid(notes: <Note>[note('1')])));
     await tester.tap(find.byType(NoteCard));
 
     expect(tester.takeException(), isNull);
@@ -106,7 +99,7 @@ void main() {
 
   testWidgets('宽屏下两列仍等宽（宽屏断点无稿，不加）', (tester) async {
     await tester.pumpWidget(
-      wrap(NoteMasonryGrid(notes: <Note>[note('1'), note('2')], textScale: 1)),
+      wrap(NoteMasonryGrid(notes: <Note>[note('1'), note('2')])),
     );
 
     expect(find.byType(NoteCard), findsNWidgets(2));
@@ -129,7 +122,6 @@ void main() {
             note('3'),
             note('4'),
           ],
-          textScale: 1,
         ),
       ),
       testEnvironments: <TestEnvironment>[goldenEnv],

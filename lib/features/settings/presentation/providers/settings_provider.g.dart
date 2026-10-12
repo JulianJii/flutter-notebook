@@ -100,7 +100,7 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'b3ecb8258059e96c2832be14d90505d103817ce1';
+String _$settingsHash() => r'a31ad2a3ddba1bd177735f1b2f7142f863c3e845';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///
@@ -141,72 +141,72 @@ abstract class _$Settings extends $Notifier<AppSettings> {
   }
 }
 
-/// 文字大小 → 排版缩放系数。
+/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
 ///
-/// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
-/// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
-/// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
+/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
+/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
+/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
+/// 只 watch 一个 `String?`。
 ///
-/// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
-/// （`PROJECT-STATUS.md` §6.5 A7）。
+/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
+/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
 
-@ProviderFor(textScaleFactor)
-final textScaleFactorProvider = TextScaleFactorProvider._();
+@ProviderFor(uiFontFamily)
+final uiFontFamilyProvider = UiFontFamilyProvider._();
 
-/// 文字大小 → 排版缩放系数。
+/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
 ///
-/// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
-/// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
-/// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
+/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
+/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
+/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
+/// 只 watch 一个 `String?`。
 ///
-/// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
-/// （`PROJECT-STATUS.md` §6.5 A7）。
+/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
+/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
 
-final class TextScaleFactorProvider
-    extends $FunctionalProvider<double, double, double>
-    with $Provider<double> {
-  /// 文字大小 → 排版缩放系数。
+final class UiFontFamilyProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  /// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
   ///
-  /// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
-  /// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-  /// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
-  /// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
+  /// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
+  /// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
+  /// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
+  /// 只 watch 一个 `String?`。
   ///
-  /// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
-  /// （`PROJECT-STATUS.md` §6.5 A7）。
-  TextScaleFactorProvider._()
+  /// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
+  /// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
+  UiFontFamilyProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'textScaleFactorProvider',
+        name: r'uiFontFamilyProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$textScaleFactorHash();
+  String debugGetCreateSourceHash() => _$uiFontFamilyHash();
 
   @$internal
   @override
-  $ProviderElement<double> $createElement($ProviderPointer pointer) =>
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
       $ProviderElement(pointer);
 
   @override
-  double create(Ref ref) {
-    return textScaleFactor(ref);
+  String? create(Ref ref) {
+    return uiFontFamily(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(double value) {
+  Override overrideWithValue(String? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<double>(value),
+      providerOverride: $SyncValueProvider<String?>(value),
     );
   }
 }
 
-String _$textScaleFactorHash() => r'91ee78ce97c9a540a35343746bf8e66aba7fd5ec';
+String _$uiFontFamilyHash() => r'aa9c8eb2d06d7280df83fb0172b6deead33cbe34';

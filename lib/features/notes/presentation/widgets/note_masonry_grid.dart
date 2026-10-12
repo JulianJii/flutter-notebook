@@ -11,17 +11,9 @@ import 'note_card.dart';
 /// 接收**已就绪的** `List<Note>`，自己不 `ref.watch` 任何 provider ——
 /// 数据订阅归 `NoteListScreen`（`ARCHITECTURE-DESIGN.md` §2.1 约束 6）。
 class NoteMasonryGrid extends StatelessWidget {
-  const NoteMasonryGrid({
-    required this.notes,
-    required this.textScale,
-    super.key,
-    this.onTapNote,
-  });
+  const NoteMasonryGrid({required this.notes, super.key, this.onTapNote});
 
   final List<Note> notes;
-
-  /// 设置「文字大小」的排版系数，透传给每张 [NoteCard]。⛔ 必填无默认。
-  final double textScale;
 
   /// null → 卡片静态（按压态沿用 Material 默认）。
   final ValueChanged<Note>? onTapNote;
@@ -44,7 +36,6 @@ class NoteMasonryGrid extends StatelessWidget {
         return NoteCard(
           key: ValueKey<String>(note.id),
           note: note,
-          textScale: textScale,
           onTap: onTapNote == null ? null : () => onTapNote!(note),
         );
       },

@@ -764,11 +764,11 @@ abstract class AppLocalizations {
   /// **'立即更新'**
   String get updateDialogUpdate;
 
-  /// Settings stepper row title: font size
+  /// Settings row title: UI font family (does not affect the note editor text)
   ///
   /// In zh, this message translates to:
-  /// **'文字大小'**
-  String get settingsTextScale;
+  /// **'字体'**
+  String get settingsFontFamily;
 
   /// Settings stepper row title: note sort order
   ///
@@ -788,29 +788,29 @@ abstract class AppLocalizations {
   /// **'图片压缩'**
   String get settingsCompressImages;
 
-  /// Font size option: small
+  /// Font option: platform default font (settings row + editor toolbar)
   ///
   /// In zh, this message translates to:
-  /// **'小'**
-  String get settingsTextScaleSmall;
+  /// **'系统默认'**
+  String get fontFamilySystem;
 
-  /// Font size option: default
+  /// Font option: serif family (settings row + editor toolbar)
   ///
   /// In zh, this message translates to:
-  /// **'默认'**
-  String get settingsTextScaleDefault;
+  /// **'宋体'**
+  String get fontFamilySerif;
 
-  /// Font size option: large
+  /// Font option: sans-serif family (settings row + editor toolbar)
   ///
   /// In zh, this message translates to:
-  /// **'大'**
-  String get settingsTextScaleLarge;
+  /// **'黑体'**
+  String get fontFamilySansSerif;
 
-  /// Font size option: extra large
+  /// Font option: monospace family (settings row + editor toolbar)
   ///
   /// In zh, this message translates to:
-  /// **'超大'**
-  String get settingsTextScaleXLarge;
+  /// **'等宽'**
+  String get fontFamilyMonospace;
 
   /// Sort option: most recently edited
   ///

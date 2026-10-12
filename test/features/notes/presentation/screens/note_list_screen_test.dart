@@ -77,7 +77,7 @@ void main() {
         folderItems ?? const <FolderWithCount>[],
       ),
     );
-    // 笔记列表从 `settingsProvider` 读排序 / 布局 / 文字大小（TASK-047），而它经
+    // 笔记列表从 `settingsProvider` 读排序 / 布局（TASK-047），而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
     // **Repository** 层 override（同 `settings_screen_test`）。默认值即笔记列表稿对照态。
     final settingsRepo = _MockSettingsRepository();
@@ -162,10 +162,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.descendant(
-        of: find.byType(AppTopBar),
-        matching: find.text('笔记'),
-      ),
+      find.descendant(of: find.byType(AppTopBar), matching: find.text('笔记')),
       findsOneWidget,
     );
     expect(find.byType(NoteCard), findsNWidgets(4));
@@ -389,9 +386,7 @@ void main() {
       expect(queries.last.searchTerm, '花');
     });
 
-    testWidgets('搜索无结果：显示「没有找到相关笔记」；无搜索词的空列表不显示', (
-      tester,
-    ) async {
+    testWidgets('搜索无结果：显示「没有找到相关笔记」；无搜索词的空列表不显示', (tester) async {
       await tester.pumpWidget(
         app(routerFor('/notes'), notesStream: Stream.value(const <Note>[])),
       );

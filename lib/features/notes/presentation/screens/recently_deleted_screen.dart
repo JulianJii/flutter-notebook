@@ -97,7 +97,8 @@ class RecentlyDeletedScreen extends ConsumerWidget {
                             _TrashRow(
                               title: _noteTitle(note),
                               deletedAt: note.deletedAt!,
-                              onRestore: () => _restoreNote(context, ref, note.id),
+                              onRestore: () =>
+                                  _restoreNote(context, ref, note.id),
                               onPurge: () => _purgeNote(context, ref, note.id),
                             ),
                         ],
@@ -119,7 +120,8 @@ class RecentlyDeletedScreen extends ConsumerWidget {
                             _TrashRow(
                               title: todo.title,
                               deletedAt: todo.deletedAt!,
-                              onRestore: () => _restoreTodo(context, ref, todo.id),
+                              onRestore: () =>
+                                  _restoreTodo(context, ref, todo.id),
                               onPurge: () => _purgeTodo(context, ref, todo.id),
                             ),
                         ],
@@ -144,10 +146,7 @@ class RecentlyDeletedScreen extends ConsumerWidget {
   // 泛化后要传 3 个回调 + 类型参数，比抄三遍更难读。
 
   Future<void> _restoreNote(BuildContext context, WidgetRef ref, String id) {
-    return _runRestore(
-      context,
-      () => ref.read(restoreNoteUseCaseProvider)(id),
-    );
+    return _runRestore(context, () => ref.read(restoreNoteUseCaseProvider)(id));
   }
 
   Future<void> _restoreFolder(BuildContext context, WidgetRef ref, String id) {
@@ -177,17 +176,11 @@ class RecentlyDeletedScreen extends ConsumerWidget {
   }
 
   Future<void> _purgeNote(BuildContext context, WidgetRef ref, String id) {
-    return _runPurge(
-      context,
-      () => ref.read(purgeNoteUseCaseProvider)(id),
-    );
+    return _runPurge(context, () => ref.read(purgeNoteUseCaseProvider)(id));
   }
 
   Future<void> _purgeFolder(BuildContext context, WidgetRef ref, String id) {
-    return _runPurge(
-      context,
-      () => ref.read(purgeFolderUseCaseProvider)(id),
-    );
+    return _runPurge(context, () => ref.read(purgeFolderUseCaseProvider)(id));
   }
 
   Future<void> _purgeTodo(BuildContext context, WidgetRef ref, String id) {

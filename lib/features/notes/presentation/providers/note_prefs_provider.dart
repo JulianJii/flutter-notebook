@@ -33,16 +33,10 @@ part 'note_prefs_provider.g.dart';
   );
 }
 
-/// 文本缩放。settings 侧导出的是 `double`（原始值，不带 settings 的任何类型），
-/// 这一层只是把订阅点收进本文件 —— notes 的页面因此不必 import settings 的
-/// presentation，跨 feature 依赖只剩这一个文件。
-@riverpod
-double noteTextScale(Ref ref) => ref.watch(textScaleFactorProvider);
-
 /// 插入图片前是否压缩（设置项「图片压缩」）。
 ///
-/// 与 [noteTextScale] 同理：把订阅点收进本文件，笔记详情页因此不必 import
-/// `settings` 的 presentation。`select` 同样不能省。
+/// 把订阅点收进本文件（同 [noteListPrefs]），笔记详情页因此不必 import
+/// `settings` 的 presentation。`select` 不能省。
 @riverpod
 bool noteCompressImages(Ref ref) =>
     ref.watch(settingsProvider.select((s) => s.compressImages));

@@ -18,7 +18,6 @@ class AppFilterChip extends StatelessWidget {
   const AppFilterChip({
     required this.label,
     required this.selected,
-    required this.textScale,
     super.key,
     this.onTap,
   });
@@ -28,11 +27,6 @@ class AppFilterChip extends StatelessWidget {
 
   /// 是否选中。**选中态由页面持有**（它是筛选状态，不是组件内部状态）。
   final bool selected;
-
-  /// 设置「文字大小」的排版系数，由调用方 `ref.watch(textScaleFactorProvider)`
-  /// 得到后传入。⛔ 必填无默认：笔记列表传真实值，待办 / 设置传 1（待办稿 / 设置稿上没有
-  /// 「文字大小」这一行的消费方，见 `ARCHITECTURE-DESIGN.md` §4）。
-  final double textScale;
 
   /// 点击回调。null → 不可点（笔记列表稿的 chip 均可点）。
   final VoidCallback? onTap;
@@ -68,11 +62,9 @@ class AppFilterChip extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: context.textStyles.chip
-                .scaled(textScale)
-                .copyWith(
-                  color: selected ? colors.textPrimary : colors.textSecondary,
-                ),
+            style: context.textStyles.chip.copyWith(
+              color: selected ? colors.textPrimary : colors.textSecondary,
+            ),
           ),
         ),
       ),

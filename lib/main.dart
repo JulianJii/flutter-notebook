@@ -41,7 +41,7 @@ class MyApp extends ConsumerWidget {
     // 从 provider 中监听 router
     final router = ref.watch(routerProvider);
 
-    // 监听主题模式：`select` 只在 themeMode 变时重建，文字大小等无关偏好的改动
+    // 监听主题模式：`select` 只在 themeMode 变时重建，排序 / 布局等无关偏好的改动
     // 不会把整个 MaterialApp 重建一遍。
     final themeMode = switch (ref.watch(
       settingsProvider.select((s) => s.themeMode),
@@ -52,10 +52,14 @@ class MyApp extends ConsumerWidget {
     };
 
     // 配色方案：`select` 只在它变时重建整个 MaterialApp（明暗由 themeMode 管，
-    // 改文字大小等无关偏好不触发这里）。
+    // 改排序 / 布局等无关偏好不触发这里）。
     final colorScheme = ref.watch(
       settingsProvider.select((s) => s.colorScheme),
     );
+
+    // UI 字体：只 watch 一个族名（`null` = 平台默认）。⛔ 只作用于 UI 文字 ——
+    // 编辑器里的笔记标题 / 正文走 `AppTextStyles.editor`，不经过这个值。
+    final fontFamily = ref.watch(uiFontFamilyProvider);
 
     // 监听生效的语言环境：用户选择 → 系统语言 → 中文
     final locale = ref.watch(appLocaleProvider);
@@ -64,15 +68,15 @@ class MyApp extends ConsumerWidget {
     // 开关没开时它立刻返回。失败静默（用户此刻可能在任何页面）。
     ref.watch(startupSyncProvider);
 
-return UpdateChecker(
+    return UpdateChecker(
       autoPrompt: true,
       child: ReminderReconciler(
         // ⚠️ 必须挂在 MaterialApp.router **之外**（与 UpdateChecker 同层）：对账要
         // 覆盖冷启动，而那时 MaterialApp 的子树还没建。
         child: MaterialApp.router(
           title: AppConstants.appName,
-          theme: AppTheme.light(colorScheme),
-          darkTheme: AppTheme.dark(colorScheme),
+          theme: AppTheme.light(colorScheme, fontFamily),
+          darkTheme: AppTheme.dark(colorScheme, fontFamily),
           themeMode: themeMode,
           routerConfig: router,
           debugShowCheckedModeBanner: false,

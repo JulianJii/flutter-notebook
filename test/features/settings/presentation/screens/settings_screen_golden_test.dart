@@ -33,9 +33,9 @@ const TestEnvironment goldenEnv = TestEnvironment(
 void main() {
   setUpAll(() => registerFallbackValue(const AppSettings.defaults()));
 
-  testGoldenWidgets(
-    '设置 — 默认档（文字大小「默认」/ 按编辑日期 / 宫格模式 / 语言「跟随系统」）',
-    (tester) async {
+  testGoldenWidgets('设置 — 默认档（字体「系统默认」/ 按编辑日期 / 宫格模式 / 语言「跟随系统」）', (
+    tester,
+  ) async {
     final repo = _MockSettingsRepository();
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),
@@ -53,9 +53,7 @@ void main() {
         // 故一并给它一个 mock 实例；初始值为空 → 语言落在「跟随系统」档。
         overrides: [
           settingsRepositoryProvider.overrideWithValue(repo),
-          sharedPreferencesProvider.overrideWithValue(
-            await _mockPrefs(),
-          ),
+          sharedPreferencesProvider.overrideWithValue(await _mockPrefs()),
         ],
         child: MaterialApp(
           theme: AppTheme.light(),

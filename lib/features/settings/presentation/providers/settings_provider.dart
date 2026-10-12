@@ -56,8 +56,11 @@ class Settings extends _$Settings {
     );
   }
 
-  void setTextScale(TextScaleLevel value) =>
-      _write(state.copyWith(textScale: value));
+  /// UI 文字字体。写入口在设置页的「字体」行。
+  ///
+  /// ⛔ 不动编辑器里的笔记标题 / 正文：它们走 `AppTextStyles.editor`（无族名基线）。
+  void setFontFamily(AppFontFamily value) =>
+      _write(state.copyWith(fontFamily: value));
 
   void setNoteSort(AppNoteSort value) =>
       _write(state.copyWith(noteSort: value));
@@ -105,21 +108,20 @@ class Settings extends _$Settings {
       ref.read(taggedLoggerProvider('settings')).i(message);
 }
 
-/// 文字大小 → 排版缩放系数。
+/// 设置「字体」→ **系统字体族名**（`null` = 平台默认）。
 ///
-/// 这是 R1（`core/` 不 import `features/`）在排版场景下的**唯一桥**：
-/// `core/theme/tokens/app_text_styles.dart` 的字阶方法只收 `double`，
-/// 不认识 `TextScaleLevel`。消费方（TASK-047 的笔记列表卡片 / 笔记详情正文）只
-/// `ref.watch(textScaleFactorProvider)` 一个 double，⛔ 不 import `features/settings`。
+/// 这是 R1（`core/` 不 import `features/`）在字体场景下的**唯一桥**：
+/// `AppTheme.light/dark` 只收一个 `String?`，不认识 `AppFontFamily`；把族名套进
+/// 13 级字阶的那一步在 `AppTextStyles.withFontFamily`。消费方（`main.dart`）
+/// 只 watch 一个 `String?`。
 ///
-/// ⛔ **不接 `MediaQuery.textScaler`**：与用户系统的字号缩放相乘会让正文到 42sp
-/// （`PROJECT-STATUS.md` §6.5 A7）。
+/// ⚠️ `system` 映射成 `null` 而**不是**某个具体族名：`null` 才是「平台默认」，
+/// 写死 `sans-serif` 会在非 Android 平台上拿到一个解析不到的族名。
 @Riverpod(keepAlive: true)
-double textScaleFactor(Ref ref) =>
-    switch (ref.watch(settingsProvider).textScale) {
-      // 4 档倍率无稿，暂取线性值。
-      TextScaleLevel.small => 0.875,
-      TextScaleLevel.normal => 1.0,
-      TextScaleLevel.large => 1.125,
-      TextScaleLevel.xLarge => 1.25,
+String? uiFontFamily(Ref ref) =>
+    switch (ref.watch(settingsProvider).fontFamily) {
+      AppFontFamily.system => null,
+      AppFontFamily.serif => 'serif',
+      AppFontFamily.sansSerif => 'sans-serif',
+      AppFontFamily.monospace => 'monospace',
     };

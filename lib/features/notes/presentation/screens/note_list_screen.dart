@@ -21,10 +21,9 @@ import '../widgets/note_masonry_grid.dart';
 
 /// 笔记列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **三条设置偏好都在这里落地**（`ARCHITECTURE-DESIGN.md` §4 的取值来源表）：
-/// `noteSort` 进 [NoteQuery]、`noteLayout` 选排布、`textScale` 逐层透传给
-/// 字阶。三者都经 provider 读，改完设置回来即生效，不重启 App；
-/// ⛔ **一律不进 URL**（§8.2：偏好不是导航状态）。
+/// **两条设置偏好都在这里落地**（`ARCHITECTURE-DESIGN.md` §4 的取值来源表）：
+/// `noteSort` 进 [NoteQuery]、`noteLayout` 选排布。两者都经 provider 读，改完设置
+/// 回来即生效，不重启 App；⛔ **一律不进 URL**（§8.2：偏好不是导航状态）。
 ///
 /// **分类栏与左右滑动用官方组件**（本页新增）：分类栏 = [TabBar]，内容 =
 /// [TabBarView]，两者共用一个 [TabController] —— 点 tab、左右滑、写 URL 三件事
@@ -110,7 +109,6 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
     // `locale` 等无关偏好时整页（含所有可见 NoteCard）跟着重建 —— `select` 写在
     // [noteListPrefsProvider] 内部，这里不必再管。
     final (:sort, :layout) = ref.watch(noteListPrefsProvider);
-    final textScale = ref.watch(noteTextScaleProvider);
     // 搜索 + 筛选 + 排序三者叠加进同一个 [NoteQuery]（`props` 已覆盖
     // 三个字段，任一变化都会重新订阅）。
     final search = ref.watch(noteSearchProvider);
@@ -142,14 +140,10 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
           children: <Widget>[
             Column(
               children: <Widget>[
-                _TopBar(textScale: textScale),
-                _SearchField(textScale: textScale),
+                const _TopBar(),
+                const _SearchField(),
                 if (_tabController case final controller?) ...<Widget>[
-                  _CategoryTabBar(
-                    controller: controller,
-                    folders: folderList,
-                    textScale: textScale,
-                  ),
+                  _CategoryTabBar(controller: controller, folders: folderList),
                   // 分类栏与内容区之间留一条通用小间距：本 App 无阴影、无分隔线，
                   // 胶囊紧贴卡片会糊成一片，只能靠留白分层（同顶栏无分隔线的解法）。
                   const SizedBox(height: AppSpacing.sm),
@@ -167,7 +161,6 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
                                 noteSort: sort,
                                 noteLayout: layout,
                                 searchTerm: searchTerm,
-                                textScale: textScale,
                               ),
                           ],
                         ),
@@ -188,7 +181,11 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
               // 落地页 = 笔记详情空白编辑器：`/notes/new` 与
               // `NoteEditorProvider(kNewNoteId)` 共用编辑页，停止输入 500ms 自动落库。
               // 「全部」与「未分类」没有真实归属，`folderId` 传 null → 落到未分类。
-              child: AppFab(onPressed: () => context.push(AppRoutes.noteNewPath(folderId: newNoteFolderId(filter)))),
+              child: AppFab(
+                onPressed: () => context.push(
+                  AppRoutes.noteNewPath(folderId: newNoteFolderId(filter)),
+                ),
+              ),
             ),
           ],
         ),
@@ -206,7 +203,6 @@ class _CategoryPage extends ConsumerWidget {
     required this.noteSort,
     required this.noteLayout,
     required this.searchTerm,
-    required this.textScale,
     super.key,
   });
 
@@ -218,8 +214,6 @@ class _CategoryPage extends ConsumerWidget {
   final NoteLayout noteLayout;
 
   final String? searchTerm;
-
-  final double textScale;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -249,18 +243,10 @@ class _CategoryPage extends ConsumerWidget {
     }
 
     return switch (noteLayout) {
-      NoteLayout.grid => NoteMasonryGrid(
-        notes: items,
-        textScale: textScale,
-        onTapNote: openNote,
-      ),
+      NoteLayout.grid => NoteMasonryGrid(notes: items, onTapNote: openNote),
       // 列表与宫格共用同一张 NoteCard —— 两种布局的**唯一**区别是排布方式，
       // 卡片内容逐字一致（列表模式视觉无稿，按单列通栏实现）。
-      NoteLayout.list => _NoteList(
-        notes: items,
-        textScale: textScale,
-        onTapNote: openNote,
-      ),
+      NoteLayout.list => _NoteList(notes: items, onTapNote: openNote),
     };
   }
 }
@@ -285,24 +271,17 @@ const double _kTabRadius = 8;
 /// tab 顺序真相源在 `folder_dao` 的 `ORDER BY`（全部恒首位、文件夹按
 /// `sortIndex / createdAt`、未分类恒最后），⛔ 不在 Dart 层重排
 class _CategoryTabBar extends StatelessWidget {
-  const _CategoryTabBar({
-    required this.controller,
-    required this.folders,
-    required this.textScale,
-  });
+  const _CategoryTabBar({required this.controller, required this.folders});
 
   final TabController controller;
 
   final List<FolderWithCount> folders;
 
-  /// 设置「文字大小」的排版系数，透传给每个 tab 的标签。
-  final double textScale;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colors = context.colors;
-    final labelStyle = context.textStyles.chip.scaled(textScale);
+    final labelStyle = context.textStyles.chip;
     final pill = BorderRadius.circular(_kTabRadius);
 
     return TabBar(
@@ -380,11 +359,7 @@ NoteQuery noteQueryFor(String? filter, {String? searchTerm}) =>
 /// 标题**在顶栏内**（不另起一行大标题）：顶栏本来就是页面标题的位置，标题与
 /// 图标同处一行，下方内容区整块上移。
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.textScale});
-
-  /// 设置「文字大小」的排版系数。标题原本是页面大标题时就接 `textScale`
-  /// （`AppLargeTitle`），移进顶栏后语义不变 —— 仍是同一条「文字大小」的消费方。
-  final double textScale;
+  const _TopBar();
 
   @override
   Widget build(BuildContext context) {
@@ -393,9 +368,9 @@ class _TopBar extends StatelessWidget {
       showDivider: false,
       title: Text(
         AppLocalizations.of(context).notes,
-        style: context.textStyles.displayTitle
-            .scaled(textScale)
-            .copyWith(color: context.colors.textPrimary),
+        style: context.textStyles.displayTitle.copyWith(
+          color: context.colors.textPrimary,
+        ),
       ),
       // 图标照笔记列表稿画出来；`folder` / `settings` 的目标页由 TASK-050 / 046 落地，
       // 现在点进去是占位页 —— 预期行为，不因「目标页还没建」就删掉图标
@@ -432,9 +407,7 @@ const double _kSearchSuffixSize = 18;
 /// 里「不能 dispose controller」那条约束不是一回事（那是 dialog future 提前完成
 /// 导致的退场动画问题）。
 class _SearchField extends ConsumerStatefulWidget {
-  const _SearchField({required this.textScale});
-
-  final double textScale;
+  const _SearchField();
 
   @override
   ConsumerState<_SearchField> createState() => _SearchFieldState();
@@ -468,7 +441,7 @@ class _SearchFieldState extends ConsumerState<_SearchField> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final hasText = ref.watch(noteSearchProvider).isNotEmpty;
-    final style = context.textStyles.body.scaled(widget.textScale);
+    final style = context.textStyles.body;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -514,15 +487,9 @@ class _SearchFieldState extends ConsumerState<_SearchField> {
 /// 间距与底部留白沿用 [NoteMasonryGrid] 的同一组 token（页边距 12dp、行距
 /// 12dp、底部导航高 + 12dp + 安全区），不为「只有一种布局有稿」另开一套值。
 class _NoteList extends StatelessWidget {
-  const _NoteList({
-    required this.notes,
-    required this.textScale,
-    required this.onTapNote,
-  });
+  const _NoteList({required this.notes, required this.onTapNote});
 
   final List<Note> notes;
-
-  final double textScale;
 
   final ValueChanged<Note> onTapNote;
 
@@ -548,7 +515,6 @@ class _NoteList extends StatelessWidget {
         return NoteCard(
           key: ValueKey<String>(note.id),
           note: note,
-          textScale: textScale,
           onTap: () => onTapNote(note),
         );
       },

@@ -17,9 +17,7 @@ Widget wrap(Widget child) => MaterialApp(
 
 void main() {
   testWidgets('padding 为 left 12 / top 16 / bottom 12', (tester) async {
-    await tester.pumpWidget(
-      wrap(const AppLargeTitle(text: '笔记', textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(const AppLargeTitle(text: '笔记')));
 
     final padding = tester.widget<Padding>(
       find
@@ -40,9 +38,7 @@ void main() {
   });
 
   testWidgets('文字样式取自 displayTitle 并显式带上 textPrimary', (tester) async {
-    await tester.pumpWidget(
-      wrap(const AppLargeTitle(text: '笔记', textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(const AppLargeTitle(text: '笔记')));
 
     final text = tester.widget<Text>(find.text('笔记'));
     expect(text.style?.fontSize, 20);
@@ -52,9 +48,7 @@ void main() {
   });
 
   testWidgets('左对齐且不设死高度', (tester) async {
-    await tester.pumpWidget(
-      wrap(const AppLargeTitle(text: '待办', textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(const AppLargeTitle(text: '待办')));
 
     final align = tester.widget<Align>(
       find.descendant(

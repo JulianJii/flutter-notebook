@@ -486,9 +486,9 @@
   "@updateDialogUpdate": {
     "description": "Update prompt dialog: open the release page"
   },
-  "settingsTextScale": "文字大小",
-  "@settingsTextScale": {
-    "description": "Settings stepper row title: font size"
+  "settingsFontFamily": "字体",
+  "@settingsFontFamily": {
+    "description": "Settings row title: UI font family (does not affect the note editor text)"
   },
   "settingsNoteSort": "选择排序方式",
   "@settingsNoteSort": {
@@ -502,21 +502,21 @@
   "@settingsCompressImages": {
     "description": "Settings switch row title: compress images before embedding them into note content"
   },
-  "settingsTextScaleSmall": "小",
-  "@settingsTextScaleSmall": {
-    "description": "Font size option: small"
+  "fontFamilySystem": "系统默认",
+  "@fontFamilySystem": {
+    "description": "Font option: platform default font (settings row + editor toolbar)"
   },
-  "settingsTextScaleDefault": "默认",
-  "@settingsTextScaleDefault": {
-    "description": "Font size option: default"
+  "fontFamilySerif": "宋体",
+  "@fontFamilySerif": {
+    "description": "Font option: serif family (settings row + editor toolbar)"
   },
-  "settingsTextScaleLarge": "大",
-  "@settingsTextScaleLarge": {
-    "description": "Font size option: large"
+  "fontFamilySansSerif": "黑体",
+  "@fontFamilySansSerif": {
+    "description": "Font option: sans-serif family (settings row + editor toolbar)"
   },
-  "settingsTextScaleXLarge": "超大",
-  "@settingsTextScaleXLarge": {
-    "description": "Font size option: extra large"
+  "fontFamilyMonospace": "等宽",
+  "@fontFamilyMonospace": {
+    "description": "Font option: monospace family (settings row + editor toolbar)"
   },
   "settingsSortEditedDesc": "按编辑日期",
   "@settingsSortEditedDesc": {

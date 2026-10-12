@@ -378,7 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateDialogUpdate => 'Update now';
 
   @override
-  String get settingsTextScale => 'Font size';
+  String get settingsFontFamily => 'Font';
 
   @override
   String get settingsNoteSort => 'Sort by';
@@ -390,16 +390,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsCompressImages => 'Compress images';
 
   @override
-  String get settingsTextScaleSmall => 'Small';
+  String get fontFamilySystem => 'System default';
 
   @override
-  String get settingsTextScaleDefault => 'Default';
+  String get fontFamilySerif => 'Serif';
 
   @override
-  String get settingsTextScaleLarge => 'Large';
+  String get fontFamilySansSerif => 'Sans serif';
 
   @override
-  String get settingsTextScaleXLarge => 'Extra large';
+  String get fontFamilyMonospace => 'Monospace';
 
   @override
   String get settingsSortEditedDesc => 'Last edited';

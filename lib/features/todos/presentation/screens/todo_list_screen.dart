@@ -61,12 +61,9 @@ class TodoListScreen extends ConsumerWidget {
                   // 页面标题在顶栏内（与笔记列表一致）：标题与右侧图标同处一行。
                   title: Text(
                     l10n.todos,
-                    // `scaled(1)` ——待办 **不接** 设置的「文字大小」：待办稿上没有这一行
-                    // 的消费方（`ARCHITECTURE-DESIGN.md` §4 的取值来源表只列了笔记列表
-                    // 卡片与笔记详情正文）。跟着放大会改动待办的 golden 基线。
-                    style: context.textStyles.displayTitle
-                        .scaled(1)
-                        .copyWith(color: context.colors.textPrimary),
+                    style: context.textStyles.displayTitle.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
                   ),
                   actions: <Widget>[
                     // 清空入口只在有已完成项时可用 —— 空分组上弹「确定清空吗」是噪音。
@@ -134,10 +131,9 @@ class TodoListScreen extends ConsumerWidget {
     // ⛔ **不传 recurrence**：新建时 `reminderAt` 必为 null（提醒只能在待办落库
     // 之后、拿到真实 id 才能设），而「没提醒就重复」是无意义状态 —— 弹窗里已经
     // 用提示拦掉了，这里再兜一道是因为它不依赖 UI。
-    final result = await ref.read(createTodoUseCaseProvider).call(
-      title,
-      priority: outcome!.priority,
-    );
+    final result = await ref
+        .read(createTodoUseCaseProvider)
+        .call(title, priority: outcome!.priority);
     result.fold((failure) {
       if (context.mounted) {
         AppUtils.showSnackBar(context, message: failure.message);
@@ -306,7 +302,14 @@ class TodoListScreen extends ConsumerWidget {
   /// ⛔ **子任务不在这栏**：子项要立刻写库（drift watch 推回），而新建的待办
   /// 还没有 id（`create` 之后才有），外键会拒绝 —— 所以它只在 [withDelete] 的
   /// 编辑态渲染（`TodoSubtaskSection` 收一个已有的 todoId）。
-  Future<({String? title, TodoPriority priority, TodoRecurrence? recurrence, bool remove})?>
+  Future<
+    ({
+      String? title,
+      TodoPriority priority,
+      TodoRecurrence? recurrence,
+      bool remove,
+    })?
+  >
   _titleDialog(
     BuildContext context, {
     required String titleText,
@@ -322,16 +325,24 @@ class TodoListScreen extends ConsumerWidget {
     var priority = initialPriority;
     var recurrence = initialRecurrence;
     return showDialog<
-      ({String? title, TodoPriority priority, TodoRecurrence? recurrence, bool remove})
+      ({
+        String? title,
+        TodoPriority priority,
+        TodoRecurrence? recurrence,
+        bool remove,
+      })
     >(
       context: context,
       builder: (dialogContext) {
         // ⚠️ 选择器要重建才能反映选择 → 用 `StatefulBuilder`。
         // 与 `folder_manager_screen` 的名称弹窗同一取舍（一个弹窗一个 StatefulBuilder，
         // 不为它建一个 StatefulWidget）。
-        void submit() => Navigator.of(dialogContext).pop(
-          (title: entered, priority: priority, recurrence: recurrence, remove: false),
-        );
+        void submit() => Navigator.of(dialogContext).pop((
+          title: entered,
+          priority: priority,
+          recurrence: recurrence,
+          remove: false,
+        ));
 
         return StatefulBuilder(
           builder: (context, setState) => AlertDialog(
@@ -389,9 +400,12 @@ class TodoListScreen extends ConsumerWidget {
             actions: <Widget>[
               if (withDelete)
                 TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(
-                    (title: null, priority: priority, recurrence: recurrence, remove: true),
-                  ),
+                  onPressed: () => Navigator.of(dialogContext).pop((
+                    title: null,
+                    priority: priority,
+                    recurrence: recurrence,
+                    remove: true,
+                  )),
                   child: Text(l10n.deleteTodo),
                 ),
               TextButton(

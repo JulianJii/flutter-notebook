@@ -43,7 +43,7 @@ void main() {
 
   test('加载成功：state 被替换为持久化值', () async {
     const stored = AppSettings(
-      textScale: TextScaleLevel.large,
+      fontFamily: AppFontFamily.serif,
       noteLayout: NoteLayout.list,
     );
     when(
@@ -68,17 +68,20 @@ void main() {
   test('加载落地前用户已改过偏好：旧快照不覆盖用户的选择', () async {
     when(() => repo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(
-        AppSettings(textScale: TextScaleLevel.small),
+        AppSettings(fontFamily: AppFontFamily.serif),
       ),
     );
 
     container.read(settingsProvider);
     container
         .read(settingsProvider.notifier)
-        .setTextScale(TextScaleLevel.xLarge);
+        .setFontFamily(AppFontFamily.monospace);
     await settle();
 
-    expect(container.read(settingsProvider).textScale, TextScaleLevel.xLarge);
+    expect(
+      container.read(settingsProvider).fontFamily,
+      AppFontFamily.monospace,
+    );
   });
 
   test('setNoteSort 立即改变 state（不等 IO，同一事件循环内）', () async {
@@ -95,7 +98,7 @@ void main() {
         verify(() => repo.save(captureAny())).captured.single as AppSettings;
     expect(captured.noteLayout, NoteLayout.list);
     // 关键回归：set* 只改一个字段，其余**不能**被 copyWith 清空。
-    expect(captured.textScale, AppSettings.defaults().textScale);
+    expect(captured.fontFamily, AppSettings.defaults().fontFamily);
     expect(captured.noteSort, AppSettings.defaults().noteSort);
     expect(captured.themeMode, AppSettings.defaults().themeMode);
   });
@@ -114,13 +117,13 @@ void main() {
 
   test('3 个 setter 各改各的字段', () async {
     final n = container.read(settingsProvider.notifier);
-    n.setTextScale(TextScaleLevel.xLarge);
+    n.setFontFamily(AppFontFamily.monospace);
     n.setNoteSort(AppNoteSort.createdDesc);
     n.setNoteLayout(NoteLayout.list);
     await settle();
 
     final s = container.read(settingsProvider);
-    expect(s.textScale, TextScaleLevel.xLarge);
+    expect(s.fontFamily, AppFontFamily.monospace);
     expect(s.noteSort, AppNoteSort.createdDesc);
     expect(s.noteLayout, NoteLayout.list);
     verify(() => repo.save(any())).called(3);
@@ -140,22 +143,28 @@ void main() {
 
     container
         .read(settingsProvider.notifier)
-        .setTextScale(TextScaleLevel.xLarge);
+        .setFontFamily(AppFontFamily.serif);
     await settle();
 
-    expect(container.read(settingsProvider).textScale, TextScaleLevel.xLarge);
+    expect(container.read(settingsProvider).fontFamily, AppFontFamily.serif);
   });
 
-  test('textScaleFactor 随 textScale 变化（4 档线性）', () async {
-    expect(container.read(textScaleFactorProvider), 1.0);
+  test('uiFontFamily 随 fontFamily 变化（4 → 4，system = null）', () async {
+    expect(container.read(uiFontFamilyProvider), isNull, reason: '默认 system');
 
     final n = container.read(settingsProvider.notifier);
-    n.setTextScale(TextScaleLevel.small);
-    expect(container.read(textScaleFactorProvider), 0.875);
-    n.setTextScale(TextScaleLevel.large);
-    expect(container.read(textScaleFactorProvider), 1.125);
-    n.setTextScale(TextScaleLevel.xLarge);
-    expect(container.read(textScaleFactorProvider), 1.25);
+    n.setFontFamily(AppFontFamily.serif);
+    expect(container.read(uiFontFamilyProvider), 'serif');
+    n.setFontFamily(AppFontFamily.sansSerif);
+    expect(container.read(uiFontFamilyProvider), 'sans-serif');
+    n.setFontFamily(AppFontFamily.monospace);
+    expect(container.read(uiFontFamilyProvider), 'monospace');
+    n.setFontFamily(AppFontFamily.system);
+    expect(
+      container.read(uiFontFamilyProvider),
+      isNull,
+      reason: 'null = 平台默认，⛔ 不写死成某个族名',
+    );
     await settle();
   });
 

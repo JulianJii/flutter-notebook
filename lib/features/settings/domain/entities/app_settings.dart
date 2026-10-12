@@ -1,10 +1,16 @@
 import 'package:equatable/equatable.dart';
 import 'package:mynote/core/theme/app_color_scheme.dart';
 
-/// 文字大小。`ARCHITECTURE-DESIGN.md` §2.13 的 4 值枚举，默认 `normal`。
+/// UI 文字字体。4 档，默认 `system`。
 ///
-/// ⛔ 不给字阶方法设默认系数：所有调用点必须显式表态（`PROJECT-STATUS.md` §6 的 A7）。
-enum TextScaleLevel { small, normal, large, xLarge }
+/// 取值是**系统字体族名**（`AppTextStyles.withFontFamily` 是唯一落点）：不打包字体
+/// 文件、不引 `google_fonts`，族名交给平台解析。非 Android 平台上 `serif` /
+/// `sans-serif` / `monospace` 多半解析不到，会静默回落到系统默认字体
+/// —— 见 `docs/FEATURES.md`「已知限制」。
+///
+/// ⛔ **只管 UI 文字**：笔记标题与正文（编辑器内部）不走这一项，它们的字体由
+/// 编辑器工具栏的「字体」按钮按选中范围决定（`AppTextStyles.editor`）。
+enum AppFontFamily { system, serif, sansSerif, monospace }
 
 /// 设置「选择排序方式」。默认 `editedDesc`（按编辑日期）。
 ///
@@ -23,15 +29,15 @@ enum NoteLayout { grid, list }
 /// 映射成 `ThemeMode` 在 `main.dart` 的 `MyApp` 里（3↔3 一一对应）。
 enum AppThemeMode { system, light, dark }
 
-/// 用户偏好。5 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
+/// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
 /// 需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
 ///
-/// ⛔ **不预留字段**：字段集与 `ARCHITECTURE-DESIGN.md` §2.13 的设置五行逐项对齐。
-/// ⛔ **不落派生值**：文字大小的实际系数由 `AppTextStyles` 现算。
+/// ⛔ **不预留字段**：字段集与设置页的行逐项对齐，⛔ **不落派生值**
+/// （字体族的解析由 `AppTextStyles.withFontFamily` 现算）。
 class AppSettings extends Equatable {
   const AppSettings({
-    this.textScale = TextScaleLevel.normal,
+    this.fontFamily = AppFontFamily.system,
     this.noteSort = AppNoteSort.editedDesc,
     this.noteLayout = NoteLayout.grid,
     this.themeMode = AppThemeMode.system,
@@ -41,14 +47,15 @@ class AppSettings extends Equatable {
 
   /// 默认值入口。设置稿上显示的正是这几个值。
   const AppSettings.defaults()
-    : textScale = TextScaleLevel.normal,
+    : fontFamily = AppFontFamily.system,
       noteSort = AppNoteSort.editedDesc,
       noteLayout = NoteLayout.grid,
       themeMode = AppThemeMode.system,
       colorScheme = AppColorScheme.amber,
       compressImages = true;
 
-  final TextScaleLevel textScale;
+  /// UI 文字字体。⛔ 编辑器文字（笔记标题 + 正文）不吃它，见 [AppFontFamily]。
+  final AppFontFamily fontFamily;
 
   final AppNoteSort noteSort;
 
@@ -73,7 +80,7 @@ class AppSettings extends Equatable {
   final bool compressImages;
 
   AppSettings copyWith({
-    TextScaleLevel? textScale,
+    AppFontFamily? fontFamily,
     AppNoteSort? noteSort,
     NoteLayout? noteLayout,
     AppThemeMode? themeMode,
@@ -81,7 +88,7 @@ class AppSettings extends Equatable {
     bool? compressImages,
   }) {
     return AppSettings(
-      textScale: textScale ?? this.textScale,
+      fontFamily: fontFamily ?? this.fontFamily,
       noteSort: noteSort ?? this.noteSort,
       noteLayout: noteLayout ?? this.noteLayout,
       themeMode: themeMode ?? this.themeMode,
@@ -92,7 +99,7 @@ class AppSettings extends Equatable {
 
   @override
   List<Object?> get props => [
-    textScale,
+    fontFamily,
     noteSort,
     noteLayout,
     themeMode,

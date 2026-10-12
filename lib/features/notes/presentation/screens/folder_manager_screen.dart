@@ -117,7 +117,8 @@ class FolderManagerScreen extends ConsumerWidget {
                     // 长按命中整张卡片（含 padding 区），符合「按卡片」的手感。
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onLongPress: () => _showFolderMenu(context, ref, item.folder),
+                      onLongPress: () =>
+                          _showFolderMenu(context, ref, item.folder),
                       child: FolderRow(
                         name: item.folder.name,
                         isSelected: selected == item.folder.id,
@@ -193,7 +194,9 @@ class FolderManagerScreen extends ConsumerWidget {
       // 所以 `InputFailure` 在本页只剩「重名」一种含义。
       AppUtils.showSnackBar(
         context,
-        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
+        message: failure is InputFailure
+            ? l10n.folderNameExists
+            : failure.message,
       );
     }, (_) {});
   }
@@ -219,17 +222,22 @@ class FolderManagerScreen extends ConsumerWidget {
     final result = await ref
         .read(renameFolderUseCaseProvider)
         .call(RenameFolderParams(folderId: folder.id, name: name));
-    result.fold((failure) {
-      if (!context.mounted) return;
-      AppUtils.showSnackBar(
-        context,
-        message: failure is InputFailure ? l10n.folderNameExists : failure.message,
-      );
-    }, (_) {
-      if (context.mounted) {
-        AppUtils.showSnackBar(context, message: l10n.renameFolderDone);
-      }
-    });
+    result.fold(
+      (failure) {
+        if (!context.mounted) return;
+        AppUtils.showSnackBar(
+          context,
+          message: failure is InputFailure
+              ? l10n.folderNameExists
+              : failure.message,
+        );
+      },
+      (_) {
+        if (context.mounted) {
+          AppUtils.showSnackBar(context, message: l10n.renameFolderDone);
+        }
+      },
+    );
   }
 
   /// 名称输入弹窗，新建与重命名共用。返回 `null` = 用户取消。
@@ -270,7 +278,8 @@ class FolderManagerScreen extends ConsumerWidget {
                   ),
                 );
               } else if (taken.any(
-                (item) => item.folder.name == trimmed && item.folder.id != excludeId,
+                (item) =>
+                    item.folder.name == trimmed && item.folder.id != excludeId,
               )) {
                 setState(() => error = l10n.folderNameExists);
               } else {
@@ -284,7 +293,8 @@ class FolderManagerScreen extends ConsumerWidget {
               ),
               content: TextField(
                 autofocus: true,
-                controller: TextEditingController(text: entered)..selection = TextSelection.collapsed(offset: entered.length),
+                controller: TextEditingController(text: entered)
+                  ..selection = TextSelection.collapsed(offset: entered.length),
                 decoration: InputDecoration(
                   hintText: l10n.folderName,
                   errorText: error,
@@ -405,16 +415,19 @@ class FolderManagerScreen extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     final result = await ref.read(deleteFolderUseCaseProvider)(folder.id);
-    result.fold((failure) {
-      if (context.mounted) {
-        AppUtils.showSnackBar(context, message: failure.message);
-      }
-    }, (_) {
-      // 成功不弹提示：文件夹从列表消失本身就是反馈。
-      if (context.mounted) {
-        AppUtils.showSnackBar(context, message: l10n.deleteFolderDone);
-      }
-    });
+    result.fold(
+      (failure) {
+        if (context.mounted) {
+          AppUtils.showSnackBar(context, message: failure.message);
+        }
+      },
+      (_) {
+        // 成功不弹提示：文件夹从列表消失本身就是反馈。
+        if (context.mounted) {
+          AppUtils.showSnackBar(context, message: l10n.deleteFolderDone);
+        }
+      },
+    );
   }
 }
 

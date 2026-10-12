@@ -61,9 +61,7 @@ void main() {
     matching: find.text(label),
   );
 
-  testWidgets('明暗三档一次全见：浅色 / 深色 / 跟随系统，默认在跟随系统', (
-    tester,
-  ) async {
+  testWidgets('明暗三档一次全见：浅色 / 深色 / 跟随系统，默认在跟随系统', (tester) async {
     await pumpThemePage(tester);
 
     expect(container.read(settingsProvider).themeMode, AppThemeMode.system);
@@ -97,7 +95,7 @@ void main() {
     final settings = container.read(settingsProvider);
     expect(settings.themeMode, AppThemeMode.light);
     expect(settings.colorScheme, AppColorScheme.amber);
-    expect(settings.textScale, TextScaleLevel.normal);
+    expect(settings.fontFamily, AppFontFamily.system);
   });
 
   testWidgets('配色方案 4 行，只有当前方案带勾', (tester) async {

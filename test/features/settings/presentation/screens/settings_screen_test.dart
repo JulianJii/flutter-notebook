@@ -25,10 +25,7 @@ class _MockSettingsRepository extends Mock implements SettingsRepository {}
 /// 「速记」移除，「最近删除」并入「其他」，「提醒」随「强提醒」一并移除）。
 const List<String> _groupTitles = <String>['笔记样式', '其他'];
 
-const List<String> _groupKeys = <String>[
-  'section_note_style',
-  'section_other',
-];
+const List<String> _groupKeys = <String>['section_note_style', 'section_other'];
 
 void main() {
   setUpAll(() => registerFallbackValue(const AppSettings.defaults()));
@@ -171,7 +168,7 @@ void main() {
     testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 9 条）', (tester) async {
       await pumpP5(tester);
 
-      // 笔记样式 5 行（文字大小 / 排序 / 布局 / 主题 / 压缩图片）→ 4 条，
+      // 笔记样式 5 行（字体 / 排序 / 布局 / 主题 / 压缩图片）→ 4 条，
       // 其他 6 行（语言 + 数据与同步 + 最近删除 + 隐私政策 + 用户协议 + 关于）
       // → 5 条。
       expect(find.byType(AppDivider), findsNWidgets(9));
@@ -185,7 +182,7 @@ void main() {
       // 「图片压缩」是唯一一个开关行：它只有两种取值，不像明暗有三档。
       expect(find.byType(Switch), findsOneWidget);
       // 6 个 chevron 行（主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议 /
-      // 关于）+ 4 个选择器行（文字大小 / 排序 / 布局 / 语言）。
+      // 关于）+ 4 个选择器行（字体 / 排序 / 布局 / 语言）。
       expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
     });
   });
@@ -196,14 +193,15 @@ void main() {
     testWidgets('3 个选择器行显示当前值文案，不是枚举英文名', (tester) async {
       await pumpP5(tester);
 
-      expect(find.text('默认'), findsOneWidget);
+      expect(find.text('系统默认'), findsOneWidget);
       expect(find.text('按编辑日期'), findsOneWidget);
       expect(find.text('宫格模式'), findsOneWidget);
 
       for (final name in <String>[
-        'small',
-        'normal',
-        'xLarge',
+        'system',
+        'serif',
+        'sansSerif',
+        'monospace',
         'grid',
         'list',
       ]) {
@@ -239,15 +237,15 @@ void main() {
     testWidgets('3 个选择器行各自只改自己的字段，且各落盘一次', (tester) async {
       await pumpP5(tester);
 
-      await pick(tester, 'select_text_scale', '大');
+      await pick(tester, 'select_font_family', '宋体');
       await pick(tester, 'select_note_sort', '按编辑日期（最早）');
       await pick(tester, 'select_note_layout', '列表模式');
 
       final settings = container.read(settingsProvider);
-      expect(settings.textScale, TextScaleLevel.large);
+      expect(settings.fontFamily, AppFontFamily.serif);
       expect(settings.noteSort, AppNoteSort.editedAsc);
       expect(settings.noteLayout, NoteLayout.list);
-      expect(find.text('大'), findsOneWidget);
+      expect(find.text('宋体'), findsOneWidget);
       expect(find.text('按编辑日期（最早）'), findsOneWidget);
       expect(find.text('列表模式'), findsOneWidget);
       verify(() => repo.save(any())).called(3);
@@ -255,14 +253,14 @@ void main() {
 
     testWidgets('新值走 provider 而非本地 state：离开页面再进入仍是新值', (tester) async {
       await pumpP5(tester);
-      await pick(tester, 'select_text_scale', '大');
+      await pick(tester, 'select_font_family', '宋体');
 
       // 销毁整个页面再重建（provider 是 keepAlive，state 不该被丢弃）
       await tester.pumpWidget(const SizedBox.shrink());
       await pumpP5(tester);
 
-      expect(find.text('大'), findsOneWidget);
-      expect(find.text('默认'), findsNothing);
+      expect(find.text('宋体'), findsOneWidget);
+      expect(find.text('系统默认'), findsNothing);
     });
 
     testWidgets('主题行是跳转入口：chevron 行，不再弹选项单', (tester) async {
@@ -398,11 +396,7 @@ void main() {
       expect(source, contains('AppRoutes.noteTrash'));
       expect(source, contains('AppRoutes.privacyPolicy'));
       expect(source, contains('AppRoutes.userAgreement'));
-      expect(
-        source,
-        isNot(contains('settingsQuickCapture')),
-        reason: '速记行已删除',
-      );
+      expect(source, isNot(contains('settingsQuickCapture')), reason: '速记行已删除');
       expect(
         source,
         isNot(contains('onTap: null')),

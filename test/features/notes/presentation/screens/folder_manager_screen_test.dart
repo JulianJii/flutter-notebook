@@ -72,7 +72,10 @@ void main() {
   ///
   /// [createResult] 是新建文件夹的写库结果（默认成功）—— 失败分支要在建 widget
   /// **之前**就 stub 好，mock 只在 `app()` 里建。
-  Widget app({List<FolderWithCount>? folders, Either<Failure, NoteFolder>? createResult}) {
+  Widget app({
+    List<FolderWithCount>? folders,
+    Either<Failure, NoteFolder>? createResult,
+  }) {
     final repo = _MockFolderRepository();
     when(repo.watchWithCounts).thenAnswer(
       (_) => Stream<List<FolderWithCount>>.value(

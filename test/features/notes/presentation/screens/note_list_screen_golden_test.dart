@@ -154,7 +154,7 @@ void main() {
     ).thenAnswer((_) => Stream<List<FolderWithCount>>.value(_folders));
     // 笔记列表读 `settingsProvider`（TASK-047）→ 必须 override 到 Repository，否则
     // 撞上测试环境里未实现的 `sharedPreferencesProvider`。基线锁的是**默认档**
-    // （`noteSort = editedDesc` / `noteLayout = grid` / `textScale = normal`
+    // （`noteSort = editedDesc` / `noteLayout = grid`
     // → 系数 1.0），故 `AppSettings.defaults()` 就是笔记列表稿的对照态。
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer(

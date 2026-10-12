@@ -87,9 +87,8 @@ void main() {
         // 文件夹流首次出值才建 `TabController`，空流永远停在 loading 会让
         // 内容区留白。
         folderProvider.overrideWith(
-          (ref) => Stream<List<FolderWithCount>>.value(
-            const <FolderWithCount>[],
-          ),
+          (ref) =>
+              Stream<List<FolderWithCount>>.value(const <FolderWithCount>[]),
         ),
       ],
       child: MaterialApp.router(
@@ -139,23 +138,7 @@ void main() {
     expect(queries.last.sort, NoteSort.editedDesc);
   });
 
-  testWidgets('textScale 改变后卡片标题与正文区字号随之改变', (tester) async {
-    await tester.pumpWidget(app(_default));
-    await tester.pumpAndSettle();
-    double? sizeOf(String text) =>
-        tester.widget<Text>(find.text(text)).style?.fontSize;
-
-    expect(sizeOf('标题 1'), 15, reason: 'cardTitle 当前基线 15sp');
-
-    await tester.pumpWidget(
-      app(_default.copyWith(textScale: TextScaleLevel.xLarge)),
-    );
-    await tester.pumpAndSettle();
-
-    expect(sizeOf('标题 1'), 18.75, reason: '15 x 1.25');
-  });
-
-  testWidgets('textScale 不进 URL query（偏好不放 URL）', (tester) async {
+  testWidgets('fontFamily 不进 URL query（偏好不放 URL）', (tester) async {
     final router = GoRouter(
       initialLocation: '/notes',
       routes: <RouteBase>[
@@ -171,7 +154,7 @@ void main() {
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => Right(
         _default.copyWith(
-          textScale: TextScaleLevel.xLarge,
+          fontFamily: AppFontFamily.serif,
           noteSort: AppNoteSort.titleAsc,
         ),
       ),

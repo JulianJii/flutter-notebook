@@ -116,10 +116,7 @@ class _BrokenImage extends StatelessWidget {
       height: 72,
       color: context.colors.divider.withValues(alpha: 0.3),
       child: Center(
-        child: Icon(
-          Icons.broken_image,
-          color: context.colors.textPlaceholder,
-        ),
+        child: Icon(Icons.broken_image, color: context.colors.textPlaceholder),
       ),
     );
   }

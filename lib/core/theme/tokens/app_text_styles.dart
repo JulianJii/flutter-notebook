@@ -7,13 +7,14 @@ import 'package:material_ui/material_ui.dart';
 /// 故当前取值**不再等于** `UI-IMPLEMENTATION-SPEC.md` §2.2 的实测值；字阶的
 /// 相对关系（谁比谁大、谁更粗）仍与设计稿一致，只改了绝对值。
 ///
-/// 实现为 [ThemeExtension]：`textScale`（设置的「文字大小」，`ROADMAP.md`
-/// MVP-A 第 6 项）落地后要在这里统一乘系数。见 `ARCHITECTURE-DESIGN.md` §7.3。
+/// 实现为 [ThemeExtension]。见 `ARCHITECTURE-DESIGN.md` §7.3。
 ///
-/// ⛔ **13 个字阶都不设 `color` 与 `fontFamily`**：
-/// - `color` 走 [AppColors] + `DefaultTextStyle`，两处各改一次即可
-///  （13 字阶 × 2 色会变成 26 个字段，实际用到的组合不超过 8 种）。
-/// - `fontFamily` 不设：设计稿未标注中文字体族，沿用 Material 默认。
+/// ⛔ **13 个字阶都不设 `color`**：`color` 走 [AppColors] + `DefaultTextStyle`，
+/// 两处各改一次即可（13 字阶 × 2 色会变成 26 个字段，实际用到的组合不超过 8 种）。
+///
+/// **`fontFamily` 由设置的「字体」行注入**：本类的 `light()` 是**不带族名**的原始
+/// 取值，带族名的那份由 [withFontFamily] 现算后挂进 `ThemeExtension`。
+/// ⛔ 族名只出现在 [withFontFamily] 一处，消费方照旧读 `context.textStyles.<token>`。
 class AppTextStyles extends ThemeExtension<AppTextStyles> {
   const AppTextStyles({
     required this.displayTitle,
@@ -33,7 +34,8 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
 
   /// 浅色模式取值。13 级字阶在此**一次性定档**（见 `AppTextStylesContext`）。
   ///
-  /// ⛔ **不设 `fontFamily`**：设计稿未标注中文字体族，沿用 Material 默认。
+  /// 这里是**不带 UI 字体族**的原始取值：主题侧经 [withFontFamily] 套上设置里的
+  /// 「字体」后挂进 `ThemeExtension`；编辑器文字用 [editor] 那一份。
   const AppTextStyles.light()
     : displayTitle = const TextStyle(
         fontSize: 20,
@@ -103,6 +105,37 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
 
   /// 深色模式取值。字阶不含颜色，light / dark 两套完全等价。
   const AppTextStyles.dark() : this.light();
+
+  /// **不带 UI 字体族**的字阶基线（逐字等于 [light] 的原始取值）。
+  ///
+  /// 只给**编辑器内部的文字**用：笔记标题（[detailTitle]）与正文（[body]）。
+  /// 设置里的「字体」只管 UI 文字，笔记文字的字体由编辑器工具栏的「字体」按钮
+  /// 按选中范围决定 —— 两者互不干扰。
+  static const AppTextStyles editor = AppTextStyles.light();
+
+  /// 把设置里的「字体」套到 13 级字阶上。**族名在本项目只出现这一处**。
+  ///
+  /// ⚠️ [fontFamily] 直接进 `TextStyle.fontFamily`，取值是**系统字体族名**
+  /// （`serif` / `sans-serif` / `monospace`），`null` = 平台默认。非 Android 平台上
+  /// 这些族名多半不存在，会静默回落到系统默认字体（见 `docs/FEATURES.md`「已知限制」）。
+  AppTextStyles withFontFamily(String? fontFamily) {
+    TextStyle f(TextStyle style) => style.copyWith(fontFamily: fontFamily);
+    return AppTextStyles(
+      displayTitle: f(displayTitle),
+      detailTitle: f(detailTitle),
+      cardTitle: f(cardTitle),
+      rowTitle: f(rowTitle),
+      rowTitleStrong: f(rowTitleStrong),
+      body: f(body),
+      snippet: f(snippet),
+      value: f(value),
+      subtitle: f(subtitle),
+      chip: f(chip),
+      meta: f(meta),
+      navLabel: f(navLabel),
+      topBarTitle: f(topBarTitle),
+    );
+  }
 
   /// 页面大标题「笔记」「待办」；设置页顶部大标题。20/w700/1.2。笔记列表稿/待办稿/设置稿。
   final TextStyle displayTitle;
@@ -197,24 +230,6 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
       topBarTitle: TextStyle.lerp(topBarTitle, other.topBarTitle, t)!,
     );
   }
-}
-
-/// 按设置的「文字大小」缩放一个字阶。[scale] 由 `textScaleFactorProvider`
-/// （`features/settings`）提供 —— **core 只认识 `double`，不认识
-/// `TextScaleLevel`**（R1 / R7，见 `FEATURE-DEPENDENCIES.md` §5.1）。
-///
-/// [scale] 为 1.0 时与 `UI-IMPLEMENTATION-SPEC.md` §2.2 的实测值完全一致，
-/// 故默认档下所有 golden 基线不变。
-///
-/// ⛔ **不给 [scale] 默认值**：留默认值会让漏接的调用点静默按 1.0 渲染，
-/// 表现为「设置改了但这处没变」且无处报错。必填参数让编译器强制表态。
-///
-/// ponytail: 本期只用 `AppSettings.textScale`，不接 `MediaQuery.textScaler`
-/// —— 两者相乘会让正文在系统最大字号下达到 42sp。解锁条件 = 拿到深色模式稿
-/// + UX-05 无障碍补稿（`ROADMAP.md` §5 序 24）。
-extension AppTextStyleScale on TextStyle {
-  TextStyle scaled(double scale) =>
-      fontSize == null ? this : copyWith(fontSize: fontSize! * scale);
 }
 
 /// `context.textStyles.cardTitle` 的入口。未挂载时降级为

@@ -34,7 +34,7 @@ void main() {
   );
 
   testWidgets('渲染标题 / 摘要 / 日期三段', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
 
     expect(find.text('三花聚顶本是幻'), findsOneWidget);
     expect(find.text('脚下腾云亦非真'), findsOneWidget);
@@ -42,9 +42,7 @@ void main() {
   });
 
   testWidgets('正文为空时显示占位文案', (tester) async {
-    await tester.pumpWidget(
-      wrap(NoteCard(note: note(content: '   '), textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(NoteCard(note: note(content: '   '))));
 
     expect(find.text('无附加文案'), findsOneWidget);
   });
@@ -54,7 +52,6 @@ void main() {
       wrap(
         NoteCard(
           note: note(content: List<String>.filled(20, '一行内容').join('\n')),
-          textScale: 1,
         ),
       ),
     );
@@ -68,7 +65,7 @@ void main() {
 
   testWidgets('正文越长卡片越高（瀑布流错落的来源）', (tester) async {
     Future<double> heightOf(String content) async {
-      await tester.pumpWidget(wrap(NoteCard(note: note(content: content), textScale: 1)));
+      await tester.pumpWidget(wrap(NoteCard(note: note(content: content))));
       return tester.getSize(find.byType(NoteCard)).height;
     }
 
@@ -79,9 +76,7 @@ void main() {
   });
 
   testWidgets('标题为空时不抛异常（不崩卡片）', (tester) async {
-    await tester.pumpWidget(
-      wrap(NoteCard(note: note(title: ''), textScale: 1)),
-    );
+    await tester.pumpWidget(wrap(NoteCard(note: note(title: ''))));
 
     expect(tester.takeException(), isNull);
   });
@@ -89,7 +84,7 @@ void main() {
   testWidgets('onTap 非空时被调用一次', (tester) async {
     var tapped = 0;
     await tester.pumpWidget(
-      wrap(NoteCard(note: note(), textScale: 1, onTap: () => tapped++)),
+      wrap(NoteCard(note: note(), onTap: () => tapped++)),
     );
     await tester.tap(find.byType(NoteCard));
 
@@ -97,7 +92,7 @@ void main() {
   });
 
   testWidgets('onTap 为 null 时无 InkWell、点击不崩', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
     await tester.tap(find.byType(NoteCard));
 
     expect(find.byType(InkWell), findsNothing);
@@ -105,15 +100,12 @@ void main() {
   });
 
   testWidgets('卡片高度随内容变化，不写死高度', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
     final short = tester.getSize(find.byType(NoteCard)).height;
 
     await tester.pumpWidget(
       wrap(
-        NoteCard(
-          note: note(content: List<String>.filled(30, '行').join('\n')),
-          textScale: 1,
-        ),
+        NoteCard(note: note(content: List<String>.filled(30, '行').join('\n'))),
       ),
     );
     final tall = tester.getSize(find.byType(NoteCard)).height;
@@ -122,7 +114,7 @@ void main() {
   });
 
   testWidgets('三段间距均为 AppSpacing.sm，卡片内边距为 AppSpacing.cardPad', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
 
     final titleBottom = tester.getBottomLeft(find.text('三花聚顶本是幻')).dy;
     final snippetTop = tester.getTopLeft(find.text('脚下腾云亦非真')).dy;
@@ -134,7 +126,7 @@ void main() {
   });
 
   testWidgets('卡片容器是 AppCard，不是自绘 Container', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
 
     expect(find.byType(Card), findsOneWidget);
     final card = tester.widget<Card>(find.byType(Card));
@@ -143,7 +135,7 @@ void main() {
   });
 
   testWidgets('无背景：卡片不画背景图层', (tester) async {
-    await tester.pumpWidget(wrap(NoteCard(note: note(), textScale: 1)));
+    await tester.pumpWidget(wrap(NoteCard(note: note())));
 
     expect(
       tester
@@ -155,7 +147,7 @@ void main() {
 
   testWidgets('有背景：纸纹铺满整卡且半透明，内容仍保留卡片内边距', (tester) async {
     await tester.pumpWidget(
-      wrap(NoteCard(note: note(background: NoteBackground.blush), textScale: 1)),
+      wrap(NoteCard(note: note(background: NoteBackground.blush))),
     );
 
     final images = tester

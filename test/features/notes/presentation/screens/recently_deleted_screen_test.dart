@@ -258,9 +258,7 @@ void main() {
     expect(find.byType(RecentlyDeletedScreen), findsOneWidget);
   });
 
-  testWidgets('清空回收站：顶栏 trash → 二次确认 → 调 purgeAll → 提示「已清空」', (
-    tester,
-  ) async {
+  testWidgets('清空回收站：顶栏 trash → 二次确认 → 调 purgeAll → 提示「已清空」', (tester) async {
     var calls = 0;
     await tester.pumpWidget(
       app(
@@ -288,9 +286,7 @@ void main() {
 
   /// 「清空」跨三种实体。任一步失败必须**停下并报错** —— 报「已清空」会让用户
   /// 以为回收站空了，而实际只清了一部分。
-  testWidgets('清空失败：停在失败那一步并弹 failure 文案，不报「已清空」', (
-    tester,
-  ) async {
+  testWidgets('清空失败：停在失败那一步并弹 failure 文案，不报「已清空」', (tester) async {
     var calls = 0;
     await tester.pumpWidget(
       app(
@@ -318,9 +314,7 @@ void main() {
     await tester.pumpWidget(
       app(
         stream: Stream.value(<Note>[deletedNote('n1', title: '一条笔记')]),
-        folders: Stream.value(<NoteFolder>[
-          deletedFolder('f1', name: '一个文件夹'),
-        ]),
+        folders: Stream.value(<NoteFolder>[deletedFolder('f1', name: '一个文件夹')]),
         todos: Stream.value(<Todo>[deletedTodo('d1', title: '一条待办')]),
       ),
     );

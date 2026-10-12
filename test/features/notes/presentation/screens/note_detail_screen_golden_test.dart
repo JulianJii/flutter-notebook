@@ -92,10 +92,10 @@ void main() {
     when(() => update(any())).thenAnswer((_) async => Right(_d3Note));
     final create = _MockCreateNote();
     when(() => create(any())).thenAnswer((_) async => Right(_d3Note));
-    // 笔记详情读 `settingsProvider` 的「文字大小」（TASK-047）→ 必须 override 到
-    // Repository，否则会撞上测试环境里未实现的 `sharedPreferencesProvider`。
-    // 基线锁的是**默认档**（`textScale = normal` → 系数 1.0），故此处的
-    // `AppSettings.defaults()` 就是笔记详情稿的对照值。
+    // 笔记详情经 `noteCompressImagesProvider`（插入图片时）读 `settingsProvider`
+    // → 必须 override 到 Repository，否则会撞上测试环境里未实现的
+    // `sharedPreferencesProvider`。基线锁的是**默认档**（`AppSettings.defaults()`），
+    // 即笔记详情稿的对照值（设置里的「字体」只影响 UI 文字，不进本页正文）。
     final settingsRepo = _MockSettingsRepository();
     when(() => settingsRepo.load()).thenAnswer(
       (_) async => const Right<Failure, AppSettings>(AppSettings.defaults()),

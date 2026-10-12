@@ -144,7 +144,7 @@ void main() {
     // 同上：置顶 / 收藏窄通道默认成功。
     final flags = updateFlags ?? MockUpdateNoteFlags();
 
-    // 笔记详情从 `settingsProvider` 读「文字大小」（TASK-047），而它经
+    // 笔记详情（插入图片时）从 `settingsProvider` 读「图片压缩」，而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
     // **Repository** 层 override（同 `settings_screen_test`）。
     final settingsRepo = _MockSettingsRepository();
@@ -162,7 +162,7 @@ void main() {
         createNoteUseCaseProvider.overrideWithValue(MockCreateNote()),
         deleteNoteUseCaseProvider.overrideWithValue(del),
         updateNoteBackgroundUseCaseProvider.overrideWithValue(updateBg),
-      updateNoteFlagsUseCaseProvider.overrideWithValue(flags),
+        updateNoteFlagsUseCaseProvider.overrideWithValue(flags),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
       ],
       child: MaterialApp.router(
@@ -195,7 +195,7 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标题', (tester) async {
+  testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标题', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
@@ -260,7 +260,9 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
   });
 
   testWidgets('输入正文后元信息行字数实时变化', (tester) async {
-    await tester.pumpWidget(app('n1', stubbedGetWith(''), update: MockUpdateNote()));
+    await tester.pumpWidget(
+      app('n1', stubbedGetWith(''), update: MockUpdateNote()),
+    );
     await tester.pumpAndSettle();
 
     await tester.quillEnterTextAtPosition(
@@ -291,9 +293,7 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
     await tester.pumpAndSettle();
 
     final captured = verify(() => update(captureAny())).captured;
-    final delta = NoteDelta.decode(
-      (captured.last as UpdateNoteParams).content,
-    );
+    final delta = NoteDelta.decode((captured.last as UpdateNoteParams).content);
     expect(
       delta.toList().any((op) => op.attributes?['bold'] == true),
       isTrue,
@@ -359,13 +359,12 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
     // （比 mock 一层 provider 更贴近真实链路）。
     const channel = MethodChannel('dev.fluttercommunity.plus/share');
     final calls = <MethodCall>[];
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      channel,
-      (call) async {
-        calls.add(call);
-        return '';
-      },
-    );
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+      call,
+    ) async {
+      calls.add(call);
+      return '';
+    });
     addTearDown(
       () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         channel,
@@ -387,13 +386,12 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
   testWidgets('空笔记点 share：直接返回，不发空文本（share_plus 会抛）', (tester) async {
     const channel = MethodChannel('dev.fluttercommunity.plus/share');
     final calls = <MethodCall>[];
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      channel,
-      (call) async {
-        calls.add(call);
-        return '';
-      },
-    );
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+      call,
+    ) async {
+      calls.add(call);
+      return '';
+    });
     addTearDown(
       () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
         channel,
@@ -411,9 +409,7 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('点 palette 弹出背景弹层：选第 2 张出背景图，点空白项撤回', (
-    tester,
-  ) async {
+  testWidgets('点 palette 弹出背景弹层：选第 2 张出背景图，点空白项撤回', (tester) async {
     final updateBackground = _MockUpdateNoteBackground();
     when(
       () => updateBackground(any()),
@@ -423,12 +419,11 @@ testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标
     );
     await tester.pumpAndSettle();
 
-    Image? backgroundImage() =>
-        tester
-            .widgetList<Image>(find.byType(Image))
-            .where((image) => image.image is AssetBundleImageProvider)
-            .cast<Image?>()
-            .firstOrNull;
+    Image? backgroundImage() => tester
+        .widgetList<Image>(find.byType(Image))
+        .where((image) => image.image is AssetBundleImageProvider)
+        .cast<Image?>()
+        .firstOrNull;
 
     // 默认无背景，也未开弹层
     expect(backgroundImage(), isNull);

@@ -369,7 +369,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get updateDialogUpdate => '立即更新';
 
   @override
-  String get settingsTextScale => '文字大小';
+  String get settingsFontFamily => '字体';
 
   @override
   String get settingsNoteSort => '选择排序方式';
@@ -381,16 +381,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsCompressImages => '图片压缩';
 
   @override
-  String get settingsTextScaleSmall => '小';
+  String get fontFamilySystem => '系统默认';
 
   @override
-  String get settingsTextScaleDefault => '默认';
+  String get fontFamilySerif => '宋体';
 
   @override
-  String get settingsTextScaleLarge => '大';
+  String get fontFamilySansSerif => '黑体';
 
   @override
-  String get settingsTextScaleXLarge => '超大';
+  String get fontFamilyMonospace => '等宽';
 
   @override
   String get settingsSortEditedDesc => '按编辑日期';

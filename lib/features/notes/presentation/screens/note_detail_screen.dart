@@ -88,7 +88,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   void _onContentChanged() {
     if (_hydrating) return;
     ref
-        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier)
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
         .setContent(NoteDelta.encode(_contentController.document.toDelta()));
   }
 
@@ -106,7 +108,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   /// `canPop: false` 会同时拦下手势与代码里的 `pop()`，故用 `_allowPop` 放行，
   /// 并等一帧让 `PopScope` 读到新值。
   Future<void> _leave() async {
-    await ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).flush();
+    await ref
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
+        .flush();
     if (!mounted) return;
     setState(() => _allowPop = true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -183,7 +189,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
     if (picked == null || !mounted) return;
     await ref
-        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier)
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
         .setBackground(picked == 0 ? null : NoteBackground.values[picked - 1]);
   }
 
@@ -194,7 +202,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   ///
   /// `sharePositionOrigin` 不是可选美化：iPad 上缺它系统面板没锚点、直接抛错。
   Future<void> _share() async {
-    final state = ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId)).value;
+    final state = ref
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
+        .value;
     if (state == null) return;
     final title = state.draftTitle.trim();
     final text = <String>[
@@ -226,39 +236,46 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     // controller → provider 一个方向；provider 的 `saved*` 变化不再回灌，
     // 否则 debounce 保存后会触发一次 `onChanged`，把「保存」误判为「编辑」，
     // `isDirty` 反复翻转。
-    ref.listen<AsyncValue<NoteEditorState>>(noteEditorProvider(widget.noteId, folderId: widget.folderId), (
-      prev,
-      next,
-    ) {
-      final loaded = next.value;
-      if (loaded == null) return;
-      // 自动保存失败：弹一句就清状态（否则 debounce 期间会反复弹）。
-      // Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`。
-      final failure = loaded.lastFailure;
-      if (failure != null) {
-        // post-frame：listener 是在 provider 通知里同步跑的，那一刻可能正处于
-        // build/layout 阶段，直接 `showSnackBar` 会打到一个还没布局完的 messenger。
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          AppUtils.showSnackBar(context, message: failure.message);
-        });
-        ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).clearFailure();
-      }
-      if (prev?.value != null) return;
-      _titleController.text = loaded.draftTitle;
-      _hydrateContent(loaded.draftContent);
-    });
+    ref.listen<AsyncValue<NoteEditorState>>(
+      noteEditorProvider(widget.noteId, folderId: widget.folderId),
+      (prev, next) {
+        final loaded = next.value;
+        if (loaded == null) return;
+        // 自动保存失败：弹一句就清状态（否则 debounce 期间会反复弹）。
+        // Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`。
+        final failure = loaded.lastFailure;
+        if (failure != null) {
+          // post-frame：listener 是在 provider 通知里同步跑的，那一刻可能正处于
+          // build/layout 阶段，直接 `showSnackBar` 会打到一个还没布局完的 messenger。
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            AppUtils.showSnackBar(context, message: failure.message);
+          });
+          ref
+              .read(
+                noteEditorProvider(
+                  widget.noteId,
+                  folderId: widget.folderId,
+                ).notifier,
+              )
+              .clearFailure();
+        }
+        if (prev?.value != null) return;
+        _titleController.text = loaded.draftTitle;
+        _hydrateContent(loaded.draftContent);
+      },
+    );
 
     // ⛔ 只订阅 `createdAt` —— 它是本页唯一一个**不随每次按键变**的字段
     // （`isNew` 由它派生，落库后也只变一次）。订阅整份 state 会让每敲一个字
     // 都重建含 `QuillEditor` 的整棵子树；字数行自己订阅 `wordCount`（见
     // [_NoteMetaSlot]）。
     final createdAt = ref.watch(
-      noteEditorProvider(widget.noteId, folderId: widget.folderId).select((s) => s.value?.createdAt),
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => s.value?.createdAt),
     );
-    // 设置「文字大小」：标题区 / 元信息行 / 正文区三处同步放大
-    // （`ARCHITECTURE-DESIGN.md` §4 的取值来源表）。
-    final textScale = ref.watch(noteTextScaleProvider);
     // 背景单独 select：只有真正换背景时才重建本页，不随每次按键。
     final background = ref.watch(
       noteEditorProvider(
@@ -338,20 +355,19 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           const SizedBox(height: AppSpacing.sm),
-                          _titleField(context, textScale),
+                          _titleField(context),
                           const SizedBox(height: AppSpacing.sm),
                           if (createdAt != null)
                             _NoteMetaSlot(
                               noteId: widget.noteId,
                               folderId: widget.folderId,
                               createdAt: createdAt,
-                              textScale: textScale,
                             ),
                           const SizedBox(height: AppSpacing.lg),
                           // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
                           // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
                           // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
-                          Expanded(child: _contentField(context, textScale)),
+                          Expanded(child: _contentField(context)),
                           _EditorToolbar(controller: _contentController),
                           const SizedBox(height: AppSpacing.sm),
                         ],
@@ -367,26 +383,40 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
   }
 
-  Widget _titleField(BuildContext context, double textScale) {
+  Widget _titleField(BuildContext context) {
+    // ⚠️ 标题与正文都取 `AppTextStyles.editor`（**无 UI 字体族**的那份基线）：
+    // 设置里的「字体」只管 UI 文字，笔记文字的字体由工具栏的「字体」按钮按选中
+    // 范围决定。取 `context.textStyles` 会让标题跟着 UI 字体走。
+    const editorStyles = AppTextStyles.editor;
     return TextField(
       controller: _titleController,
       focusNode: _titleFocus,
-      onChanged: ref.read(noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier).setTitle,
+      onChanged: ref
+          .read(
+            noteEditorProvider(
+              widget.noteId,
+              folderId: widget.folderId,
+            ).notifier,
+          )
+          .setTitle,
       // 笔记详情稿无输入框视觉：边框、下划线、光标样式均无稿，不自造。
-      style: context.textStyles.detailTitle
-          .scaled(textScale)
-          .copyWith(color: context.colors.textPrimary),
+      style: editorStyles.detailTitle.copyWith(
+        color: context.colors.textPrimary,
+      ),
       cursorColor: context.colors.textPrimary,
       decoration: InputDecoration.collapsed(
         hintText: AppLocalizations.of(context).noteTitleHint,
-        hintStyle: context.textStyles.detailTitle
-            .scaled(textScale)
-            .copyWith(color: context.colors.textPlaceholder),
+        hintStyle: editorStyles.detailTitle.copyWith(
+          color: context.colors.textPlaceholder,
+        ),
       ),
     );
   }
 
-  Widget _contentField(BuildContext context, double textScale) {
+  Widget _contentField(BuildContext context) {
+    // ⚠️ 正文同样取 `AppTextStyles.editor`：设置里的「字体」**不管编辑器文字**，
+    // 正文的族名由工具栏的「字体」按钮按选中范围决定（Delta 里的 `font` 属性）。
+    // 若这里改用 `context.textStyles.body`，用户选的 UI 字体就会盖到正文上。
     // 段落间距**不额外实现**：笔记详情稿的段落间距 = 2×行距，是正文内容里本来就有
     // 的 `\n\n`。手写 `ParagraphStyle` 插空行会与用户输入的换行叠加成双倍空行。
     //
@@ -395,9 +425,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     // 基准样式，而它读的是 **flutter SDK** 的 Theme —— 本项目用 `material_ui`
     // 的 Theme，两套互不相通，不显式喂就是默认字号 + 暗色模式下黑字黑底。
     return DefaultTextStyle(
-      style: context.textStyles.body
-          .scaled(textScale)
-          .copyWith(color: context.colors.textPrimary),
+      style: AppTextStyles.editor.body.copyWith(
+        color: context.colors.textPrimary,
+      ),
       child: QuillEditor.basic(
         controller: _contentController,
         config: const QuillEditorConfig(
@@ -421,9 +451,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 /// **常驻一行**，不做「聚焦才浮出」：浮出要额外订阅编辑器焦点态，而本页是单态
 /// 编辑页（见本文件头注），常驻一行 42dp 不引入任何新状态。
 ///
-/// 按钮集是**裁剪过的**：Quill 默认全量（字体 / 字号 / 对齐 / 颜色 / 代码块 /
-/// 上下标 / 缩进 / 剪贴板 / 搜索）一行滑不完，找按钮要一直横向拖。
-/// 关掉的每一项下面都写了理由 —— 等溢出菜单 / 配色的稿再评估加回。
+/// 按钮集对齐 flutter-quill 官方 `example/lib/custom_toolbar.dart`：
+/// 撤销 / 重做 / 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字体 / 字号 ｜
+/// 文字色 / 背景色 ｜ 标题样式 ｜ 行高 ｜ 复选框清单 / 有序 / 无序 / 缩进 / 行内代码 /
+/// 引用 ｜ 链接；图片按钮由本类自绘（见 [_insertImage]），钉在工具条右端。
+///
+/// ⛔ 仍然关着的几项与理由：小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
+/// 代码块（行内代码已够）、上下标 / 剪贴板 / 搜索（笔记正文无此语义）。
 class _EditorToolbar extends ConsumerWidget {
   const _EditorToolbar({required this.controller});
 
@@ -460,47 +494,75 @@ class _EditorToolbar extends ConsumerWidget {
     return QuillSimpleToolbar(
       controller: controller,
       config: QuillSimpleToolbarConfig(
-            // 单行：`multiRowsDisplay: false` 走 Quill 自带的横向滚动按钮列表
-            // （固定高 42dp，放不下时两侧出现滚动箭头）。360dp 竖屏放不下 11 个
-            // 按钮，故**必然**是「一行 + 可滑动」而不是 `Wrap` 的两行。
-            multiRowsDisplay: false,
-            // 默认底色是 `Theme.canvasColor`，与本页纸面白底不一致。
-            color: context.colors.surface,
-            showDividers: true,
-            sectionDividerColor: context.colors.divider,
-            showUndo: true,
-            showRedo: true,
-            showBoldButton: true,
-            showItalicButton: true,
-            showUnderLineButton: true,
-            showStrikeThrough: true,
-            showListNumbers: true,
-            showListBullets: true,
-            showQuote: true,
-            showLink: true,
-            showClearFormat: true,
-            // 字体 / 字号：设置「文字大小」已是页面级设置，正文里再插一套会打架。
-            showFontFamily: false,
-            showFontSize: false,
-            showSmallButton: false,
-            showLineHeightButton: false,
-            // 颜色 / 背景色：「配色 / 样式」无稿，`palette` 按钮暂占该语义。
-            showColorButton: false,
-            showBackgroundColorButton: false,
-            // H1/H2：页面顶部已有独立标题输入框，正文再给标题层级与之重复。
-            showHeaderStyle: false,
-            showAlignmentButtons: false,
-            showIndent: false,
-            showListCheck: false,
-            // 代码 / 上下标 / 剪贴板 / 搜索：笔记正文无此语义。
-            showCodeBlock: false,
-            showInlineCode: false,
-            showSubscript: false,
-            showSuperscript: false,
-            showSearchButton: false,
-            showDirection: false,
+        // 单行：`multiRowsDisplay: false` 走 Quill 自带的横向滚动按钮列表
+        // （固定高 42dp，放不下时两侧出现滚动箭头）。360dp 竖屏放不下 20 多个
+        // 按钮，故**必然**是「一行 + 可滑动」而不是 `Wrap` 的两行。
+        multiRowsDisplay: false,
+        // 默认底色是 `Theme.canvasColor`，与本页纸面白底不一致。
+        color: context.colors.surface,
+        showDividers: true,
+        sectionDividerColor: context.colors.divider,
+        // 字体：清单换成 [_fontFamilyItems]（Quill 默认清单里大半是官方示例
+        // 打包的字体，本项目没有）。
+        buttonOptions: QuillSimpleToolbarButtonOptions(
+          fontFamily: QuillToolbarFontFamilyButtonOptions(
+            items: _fontFamilyItems(context),
           ),
-        );
+        ),
+        // 字体 / 字号：**编辑器内的文字**归这两个按钮管；页面级设置「字体」
+        // 只管 UI 文字，两者互不干扰（见 `AppTextStyles.editor`）。
+        showFontFamily: true,
+        showFontSize: true,
+        showUndo: true,
+        showRedo: true,
+        showBoldButton: true,
+        showItalicButton: true,
+        showUnderLineButton: true,
+        showStrikeThrough: true,
+        showListNumbers: true,
+        showListBullets: true,
+        showListCheck: true,
+        showIndent: true,
+        showInlineCode: true,
+        showHeaderStyle: true,
+        showLineHeightButton: true,
+        showColorButton: true,
+        showBackgroundColorButton: true,
+        showQuote: true,
+        showLink: true,
+        showClearFormat: true,
+        // 小号字：与「字号」菜单里的「小」是同一件事，留一个入口就够。
+        showSmallButton: false,
+        // 对齐 / 方向：笔记正文无排版语义（左对齐是唯一形态）。
+        showAlignmentButtons: false,
+        showDirection: false,
+        // 代码块 / 上下标 / 剪贴板 / 搜索：笔记正文无此语义。
+        showCodeBlock: false,
+        showSubscript: false,
+        showSuperscript: false,
+        showSearchButton: false,
+      ),
+    );
+  }
+
+  /// 编辑器「字体」按钮的下拉清单。
+  ///
+  /// ⛔ **不沿用 Quill 的默认清单**：里面的 `Ibarra Real Nova` / `Pacifico` /
+  /// `Nunito` 等是官方示例工程打包的字体，本项目没有 —— 选中后静默回落成默认字体，
+  /// 表现为「点了没反应」。这里只列**平台能解析**的族名，与设置里的「字体」
+  /// （`AppFontFamily`）同一组取值。
+  ///
+  /// ⚠️ 「清除」项不能省：`'Clear'` 是 Quill 认的字面量（列表项的值必须逐字等于它），
+  /// 它是选中范围里去「字体」属性的唯一入口 —— 等同于设置里的「系统默认」。
+  /// 文案取 Quill 自己的本地化，与它其余菜单一致。
+  Map<String, String> _fontFamilyItems(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return <String, String>{
+      l10n.fontFamilySerif: 'serif',
+      l10n.fontFamilySansSerif: 'sans-serif',
+      l10n.fontFamilyMonospace: 'monospace',
+      FlutterQuillLocalizations.of(context)?.clear ?? 'Clear': 'Clear',
+    };
   }
 
   /// 选图 → 压缩 → 插进正文。
@@ -508,9 +570,9 @@ class _EditorToolbar extends ConsumerWidget {
   /// 插入动作本身由 `QuillController` 完成，落库走既有的 `_onContentChanged`
   /// 链路（`@riverpod` 的 NoteEditor debounce），这里不碰任何持久化代码。
   Future<void> _insertImage(BuildContext context, WidgetRef ref) async {
-    final result = await ref.read(
-      pickNoteImageUseCaseProvider,
-    )(compress: ref.read(noteCompressImagesProvider));
+    final result = await ref.read(pickNoteImageUseCaseProvider)(
+      compress: ref.read(noteCompressImagesProvider),
+    );
 
     // ⚠️ 异步间隙：选择器期间用户可能已退出本页（`context` 失效后再用会崩）。
     if (!context.mounted) return;
@@ -640,7 +702,6 @@ class _NoteMetaSlot extends ConsumerWidget {
     required this.noteId,
     required this.folderId,
     required this.createdAt,
-    required this.textScale,
   });
 
   final String noteId;
@@ -650,20 +711,16 @@ class _NoteMetaSlot extends ConsumerWidget {
 
   /// 父级已判非空（落库成功后才有），这里只透传，不重复订阅。
   final DateTime createdAt;
-  final double textScale;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wordCount = ref.watch(
-      noteEditorProvider(noteId, folderId: folderId).select(
-        (s) => s.value?.wordCount,
-      ),
+      noteEditorProvider(
+        noteId,
+        folderId: folderId,
+      ).select((s) => s.value?.wordCount),
     );
-    return NoteMetaLine(
-      createdAt: createdAt,
-      wordCount: wordCount ?? 0,
-      textScale: textScale,
-    );
+    return NoteMetaLine(createdAt: createdAt, wordCount: wordCount ?? 0);
   }
 }
 
@@ -676,7 +733,6 @@ class NoteMetaLine extends StatelessWidget {
   const NoteMetaLine({
     required this.createdAt,
     required this.wordCount,
-    required this.textScale,
     super.key,
   });
 
@@ -684,9 +740,6 @@ class NoteMetaLine extends StatelessWidget {
 
   /// 已由 `WordCounter` 算好的字数。本组件**不调** `WordCounter`（保持纯展示）。
   final int wordCount;
-
-  /// 设置「文字大小」的排版系数，由 `NoteDetailScreen` 透传。⛔ 必填无默认。
-  final double textScale;
 
   @override
   Widget build(BuildContext context) {
@@ -707,9 +760,9 @@ class NoteMetaLine extends StatelessWidget {
           ),
         ],
       ),
-      style: context.textStyles.meta
-          .scaled(textScale)
-          .copyWith(color: context.colors.textTertiary),
+      style: context.textStyles.meta.copyWith(
+        color: context.colors.textTertiary,
+      ),
     );
   }
 }
@@ -758,7 +811,9 @@ class BackgroundPickerSheet extends StatelessWidget {
               height: _tileHeight,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageH),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pageH,
+                ),
                 children: <Widget>[
                   for (var index = 0; index <= backgrounds.length; index++)
                     _tile(context, index),

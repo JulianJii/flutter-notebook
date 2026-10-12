@@ -294,12 +294,12 @@ void main() {
     final get = _MockGetNote();
     final create = _MockCreateNote();
     final update = _MockUpdateNote();
-    when(() => create(any())).thenAnswer(
-      (_) async => Right(_note(title: '草稿一', content: '')),
-    );
-    when(() => update(any())).thenAnswer(
-      (_) async => Right(_note(title: '草稿二', content: '')),
-    );
+    when(
+      () => create(any()),
+    ).thenAnswer((_) async => Right(_note(title: '草稿一', content: '')));
+    when(
+      () => update(any()),
+    ).thenAnswer((_) async => Right(_note(title: '草稿二', content: '')));
     final container = containerFor(get, create: create, update: update);
     keepAlive(container, kNewNoteId);
     await container.read(noteEditorProvider(kNewNoteId).future);
@@ -312,16 +312,20 @@ void main() {
     notifier.setTitle('草稿二');
     await notifier.flush();
 
-    final params = verify(() => update(captureAny())).captured.single
-        as UpdateNoteParams;
+    final params =
+        verify(() => update(captureAny())).captured.single as UpdateNoteParams;
     expect(
       params.noteId,
       'n1',
-      reason: "必须是 create 返回的真实 id，不能是哨兵 'new' —— "
+      reason:
+          "必须是 create 返回的真实 id，不能是哨兵 'new' —— "
           '否则 update 打在不存在的行上，草稿永远存不进去',
     );
     expect(params.title, '草稿二');
-    expect(container.read(noteEditorProvider(kNewNoteId)).value!.isDirty, isFalse);
+    expect(
+      container.read(noteEditorProvider(kNewNoteId)).value!.isDirty,
+      isFalse,
+    );
   });
 
   test('回归：分类页新建的笔记落在当前分类，后续 update 不把它搬回未分类', () async {
@@ -489,9 +493,7 @@ void main() {
     keepAlive(container, 'n1');
     await container.read(noteEditorProvider('n1').future);
 
-    await container
-        .read(noteEditorProvider('n1').notifier)
-        .setBackground(null);
+    await container.read(noteEditorProvider('n1').notifier).setBackground(null);
 
     final params =
         verify(() => updateBackground(captureAny())).captured.single

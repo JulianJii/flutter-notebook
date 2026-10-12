@@ -21,6 +21,7 @@ import 'package:mynote/features/notes/presentation/screens/note_detail_screen.da
 import 'package:mynote/features/notes/providers/notes_providers.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
+import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
@@ -122,10 +123,7 @@ void main() {
     );
   }
 
-  Future<void> pumpWith(
-    WidgetTester tester,
-    MockPickNoteImage pick,
-  ) async {
+  Future<void> pumpWith(WidgetTester tester, MockPickNoteImage pick) async {
     await tester.pumpWidget(app(pick));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(AppIcons.image));
@@ -134,9 +132,10 @@ void main() {
 
   testWidgets('点工具条图片按钮 → 正文出现图片', (tester) async {
     final pick = MockPickNoteImage();
-    when(
-      () => pick(compress: any(named: 'compress')),
-    ).thenAnswer((_) async => Right(<NoteImage>[NoteImage(bytes: _bytes, mime: 'image/jpeg')]));
+    when(() => pick(compress: any(named: 'compress'))).thenAnswer(
+      (_) async =>
+          Right(<NoteImage>[NoteImage(bytes: _bytes, mime: 'image/jpeg')]),
+    );
 
     await pumpWith(tester, pick);
 
@@ -152,19 +151,28 @@ void main() {
         AppSettings.defaults().copyWith(compressImages: false),
       ),
     );
-    when(
-      () => pick(compress: any(named: 'compress')),
-    ).thenAnswer((_) async => Right(<NoteImage>[NoteImage(bytes: _bytes, mime: 'image/jpeg')]));
+    when(() => pick(compress: any(named: 'compress'))).thenAnswer(
+      (_) async =>
+          Right(<NoteImage>[NoteImage(bytes: _bytes, mime: 'image/jpeg')]),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          settingsRepositoryProvider.overrideWithValue(settingsRepo),
-        ],
+        overrides: [settingsRepositoryProvider.overrideWithValue(settingsRepo)],
         child: app(pick),
       ),
     );
     await tester.pumpAndSettle();
+    // ⚠️ **必须先预热一次偏好**：详情页在 build 期不再读设置（「文字大小」已下线），
+    // 而 `settingsProvider` 的加载是异步的 —— 直接点按钮会在 `_load()` 落地前读到
+    // 默认值（`compressImages = true`），断言拿到的是默认值而不是设置值。
+    // 真实 App 里由 `main.dart` 在启动时读设置（主题 / 字体），不存在这个窗口。
+    ProviderScope.containerOf(
+      tester.element(find.byType(NoteDetailScreen)),
+      listen: false,
+    ).read(settingsProvider);
+    await tester.pumpAndSettle();
+
     await tester.tap(find.byIcon(AppIcons.image));
     await tester.pumpAndSettle();
 
@@ -173,9 +181,9 @@ void main() {
 
   testWidgets('挑图失败 → 提示且不插入图片', (tester) async {
     final pick = MockPickNoteImage();
-    when(
-      () => pick(compress: any(named: 'compress')),
-    ).thenAnswer((_) async => const Left<Failure, List<NoteImage>>(ImageFailure()));
+    when(() => pick(compress: any(named: 'compress'))).thenAnswer(
+      (_) async => const Left<Failure, List<NoteImage>>(ImageFailure()),
+    );
 
     await pumpWith(tester, pick);
 
@@ -185,9 +193,9 @@ void main() {
 
   testWidgets('用户取消（空列表）→ 静默返回，不插入也不提示', (tester) async {
     final pick = MockPickNoteImage();
-    when(
-      () => pick(compress: any(named: 'compress')),
-    ).thenAnswer((_) async => const Right<Failure, List<NoteImage>>(<NoteImage>[]));
+    when(() => pick(compress: any(named: 'compress'))).thenAnswer(
+      (_) async => const Right<Failure, List<NoteImage>>(<NoteImage>[]),
+    );
 
     await pumpWith(tester, pick);
 

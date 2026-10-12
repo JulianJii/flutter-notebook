@@ -20,17 +20,9 @@ import 'note_background_image.dart';
 /// 参数收整个 [Note] 而不是 `title / snippet / date`：摘要规则（空 → 占位文案）
 /// 与日期格式是**卡片的表现规则**，只有一个消费方，放组件内改一处。
 class NoteCard extends StatelessWidget {
-  const NoteCard({
-    required this.note,
-    required this.textScale,
-    super.key,
-    this.onTap,
-  });
+  const NoteCard({required this.note, super.key, this.onTap});
 
   final Note note;
-
-  /// 设置「文字大小」的排版系数，由 `NoteMasonryGrid` 透传。⛔ 必填无默认。
-  final double textScale;
 
   /// 摘要最大行数。**卡片高度就是瀑布流的错落来源**：上限卡在 2 行时短正文
   /// 与长正文的卡片几乎等高，两列排下来观感退化成等高网格。放宽到 6 行后
@@ -72,9 +64,9 @@ class NoteCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         note.title,
-                        style: textStyles.cardTitle
-                            .scaled(textScale)
-                            .copyWith(color: colors.textPrimary),
+                        style: textStyles.cardTitle.copyWith(
+                          color: colors.textPrimary,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -104,9 +96,9 @@ class NoteCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   snippet,
-                  style: textStyles.snippet
-                      .scaled(textScale)
-                      .copyWith(color: colors.textSecondary),
+                  style: textStyles.snippet.copyWith(
+                    color: colors.textSecondary,
+                  ),
                   maxLines: _kSnippetMaxLines,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -118,9 +110,7 @@ class NoteCard extends StatelessWidget {
                   DateFormat.MMMd(
                     Localizations.localeOf(context).toString(),
                   ).format(note.updatedAt),
-                  style: textStyles.meta
-                      .scaled(textScale)
-                      .copyWith(color: colors.textTertiary),
+                  style: textStyles.meta.copyWith(color: colors.textTertiary),
                 ),
               ],
             ),

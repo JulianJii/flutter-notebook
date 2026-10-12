@@ -20,10 +20,6 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.11.0 <4.0.0'
-  # Specify a fixed version to ensure consistent behavior.
-  # If you want to use a newer version, add ^ before the version number,
-  # or directly set the version you want.
-  flutter: 3.47.5
 
 # 依赖指定了你的包正常工作所需的其他包。
 # 如需自动将包依赖升级到最新版本，

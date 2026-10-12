@@ -19,7 +19,7 @@ import '../providers/settings_provider.dart';
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
-/// | 笔记样式 | 文字大小 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
+/// | 笔记样式 | 字体 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
 /// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
 /// | 其他 | 语言 | 选择器，三档（跟随系统 / 中文 / English），走 `core` 的语言 provider |
 /// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
@@ -90,15 +90,18 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('section_note_style'),
                     title: l10n.settingsGroupNoteStyle,
                     children: <Widget>[
-                      _selectTile<TextScaleLevel>(
+                      // UI 字体。⛔ **只作用于 UI 文字**：编辑器里的笔记标题 / 正文
+                      // 不吃这一项（`AppTextStyles.editor`），它们的字体由编辑器
+                      // 工具栏的「字体」按钮按选中范围决定。
+                      _selectTile<AppFontFamily>(
                         context,
-                        key: const Key('select_text_scale'),
-                        title: l10n.settingsTextScale,
-                        valueText: _textScaleLabel(l10n, settings.textScale),
-                        options: TextScaleLevel.values,
-                        current: settings.textScale,
-                        labelOf: (level) => _textScaleLabel(l10n, level),
-                        onSelected: notifier.setTextScale,
+                        key: const Key('select_font_family'),
+                        title: l10n.settingsFontFamily,
+                        valueText: _fontFamilyLabel(l10n, settings.fontFamily),
+                        options: AppFontFamily.values,
+                        current: settings.fontFamily,
+                        labelOf: (family) => _fontFamilyLabel(l10n, family),
+                        onSelected: notifier.setFontFamily,
                       ),
                       _selectTile<AppNoteSort>(
                         context,
@@ -231,7 +234,7 @@ class SettingsScreen extends ConsumerWidget {
 
   /// 右侧「当前值 + 右箭头」行：点一下**弹出选项单**，选中即写回。
   ///
-  /// 「深色模式」行原是 `AppSwitchRow`、文字大小 / 排序 / 布局三行原是
+  /// 「深色模式」行原是 `AppSwitchRow`、字体 / 排序 / 布局三行原是
   /// stepper（点一下翻转或循环到下一个值）：开关只有两态，`AppThemeMode.system`
   /// 因此永不可达；循环切换则看不见全部可选项。这里统一成选择器 ——
   /// 值由 [options] 全量列出，`current` 只决定勾。
@@ -279,17 +282,17 @@ class SettingsScreen extends ConsumerWidget {
 /// 提成文件内私有常量而不是散落 8 个字面量（⛔ 不改 `core/theme/tokens/`）。
 const double _kRowTrailingIconSize = 20;
 
-/// 文字大小 → 当前值文案。
+/// UI 字体 → 当前值文案。
 ///
-/// ⛔ **不直接上屏 `TextScaleLevel.name`**：那会显示英文 `xLarge`。
-/// 映射是设置专属文案，故放页面内而不进 `core/`（约束 7）。
-String _textScaleLabel(AppLocalizations l10n, TextScaleLevel level) =>
-    switch (level) {
-      // 设置稿上默认值显示的是「默认」而不是「标准」→ `normal` 这一档的文案是「默认」。
-      TextScaleLevel.small => l10n.settingsTextScaleSmall,
-      TextScaleLevel.normal => l10n.settingsTextScaleDefault,
-      TextScaleLevel.large => l10n.settingsTextScaleLarge,
-      TextScaleLevel.xLarge => l10n.settingsTextScaleXLarge,
+/// ⛔ **不直接上屏 `AppFontFamily.name`**：那会显示英文 `sansSerif`。
+/// 文案 key 不带 `settings` 前缀：编辑器工具栏的「字体」按钮复用同一组文案
+/// （两处说的是同一种字体，各写一份迟早会分叉）。
+String _fontFamilyLabel(AppLocalizations l10n, AppFontFamily family) =>
+    switch (family) {
+      AppFontFamily.system => l10n.fontFamilySystem,
+      AppFontFamily.serif => l10n.fontFamilySerif,
+      AppFontFamily.sansSerif => l10n.fontFamilySansSerif,
+      AppFontFamily.monospace => l10n.fontFamilyMonospace,
     };
 
 /// 排序方式 → 当前值文案。4 值穷尽 `switch`，无 `default`（新增枚举值编译失败）。

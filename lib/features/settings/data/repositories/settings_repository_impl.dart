@@ -59,7 +59,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 Map<String, Object?> _toJson(AppSettings s) {
   return <String, Object?>{
     'schemaVersion': settingsSchemaVersion,
-    'textScale': s.textScale.name,
+    'fontFamily': s.fontFamily.name,
     'noteSort': s.noteSort.name,
     'noteLayout': s.noteLayout.name,
     'themeMode': s.themeMode.name,
@@ -68,14 +68,18 @@ Map<String, Object?> _toJson(AppSettings s) {
   };
 }
 
-/// **逐字段**回落：单个字段类型错（`textScale: 123`、enum 名不存在、
+/// **逐字段**回落：单个字段类型错（`fontFamily: 123`、enum 名不存在、
 /// `themeMode: true`）只让**该字段**回默认值，其余字段正常读出。
 /// 绝不整份回落到 `defaults` —— 那会把用户其他正确的偏好一起清掉。
 /// 未知的 key 一律忽略（老版本残留 / 未来版本写入 / 人手加的）。
+///
+/// ⚠️ `textScale` 字段已下线（「文字大小」整项删除），旧数据里的残留 key 由
+/// 「未知 key 一律忽略」自然丢掉，⛔ 不需要迁移代码。
 AppSettings _fromJson(Map<String, Object?> json) {
   const d = AppSettings.defaults();
   return AppSettings(
-    textScale: _byName(TextScaleLevel.values, json['textScale']) ?? d.textScale,
+    fontFamily:
+        _byName(AppFontFamily.values, json['fontFamily']) ?? d.fontFamily,
     noteSort: _byName(AppNoteSort.values, json['noteSort']) ?? d.noteSort,
     noteLayout: _byName(NoteLayout.values, json['noteLayout']) ?? d.noteLayout,
     // ⚠️ `locale` 字段已下线（语言真源在 `core`），旧数据里残留的 `locale` key

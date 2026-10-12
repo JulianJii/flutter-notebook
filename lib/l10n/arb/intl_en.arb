@@ -489,9 +489,9 @@
   "@updateDialogUpdate": {
     "description": "Update prompt dialog: open the release page"
   },
-  "settingsTextScale": "Font size",
-  "@settingsTextScale": {
-    "description": "Settings stepper row title: font size"
+  "settingsFontFamily": "Font",
+  "@settingsFontFamily": {
+    "description": "Settings row title: UI font family (does not affect the note editor text)"
   },
   "settingsNoteSort": "Sort by",
   "@settingsNoteSort": {
@@ -505,21 +505,21 @@
   "@settingsCompressImages": {
     "description": "Settings switch row title: compress images before embedding them into note content"
   },
-  "settingsTextScaleSmall": "Small",
-  "@settingsTextScaleSmall": {
-    "description": "Font size option: small"
+  "fontFamilySystem": "System default",
+  "@fontFamilySystem": {
+    "description": "Font option: platform default font (settings row + editor toolbar)"
   },
-  "settingsTextScaleDefault": "Default",
-  "@settingsTextScaleDefault": {
-    "description": "Font size option: default"
+  "fontFamilySerif": "Serif",
+  "@fontFamilySerif": {
+    "description": "Font option: serif family (settings row + editor toolbar)"
   },
-  "settingsTextScaleLarge": "Large",
-  "@settingsTextScaleLarge": {
-    "description": "Font size option: large"
+  "fontFamilySansSerif": "Sans serif",
+  "@fontFamilySansSerif": {
+    "description": "Font option: sans-serif family (settings row + editor toolbar)"
   },
-  "settingsTextScaleXLarge": "Extra large",
-  "@settingsTextScaleXLarge": {
-    "description": "Font size option: extra large"
+  "fontFamilyMonospace": "Monospace",
+  "@fontFamilyMonospace": {
+    "description": "Font option: monospace family (settings row + editor toolbar)"
   },
   "settingsSortEditedDesc": "Last edited",
   "@settingsSortEditedDesc": {

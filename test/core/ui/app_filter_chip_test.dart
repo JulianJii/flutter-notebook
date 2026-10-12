@@ -12,9 +12,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: Center(
-              child: AppFilterChip(label: '全部', selected: true, textScale: 1),
-            ),
+            body: Center(child: AppFilterChip(label: '全部', selected: true)),
           ),
         ),
       );
@@ -38,9 +36,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: Center(
-              child: AppFilterChip(label: '全部', selected: true, textScale: 1),
-            ),
+            body: Center(child: AppFilterChip(label: '全部', selected: true)),
           ),
         ),
       );
@@ -68,9 +64,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: Center(
-              child: AppFilterChip(label: '未分类', selected: false, textScale: 1),
-            ),
+            body: Center(child: AppFilterChip(label: '未分类', selected: false)),
           ),
         ),
       );
@@ -98,9 +92,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: Center(
-              child: AppFilterChip(label: '词声笔记', selected: true, textScale: 1),
-            ),
+            body: Center(child: AppFilterChip(label: '词声笔记', selected: true)),
           ),
         ),
       );
@@ -117,9 +109,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
-            body: Center(
-              child: AppFilterChip(label: '全部', selected: true, textScale: 1),
-            ),
+            body: Center(child: AppFilterChip(label: '全部', selected: true)),
           ),
         ),
       );
@@ -138,7 +128,6 @@ void main() {
               child: AppFilterChip(
                 label: '词声笔记',
                 selected: false,
-                textScale: 1,
                 onTap: () => tapped++,
               ),
             ),

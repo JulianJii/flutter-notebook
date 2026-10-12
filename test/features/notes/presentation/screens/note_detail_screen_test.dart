@@ -195,34 +195,51 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 分享 / 调色 / 置顶 / 收藏 / 更多，无标题', (tester) async {
+  testWidgets('顶栏：back + 调色 / 更多，无标题', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 共 7 个按钮：back + 5 个 actions + 正文工具条的「插入图片」
-    expect(find.byType(AppIconButton), findsNWidgets(7));
+    // 共 3 个 AppIconButton：back + 调色 + 正文工具条的「插入图片」。
+    // 「更多」是 PopupMenuButton，不在其中。
+    expect(find.byType(AppIconButton), findsNWidgets(3));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
-    expect(find.byIcon(AppIcons.share), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
 
-    // 未置顶 / 未收藏时显示空心字形，选中态靠实心区分（见 _TopBar 注释）
-    expect(find.byIcon(AppIcons.pushPin), findsOneWidget);
-    expect(find.byIcon(AppIcons.pushPinFilled), findsNothing);
-    expect(find.byIcon(AppIcons.starOutline), findsOneWidget);
-    expect(find.byIcon(AppIcons.starFilled), findsNothing);
+    // 分享 / 置顶 / 收藏都收进了「更多」下拉，菜单未展开时页面上没有这些字形。
+    expect(find.byIcon(AppIcons.share), findsNothing);
+    expect(find.byIcon(AppIcons.pushPin), findsNothing);
+    expect(find.byIcon(AppIcons.starOutline), findsNothing);
     expect(find.byType(AppBottomNav), findsNothing, reason: '整页盖在嵌套 Push 页');
   });
 
-  testWidgets('置顶 / 收藏：点击写库并翻成实心字形', (tester) async {
+  testWidgets('更多菜单：置顶 / 收藏写库并翻成实心字形', (tester) async {
     final updateFlags = MockUpdateNoteFlags();
     await tester.pumpWidget(app('n1', stubbedGet(), updateFlags: updateFlags));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('note_toggle_pin')), findsOneWidget);
+    expect(find.byKey(const Key('note_share')), findsOneWidget);
+    // 菜单落在按钮**下方**，不盖住按钮（`PopupMenuPosition.under`）
+    expect(
+      tester.getRect(find.byKey(const Key('note_toggle_pin'))).top,
+      greaterThanOrEqualTo(
+        tester.getRect(find.byKey(const Key('note_more'))).bottom,
+      ),
+    );
+    expect(find.byKey(const Key('note_toggle_favorite')), findsOneWidget);
+    expect(find.byKey(const Key('note_delete')), findsOneWidget);
+    // 未置顶 / 未收藏时显示空心字形与「置顶 / 收藏」文案
+    expect(find.byIcon(AppIcons.pushPin), findsOneWidget);
+    expect(find.byIcon(AppIcons.starOutline), findsOneWidget);
+    expect(find.text('置顶'), findsOneWidget);
+    expect(find.text('收藏'), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('note_toggle_pin')));
     await tester.pumpAndSettle();
-    expect(find.byIcon(AppIcons.pushPinFilled), findsOneWidget);
     expect(
       updateFlags.calls.single.isPinned,
       isTrue,
@@ -230,24 +247,38 @@ void main() {
     );
     expect(updateFlags.calls.single.isFavorite, isNull);
 
+    // 已置顶 → 文案与字形都翻成「撤销」态（实心见 _TopBar 注释）
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(AppIcons.pushPinFilled), findsOneWidget);
+    expect(find.text('取消置顶'), findsOneWidget);
+
     await tester.tap(find.byKey(const Key('note_toggle_favorite')));
     await tester.pumpAndSettle();
-    expect(find.byIcon(AppIcons.starFilled), findsOneWidget);
     expect(updateFlags.calls.last.isFavorite, isTrue);
+    expect(updateFlags.calls.last.isPinned, isNull, reason: '不把置顶列抹掉');
+
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(AppIcons.starFilled), findsOneWidget);
+    expect(find.text('取消收藏'), findsOneWidget);
   });
 
-  testWidgets('新笔记未落库：置顶 / 收藏按钮禁用', (tester) async {
+  testWidgets('新笔记未落库：菜单里只有分享能点', (tester) async {
     await tester.pumpWidget(app(kNewNoteId, MockGetNote()));
     await tester.pumpAndSettle();
 
-    final pin = tester.widget<AppIconButton>(
-      find.byKey(const Key('note_toggle_pin')),
-    );
-    final star = tester.widget<AppIconButton>(
-      find.byKey(const Key('note_toggle_favorite')),
-    );
-    expect(pin.onPressed, isNull, reason: '库里还没有行，写了必然 not found');
-    expect(star.onPressed, isNull);
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+
+    bool enabled(String key) =>
+        tester.widget<PopupMenuItem<dynamic>>(find.byKey(Key(key))).enabled;
+
+    // 三个写库动作库里还没有行 → 置灰；分享的是草稿，不需要库里有这行。
+    expect(enabled('note_toggle_pin'), isFalse);
+    expect(enabled('note_toggle_favorite'), isFalse);
+    expect(enabled('note_delete'), isFalse);
+    expect(enabled('note_share'), isTrue);
   });
 
   testWidgets('页面底色为白（surface），与笔记列表的灰底不同', (tester) async {
@@ -375,7 +406,9 @@ void main() {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(AppIcons.share));
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('note_share')));
     await tester.pumpAndSettle();
 
     expect(calls, hasLength(1));
@@ -399,10 +432,13 @@ void main() {
       ),
     );
 
+    // 未落库的新笔记也能分享草稿 —— 分享不写库，不该被 isPersisted 挡住。
     await tester.pumpWidget(app(kNewNoteId, MockGetNote()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(AppIcons.share));
+    await tester.tap(find.byIcon(AppIcons.overflow));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('note_share')));
     await tester.pumpAndSettle();
 
     expect(calls, isEmpty);
@@ -510,17 +546,24 @@ void main() {
     verifyNever(() => update(any()));
   });
 
-  group('删除：overflow 图标 = 二次确认 → 删 → 回列表', () {
+  group('删除：更多菜单 = 二次确认 → 删 → 回列表', () {
     const String confirmBody = '确定要删除这篇笔记吗？删除后可在「最近删除」中恢复。';
 
-    testWidgets('点 overflow 弹确认；取消不调 UseCase', (tester) async {
+    /// 展开「更多」菜单并点「删除」—— 删除项的入口。
+    Future<void> tapDelete(WidgetTester tester) async {
+      await tester.tap(find.byIcon(AppIcons.overflow));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('note_delete')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('点「删除」弹确认；取消不调 UseCase', (tester) async {
       final del = MockDeleteNote();
       when(() => del(any())).thenAnswer((_) async => const Right(unit));
       await tester.pumpWidget(app('n1', stubbedGet(), delete: del));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(AppIcons.overflow));
-      await tester.pumpAndSettle();
+      await tapDelete(tester);
 
       expect(find.byType(AlertDialog), findsOneWidget);
       expect(find.text(confirmBody), findsOneWidget);
@@ -539,8 +582,7 @@ void main() {
       await tester.pumpWidget(app('n1', stubbedGet(), delete: del));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(AppIcons.overflow));
-      await tester.pumpAndSettle();
+      await tapDelete(tester);
       await tester.tap(find.widgetWithText(TextButton, '删除'));
       await tester.pumpAndSettle();
 
@@ -560,8 +602,7 @@ void main() {
       await tester.pumpWidget(app('n1', stubbedGet(), delete: del));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(AppIcons.overflow));
-      await tester.pumpAndSettle();
+      await tapDelete(tester);
       await tester.tap(find.widgetWithText(TextButton, '删除'));
       await tester.pumpAndSettle();
 
@@ -569,7 +610,7 @@ void main() {
       expect(find.text('boom'), findsOneWidget);
     });
 
-    testWidgets('新建笔记（未落库）：overflow 禁用，点了不弹也不删', (tester) async {
+    testWidgets('新建笔记（未落库）：更多菜单禁用，点了不弹也不删', (tester) async {
       final del = MockDeleteNote();
       when(() => del(any())).thenAnswer((_) async => const Right(unit));
       await tester.pumpWidget(app(kNewNoteId, MockGetNote(), delete: del));

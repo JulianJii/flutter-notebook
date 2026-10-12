@@ -382,13 +382,17 @@
       }
     }
   },
-  "settingsGroupNoteStyle": "笔记样式",
-  "@settingsGroupNoteStyle": {
-    "description": "Settings section header: note appearance"
+  "settingsGroupAppearance": "外观",
+  "@settingsGroupAppearance": {
+    "description": "Settings section header: app-wide appearance (UI font, theme, language)"
   },
-  "settingsGroupOther": "其他",
-  "@settingsGroupOther": {
-    "description": "Settings section header: misc"
+  "settingsGroupNotes": "笔记",
+  "@settingsGroupNotes": {
+    "description": "Settings section header: note-scoped preferences (sort, layout, image compression)"
+  },
+  "settingsGroupData": "数据",
+  "@settingsGroupData": {
+    "description": "Settings section header: local data (sync, trash)"
   },
   "settingsRecentDeleted": "最近删除",
   "@settingsRecentDeleted": {

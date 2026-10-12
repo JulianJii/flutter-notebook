@@ -83,10 +83,14 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
 
     // 置顶恒在最前，且**优先于任何排序方式** —— 置顶的语义就是「无视排序规则排最前」。
     // 放在 `_ordering` 之前，否则按标题排序时它会被字母表重新排散。
+    //
+    // ⚠️ 两条子句必须写在**同一次** `orderBy` 里：drift 的 `orderBy` 是赋值不是追加
+    // （`orderByExpr = OrderBy(...)`），分两次调时后一次会把置顶列整个覆盖掉 ——
+    // 那就是「置顶了但列表纹丝不动」的成因。
     query.orderBy(<OrderClauseGenerator<$NotesTable>>[
       (t) => OrderingTerm.desc(t.isPinned),
+      _ordering(order),
     ]);
-    query.orderBy(<OrderClauseGenerator<$NotesTable>>[_ordering(order)]);
     if (limit != null || offset > 0) {
       // drift 的 offset 只能经 limit 传入；null limit 时给一个足够大的上限。
       query.limit(limit ?? _noLimit, offset: offset);

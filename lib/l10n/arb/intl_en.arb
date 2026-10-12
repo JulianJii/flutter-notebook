@@ -385,13 +385,17 @@
       }
     }
   },
-  "settingsGroupNoteStyle": "Note style",
-  "@settingsGroupNoteStyle": {
-    "description": "Settings section header: note appearance"
+  "settingsGroupAppearance": "Appearance",
+  "@settingsGroupAppearance": {
+    "description": "Settings section header: app-wide appearance (UI font, theme, language)"
   },
-  "settingsGroupOther": "Other",
-  "@settingsGroupOther": {
-    "description": "Settings section header: misc"
+  "settingsGroupNotes": "Notes",
+  "@settingsGroupNotes": {
+    "description": "Settings section header: note-scoped preferences (sort, layout, image compression)"
+  },
+  "settingsGroupData": "Data",
+  "@settingsGroupData": {
+    "description": "Settings section header: data (sync, trash)"
   },
   "settingsRecentDeleted": "Recently deleted",
   "@settingsRecentDeleted": {

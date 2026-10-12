@@ -15,17 +15,24 @@ import '../providers/settings_provider.dart';
 
 /// 设置。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **11 行 = 4 选择器 + 7 chevron**，一一对应设置稿的区块：
+/// **11 行 = 4 选择器 + 1 开关 + 6 chevron**，按「这行改的是谁」分成 4 组：
 ///
 /// | 分组 | 行 | 行为 |
 /// |---|---|---|
-/// | 笔记样式 | 字体 / 选择排序方式 / 笔记列表布局 | 选择器，点开弹层列出全部枚举值 |
-/// | 笔记样式 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
-/// | 其他 | 语言 | 选择器，三档（跟随系统 / 中文 / English），走 `core` 的语言 provider |
-/// | 其他 | 最近删除 / 隐私政策 / 用户协议 | chevron，均**已接线**跳二级页 |
+/// | 外观 | 字体 / 语言 | 选择器，点开弹层列出全部枚举值 / 档位 |
+/// | 外观 | 主题 | chevron，跳主题页（明暗三档 + 配色方案） |
+/// | 笔记 | 排序方式 / 列表布局 | 选择器 |
+/// | 笔记 | 图片压缩 | 开关，管正文插图的处理口径 |
+/// | 数据 | 数据与同步 / 最近删除 | chevron，均**已接线**跳二级页 |
+/// | 关于 | 隐私政策 / 用户协议 / 关于 | chevron，同上 |
 ///
-/// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据；
-/// 「最近删除」并入「其他」（回收站页 = `RecentlyDeletedScreen`）。
+/// 分组口径是**影响面**：外观改整个应用怎么显示（字体 / 明暗配色 / 语言），笔记只管
+/// 笔记自己（怎么排、怎么摆、插图怎么处理），数据是库的进出（导出导入同步、回收站），
+/// 关于是一组静态文本。
+/// ⚠️ 组名「关于」与组内最后一行同名，两处共用 `settingsAbout` —— 不为同义文案
+/// 再加一个 ARB key（回收站页 = `RecentlyDeletedScreen`）。
+///
+/// 「云服务」分组已按产品要求去掉：应用是纯本地的，分组名没有事实依据。
 /// 「提醒」分组随「强提醒」一并移除：待办稿待办没有日期 / 优先级字段，开关没有作用对象。
 /// 「快捷功能」分组随其唯一一行「速记」一并移除：该行的二级页无稿，是一行点不动的死行。
 ///
@@ -82,13 +89,13 @@ class SettingsScreen extends ConsumerWidget {
             ),
             Expanded(
               child: ListView(
-                // 卡片左右边距由 [_Group] 自己加（分组标题要落在 28dp 绝对缩进上，
-                // 若在这里加 12dp 内边距，标题会变成 40dp）。
+                // 卡片左右边距由 [AppSettingsGroup] 自己加（分组标题要落在 28dp 绝对
+                // 缩进上，若在这里加 12dp 内边距，标题会变成 40dp）。
                 padding: const EdgeInsets.only(bottom: AppSpacing.bottomSafe),
                 children: <Widget>[
                   AppSettingsGroup(
-                    key: const Key('section_note_style'),
-                    title: l10n.settingsGroupNoteStyle,
+                    key: const Key('section_appearance'),
+                    title: l10n.settingsGroupAppearance,
                     children: <Widget>[
                       // UI 字体。⛔ **只作用于 UI 文字**：编辑器里的笔记标题 / 正文
                       // 不吃这一项（`AppTextStyles.editor`），它们的字体由编辑器
@@ -103,6 +110,38 @@ class SettingsScreen extends ConsumerWidget {
                         labelOf: (family) => _fontFamilyLabel(l10n, family),
                         onSelected: notifier.setFontFamily,
                       ),
+                      // 主题：明暗 × 配色两个维度都在独立的主题页里选
+                      // （三档分段控件 + 配色列表），这里只留入口。
+                      _chevronTile(
+                        context,
+                        key: const Key('chevron_theme'),
+                        title: l10n.themeTitle,
+                        dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.theme),
+                      ),
+                      // 语言：三档（跟随系统 / 中文 / English）。⚠️ 真源是 core 的
+                      // `persistentLocaleProvider`（它自己写 SharedPreferences），
+                      // ⛔ 不写进 `AppSettings` —— 两份偏好会让「跟随系统」无法表达。
+                      // 与字体 / 主题同组：三者改的都是「整个应用怎么显示」。
+                      _selectTile<String?>(
+                        context,
+                        key: const Key('select_language'),
+                        title: l10n.language,
+                        valueText: _languageLabel(l10n, languageCode),
+                        options: _languageOptions,
+                        current: languageCode,
+                        labelOf: (code) => _languageLabel(l10n, code),
+                        onSelected: (code) => ref
+                            .read(persistentLocaleProvider.notifier)
+                            .setLocale(code == null ? null : Locale(code)),
+                        dividerBefore: true,
+                      ),
+                    ],
+                  ),
+                  AppSettingsGroup(
+                    key: const Key('section_notes'),
+                    title: l10n.settingsGroupNotes,
+                    children: <Widget>[
                       _selectTile<AppNoteSort>(
                         context,
                         key: const Key('select_note_sort'),
@@ -112,7 +151,6 @@ class SettingsScreen extends ConsumerWidget {
                         current: settings.noteSort,
                         labelOf: (sort) => _noteSortLabel(l10n, sort),
                         onSelected: notifier.setNoteSort,
-                        dividerBefore: true,
                       ),
                       _selectTile<NoteLayout>(
                         context,
@@ -125,17 +163,8 @@ class SettingsScreen extends ConsumerWidget {
                         onSelected: notifier.setNoteLayout,
                         dividerBefore: true,
                       ),
-                      // 主题：明暗 × 配色两个维度都在独立的主题页里选
-                      // （三档分段控件 + 配色列表），这里只留入口。
-                      _chevronTile(
-                        context,
-                        key: const Key('chevron_theme'),
-                        title: l10n.themeTitle,
-                        dividerBefore: true,
-                        onTap: () => context.push(AppRoutes.theme),
-                      ),
-                      // 插入图片前是否压缩。放在「笔记样式」组：它改的不是页面观感，
-                      // 而是笔记正文插入图片时对原图的处理口径，消费方只有笔记详情
+                      // 插入图片前是否压缩。与排序 / 布局同组：三行都只管笔记自己
+                      // （怎么排、怎么摆、正文插图怎么处理），消费方只有笔记详情
                       // （经 `noteCompressImagesProvider` 单向订阅这个 bool）。
                       AppSwitchRow(
                         key: const Key('switch_compress_images'),
@@ -147,29 +176,13 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                   AppSettingsGroup(
-                    key: const Key('section_other'),
-                    title: l10n.settingsGroupOther,
+                    key: const Key('section_data'),
+                    title: l10n.settingsGroupData,
                     children: <Widget>[
-                      // 语言：三档（跟随系统 / 中文 / English）。⚠️ 真源是 core 的
-                      // `persistentLocaleProvider`（它自己写 SharedPreferences），
-                      // ⛔ 不写进 `AppSettings` —— 两份偏好会让「跟随系统」无法表达。
-                      _selectTile<String?>(
-                        context,
-                        key: const Key('select_language'),
-                        title: l10n.language,
-                        valueText: _languageLabel(l10n, languageCode),
-                        options: _languageOptions,
-                        current: languageCode,
-                        labelOf: (code) => _languageLabel(l10n, code),
-                        onSelected: (code) => ref
-                            .read(persistentLocaleProvider.notifier)
-                            .setLocale(code == null ? null : Locale(code)),
-                      ),
                       _chevronTile(
                         context,
                         key: const Key('chevron_data_management'),
                         title: l10n.settingsDataManagement,
-                        dividerBefore: true,
                         onTap: () => context.push(AppRoutes.dataManagement),
                       ),
                       _chevronTile(
@@ -179,11 +192,18 @@ class SettingsScreen extends ConsumerWidget {
                         dividerBefore: true,
                         onTap: () => context.push(AppRoutes.noteTrash),
                       ),
+                    ],
+                  ),
+                  // 组名与组内最后一行同名（都复用 `settingsAbout`）：不为同义文案
+                  // 再加 ARB key。要改组名就新增一个 key，别就地改这一行的文案。
+                  AppSettingsGroup(
+                    key: const Key('section_about'),
+                    title: l10n.settingsAbout,
+                    children: <Widget>[
                       _chevronTile(
                         context,
                         key: const Key('chevron_privacy_policy'),
                         title: l10n.settingsPrivacyPolicy,
-                        dividerBefore: true,
                         onTap: () => context.push(AppRoutes.privacyPolicy),
                       ),
                       _chevronTile(

@@ -7,6 +7,7 @@ import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/updates/update_providers.dart';
+import 'package:mynote/core/window/desktop_window.dart';
 import 'package:mynote/features/backup/presentation/providers/startup_sync_provider.dart';
 import 'package:mynote/features/todos/presentation/providers/reminder_reconciler.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
@@ -17,6 +18,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   // 确保 Flutter binding 已初始化
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Windows / macOS：摘掉系统标题栏（标题栏由 DesktopWindowFrame 自绘）
+  await setUpDesktopWindow();
 
   // 初始化 shared preferences
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -80,6 +84,10 @@ class MyApp extends ConsumerWidget {
           themeMode: themeMode,
           routerConfig: router,
           debugShowCheckedModeBanner: false,
+
+          // Windows / macOS 的自绘标题栏（其余平台原样透传 child）
+          builder: (BuildContext context, Widget? child) =>
+              DesktopWindowFrame(child: child ?? const SizedBox.shrink()),
 
           // 屏幕适配
           locale: locale,

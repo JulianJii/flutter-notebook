@@ -296,10 +296,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get settingsGroupNoteStyle => '笔记样式';
+  String get settingsGroupAppearance => '外观';
 
   @override
-  String get settingsGroupOther => '其他';
+  String get settingsGroupNotes => '笔记';
+
+  @override
+  String get settingsGroupData => '数据';
 
   @override
   String get settingsRecentDeleted => '最近删除';

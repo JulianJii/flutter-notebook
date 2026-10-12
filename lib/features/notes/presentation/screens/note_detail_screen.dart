@@ -338,12 +338,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                         .setFlags(isFavorite: !(flags.$2 ?? false)),
                     isPinned: flags.$1 ?? false,
                     isFavorite: flags.$2 ?? false,
-                    // 与 canDelete 同一条约定：未落库的新笔记库里没有行，
-                    // 写置顶只会拿到一句 not found —— 置灰而不是让用户点出失败。
-                    canToggleFlags: createdAt != null,
-                    // 未落库的新笔记（`/notes/new`）库里没有对应行，删除只会拿到一句
-                    // 「not found」—— 图标置灰而非弹一个必然失败的确认框。
-                    canDelete: createdAt != null,
+                    // 未落库的新笔记（`/notes/new`）库里没有对应行：置顶 / 收藏 / 删除
+                    // 三个动作都是写库操作，写了只会拿到一句 not found —— 整个「更多」
+                    // 菜单禁用，而不是让用户点出三次必然的失败。
+                    isPersisted: createdAt != null,
                     onDelete: _delete,
                   ),
                   Expanded(
@@ -605,12 +603,11 @@ class _EditorToolbar extends ConsumerWidget {
   }
 }
 
-/// 笔记详情稿的顶栏：左 `back` + 右 3 图标，无标题。
+/// 笔记详情稿的顶栏：左 `back` + 右 2 个入口，无标题。
 ///
 /// palette 接了「切换正文背景图」（循环：无背景 ↔ 3 张纸张纹理，见
 /// [noteBackgroundImages]）。「配色 / 样式」的语义尚无稿，先以背景切换落地。
-/// share 接了系统分享；overflow 接了「删除」——它是溢出菜单里唯一
-/// 有确定语义的一项（`DeleteNoteUseCase` 已就绪）。
+/// 「更多」下拉里是四个有确定语义的动作：置顶 / 收藏 / 分享 / 删除。
 class _TopBar extends ConsumerWidget {
   const _TopBar({
     required this.onBack,
@@ -619,10 +616,9 @@ class _TopBar extends ConsumerWidget {
     required this.onTogglePinned,
     required this.onToggleFavorite,
     required this.onDelete,
-    required this.canDelete,
+    required this.isPersisted,
     required this.isPinned,
     required this.isFavorite,
-    required this.canToggleFlags,
   });
 
   final VoidCallback onBack;
@@ -637,16 +633,15 @@ class _TopBar extends ConsumerWidget {
 
   final VoidCallback onDelete;
 
-  /// false → 删除图标禁用（笔记尚未落库）。
-  final bool canDelete;
+  /// 笔记是否已落库。false（`/notes/new` 尚未写进库）→ 菜单里三项写库动作
+  /// （置顶 / 收藏 / 删除）置灰：库里没有行，写了只会打一条不存在的 id。
+  /// ⛔ 分享**不**受它管 —— 分享的是草稿，不需要库里先有这行。
+  final bool isPersisted;
 
-  /// 当前置顶 / 收藏态。**只影响图标与 tooltip，不影响是否可点** ——
-  /// 新建笔记尚未落库时这两个开关就该禁用，所以可点性另由 [canToggleFlags] 管。
+  /// 当前置顶 / 收藏态。**只影响菜单里的文案与字形，不影响是否可点** ——
+  /// 可点性由 [isPersisted] 管。
   final bool isPinned;
   final bool isFavorite;
-
-  /// 笔记是否已落库。新建笔记的 id 是哨兵，写置顶会打不存在的行。
-  final bool canToggleFlags;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -659,35 +654,88 @@ class _TopBar extends ConsumerWidget {
       ),
       actions: <Widget>[
         AppIconButton(
-          icon: AppIcons.share,
-          tooltip: l10n.share,
-          onPressed: onShare,
-        ),
-        AppIconButton(
           icon: AppIcons.palette,
           tooltip: l10n.palette,
           onPressed: onPalette,
         ),
-        // ⚠️ 选中态用**实心**图标而不是给图标染色：`AppIconButton` 的 active 色
-        // 与主题里的其它「已开启」开关共用，用户分不清「置顶」与「已选文件夹」。
-        // 实心 / 空心是 M3 里表达 on/off 的通用约定，跨主题都认。
-        AppIconButton(
-          key: const Key('note_toggle_pin'),
-          icon: isPinned ? AppIcons.pushPinFilled : AppIcons.pushPin,
-          tooltip: isPinned ? l10n.noteUnpin : l10n.notePin,
-          onPressed: canToggleFlags ? onTogglePinned : null,
+        PopupMenuButton<_NoteMoreAction>(
+          key: const Key('note_more'),
+          tooltip: l10n.more,
+          icon: const AppIcon(icon: AppIcons.overflow),
+          // 菜单落在按钮**下方**（默认 `over` 是盖住按钮本身）。
+          position: PopupMenuPosition.under,
+          // 图标按钮留白的默认 8dp 既会撑大触控区，又会让菜单往上挪半格盖住按钮；
+          // 清零后菜单正好从按钮底边开始。
+          padding: EdgeInsets.zero,
+          // 与 `AppIconButton` 同一度量：图标 24dp、触控区 ≥48dp、无额外内边距
+          // （IconButton 默认 8dp padding 会把 48dp 约束撑成 64dp）。
+          style: IconButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size.square(AppIconButton.minTapSize),
+          ),
+          onSelected: (action) => switch (action) {
+            _NoteMoreAction.pin => onTogglePinned(),
+            _NoteMoreAction.favorite => onToggleFavorite(),
+            _NoteMoreAction.share => onShare(),
+            _NoteMoreAction.delete => onDelete(),
+          },
+          itemBuilder: (menuContext) => <PopupMenuEntry<_NoteMoreAction>>[
+            // ⚠️ 选中态用**实心**图标而不是给图标染色：主题里的 active 色与其它
+            // 「已开启」开关共用，用户分不清「置顶」与「已选文件夹」。实心 / 空心
+            // 是 M3 里表达 on/off 的通用约定，跨主题都认。
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_toggle_pin'),
+              value: _NoteMoreAction.pin,
+              enabled: isPersisted,
+              child: _MoreMenuRow(
+                icon: isPinned ? AppIcons.pushPinFilled : AppIcons.pushPin,
+                label: isPinned ? l10n.noteUnpin : l10n.notePin,
+              ),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_toggle_favorite'),
+              value: _NoteMoreAction.favorite,
+              enabled: isPersisted,
+              child: _MoreMenuRow(
+                icon: isFavorite ? AppIcons.starFilled : AppIcons.starOutline,
+                label: isFavorite ? l10n.noteUnfavorite : l10n.noteFavorite,
+              ),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_share'),
+              value: _NoteMoreAction.share,
+              child: _MoreMenuRow(icon: AppIcons.share, label: l10n.share),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_delete'),
+              value: _NoteMoreAction.delete,
+              enabled: isPersisted,
+              child: _MoreMenuRow(icon: AppIcons.trash, label: l10n.delete),
+            ),
+          ],
         ),
-        AppIconButton(
-          key: const Key('note_toggle_favorite'),
-          icon: isFavorite ? AppIcons.starFilled : AppIcons.starOutline,
-          tooltip: isFavorite ? l10n.noteUnfavorite : l10n.noteFavorite,
-          onPressed: canToggleFlags ? onToggleFavorite : null,
-        ),
-        AppIconButton(
-          icon: AppIcons.overflow,
-          tooltip: canDelete ? l10n.deleteNote : l10n.more,
-          onPressed: canDelete ? onDelete : null,
-        ),
+      ],
+    );
+  }
+}
+
+/// 「更多」菜单的四个动作。用枚举而不是四个回调，`onSelected` 才能只 switch 一次。
+enum _NoteMoreAction { pin, favorite, share, delete }
+
+/// 「更多」菜单的一行：图标 + 文案。三项共用，保证字形与间距一致。
+class _MoreMenuRow extends StatelessWidget {
+  const _MoreMenuRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        AppIcon(icon: icon),
+        const SizedBox(width: AppSpacing.chipGap),
+        Text(label),
       ],
     );
   }

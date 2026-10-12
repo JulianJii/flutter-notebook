@@ -124,6 +124,8 @@ dependencies:
   timezone: ^0.11.1
   #取系统时区：`tz.local` 自己读不到，必须由它给
   flutter_timezone: ^5.1.1
+  #桌面窗口：Windows / macOS 去掉系统标题栏（改自绘）
+  window_manager: ^0.5.2
 
 dev_dependencies:
   #单元测试 / Widget 测试

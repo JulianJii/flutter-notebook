@@ -21,11 +21,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
 
-/// 设置稿的 2 个分组标题（「云服务」已按产品要求移除，「快捷功能」随其唯一一行
-/// 「速记」移除，「最近删除」并入「其他」，「提醒」随「强提醒」一并移除）。
-const List<String> _groupTitles = <String>['笔记样式', '其他'];
+/// 设置页的 4 个分组标题，按「这行改的是谁」分组：外观 / 笔记 / 数据 / 关于。
+///
+/// 「云服务」已按产品要求移除、「快捷功能」随其唯一一行「速记」移除、「提醒」随
+/// 「强提醒」一并移除；旧的「笔记样式 / 其他」两组已按影响面拆成这 4 组。
+const List<String> _groupTitles = <String>['外观', '笔记', '数据', '关于'];
 
-const List<String> _groupKeys = <String>['section_note_style', 'section_other'];
+const List<String> _groupKeys = <String>[
+  'section_appearance',
+  'section_notes',
+  'section_data',
+  'section_about',
+];
 
 void main() {
   setUpAll(() => registerFallbackValue(const AppSettings.defaults()));
@@ -58,7 +65,7 @@ void main() {
   });
 
   Future<void> pumpP5(WidgetTester tester) async {
-    // 默认测试视口是 800×600，而设置的 2 个分组加起来超过 600dp 高 —— 最后一个分组会
+    // 默认测试视口是 800×600，而设置的 4 个分组加起来超过 600dp 高 —— 最后一个分组会
     // 落在 ListView 的 cacheExtent 之外**根本不被构建**，几何与计数断言会误报。
     // 这里给一个能容下整页的视口（比例 1.0，与 golden 基线同一约定）。
     tester.view.physicalSize = const Size(800, 1000);
@@ -98,7 +105,7 @@ void main() {
   }
 
   group('设置稿结构', () {
-    testWidgets('渲染出 2 个分组，顺序为 笔记样式 → 其他', (tester) async {
+    testWidgets('渲染出 4 个分组，顺序为 外观 → 笔记 → 数据 → 关于', (tester) async {
       await pumpP5(tester);
 
       for (final title in _groupTitles) {
@@ -116,6 +123,34 @@ void main() {
       for (final key in _groupKeys) {
         final top = tester.getTopLeft(find.byKey(Key(key))).dy;
         expect(top, greaterThan(previousTop), reason: '$key 顺序不对');
+        previousTop = top;
+      }
+    });
+
+    testWidgets('11 行按 外观 / 笔记 / 数据 / 关于 的顺序落位', (tester) async {
+      await pumpP5(tester);
+
+      // 行序就是这次重构的产物，逐行断言纵向位置递增（顺序回归即失败）：
+      // 外观（字体 / 主题 / 语言）→ 笔记（排序 / 布局 / 压缩图片）→ 数据（数据与同步 /
+      // 最近删除）→ 关于（隐私政策 / 用户协议 / 关于）。
+      const List<String> rowsInOrder = <String>[
+        'select_font_family',
+        'chevron_theme',
+        'select_language',
+        'select_note_sort',
+        'select_note_layout',
+        'switch_compress_images',
+        'chevron_data_management',
+        'chevron_recent_deleted',
+        'chevron_privacy_policy',
+        'chevron_user_agreement',
+        'chevron_about',
+      ];
+
+      var previousTop = -1.0;
+      for (final key in rowsInOrder) {
+        final top = tester.getTopLeft(find.byKey(Key(key))).dy;
+        expect(top, greaterThan(previousTop), reason: '$key 的位置不对');
         previousTop = top;
       }
     });
@@ -165,19 +200,19 @@ void main() {
       );
     });
 
-    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 9 条）', (tester) async {
+    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 7 条）', (tester) async {
       await pumpP5(tester);
 
-      // 笔记样式 5 行（字体 / 排序 / 布局 / 主题 / 压缩图片）→ 4 条，
-      // 其他 6 行（语言 + 数据与同步 + 最近删除 + 隐私政策 + 用户协议 + 关于）
-      // → 5 条。
-      expect(find.byType(AppDivider), findsNWidgets(9));
+      // 外观 3 行（字体 / 主题 / 语言）→ 2 条，笔记 3 行（排序 / 布局 / 压缩图片）
+      // → 2 条，数据 2 行（数据与同步 / 最近删除）→ 1 条，关于 3 行（隐私政策 /
+      // 用户协议 / 关于）→ 2 条。
+      expect(find.byType(AppDivider), findsNWidgets(7));
     });
 
-    testWidgets('2 张分组卡，11 行', (tester) async {
+    testWidgets('4 张分组卡，11 行', (tester) async {
       await pumpP5(tester);
 
-      expect(find.byType(AppCard), findsNWidgets(2));
+      expect(find.byType(AppCard), findsNWidgets(4));
       expect(find.byType(AppListTile), findsNWidgets(11));
       // 「图片压缩」是唯一一个开关行：它只有两种取值，不像明暗有三档。
       expect(find.byType(Switch), findsOneWidget);

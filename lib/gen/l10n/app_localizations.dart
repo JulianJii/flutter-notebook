@@ -626,17 +626,23 @@ abstract class AppLocalizations {
   /// **'{count}字'**
   String noteMetaWordCount(int count);
 
-  /// Settings section header: note appearance
+  /// Settings section header: app-wide appearance (UI font, theme, language)
   ///
   /// In zh, this message translates to:
-  /// **'笔记样式'**
-  String get settingsGroupNoteStyle;
+  /// **'外观'**
+  String get settingsGroupAppearance;
 
-  /// Settings section header: misc
+  /// Settings section header: note-scoped preferences (sort, layout, image compression)
   ///
   /// In zh, this message translates to:
-  /// **'其他'**
-  String get settingsGroupOther;
+  /// **'笔记'**
+  String get settingsGroupNotes;
+
+  /// Settings section header: local data (sync, trash)
+  ///
+  /// In zh, this message translates to:
+  /// **'数据'**
+  String get settingsGroupData;
 
   /// Settings chevron row leading to the trash screen, and its page title
   ///

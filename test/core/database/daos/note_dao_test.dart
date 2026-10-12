@@ -67,6 +67,19 @@ void main() {
     );
   });
 
+  test('置顶恒排最前，且不被排序方式重新排散', () async {
+    // n3 的 updatedAt 最小，不置顶时排在最后。
+    await dao.updateFlagsById('n3', isPinned: true);
+
+    expect((await dao.watch().first).map((r) => r.id), ['n3', 'n1', 'n2']);
+    // title ASC 下 n3（'未分类笔记二'）本该排在 n1（'带文件夹的笔记'）之后。
+    expect(
+      (await dao.watch(order: NoteDaoOrder.titleAsc).first).map((r) => r.id),
+      ['n3', 'n1', 'n2'],
+      reason: '置顶优先于排序方式；两条排序子句必须在同一次 orderBy 里',
+    );
+  });
+
   test('limit + offset 生效', () async {
     final rows = await dao.watch(limit: 2).first;
     expect(rows.map((r) => r.id), ['n1', 'n2']);

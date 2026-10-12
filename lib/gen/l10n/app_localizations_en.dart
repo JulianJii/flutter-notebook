@@ -303,10 +303,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsGroupNoteStyle => 'Note style';
+  String get settingsGroupAppearance => 'Appearance';
 
   @override
-  String get settingsGroupOther => 'Other';
+  String get settingsGroupNotes => 'Notes';
+
+  @override
+  String get settingsGroupData => 'Data';
 
   @override
   String get settingsRecentDeleted => 'Recently deleted';

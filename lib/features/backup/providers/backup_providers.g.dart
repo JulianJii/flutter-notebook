@@ -114,11 +114,19 @@ String _$backupLocalDataSourceHash() =>
     r'f9bc85dc3a52bfe63827231b4dd7baf6a7debbb0';
 
 /// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+///
+/// ⚠️ **必须 keepAlive**：唯一的使用者 `StartupSync` 自己就是 keepAlive，autoDispose
+/// 会触发 `only_use_keep_alive_inside_keep_alive`。多留的也只是一层薄封装 —— 它持有的
+/// `AppDatabase` 本来就常驻。
 
 @ProviderFor(tombstoneSweeper)
 final tombstoneSweeperProvider = TombstoneSweeperProvider._();
 
 /// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+///
+/// ⚠️ **必须 keepAlive**：唯一的使用者 `StartupSync` 自己就是 keepAlive，autoDispose
+/// 会触发 `only_use_keep_alive_inside_keep_alive`。多留的也只是一层薄封装 —— 它持有的
+/// `AppDatabase` 本来就常驻。
 
 final class TombstoneSweeperProvider
     extends
@@ -129,13 +137,17 @@ final class TombstoneSweeperProvider
         >
     with $Provider<TombstoneSweeper> {
   /// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
+  ///
+  /// ⚠️ **必须 keepAlive**：唯一的使用者 `StartupSync` 自己就是 keepAlive，autoDispose
+  /// 会触发 `only_use_keep_alive_inside_keep_alive`。多留的也只是一层薄封装 —— 它持有的
+  /// `AppDatabase` 本来就常驻。
   TombstoneSweeperProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'tombstoneSweeperProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -162,7 +174,7 @@ final class TombstoneSweeperProvider
   }
 }
 
-String _$tombstoneSweeperHash() => r'0fb332337bf687075aeab00b9a4cc95111cc159f';
+String _$tombstoneSweeperHash() => r'e5ae10c09462ed63b8bdd7b3342e1d003c4c4e45';
 
 @ProviderFor(webDavDataSource)
 final webDavDataSourceProvider = WebDavDataSourceProvider._();

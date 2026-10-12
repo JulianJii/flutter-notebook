@@ -49,7 +49,11 @@ BackupLocalDataSource backupLocalDataSource(Ref ref) {
 }
 
 /// 墓碑保留期清扫的装配（冷启动调一次，见 `StartupSync`）。
-@riverpod
+///
+/// ⚠️ **必须 keepAlive**：唯一的使用者 `StartupSync` 自己就是 keepAlive，autoDispose
+/// 会触发 `only_use_keep_alive_inside_keep_alive`。多留的也只是一层薄封装 —— 它持有的
+/// `AppDatabase` 本来就常驻。
+@Riverpod(keepAlive: true)
 TombstoneSweeper tombstoneSweeper(Ref ref) {
   return TombstoneSweeper(ref.watch(appDatabaseProvider));
 }

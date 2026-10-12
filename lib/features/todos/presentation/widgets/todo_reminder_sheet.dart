@@ -18,7 +18,7 @@ typedef SetReminderResult = ({DateTime? at, bool clear});
 
 /// 点待办卡片弹出的小窗：只读标题 + 提醒时间 + 完成。
 ///
-/// ⛔ 不抽 `AppBottomSheet`（§8「不建」清单）：Material 默认形态 + 现有的
+/// ⛔ 不抽 `AppBottomSheet`：Material 默认形态 + 现有的
 /// `AppListTile` / `AppIconButton` 已经够，且字阶与间距跟页面内其他行同源
 /// （弹层视觉无稿，沿用 Material 默认）。
 ///

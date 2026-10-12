@@ -20,7 +20,7 @@ class NoteImage {
   /// Quill image embed 的 payload：`data:image/jpeg;base64,<b64>`。
   ///
   /// 带 `data:` 前缀而不是裸 base64 —— 自带头信息，渲染侧不必猜图片格式，
-  /// 将来导出 Markdown / HTML 也能直接当 URL 用（`FEATURE-DEPENDENCIES.md`）。
+  /// 将来导出 Markdown / HTML 也能直接当 URL 用。
   ///
   /// ⚠️ 每次 getter 都会重新编码一遍（O(n)）。只在**插入那一刻**调一次，
   /// 之后进 `Document` 的就是这个字符串；别放在 widget 的 build 里。

@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/todos/domain/entities/todo.dart';
 
-/// 待办的领域抽象。实现在 data 层（`TASK-022`）。
+/// 待办的领域抽象。实现在 data 层。
 abstract class TodoRepository {
   /// 无筛选、无搜索、无分页（待办稿就是一张平铺列表）。**不含回收站里的**。
   ///

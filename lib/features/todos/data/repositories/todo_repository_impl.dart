@@ -10,7 +10,7 @@ import 'package:uuid/uuid.dart';
 /// 待办 Repository 的唯一实现。与 [NoteRepositoryImpl] 同构。
 ///
 /// ⛔ **不提供 `toggle()`**：勾选是 `isDone` 这一个字段的变更，单独开一个方法名
-/// 只会让调用方多一次心智映射（`REPOSITORY-MAP.md` §1.3）。上层传**目标值**，
+/// 只会让调用方多一次心智映射。上层传**目标值**，
 /// 不传「翻转」—— 重试时不会二次翻转。
 class TodoRepositoryImpl implements TodoRepository {
   TodoRepositoryImpl(this._localDataSource, {Uuid uuid = const Uuid()})
@@ -88,7 +88,7 @@ Future<Either<Failure, T>> _guard<T>(Future<T> Function() body) async {
 }
 
 /// 给 [todo] 补上 id。⛔ 不用 `copyWith`：`Todo.copyWith` 刻意不带 `id`
-/// （id 是实体身份，`TASK-014` 的设计），改实体不在本 Task 的 Scope。
+/// （id 是实体的身份）。
 Todo _withId(Todo todo, String id) {
   return Todo(
     id: id,

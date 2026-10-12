@@ -20,11 +20,11 @@ const String kNewNoteId = 'new';
 
 const Object _unset = Object();
 
-/// 笔记详情的草稿状态：一次读 + 局部更新，**不需要 stream**（`ARCHITECTURE-DESIGN.md`
-/// §6.2 笔记详情）。用 `AsyncNotifier` 让 loading / error 零成本。
+/// 笔记详情的草稿状态：一次读 + 局部更新，**不需要 stream**。
+/// 用 `AsyncNotifier` 让 loading / error 零成本。
 ///
 /// ⛔ **零状态枚举**：loading / error 由 `AsyncValue` 承载，`isDirty` /
-/// `wordCount` / `isNew` 全是派生 getter（§6.3「能派生的一律不存」）。
+/// `wordCount` / `isNew` 全是派生 getter（能派生的一律不存）。
 class NoteEditorState {
   const NoteEditorState({
     this.folderId,
@@ -151,7 +151,7 @@ class NoteEditorState {
 
 /// 笔记编辑器（`/notes/:id` 与 `/notes/new` 共用）。
 ///
-/// **自动保存不是过度设计**（`ARCHITECTURE-DESIGN.md` §4 笔记详情）：笔记详情稿没有保存按钮、
+/// **自动保存不是过度设计**：笔记详情稿没有保存按钮、
 /// 没有未保存提示，「不保存就是数据丢失」。故停止输入 500ms 后自动落库。
 @riverpod
 class NoteEditor extends _$NoteEditor {
@@ -326,7 +326,7 @@ class NoteEditor extends _$NoteEditor {
     _scheduleSave();
   }
 
-  /// debounce 500ms —— `ARCHITECTURE-DESIGN.md` §4 笔记详情 / §8.6 明确的值。
+  /// debounce 500ms。
   /// 不用 debounce 包：加一个依赖不值 3 行 `Timer`。
   void _scheduleSave() {
     _debounce?.cancel();
@@ -365,7 +365,7 @@ class NoteEditor extends _$NoteEditor {
           );
 
     // 标题与正文都为空时不做特殊处理：交给 UseCase 的 `InputFailure`，
-    // UI 不重复校验（`ARCHITECTURE-DESIGN.md` §4 笔记列表链路）。
+    // UI 不重复校验。
     state = AsyncData(
       result.fold(
         // 失败：草稿保留、`saved*` 不动 → `isDirty` 仍为 true，可再次触发保存。

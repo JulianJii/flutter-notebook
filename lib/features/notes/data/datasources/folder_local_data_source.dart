@@ -11,17 +11,17 @@ import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 
 /// UNIQUE 冲突在 [CacheException.message] 里的**前缀**。
 ///
-/// 产生方是本文件的 [SqlError] 判定，消费方是 `FolderRepositoryImpl`
-/// （`TASK-022` §3 方案 A）。**共用同一个常量** —— 判重不靠
+/// 产生方是本文件的 [SqlError] 判定，消费方是 `FolderRepositoryImpl`。
+/// **共用同一个常量** —— 判重不靠
 /// `message.contains('UNIQUE')`（前缀与 SQLite 错误文案耦合，drift 换版本就失效），
 /// Repository 也不 import drift / sqlite3（SQL 细节不漏进 Repository）。
 const String kUniqueConstraintPrefix = 'UNIQUE: ';
 
 /// 文件夹的本地数据源。[FolderLocalDataSourceImpl.delete] 与 `.restore` 是**全 App
-/// 唯一**需要显式 `db.transaction()` 的数据方法（`REPOSITORY-MAP.md` §2.2）——
+/// 唯一**需要显式 `db.transaction()` 的数据方法——
 /// 两者都是「读当前 `name` → 据此算出让出版/原名 → 写回」，拆开就有竞态。
 abstract class FolderLocalDataSource {
-  /// 订阅文件夹 + 笔记数。结果里**不含**「全部」「未分类」两行（§5.3）。
+  /// 订阅文件夹 + 笔记数。结果里**不含**「全部」「未分类」两行。
   ///
   /// 错误传播：drift 的 watch 不在流里抛同步异常；读库失败以
   /// `Stream.error(CacheException)` 出现，由 Repository 映射为 `CacheFailure`，
@@ -246,7 +246,7 @@ class FolderLocalDataSourceImpl implements FolderLocalDataSource {
   }
 }
 
-/// drift 行 → 领域实体的**直连**（⛔ 不建 Model 层，`REPOSITORY-MAP.md` §0）。
+/// drift 行 → 领域实体的**直连**（⛔ 不建 Model 层）。
 /// 「文件夹 + 计数」的组装也在这里：DAO 给的是行 + 标量，domain 要的是一个视图对象。
 NoteFolder _toEntity(NoteFolderRow row) {
   return NoteFolder(

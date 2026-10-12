@@ -14,7 +14,7 @@ import 'package:mynote/features/todos/domain/entities/todo_recurrence.dart';
 ///
 /// ## `deletedAt`：曾经明确不加，现在加
 ///
-/// §5.4 末行原写「`Todo` 同理不加（硬删除）」，该裁决已翻转 —— 删除必须能
+/// 曾经写过「`Todo` 同理不加（硬删除）」，该裁决已翻转 —— 删除必须能
 /// **跨设备传播**，硬删除不留痕，A 机删掉的待办会在 B 机下次同步时原样回来。
 /// 软删除与 `notes` 同形，是当时那轮「全支持删除传播」的唯一解。
 class Todo extends Equatable {

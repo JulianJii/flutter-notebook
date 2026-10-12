@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 
 /// 设置 / 文件夹 / 待办的通用行。待办 / 文件夹管理 / 设置三页共用一个组件。
 ///
-/// 6 种形态由 5 个可选参数的**组合**表达（`ARCHITECTURE-DESIGN.md` §7.6：
-/// 布尔开关是「设计失败的味道」）：
+/// 6 种形态由 5 个可选参数的**组合**表达（布尔开关是「设计失败的味道」，
+/// 故不为每种形态加一个 bool）：
 ///
 /// | 形态 | 参数组合 | 稿 |
 /// |---|---|---|
@@ -24,7 +24,7 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// ⛔ **不管 `leading` 宽度**：文件夹管理稿的 32dp 对齐槽位（选中项显示 20dp 琥珀勾、
 /// 未选中留空，名称左边界因此互不对齐 —— 稿如此）由 `FolderRow`
-/// 负责，见 `TASK-049`。
+/// 负责，由 `FolderRow` 自己处理。
 ///
 /// ⛔ **不含业务语义**：本组件不认识「笔记 / 待办 / 文件夹」，`title` /
 /// `subtitle` 是中性文案参数。
@@ -44,7 +44,7 @@ class AppListTile extends StatelessWidget {
     this.titleWeight,
   });
 
-  /// 主文案，由调用方传 l10n 结果。§2.2 `text.rowTitle`（16sp / w400）。
+  /// 主文案，由调用方传 l10n 结果。16sp / w400。
   final String title;
 
   /// 副文案（设置稿「强提醒」）。非 null 时渲染第二行，字阶 `text.subtitle`。

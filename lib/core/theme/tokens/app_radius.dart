@@ -1,4 +1,4 @@
-/// 圆角单一来源。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.4。
+/// 圆角单一来源。
 ///
 /// 圆角**不随主题变**，因此是 `static const` 而非 `ThemeExtension`。
 abstract final class AppRadius {

@@ -3,8 +3,7 @@ import 'package:drift/drift.dart';
 /// 文件夹表。实体见 `features/notes/domain/entities/note_folder.dart`。
 ///
 /// MVP 单层：无 `parent_id`。「全部」与「未分类」不是表里的行
-/// （`ARCHITECTURE-DESIGN.md` §5.3）——「未分类」是 `notes.folder_id IS NULL`
-/// 的系统视图。
+/// ——「未分类」是 `notes.folder_id IS NULL` 的系统视图。
 ///
 /// ## 删除语义
 ///

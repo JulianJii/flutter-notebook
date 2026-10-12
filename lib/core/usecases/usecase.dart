@@ -1,6 +1,3 @@
-// 基础用例接口
-// 定义应用中所有用例的契约
-
 import 'package:fpdart/fpdart.dart';
 import 'package:equatable/equatable.dart';
 

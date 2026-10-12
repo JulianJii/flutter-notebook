@@ -8,8 +8,8 @@ part 'folder_dao.g.dart';
 
 /// 文件夹的 SQL 与 watch 查询。
 ///
-/// ⛔ 不得 import `package:init/features/**`（`REPOSITORY-MAP.md` §5.3 的 R1）。
-/// 返回行对象与标量；`FolderWithCount` 的组装在 datasource（`TASK-021`）。
+/// ⛔ 不得 import `package:init/features/**` —— core 不准依赖 features。
+/// 返回行对象与标量；`FolderWithCount` 的组装在 datasource 层做。
 /// ⚠️ **不 import `note_dao.dart`** —— 两个 DAO 之间不耦合，文件夹管理的改动不能影响笔记列表。
 @DriftAccessor(tables: [NoteFolders, Notes])
 class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
@@ -21,7 +21,7 @@ class FolderDao extends DatabaseAccessor<AppDatabase> with _$FolderDaoMixin {
   /// 用户新建的文件夹在列表里看不到，极难排查。故 [TypedResult.read] 的
   /// `?? 0` 兜底不可省。
   ///
-  /// ⚠️ 结果里**不含**「全部」与「未分类」两行（§5.3：不是表里的行）；
+  /// ⚠️ 结果里**不含**「全部」与「未分类」两行 —— 它们不是表里的行，
   /// 「未分类」是筛选哨兵（`kFolderFilterUncategorized`），不是系统行。
   ///
   /// ⚠️ 分类 tab 的顺序真相源就在下面的 `ORDER BY`：全部恒首位、未分类恒最后，

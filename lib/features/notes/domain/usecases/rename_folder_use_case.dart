@@ -7,7 +7,7 @@ import 'package:mynote/features/notes/domain/usecases/rename_folder_params.dart'
 /// 重命名文件夹。业务规则：`folderId` 非空、名称 trim 后非空且 ≤ 40。
 ///
 /// ⛔ **不建 `UpdateFolderUseCase`**：单层文件夹只有 `name` 一个可变字段，
-/// 「编辑」与「重命名」是同一个动作（`USECASE-MAP.md` §1.7）。
+/// 「编辑」与「重命名」是同一个动作。
 /// 重名的判定同样在 schema 层（UNIQUE 约束），不在这里预查。
 class RenameFolderUseCase {
   const RenameFolderUseCase(this._repository);

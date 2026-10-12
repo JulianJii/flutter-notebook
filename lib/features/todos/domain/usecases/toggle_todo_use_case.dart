@@ -10,9 +10,9 @@ import 'package:mynote/features/todos/domain/usecases/toggle_todo_params.dart';
 /// ⚠️ 为什么不是翻转：待办的勾选是**乐观更新**的 —— UI 先改本地状态再落库，
 /// 失败要回滚（再写一次旧值）。翻转语义下「重试」会二次翻转，最终状态是反的。
 ///
-/// ⛔ **回滚不在这一层**：回滚是 UI 的时间概念（`ARCHITECTURE-DESIGN.md` §6.2），
+/// ⛔ **回滚不在这一层**：回滚是 UI 的时间概念，
 /// domain 只表达「落库意图」。
-/// ⛔ 不建 `TodoRepository.toggle()`（`REPOSITORY-MAP.md` §1.3）—— 为一个字段
+/// ⛔ 不建 `TodoRepository.toggle()` —— 为一个字段
 /// 扩接口会让 `update` 与 `toggle` 两个入口双写不一致。
 class ToggleTodoUseCase {
   const ToggleTodoUseCase(this._repository);

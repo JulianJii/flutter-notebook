@@ -9,7 +9,7 @@ import 'note_card.dart';
 /// 笔记列表稿的笔记列表容器：2 列瀑布流。
 ///
 /// 接收**已就绪的** `List<Note>`，自己不 `ref.watch` 任何 provider ——
-/// 数据订阅归 `NoteListScreen`（`ARCHITECTURE-DESIGN.md` §2.1 约束 6）。
+/// 数据订阅归 `NoteListScreen`。
 class NoteMasonryGrid extends StatelessWidget {
   const NoteMasonryGrid({required this.notes, super.key, this.onTapNote});
 
@@ -46,8 +46,7 @@ class NoteMasonryGrid extends StatelessWidget {
   static const int _columns = 2;
 
   /// 底部留白必须补 `kBottomNavContentHeight` ——笔记列表稿里卡片被底部导航与 FAB
-  /// 直接裁切，那是**设计稿缺陷**（`UI-IMPLEMENTATION-SPEC.md` §2.3
-  /// `space.bottomSafe`「需补」）。同一个常量也用于笔记列表/待办的 FAB 定位。
+  /// 直接裁切，那是**设计稿缺陷**。同一个常量也用于笔记列表/待办的 FAB 定位。
   EdgeInsets _padding(BuildContext context) {
     return EdgeInsets.fromLTRB(
       AppSpacing.pageH,

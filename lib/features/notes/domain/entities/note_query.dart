@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 const Object _unset = Object();
 
-/// 笔记列表的文件夹筛选三态（`ARCHITECTURE-DESIGN.md` §5.3）。
+/// 笔记列表的文件夹筛选三态。
 ///
 /// `sealed` 而非「`String? folderId` + 布尔开关」：3 个子类型无分支、无布尔
 /// 组合，三态**穷尽且互斥** —— 构造不出「既筛某文件夹又只要未分类」这种
@@ -40,8 +40,8 @@ final class SingleFolder extends NoteFolderFilter {
   List<Object?> get props => ['single', folderId];
 }
 
-/// 笔记排序。`ARCHITECTURE-DESIGN.md` §5.2 的 `sort_index` 留待有稿时再加
-/// 手动拖拽，本期只有这 4 种时间/标题序。
+/// 笔记排序。手动拖拽的 `sort_index` 留待有稿时再加，
+/// 本期只有这 4 种时间/标题序。
 enum NoteSort { editedDesc, editedAsc, createdDesc, titleAsc }
 
 /// 笔记列表的一次查询。`StreamProvider.family` 直接消费它，故 `==` /
@@ -69,11 +69,11 @@ class NoteQuery extends Equatable {
 
   /// 搜索词。数据层备好一行 `LIKE`（参数化，非 FTS5）。
   ///
-  /// ⚠️ 空串归一化在 datasource（`TASK-021`）：`''` 会生成 `LIKE '%%'`
+  /// ⚠️ 空串归一化在 datasource：`''` 会生成 `LIKE '%%'`
   /// 匹配全部，实体不替上层做判断。
   final String? searchTerm;
 
-  /// 单页条数。§5.7：字段先在，不做无限滚动控制器。
+  /// 单页条数。字段先在，不做无限滚动控制器。
   final int? limit;
 
   final int offset;

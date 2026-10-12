@@ -11,17 +11,17 @@ import 'package:mynote/features/notes/domain/entities/note_query.dart';
 /// 笔记的本地数据源。**SQL 的唯一调用方是 [NoteDao]**，本类只做
 /// 「`NoteQuery` → DAO 参数」的翻译与「drift 行 → 实体」的转换。
 ///
-/// 职责边界（`REPOSITORY-MAP.md` §2.1）：
+/// 职责边界：
 /// ✅ 调 DAO、转换行、`SqliteException → CacheException`、翻译 `NoteQuery`
 /// ❌ Exception → Failure（Repository 的活）· 输入校验（UseCase 的活）
 /// ❌ uuid 生成（Repository 的活）· 二次排序（SQL 已排完）
 abstract class NoteLocalDataSource {
   /// 订阅笔记列表。查询非法（`limit < 0`）时**原样透传**给 DAO，
-  /// 由 UseCase 判并返回空流（`USECASE-MAP.md` §1.1）。
+  /// 由 UseCase 判并返回空流。
   ///
   /// 错误传播：drift 的 watch 不会在流里抛同步异常；真正的读库失败以
-  /// `Stream.error(CacheException)` 出现，Repository 与 UI 各司其职
-  /// （`ARCHITECTURE-DESIGN.md` §6.4：UI 侧只会看到 `CacheFailure`）。
+  /// `Stream.error(CacheException)` 出现，Repository 与 UI 各司其职，
+  /// UI 侧只会看到 `CacheFailure`。
   Stream<List<Note>> watch(NoteQuery query);
 
   /// 读单条。**找不到时抛 [CacheException]**（不是 Failure，也不是 `null`）。
@@ -70,7 +70,7 @@ abstract class NoteLocalDataSource {
 
 class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   /// [dao] 是可选命名参数：测试可注入 mock DAO 断言「翻译是否正确」，
-  /// 生产由 [NoteDao] 自己从 [db] 构造（装配在 `TASK-023`）。
+  /// 生产由 [NoteDao] 自己从 [db] 构造。
   NoteLocalDataSourceImpl(AppDatabase db, {NoteDao? dao})
     : _dao = dao ?? NoteDao(db);
 
@@ -122,7 +122,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   @override
   Future<Note> update(Note note) => _guard(() async {
     // ⛔ createdAt **不写**：Companion 省略即「不更新该列」，所以库里的
-    // 「首次保存时刻」不会被自动保存覆盖（ARCHITECTURE-DESIGN §5.2）。
+    // 「首次保存时刻」不会被自动保存覆盖。
     final hit = await _dao.updateById(
       NotesCompanion(
         id: Value(note.id),
@@ -229,7 +229,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
 
 /// `NoteQuery` 的 sealed 三态 → DAO 的两个原始参数。
 ///
-/// 翻译只在这里做一处（`REPOSITORY-MAP.md` §5.3 的 R1：core 不 import domain）。
+/// 翻译只在这里做一处（core 不 import domain）。
 /// 三个分支穷尽 `sealed` 子类型 —— 新增子类型时**编译失败**，这正是 sealed
 /// 最大的价值。2 个值的临时结构用具名 record，不建 `NoteQueryArgs` 类。
 ({String? folderId, bool uncategorizedOnly}) _toArgs(NoteFolderFilter filter) {
@@ -243,7 +243,7 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   };
 }
 
-/// `''` 归一为 `null`（`TASK-014` 的约定）。`LIKE '%%'` 语义上等于全匹配，
+/// `''` 归一为 `null`。`LIKE '%%'` 语义上等于全匹配，
 /// 但会让「两个等价的 `NoteQuery` 产生不同 SQL」，参数的不可预测性比省一行
 /// 判断更贵。
 String? _normalizeTerm(String? term) => (term?.isEmpty ?? true) ? null : term;
@@ -260,9 +260,9 @@ NoteDaoOrder _toOrder(NoteSort sort) {
 }
 
 /// drift 行 → 领域实体的**直连**。⛔ 不截断 `content`、不算 `wordCount`、
-/// 不 trim 标题 —— 派生值由 UI 现算（`REPOSITORY-MAP.md` §0：不建 Model 层）。
+/// 不 trim 标题 —— 派生值由 UI 现算。
 ///
-/// 时间字段不做时区转换（§5.7「本期本地时钟、无时区转换」）。
+/// 时间字段不做时区转换。
 Note _toEntity(NoteRow row) {
   return Note(
     id: row.id,

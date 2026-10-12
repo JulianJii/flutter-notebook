@@ -16,7 +16,7 @@ import 'tokens/app_text_styles.dart';
 /// `app_color_scheme.dart`，中性色一个都没有）。
 ///
 /// ⚠️ `appBarTheme` 刻意**不设** `centerTitle`：顶栏由 `AppTopBar` 自绘，
-/// 对齐是它的参数（TASK-009）。
+/// 对齐是它的参数。
 class AppTheme {
   const AppTheme._();
 
@@ -63,9 +63,9 @@ class AppTheme {
         (isLight ? const AppTextStyles.light() : const AppTextStyles.dark())
             .withFontFamily(fontFamily);
 
-    // 方案 C（`ARCHITECTURE-DESIGN.md` §7.3 / TASK-006 §1）：保留 M3 的协调色，
-    // 只覆盖设计稿明确给出的 7 个值。其余 surface 阶留 FCS 派生 —— 凭空设计
-    // 20 多个无稿值会让 SnackBar / Chip / TextField / Dialog 一起歪。
+    // 保留 M3 的协调色，只覆盖设计稿明确给出的 7 个值。其余 surface 阶留 FCS
+    // 派生 —— 凭空设计 20 多个无稿值会让 SnackBar / Chip / TextField / Dialog
+    // 一起歪。
     final base =
         (isLight
                 ? FlexColorScheme.light(

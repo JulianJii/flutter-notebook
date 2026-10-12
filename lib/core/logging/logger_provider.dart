@@ -6,7 +6,6 @@ import 'package:mynote/core/logging/logger.dart';
 
 /// 全局日志记录器实例的 Provider
 final loggerProvider = Provider<Logger>((ref) {
-  // 创建根日志记录器实例
   return ConsoleLogger(
     logLevel: kDebugMode ? LogLevel.debug : LogLevel.info,
     includeTimestamp: true,

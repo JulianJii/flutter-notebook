@@ -15,7 +15,8 @@ echo -e "${BLUE}   Flutter Localization Helper Tool    ${NC}"
 echo -e "${BLUE}=======================================${NC}"
 
 BASE_ARB_DIR="lib/l10n/arb"
-BASE_ARB_FILE="${BASE_ARB_DIR}/intl_en.arb"
+# 底稿 = gen-l10n 模板（l10n.yaml 的 template-arb-file），保持一致
+BASE_ARB_FILE="${BASE_ARB_DIR}/intl_zh.arb"
 
 # 检查 flutter 是否已安装
 if ! command -v flutter &> /dev/null; then
@@ -59,7 +60,7 @@ list_languages() {
 create_language() {
     if [ -z "$1" ]; then
         echo -e "${RED}Error: 未提供语言码。${NC}"
-        echo -e "Usage: $0 add-language <language_code>"
+        echo -e "Usage: $0 add <language_code>"
         exit 1
     fi
     
@@ -79,8 +80,9 @@ create_language() {
     # 复制基础语言文件并更新 locale
     cp "$BASE_ARB_FILE" "$new_arb_file"
     
-    # 更新新文件中的 locale
-    sed -i '' "s/\"@@locale\": \"en\"/\"@@locale\": \"${lang_code}\"/" "$new_arb_file"
+    # 更新新文件中的 locale（-i.bak 兼容 BSD/GNU sed，改完删备份）
+    sed -i.bak "s/\"@@locale\": \"[^\"]*\"/\"@@locale\": \"${lang_code}\"/" "$new_arb_file"
+    rm -f "${new_arb_file}.bak"
     
     echo -e "${GREEN}已创建新语言文件: ${new_arb_file}${NC}"
     echo -e "${YELLOW}请在新文件中翻译各字符串。${NC}"

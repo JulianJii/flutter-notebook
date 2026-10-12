@@ -2,7 +2,6 @@
 ///
 /// 背景：路径常量此前散落在 `AppConstants`（26 个，与 Hive box 名、
 /// SharedPreferences key、动画时长混在一起），新增笔记路由会加剧混乱。
-/// 见 `specs/docs/DEVELOPMENT-GUIDELINES.md` §13 路由规则。
 ///
 /// ⚠️ 命名与路径的对应关系以本文件注释为准，不要按名字反推：
 /// `notes` = `/notes`（笔记列表），而 `AppConstants.homeRoute` = `/home`
@@ -16,7 +15,6 @@ abstract final class AppRoutes {
   static const String notes = '/notes';
 
   /// 新建笔记。与 `/notes/:id` 区分，避免「新建」和「编辑已有」共用一条路径。
-  /// 见 `ARCHITECTURE-DESIGN.md` §8.2。
   ///
   /// ⚠️ 注册顺序：`/notes/new` **必须**注册在 `/notes/:id` 之前，
   /// 否则 `new` 会被当成笔记 id 吃掉。
@@ -87,7 +85,7 @@ abstract final class AppRoutes {
   /// 文件夹筛选的 query 参数名。`/notes?folder=<id>`。
   ///
   /// 文件夹管理稿点文件夹行与笔记列表稿的筛选 chip 共用这一个参数，
-  /// 无论将来筛选语义怎么变，架构都不用改。见 `ARCHITECTURE-DESIGN.md` §8.2。
+  /// 无论将来筛选语义怎么变，架构都不用改。
   static const String folderQueryKey = 'folder';
 }
 

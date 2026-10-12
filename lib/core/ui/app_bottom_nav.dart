@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 
 /// 底部标签栏（2 项）。**纯视觉组件：只管画，不管导航。**
 ///
-/// 导航由调用方（`NotesShell`）通过 [onTap] 回调处理 —— 见
-/// `ARCHITECTURE-DESIGN.md` §7.1。取值来自 `UI-IMPLEMENTATION-SPEC.md` §4 笔记列表 BottomNav。
+/// 导航由调用方（`NotesShell`）通过 [onTap] 回调处理。取值来自笔记列表设计稿的
+/// BottomNav。
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     required this.items,
@@ -65,10 +65,9 @@ class AppBottomNav extends StatelessWidget {
 /// 导航栏内容区高度，不含底部安全区。笔记列表稿/待办稿实测 ≈64dp。
 ///
 /// **必须是顶层公开常量**：不能是 `AppBottomNav` 的静态成员，也不能叫 `_barHeight`。
-/// TASK-033（`NoteMasonryGrid` 底部留白）/ TASK-034（笔记列表的 FAB 定位）/
-/// TASK-042（待办的 FAB 定位）三处都按它算「底部导航顶部 + 12dp」，且都是
-/// **不带类名前缀**地引用。私有常量跨文件不可见、类成员常量需前缀，
-/// 两种都会逼下游各复制一份字面量 64 然后互相漂移。
+/// 笔记瀑布流底部留白、笔记列表的 FAB 定位、待办的 FAB 定位三处都按它算
+/// 「底部导航顶部 + 12dp」，且都是**不带类名前缀**地引用。私有常量跨文件不可见、
+/// 类成员常量需前缀，两种都会逼下游各复制一份字面量 64 然后互相漂移。
 /// 改这一处即可，别在下游再定义同值常量。
 const double kBottomNavContentHeight = 64;
 
@@ -98,17 +97,17 @@ class _BottomNavItem extends StatelessWidget {
   final AppTextStyles textStyles;
   final VoidCallback onTap;
 
-  /// 选中态圆角方块底的边长。§4「≈28dp」。
+  /// 选中态圆角方块底的边长。设计稿实测 ≈28dp。
   static const double _selectedBadgeSize = 28;
 
-  /// 触控区最小边长。§2.5 尾注「触控区 ≥48dp」。
+  /// 触控区最小边长。触控区须 ≥48dp。
   static const double _minTapSize = 48;
 
-  /// 方块底内的图形尺寸。§2.5 说图标 24dp，但 24dp 放进 28dp 的方块底只剩
+  /// 方块底内的图形尺寸。设计稿的图标是 24dp，但 24dp 放进 28dp 的方块底只剩
   /// 2dp 边距、视觉上顶满 → 实测取 20。
   static const double _iconSize = 20;
 
-  /// 图标与标签的间距。§2.5 未给；28 + 2 + 16(12sp 行高) = 46，在 64dp 栏内
+  /// 图标与标签的间距。设计稿未给；28 + 2 + 16(12sp 行高) = 46，在 64dp 栏内
   /// 上下各留 9。⚠️ 待按笔记列表稿/待办稿截图量取复核。该值不建 token（只有一个调用点）。
   static const double _labelGap = 2;
 

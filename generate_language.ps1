@@ -11,7 +11,8 @@
 $ErrorActionPreference = 'Stop'
 
 $baseArbDir = 'lib/l10n/arb'
-$baseArbFile = "$baseArbDir/intl_en.arb"
+# 底稿 = gen-l10n 模板（l10n.yaml 的 template-arb-file），保持一致
+$baseArbFile = "$baseArbDir/intl_zh.arb"
 
 # 只取顶层的普通字符串条目（与 .sh 的 grep 等价，@ 开头的是元数据）
 function Get-ArbKeys {

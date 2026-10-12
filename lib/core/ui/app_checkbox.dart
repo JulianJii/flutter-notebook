@@ -4,8 +4,8 @@ import 'package:material_ui/material_ui.dart';
 
 /// 20dp 见方复选框（待办稿待办行左侧）。
 ///
-/// 度量来自 `UI-IMPLEMENTATION-SPEC.md` §4 待办：`checkboxOutline` 20dp /
-/// 圆角 `radius.checkbox` 6dp / 描边 2dp `color.outline.control`（`#9E9E9E`）。
+/// 度量：边长 20dp、圆角 6dp（[AppRadius.checkbox]）、描边 2dp、
+/// 描边色 `color.outline.control`（`#9E9E9E`）。
 ///
 /// 视觉全部靠 `ThemeData` / `CheckboxTheme` 对齐 —— 本组件内零硬编码色值，
 /// checked 态沿用 Material 默认，要改只改 `AppTheme` 一处。
@@ -18,13 +18,13 @@ class AppCheckbox extends StatelessWidget {
   /// 变更回调。null → 禁用（⚠️ 禁用态沿用 Material 默认）。
   final ValueChanged<bool>? onChanged;
 
-  /// 见方边长。§4 待办「20dp」。
+  /// 见方边长。20dp。
   static const double size = 20;
 
-  /// 圆角。§2.4 `radius.checkbox` = 6dp。
+  /// 圆角。6dp。
   static const double radius = AppRadius.checkbox;
 
-  /// 描边。§4 待办「描边 2dp」。
+  /// 描边。2dp。
   static const double strokeWidth = 2;
 
   @override

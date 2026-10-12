@@ -36,7 +36,7 @@ import '../providers/settings_provider.dart';
 /// 「提醒」分组随「强提醒」一并移除：待办稿待办没有日期 / 优先级字段，开关没有作用对象。
 /// 「快捷功能」分组随其唯一一行「速记」一并移除：该行的二级页无稿，是一行点不动的死行。
 ///
-/// 主题入口是设置稿之后补的一行（设置稿无主题行，见 `TASK-046` 的 Out of Scope）：
+/// 主题入口是设置稿之后补的一行（设置稿无主题行）：
 /// 不给入口，`AppSettings.themeMode` / `colorScheme` 就只是永远读不到第二值的字段。
 /// 值的选择在**主题页**（`ThemeScreen`），明暗与配色是两个正交维度。
 ///
@@ -67,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
                 icon: AppIcons.back,
                 tooltip: l10n.back,
                 // 设置稿的返回箭头是深色，而 `AppIcon` 的默认色是 `outlineControl`
-                // 浅灰（`PROJECT-STATUS.md` §3.10 待办 #2：待按截图统一裁定）。
+                // 浅灰（待按截图统一裁定）。
                 // 这里按稿传色，不改 `core/ui`。
                 color: context.colors.textPrimary,
                 // `pop` 走 Navigator 的返回动画，与 `push` 进入成对；仅当直达
@@ -83,8 +83,8 @@ class SettingsScreen extends ConsumerWidget {
                 style: context.textStyles.topBarTitle,
               ),
               // 设置稿顶栏下方**无** 1dp 分隔线（`AppTopBar` 默认画）。
-              // 按 §3.9 待办 #2「各页按实际稿传值」关掉。⚠️ 笔记列表 / 待办仍是默认的 true
-              // （笔记列表稿 / 待办稿上同样没有这条线），统一收敛归 TASK-051。
+              // 按「各页按实际稿传值」关掉。⚠️ 笔记列表 / 待办仍是默认的 true
+              // （笔记列表稿 / 待办稿上同样没有这条线），待统一收敛。
               showDivider: false,
             ),
             Expanded(
@@ -300,7 +300,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// 行尾图标尺寸。`UI-IMPLEMENTATION-SPEC.md` §2.5：chevron / stepper 均 20dp。
+/// 行尾图标尺寸。chevron / stepper 均 20dp。
 ///
 /// `AppIcon.defaultSize` 是 24dp 的**顶栏**尺寸；本页有 8 个行尾图标，
 /// 提成文件内私有常量而不是散落 8 个字面量（⛔ 不改 `core/theme/tokens/`）。

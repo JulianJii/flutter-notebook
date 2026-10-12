@@ -242,7 +242,7 @@ class DataManagementScreen extends ConsumerWidget {
   }
 }
 
-/// 行尾 chevron。`UI-IMPLEMENTATION-SPEC.md` §2.5：20dp。
+/// 行尾 chevron。20dp。
 AppIcon _chevron(BuildContext context) => AppIcon(
   icon: AppIcons.chevronRight,
   size: _kRowTrailingIconSize,

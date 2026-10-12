@@ -23,10 +23,10 @@ import '../widgets/todo_reminder_sheet.dart';
 ///
 /// 与笔记列表（`NoteListScreen`）结构同构，两处**故意**不同：
 /// 1. 顶栏右侧**只有 1 个** `settings` 图标 ——待办稿上没有 `folder`，说明「顶栏按钮集
-///   随页面变化，非全局固定」（`UI-IMPLEMENTATION-SPEC.md` §4 待办）。⛔ 别照抄笔记列表的 2 个。
+///   随页面变化，非全局固定」。⛔ 别照抄笔记列表的 2 个。
 /// 2. 本页**无分类 chip / 无搜索 / 无排序入口** ——待办稿明确「本页无」。
 ///
-/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（`TASK-008`）。
+/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次。
 /// 本 Screen 只为 FAB 定位引用 `kBottomNavContentHeight`。
 /// ⛔ **不直接 watch Repository / UseCase**：数据链路固定为
 /// Screen → `todoListProvider` → UseCase → Repository。
@@ -37,7 +37,7 @@ class TodoListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     // 乐观覆盖层由 `applyTodoOverrides` 叠加 —— Screen 与测试共用同一份纯函数，
-    // 不在这里复刻一遍 `switch`（`TASK-040` 的契约）。
+    // 不在这里复刻一遍 `switch`。
     final all = applyTodoOverrides(
       ref.watch(todoListProvider).value ?? const <Todo>[],
       ref.watch(todoOverridesProvider),
@@ -117,8 +117,8 @@ class TodoListScreen extends ConsumerWidget {
   }
 
   /// 新建待办。**弹窗视觉无稿**：与文件夹管理「新建文件夹」同一套
-  /// `showDialog` + Material 默认样式，⛔ 不建 `AppDialog` / `AppBottomSheet`
-  /// （§8的「不建」清单）；失败提示沿用 `AppUtils.showSnackBar`。
+  /// `showDialog` + Material 默认样式，⛔ 不建 `AppDialog` / `AppBottomSheet`；
+  /// 失败提示沿用 `AppUtils.showSnackBar`。
   ///
   /// 空标题校验在 `CreateTodoUseCase`（返回 `InputFailure`），页面不重复判断。
   /// 成功不需要 `ref.invalidate`：drift watch 推新行，`todoListProvider` 自建。
@@ -420,8 +420,8 @@ class TodoListScreen extends ConsumerWidget {
     );
   }
 
-  /// 勾选回写。**只调 provider**：回滚逻辑是 `todoOverridesProvider` 的事
-  /// （`ARCHITECTURE-DESIGN.md` §6.2 待办），Screen 不重复实现、也不自己改列表。
+  /// 勾选回写。**只调 provider**：回滚逻辑是 `todoOverridesProvider` 的事，
+  /// Screen 不重复实现、也不自己改列表。
   ///
   /// 落库失败时 provider 已回滚，这里补一句 Snackbar —— 静默回滚会让用户以为
   /// 勾上了（Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`）。
@@ -473,7 +473,7 @@ class _TodoList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     // 空状态内联 3 行，与 `RecentlyDeletedScreen` 的既有写法逐字一致，
-    // ⛔ 不抽 `AppEmptyView`（§8「不建」清单）。
+    // ⛔ 不抽 `AppEmptyView`。
     if (active.isEmpty && done.isEmpty) {
       return Center(
         child: Text(

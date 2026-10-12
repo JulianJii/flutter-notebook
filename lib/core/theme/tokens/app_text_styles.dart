@@ -4,10 +4,10 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// ⚠️ **13 级的 size 已整体下收一档**（标题 24→20、正文 17→15、元信息 12→11
 /// 等），`height` / `weight` 保持不变 —— 用户要求「更紧凑、一屏信息更多」。
-/// 故当前取值**不再等于** `UI-IMPLEMENTATION-SPEC.md` §2.2 的实测值；字阶的
+/// 故当前取值**不再等于**设计稿的实测值；字阶的
 /// 相对关系（谁比谁大、谁更粗）仍与设计稿一致，只改了绝对值。
 ///
-/// 实现为 [ThemeExtension]。见 `ARCHITECTURE-DESIGN.md` §7.3。
+/// 实现为 [ThemeExtension]。
 ///
 /// ⛔ **13 个字阶都不设 `color`**：`color` 走 [AppColors] + `DefaultTextStyle`，
 /// 两处各改一次即可（13 字阶 × 2 色会变成 26 个字段，实际用到的组合不超过 8 种）。

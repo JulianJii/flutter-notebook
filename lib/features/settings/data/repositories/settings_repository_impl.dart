@@ -7,7 +7,7 @@ import 'package:mynote/core/theme/app_color_scheme.dart';
 import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/domain/repositories/settings_repository.dart';
 
-/// 偏好在 `SharedPreferences` 里的 key。**单 key JSON**（ADR-14）。
+/// 偏好在 `SharedPreferences` 里的 key。**单 key JSON**。
 const String settingsStorageKey = 'app_settings';
 
 /// 当前支持的 schema 版本。写在 JSON 里，与数据同生共死 ——

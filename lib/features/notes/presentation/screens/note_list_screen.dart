@@ -21,9 +21,9 @@ import '../widgets/note_masonry_grid.dart';
 
 /// 笔记列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
-/// **两条设置偏好都在这里落地**（`ARCHITECTURE-DESIGN.md` §4 的取值来源表）：
+/// **两条设置偏好都在这里落地**：
 /// `noteSort` 进 [NoteQuery]、`noteLayout` 选排布。两者都经 provider 读，改完设置
-/// 回来即生效，不重启 App；⛔ **一律不进 URL**（§8.2：偏好不是导航状态）。
+/// 回来即生效，不重启 App；⛔ **一律不进 URL**（偏好不是导航状态）。
 ///
 /// **分类栏与左右滑动用官方组件**（本页新增）：分类栏 = [TabBar]，内容 =
 /// [TabBarView]，两者共用一个 [TabController] —— 点 tab、左右滑、写 URL 三件事
@@ -32,10 +32,10 @@ import '../widgets/note_masonry_grid.dart';
 /// `context.go` 出新 URL，选中态与页面数据都从这一个源派生，不会出现
 /// 「滑到某页但 tab 没跟上」的第二真相源。
 ///
-/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（`TASK-008`）。
+/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次。
 /// 本 Screen 只为 FAB 定位引用 `kBottomNavContentHeight`。
 /// ⛔ **不直接 watch Repository / UseCase**：数据链路固定为
-/// Screen → `noteListProvider` → UseCase → Repository（`ARCHITECTURE-DESIGN.md` §4 笔记列表）。
+/// Screen → `noteListProvider` → UseCase → Repository。
 class NoteListScreen extends ConsumerStatefulWidget {
   const NoteListScreen({super.key});
 
@@ -319,7 +319,7 @@ class _CategoryTabBar extends StatelessWidget {
   }
 }
 
-/// 当前筛选值。**唯一真相源是 URL**（`ARCHITECTURE-DESIGN.md` §8.2）：
+/// 当前筛选值。**唯一真相源是 URL**：
 /// null = 全部、哨兵 = 未分类、uuid = 指定文件夹。tab 选中态与列表数据同源，
 /// 因此不需要任何本地 state，返回上一页时筛选态也自动恢复。
 String? selectedFolderFilter(Map<String, String> queryParameters) =>
@@ -372,9 +372,9 @@ class _TopBar extends StatelessWidget {
           color: context.colors.textPrimary,
         ),
       ),
-      // 图标照笔记列表稿画出来；`folder` / `settings` 的目标页由 TASK-050 / 046 落地，
-      // 现在点进去是占位页 —— 预期行为，不因「目标页还没建」就删掉图标
-      // （`ROADMAP.md` §4.3）。笔记列表稿顶栏无搜索入口，不加。
+      // 图标照笔记列表稿画出来；`folder` / `settings` 的目标页由任务落地，
+      // 现在点进去是占位页 —— 预期行为，不因「目标页还没建」就删掉图标。
+      // 笔记列表稿顶栏无搜索入口，不加。
       // tooltip 传 l10n：`AppIconButton` 的 tooltip 是无障碍必需，不是装饰
       // （笔记列表稿~设置稿上没有文字标签）。
       actions: <Widget>[
@@ -480,8 +480,7 @@ class _SearchFieldState extends ConsumerState<_SearchField> {
 }
 
 /// 设置「笔记列表布局 = 列表」时的单列排布。**页面内私有**（不进 `core/ui`）：
-/// 带 `Note` 业务字段，且与笔记列表的 tab 栏同理只此一处用
-/// （`DEVELOPMENT-GUIDELINES.md` §7.3）。
+/// 带 `Note` 业务字段，且与笔记列表的 tab 栏同理只此一处用。
 ///
 /// ⛔ **不建自己的卡片**：直接复用 [NoteCard]，两种布局的卡片内容必须逐字一致。
 /// 间距与底部留白沿用 [NoteMasonryGrid] 的同一组 token（页边距 12dp、行距

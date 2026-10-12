@@ -5,12 +5,12 @@ const Object _unset = Object();
 
 /// 一条笔记。
 ///
-/// 字段集与 `ARCHITECTURE-DESIGN.md` §5.2 逐项一致：**既不漏也不多**。
+/// 字段集**既不漏也不多**。
 ///
 /// ⛔ **不落库的派生字段一律不加**：`wordCount`（用 `WordCounter` 现算）、
 /// `snippet`、`folderName`。派生值落库 = 同步 bug 来源。
 /// ⛔ **不预留字段**：`sortIndex` / `color` / `hasAttachment`。
-/// ⛔ **不建状态枚举**（§6.1）：设计稿对 `Note` 无任何状态描述。
+/// ⛔ **不建状态枚举**：设计稿对 `Note` 无任何状态描述。
 /// ⛔ **无 getter**：`isEmpty` / `hasContent` 等一律不加，需要时在 UI 层现算。
 class Note extends Equatable {
   const Note({
@@ -40,7 +40,7 @@ class Note extends Equatable {
   /// 所属文件夹。null = 「未分类」。
   ///
   /// ⚠️ 这里的 null 是「**这条笔记没有文件夹**」，与「不过滤」的语义无关 ——
-  /// 那是 [NoteQuery] 的三态筛选（`ARCHITECTURE-DESIGN.md` §5.3）。
+  /// 那是 [NoteQuery] 的三态筛选。
   final String? folderId;
 
   /// 纸张背景。null = 无背景（白底）。
@@ -58,7 +58,7 @@ class Note extends Equatable {
   /// （`UpdateNoteEditorFontUseCase`）只写这一列、不刷新 [updatedAt]。
   final String? editorFontId;
 
-  /// 本地时钟。domain 不做时区转换（§5.7「时钟」行）。
+  /// 本地时钟。domain 不做时区转换。
   final DateTime createdAt;
 
   final DateTime updatedAt;

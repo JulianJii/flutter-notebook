@@ -4,7 +4,7 @@ import 'note_folders_table.dart';
 
 /// 笔记表。实体见 `features/notes/domain/entities/note.dart`。
 ///
-/// ⚠️ 删除语义（原 CONFLICT-10 裁决已翻转为软删除，本 commit 一次性落地全部四条）：
+/// ⚠️ 删除语义是软删除，四条改动必须一起落地，缺一条就数据不一致：
 ///  1. `deleted_at` 列 + `schemaVersion` 1 → 2 + `MigrationStrategy`（`app_database.dart`）；
 ///  2. `NoteDao.watch` 与 `FolderDao.watchWithCounts` / `watchUncategorizedCount`
 ///     全部加 `deleted_at IS NULL`；
@@ -15,7 +15,7 @@ import 'note_folders_table.dart';
 ///
 /// ⚠️ `PRAGMA foreign_keys = ON` **必须在 `AppDatabase.beforeOpen` 里执行**
 /// 才生效（SQLite 默认关闭外键强制）。本文件只声明 `ON DELETE SET NULL` 规则，
-/// 开关在 `TASK-016`。
+/// 开关在 `AppDatabase.beforeOpen`。
 ///
 /// ⚠️ 本文件**没有** `part 'notes_table.g.dart'`：drift 2.35 默认是
 /// monolithic shared-part 模式，行类（`NoteRow`）与 companion（`NotesCompanion`）
@@ -38,7 +38,7 @@ class Notes extends Table {
 
   TextColumn get content => text().withDefault(const Constant(''))();
 
-  /// null = 「未分类」系统视图（`ARCHITECTURE-DESIGN.md` §5.3），不占文件夹表行。
+  /// null = 「未分类」系统视图，不占文件夹表行。
   /// 删除文件夹时由外键置 null，其下笔记自动落入未分类。
   TextColumn get folderId => text().nullable().references(
     NoteFolders,

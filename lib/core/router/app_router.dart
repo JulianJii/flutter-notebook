@@ -26,9 +26,9 @@ import 'package:material_ui/material_ui.dart';
 /// Navigator 的 context，弹窗要用 `rootNavigatorKey.currentContext`。
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
-/// 唯一 routerProvider（`DEVELOPMENT-GUIDELINES.md` §13 规则 1）。
+/// 全 App 唯一的 routerProvider，不要再另建一个。
 ///
-/// 无 `redirect`：笔记 App 无登录（CONFLICT-01 已裁决移除登录守卫）。
+/// 无 `redirect`：本 App 无登录，不需要登录守卫。
 /// 不 watch `persistentLocaleProvider`：语言由 `main.dart` 的 `MaterialApp.locale`
 /// 负责，在此 watch 会让语言切换重建 GoRouter 并丢失导航栈。
 final routerProvider = Provider<GoRouter>((ref) {
@@ -133,8 +133,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AboutScreen(),
       ),
     ],
-    // 404 是路由层诊断页，不是产品错误页（`COMPONENT-INVENTORY.md` §2 不含
-    // `AppErrorView`），故不抽组件。恢复出口跳 `AppRoutes.initial`。
+    // 404 是路由层诊断页，不是产品错误页，故就地写在这里、不抽成组件。
+    // 恢复出口跳 `AppRoutes.initial`。
     errorBuilder: (context, state) => Scaffold(
       body: Center(
         child: Column(

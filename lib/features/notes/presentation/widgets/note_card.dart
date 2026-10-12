@@ -12,8 +12,8 @@ import 'note_background_image.dart';
 
 /// 笔记列表稿的笔记卡：标题 → 摘要 → 日期 三段竖排。
 ///
-/// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（`UI-IMPLEMENTATION-SPEC.md`
-/// §2.4：12dp 圆角、`elevation.card` = 0），不许在这里自绘 `Container`。
+/// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（12dp 圆角、
+/// `elevation.card` = 0），不许在这里自绘 `Container`。
 /// 有背景时在 `AppCard` 内加一层 `Stack` 把纸纹铺满整卡（圆角由 `Card` 的
 /// `Clip.antiAlias` 裁），内边距因此改由内容层自己带。
 ///

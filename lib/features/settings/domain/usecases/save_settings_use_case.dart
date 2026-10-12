@@ -7,7 +7,7 @@ import 'package:mynote/features/settings/domain/repositories/settings_repository
 ///
 /// 零逻辑的薄封装（与 `GetSettingsUseCase` 同理）。写失败只返回 `Left`，
 /// **不回滚内存里的 state**：偏好写失败弹错误框是过度设计，用户无法修复；
-/// 回滚逻辑归 `settingsProvider`（`TASK-045`）。
+/// 回滚逻辑归 `settingsProvider`。
 class SaveSettingsUseCase {
   const SaveSettingsUseCase(this._repository);
 

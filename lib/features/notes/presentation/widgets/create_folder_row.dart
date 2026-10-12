@@ -5,7 +5,7 @@ import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 文件夹管理稿列表末尾的「新建文件夹」行动作。唯一调用方是文件夹管理（TASK-050）。
+/// 文件夹管理稿列表末尾的「新建文件夹」行动作。唯一调用方是文件夹管理。
 ///
 /// 与 [FolderRow] 同为 `AppCard` 白卡，但布局是**垂直居中**的一列：琥珀色 ⊕ 在上、
 /// 文案在下，实测略高 ≈72dp。无描边、无箭头、无计数。

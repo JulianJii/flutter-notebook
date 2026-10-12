@@ -5,13 +5,13 @@ import 'package:material_ui/material_ui.dart';
 
 /// 页面顶部栏容器。统一高度、安全区与图标组间距。
 ///
-/// 3 种形态由参数组合表达（`DEVELOPMENT-GUIDELINES.md` §8：不用布尔开关）：
+/// 形态由参数组合表达（不用布尔开关，布尔开关是「设计失败的味道」）：
 /// - A 右对齐图标组：`AppTopBar(actions: [...])`
 /// - A' 左对齐页面标题 + 右对齐图标组：`AppTopBar(title: ..., actions: [...])`  ← 笔记列表稿/待办稿
 /// - B 居中标题 + 右侧图标：`AppTopBar(leading: ..., centerTitle: ..., actions: [...])`  ← 文件夹管理稿
 /// - C 仅返回：`AppTopBar(leading: ...)`  ← 设置稿
 ///
-/// 取值来自 `UI-IMPLEMENTATION-SPEC.md` §0（高 56dp）、§4 笔记列表~设置（各页 AppBar）。
+/// 高 56dp，取值对齐各页 AppBar。
 ///
 /// 非 edge-to-edge：安全区由本组件自己包。
 class AppTopBar extends StatelessWidget {
@@ -24,7 +24,7 @@ class AppTopBar extends StatelessWidget {
     this.showDivider = true,
   });
 
-  /// 左侧控件，通常是 `AppIconButton`（TASK-010）。null → 左侧留空（形态 A）。
+  /// 左侧控件，通常是 `AppIconButton`。null → 左侧留空（形态 A）。
   final Widget? leading;
 
   /// 左对齐的页面标题（形态 A'），通常是 `Text`。null → 不渲染标题（形态 A / C）。
@@ -41,15 +41,15 @@ class AppTopBar extends StatelessWidget {
 
   /// 顶栏底边是否画 1dp 分隔线。
   ///
-  /// ⚠️ 顶栏分隔线在 5 张设计稿中**均无明确依据**（§2.4 的 `elevation.nav` 1dp 是
-  /// 底部导航的）。默认 true 是按 `COMPONENT-INVENTORY.md` §2 #1 的签名；各页面在
-  /// Phase 4/5/7 接线时应按实际稿传值。取值 1dp `AppColors.divider`。
+  /// ⚠️ 顶栏分隔线在 5 张设计稿中**均无明确依据**（设计规范里的 `elevation.nav`
+  /// 1dp 是底部导航的）。默认 true 是从组件清单里抄的签名；各页面接线时
+  /// 应按实际稿传值。取值 1dp `AppColors.divider`。
   final bool showDivider;
 
   /// 顶栏内容区高度，不含状态栏安全区。
   static const double height = 56;
 
-  /// 图标按钮之间的间距。`UI-IMPLEMENTATION-SPEC.md` §4 笔记列表 `[推导: 8dp]`。
+  /// 图标按钮之间的间距。8dp（推导值，与 [AppSpacing.chipGap] 同）。
   static const double _actionGap = AppSpacing.chipGap;
 
   @override

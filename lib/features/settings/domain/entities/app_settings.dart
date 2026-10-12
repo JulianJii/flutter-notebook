@@ -4,8 +4,8 @@ import 'package:mynote/core/theme/app_color_scheme.dart';
 /// 设置「选择排序方式」。默认 `editedDesc`（按编辑日期）。
 ///
 /// ⚠️ **不是 `NoteSort`**：`NoteSort` 住在 `features/notes/`，而 features 之间
-/// 零互相 import（`FEATURE-DEPENDENCIES.md` R2）。两侧 4 个值同名同序，
-/// 由 presentation 层（笔记列表，`TASK-047`）显式映射 —— 重复 4 个枚举值比让
+/// 零互相 import。两侧 4 个值同名同序，
+/// 由 presentation 层（笔记列表）显式映射 —— 重复 4 个枚举值比让
 /// `settings` 反向依赖 `notes` 便宜，和 `NoteDaoOrder` 是同一个理由。
 enum AppNoteSort { editedDesc, editedAsc, createdDesc, titleAsc }
 
@@ -21,7 +21,7 @@ enum AppThemeMode { system, light, dark }
 /// 「显式置 null」哨兵。与 `Note._unset` 同一个理由与写法。
 const Object _unset = Object();
 
-/// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**（ADR-14）：
+/// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**：
 /// 需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
 ///

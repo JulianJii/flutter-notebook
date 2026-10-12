@@ -126,19 +126,16 @@ class BasicUpdateService implements UpdateService {
   @override
   Future<UpdateCheckResult> checkForUpdates() async {
     try {
-      // 确保已初始化
       if (_packageInfo == null) {
         await init();
       }
 
       _updateInfo = await _fetchUpdateInfo();
 
-      // 检查是否需要更新
       if (_updateInfo == null) {
         return UpdateCheckResult.checkFailed;
       }
 
-      // 检查这是否是关键更新
       if (isCriticalUpdate(
         _packageInfo!.version,
         _updateInfo!.minimumRequiredVersion,
@@ -146,7 +143,6 @@ class BasicUpdateService implements UpdateService {
         return UpdateCheckResult.criticalUpdateRequired;
       }
 
-      // 检查是否有可用更新
       if (isUpdateNeeded(_packageInfo!.version, _updateInfo!.latestVersion)) {
         return UpdateCheckResult.updateAvailable;
       }
@@ -168,7 +164,6 @@ class BasicUpdateService implements UpdateService {
 
   @override
   Future<bool> promptUpdate({bool force = false}) async {
-    // 确保我们有更新信息
     final updateInfo = await getUpdateInfo();
     if (updateInfo == null) {
       return false;
@@ -200,21 +195,17 @@ class BasicUpdateService implements UpdateService {
 
   @override
   bool isUpdateNeeded(String currentVersion, String latestVersion) {
-    // 比较语义化版本
     // 这是一个简化的版本，仅比较 major.minor.patch
     try {
       final current = _parseVersion(currentVersion);
       final latest = _parseVersion(latestVersion);
 
-      // 比较主版本号
       if (latest[0] > current[0]) return true;
       if (latest[0] < current[0]) return false;
 
-      // 比较次版本号
       if (latest[1] > current[1]) return true;
       if (latest[1] < current[1]) return false;
 
-      // 比较修订版本号
       return latest[2] > current[2];
     } catch (e) {
       debugPrint('⬆️ Version comparison error: $e');
@@ -228,7 +219,6 @@ class BasicUpdateService implements UpdateService {
       final current = _parseVersion(currentVersion);
       final minimum = _parseVersion(minimumRequired);
 
-      // 如果当前版本低于最低要求版本，则为关键更新
       if (current[0] < minimum[0]) return true;
       if (current[0] > minimum[0]) return false;
 
@@ -252,14 +242,12 @@ class BasicUpdateService implements UpdateService {
     }
 
     return parts.take(3).map((part) {
-      // 移除任何非数字后缀
       final match = RegExp(r'^\d+').firstMatch(part);
       final digitPart = match != null ? match.group(0) : '0';
       return int.tryParse(digitPart ?? '0') ?? 0;
     }).toList();
   }
 
-  // 打开 URL 的辅助方法
   Future<bool> _launchUrl(String url) async {
     if (await canLaunchUrl(Uri.parse(url))) {
       return await launchUrl(Uri.parse(url));

@@ -17,20 +17,16 @@ import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
-  // 确保 Flutter binding 已初始化
   WidgetsFlutterBinding.ensureInitialized();
 
   // Windows / macOS：摘掉系统标题栏（标题栏由 DesktopWindowFrame 自绘）
   await setUpDesktopWindow();
 
-  // 初始化 shared preferences
   final sharedPreferences = await SharedPreferences.getInstance();
 
-  // 使用 ProviderScope 运行应用以启用 Riverpod
   runApp(
     ProviderScope(
       overrides: [
-        // 用该实例覆盖 shared preferences provider
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],
       child: const MyApp(),
@@ -43,7 +39,6 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 从 provider 中监听 router
     final router = ref.watch(routerProvider);
 
     // 监听主题模式：`select` 只在 themeMode 变时重建，排序 / 布局等无关偏好的改动
@@ -94,7 +89,6 @@ class MyApp extends ConsumerWidget {
           builder: (BuildContext context, Widget? child) =>
               DesktopWindowFrame(child: child ?? const SizedBox.shrink()),
 
-          // 屏幕适配
           locale: locale,
           localizationsDelegates: [
             ...AppLocalizations.localizationsDelegates,

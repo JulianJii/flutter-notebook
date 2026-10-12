@@ -29,14 +29,14 @@
 - Riverpod 集成的状态管理
 - 易于使用的 BuildContext 扩展
 
-该系统结合了基于 ARB 的翻译和内存翻译映射表，提供了灵活性并与 Flutter intl 系统集成。
+该系统基于 ARB 文件 + Flutter 官方 gen-l10n 生成强类型访问 API，与 Riverpod 集成管理活动语言。
 
 ## 设置
 
 本地化系统使用：
 
 1. **ARB 文件** - 定义每种语言的翻译
-2. **Flutter Intl** - 从 ARB 文件生成 Dart 代码
+2. **Flutter gen-l10n** - 从 ARB 文件生成 Dart 代码
 3. **Riverpod providers** - 管理活动区域设置
 4. **BuildContext 扩展** - 提供对翻译的便捷访问
 
@@ -119,8 +119,8 @@ final customTime = context.formatTime(DateTime.now(), pattern: 'HH:mm:ss');
 ```dart
 // In a Consumer widget or when you have access to a WidgetRef
 final service = ref.read(localizationServiceProvider);
-final translatedText = service.translate('welcome_message');
 final formattedDate = service.formatDate(DateTime.now());
+final name = service.getLocaleName(const Locale('en')); // 'English'
 
 // Change the app locale（只接受受支持的语言码，其余是 no-op）
 await service.setLocale(const Locale('en'));
@@ -145,49 +145,38 @@ final currentLocale = context.currentLocale;
 1. 使用提供的生成脚本（推荐）：
 
    ```bash
-   ./generate_language.sh <language_code> "<Language Name>"
-   # Example:
-   ./generate_language.sh it "Italian"
+   ./generate_language.sh add it    # 只传语言码；子命令是 add，不是 --add
    ```
 
    该脚本将：
-   - 基于英语模板创建新的 ARB 文件
-   - 自动将语言添加到 LocalizationUtils
-   - 正确格式化文件
+   - 以模板 `intl_zh.arb`（即 `l10n.yaml` 的 `template-arb-file`）为底复制出 `intl_<code>.arb` 并改写 `@@locale`
+   - ⛔ **不会**替你翻译，也不会生成 Dart —— 填完译文后跑 `./generate_language.sh generate`（或 `flutter gen-l10n`）
 
 2. 或者在 `lib/l10n/arb` 目录中手动创建名为 `intl_<language_code>.arb` 的新 ARB 文件
    （例如，法语为 `intl_fr.arb`）
 
-3. 为模板 ARB 文件 (`intl_en.arb`) 中定义的所有键添加翻译
+3. 为模板 ARB 文件（`intl_zh.arb`，见 `l10n.yaml` 的 `template-arb-file`）中定义的所有键添加翻译
 
-4. 确保新区域设置在 `lib/l10n/l10n.dart` 的支持区域设置列表中：
-
-   ```dart
-   static const List<Locale> supportedLocales = [
-     Locale('zh'),
-     Locale('en'),
-   ];
-   ```
-
-5. 在 `lib/l10n/app_localizations_delegate.dart` 的 `LocalizationUtils.getLocaleName()` 中添加语言名称：
+4. 在 `lib/core/localization/localization_service.dart` 的 `localeDisplayName` 里加语言名分支：
 
    ```dart
-   static String getLocaleName(Locale locale) {
-     switch (locale.languageCode) {
-       case 'zh': return '中文';
-       case 'en': return 'English';
-       default: return locale.languageCode;
-     }
-   }
+   String localeDisplayName(Locale locale) => switch (locale.languageCode) {
+     'zh' => '中文',
+     'en' => 'English',
+     'it' => 'Italiano',
+     _ => locale.languageCode,
+   };
    ```
+
+   ⛔ **不需要**手动维护 supportedLocales 列表 —— 它由 gen-l10n 从 `lib/l10n/arb/` 下的 ARB 文件自动生成。
 
 ## 更新翻译
 
 要更新或添加新的翻译键：
 
-1. 在模板 ARB 文件 (`intl_en.arb`) 中添加新键
+1. 在模板 ARB 文件（`intl_zh.arb`，即 `l10n.yaml` 的 `template-arb-file`）中添加新键
 2. 在所有其他 ARB 文件中添加该键的翻译
-3. 重新构建应用以生成更新的本地化文件
+3. 跑 `flutter gen-l10n`（或 `./generate_language.sh generate`）重新生成 Dart
 
 ## UI 组件
 

@@ -3,8 +3,8 @@ import 'package:material_ui/material_ui.dart';
 
 /// 设置行：标题（w600）+ 副说明 + 右侧开关（设置稿「强提醒」）。
 ///
-/// 是 [AppListTile] 的一层薄封装 —— 行高 / 内边距 / 分割线全部复用 TASK-012
-/// 的那一份实现，设置稿的 72dp（switch 行）与 56dp（chevron 行）差异自动成立。
+/// 是 [AppListTile] 的一层薄封装 —— 行高 / 内边距 / 分割线全部复用同一份实现，
+/// 设置稿的 72dp（switch 行）与 56dp（chevron 行）差异自动成立。
 class AppSwitchRow extends StatelessWidget {
   const AppSwitchRow({
     required this.title,

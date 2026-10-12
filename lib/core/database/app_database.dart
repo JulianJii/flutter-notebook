@@ -35,7 +35,7 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
-  /// 内存库构造，供 `TASK-018~024` 的测试使用（零新依赖）。
+  /// 内存库构造，供测试使用（零新依赖，不必在磁盘上建真库）。
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override

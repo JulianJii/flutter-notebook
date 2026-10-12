@@ -1,11 +1,11 @@
-/// 间距单一来源。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.3。
+/// 间距单一来源。
 ///
 /// 间距**不随主题变**，因此是 `static const` 而非 `ThemeExtension`。
 abstract final class AppSpacing {
   /// 通用小间距 8dp。卡片内段间距、标题区与元信息行的间距（笔记列表稿/笔记详情稿实测）。
   ///
-  /// ⚠️ `UI-IMPLEMENTATION-SPEC.md` §2.3 的表里没有这一行（那里只有
-  /// `chipGap` = 8dp）。笔记列表稿的「标题↔摘要 / 摘要↔日期」与笔记详情稿的「标题区↔元信息行」
+  /// ⚠️ 原设计稿的间距表里没有这一行（那里只有 `chipGap` = 8dp）。笔记列表稿的
+  /// 「标题↔摘要 / 摘要↔日期」与笔记详情稿的「标题区↔元信息行」
   /// 都是 8dp 且是**跨页复用**的值，故补一条通用名而不是各页面写裸数字。
   static const double sm = 8;
 
@@ -21,7 +21,7 @@ abstract final class AppSpacing {
   /// 卡片行间距（笔记列表稿）。12dp。
   ///
   /// ⚠️ 文件夹行间距实测 ≈8dp，属文件夹管理稿局部值，写在文件夹管理稿的实现里
-  /// （`features/notes/presentation/screens/`，TASK-050），不进全局 token ——
+  /// （`features/notes/presentation/screens/`），不进全局 token ——
   /// 只有一个调用点的值不是 token。
   static const double gridRow = 12;
 
@@ -30,7 +30,7 @@ abstract final class AppSpacing {
 
   /// 待办卡 / 文件夹行 / 设置行 左右内边距。16dp `[推导]`。
   ///
-  /// ⚠️ 与 [pageH] 的 12dp 不一致，`UI-IMPLEMENTATION-SPEC.md` §9 列为重点复核项。
+  /// ⚠️ 与 [pageH] 的 12dp 不一致，是个已知的重点复核项。
   static const double rowPadH = 16;
 
   /// 设置分组标题左缩进。28dp `[推导]`。
@@ -44,7 +44,7 @@ abstract final class AppSpacing {
 
   /// 列表内容底部预留（底部导航 + FAB 不遮挡内容）。≥34dp。
   ///
-  /// `UI-IMPLEMENTATION-SPEC.md` §2.3 实测笔记列表稿卡片被直接裁切 → **无** 内边距，需补。
+  /// 原设计稿实测笔记列表稿卡片被直接裁切 → **无** 内边距，需补。
   static const double bottomSafe = 34;
 
   /// 行内leading 对齐槽位宽（文件夹管理稿）。32dp。
@@ -53,8 +53,8 @@ abstract final class AppSpacing {
   /// 比选中行左移 24dp，**互不对齐**（稿如此，非 bug）。
   /// 本槽位宽只保证 leading 与文字的间距稳定，不试图抹平这个错位。
   ///
-  /// ⚠️ 刻意**不叫** `folderLeadingWidth`：`core/theme/` 内不出现业务字样
-  /// （R7），与 [pageH] / [rowPadH] 同属「行级绝对尺寸」。
+  /// ⚠️ 刻意**不叫** `folderLeadingWidth`：`core/theme/` 内不出现业务字样，
+  /// 与 [pageH] / [rowPadH] 同属「行级绝对尺寸」。
   static const double rowLeadingSlot = 32;
 
   /// 纵向排列行动作行内，图标与文案的间距（文件夹管理稿）。6dp。
@@ -62,7 +62,7 @@ abstract final class AppSpacing {
 
   /// 行内图标尺寸（文件夹管理稿的选中勾与 ⊕）。20dp。
   ///
-  /// `AppIcon.defaultSize` 的 24dp 是**顶栏**尺寸（`UI-IMPLEMENTATION-SPEC.md`
-  /// §2.5「顶部栏图标视觉尺寸 24dp」），行内的 20dp 是另一个值，故另立。
+  /// `AppIcon.defaultSize` 的 24dp 是**顶栏**尺寸（顶栏图标视觉尺寸 24dp），
+  /// 行内的 20dp 是另一个值，故另立。
   static const double rowIconSize = 20;
 }

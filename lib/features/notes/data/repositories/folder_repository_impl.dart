@@ -120,7 +120,7 @@ class FolderRepositoryImpl implements FolderRepository {
 }
 
 /// 给 [folder] 补上 id。⛔ 不用 `copyWith`：`NoteFolder.copyWith` 刻意不带 `id`
-/// （id 是实体身份，`TASK-014` 的设计），改实体不在本 Task 的 Scope。
+/// （id 是实体身份）。
 NoteFolder _withId(NoteFolder folder, String id) {
   return NoteFolder(
     id: id,

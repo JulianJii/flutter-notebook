@@ -23,10 +23,10 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// 文件夹管理。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
 ///
 /// **行序 = 各真实文件夹 →「新建文件夹」**，行内无计数。
-/// 「全部」与「未分类」**不在本页**（`ARCHITECTURE-DESIGN.md` §5.3：两者都不是表里的
-/// 行）—— 它们是笔记列表顶部的分类 tab，本页只列真实文件夹。
+/// 「全部」与「未分类」**不在本页** —— 两者都不是表里的行，
+/// 它们是笔记列表顶部的分类 tab，本页只列真实文件夹。
 ///
-/// **筛选真相源是 URL**（§8.2）：点行只写 `?folder=`，读取侧的笔记列表与本页读同一个
+/// **筛选真相源是 URL**：点行只写 `?folder=`，读取侧的笔记列表与本页读同一个
 /// query 参数（[selectedFolderFilter]），因此不需要任何本地 state，返回上一页
 /// 时筛选态自动恢复。
 ///
@@ -36,7 +36,7 @@ import 'note_list_screen.dart' show selectedFolderFilter;
 /// **操作入口是长按菜单**：行内 `trailing` 已被拖拽手柄占满，再塞图标会挤掉拖拽区
 ///（`FolderRow` 有测试钉住布局），而多选态要新增一整套选中 UI。菜单两项：重命名
 ///（复用新建的弹窗与内联校验）、删除（二次确认后软删除进回收站）。
-/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次（TASK-008）。
+/// ⛔ **不渲染 `AppBottomNav`**：它由 `NotesShell` 渲染一次。
 class FolderManagerScreen extends ConsumerWidget {
   const FolderManagerScreen({super.key});
 
@@ -148,7 +148,7 @@ class FolderManagerScreen extends ConsumerWidget {
   /// 拖拽落点 → 新顺序 → `ReorderFoldersUseCase`。
   ///
   /// ⛔ **不在本地留一份顺序**：`folderProvider` 由 drift watch 驱动，`sort_index`
-  /// 一变新顺序自己回来（与新建文件夹同一条路径，§8.4），本地再存一份就是
+  /// 一变新顺序自己回来（与新建文件夹同一条路径），本地再存一份就是
   /// 第二个真相源。
   Future<void> _reorderFolders(
     BuildContext context,
@@ -170,7 +170,7 @@ class FolderManagerScreen extends ConsumerWidget {
   }
 
   /// 新建文件夹。**弹窗视觉无稿**：用 `showDialog` + Material 默认样式，
-  /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
+  /// ⛔ 不建 `AppDialog` / `AppBottomSheet`。
   ///
   /// 名称校验（空 / 超长 / 重名）**在弹窗里就地判**，错误显示在输入框下方、弹窗不
   /// 关 —— 用户直接改完再提交，不用「关弹窗 → 看报错 → 重新打开」。
@@ -186,7 +186,7 @@ class FolderManagerScreen extends ConsumerWidget {
         .read(createFolderUseCaseProvider)
         .call(CreateFolderParams(name: name));
     // 成功路径不需要 `ref.invalidate`：drift watch 会把新行推给 `folderProvider`，
-    // UI 自动重建（`ARCHITECTURE-DESIGN.md` §8.4）。
+    // UI 自动重建。
     result.fold((failure) {
       if (!context.mounted) return;
       // 走到这里还撞重名 = 弹窗打开期间名字被占（导入 / 恢复）：把它翻成本地化
@@ -244,7 +244,7 @@ class FolderManagerScreen extends ConsumerWidget {
   ///
   /// `initial` 预填当前名（重命名），`excludeId` 让重名校验跳过正在改名的那个文件夹。
   /// ⛔ **弹窗视觉无稿**：用 `showDialog` + Material 默认样式，
-  /// ⛔ 不建 `AppDialog` / `AppBottomSheet`（§8 的「不建」清单）。
+  /// ⛔ 不建 `AppDialog` / `AppBottomSheet`。
   ///
   /// ⛔ 不用 `TextEditingController`：`showDialog` 的 future 在 `pop` 时就完成，
   /// 而退出动画还在跑，立即 `dispose()` 会让仍在重建的 `TextField` 拿到已释放的

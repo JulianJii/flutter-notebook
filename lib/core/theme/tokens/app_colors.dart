@@ -1,15 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
-/// 设计稿强调色。`UI-IMPLEMENTATION-SPEC.md` §2.1 的 `accent`。
+/// 设计稿强调色（accent）。
 ///
 /// ⛔ 不要散落字面量：换配色方案时只有 `AppTheme` 会传新的 `accent`，
 /// 其余 12 个中性色不动，故默认值集中在这里。
 const Color kDesignAccent = Color(0xFFF0A020);
 
-/// 语义色单一来源。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.1（14 行表格）。
+/// 语义色单一来源，全部色值都在这里。
 ///
 /// 实现为 [ThemeExtension] 而非散落的 const：13 个语义色 + 深色模式，
-/// 必须一处改全生效。见 `ARCHITECTURE-DESIGN.md` §7.3。
+/// 必须一处改全生效。
 class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
     required this.bg,
@@ -28,7 +28,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.textDisabled,
   });
 
-  /// 浅色模式取值。`UI-IMPLEMENTATION-SPEC.md` §2.1 原表。
+  /// 浅色模式取值。
   ///
   /// [accent] 由配色方案传入（`AppTheme`），默认 [kDesignAccent]。
   const AppColors.light({this.accent = kDesignAccent})
@@ -96,7 +96,7 @@ class AppColors extends ThemeExtension<AppColors> {
   /// ⚠️ 取色校准（2026-10-04，待办稿原图 1080×2460 直方图取色）：FAB 圆面主色
   /// 峰值实测为 **`#FFBB10`**，与本表的 `#F0A020` 相差 15(R)/27(G)/16(B)，
   /// 远超「2 个色阶」。**本轮保留规格值未改**（改设计 token 是设计侧决策），
-  /// 该差异已登记在 `specs/docs/PROJECT-STATUS.md`，等设计确认后再动这一个字段。
+  /// 等设计确认后再动这一个字段。
   final Color accent;
 
   /// 设置卡片内行分割线、底部导航顶部分隔线。设置稿/笔记列表稿/待办稿。
@@ -115,10 +115,10 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// 「新建文件夹」行文案色。文件夹管理稿 `[推导]`。
   ///
-  /// ⚠️ 文件夹管理稿实测的`#666` **不在** `UI-IMPLEMENTATION-SPEC.md` §2.1 的 14 行
-  /// 颜色表里 —— 它既不是 [textPrimary]（标题黑）也不是 [textSecondary]
+  /// ⚠️ 文件夹管理稿实测的`#666` **不在** 上面那张 14 行颜色表里
+  /// —— 它既不是 [textPrimary]（标题黑）也不是 [textSecondary]
   /// （计数灰 `#999999`），是卡片内一个独立的中间灰，故补一个字段。
-  /// JPEG 取色精度有限，登记为 §9 容差项。
+  /// JPEG 取色精度有限，属已知误差。
   final Color textDisabled;
 
   /// 操作成功反馈色（Snackbar 文案、图标）。数据与同步的提示、恢复成功。

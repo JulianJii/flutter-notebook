@@ -1,13 +1,13 @@
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 设计稿 15 个图标语义的集中映射。取值来自 `UI-IMPLEMENTATION-SPEC.md` §2.5。
+/// 设计稿 15 个图标语义的集中映射。
 ///
 /// ⚠️ 设计稿是 JPEG 截图，无法提取矢量图标资源；这里用 Material Icons 的
 /// outlined / rounded 变体近似。M3 的 outlined 图标本身就是 2dp 描边 + 圆端点，
-/// 与 §2.5 尾注的度量一致。拿到设计提供的图标资源后，只改这一个文件。
+/// 与设计稿的度量一致。拿到设计提供的图标资源后，只改这一个文件。
 ///
-/// ⚠️ 3 处已知字形偏差（见 `PROJECT-STATUS.md`）：`settings`（稿为六边形内含圆，
+/// ⚠️ 3 处已知字形偏差：`settings`（稿为六边形内含圆，
 /// 实现为齿轮）、`navNotes` / `navTodo`（稿的「圆角方块外框」实为选中态背景，
 /// 已由 `AppBottomNav` 的 28dp 深色圆角方块实现）。
 abstract final class AppIcons {
@@ -69,8 +69,7 @@ abstract final class AppIcons {
 
 /// 24dp 线性图标。统一尺寸、描边与颜色语义。
 ///
-/// 度量规则来自 `UI-IMPLEMENTATION-SPEC.md` §2.5 尾注：
-/// 统一 24dp 线性图标、2dp 描边、圆角端点。
+/// 度量规则：统一 24dp 线性图标、2dp 描边、圆角端点。
 ///
 /// ⚠️ 描边宽度不可控：`IconData` 不携带 strokeWidth，2dp 描边靠选用 M3 的
 /// outlined 变体实现（[AppIcons] 全部映射都指向 outlined / rounded）。
@@ -84,7 +83,7 @@ class AppIcon extends StatelessWidget {
     this.color,
   });
 
-  /// 顶部栏图标的视觉尺寸。§2.5「顶部栏图标视觉尺寸 24dp」。
+  /// 顶部栏图标的视觉尺寸。24dp。
   static const double defaultSize = 24;
 
   /// 图标字形。取值来自 [AppIcons]。

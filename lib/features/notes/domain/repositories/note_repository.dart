@@ -4,7 +4,7 @@ import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
 import 'package:mynote/features/notes/domain/entities/note_query.dart';
 
-/// 笔记的领域抽象。实现在 data 层（`TASK-022`）。
+/// 笔记的领域抽象。实现在 data 层。
 abstract class NoteRepository {
   /// 按查询条件订阅笔记列表。[NoteQuery.folder] 为 `AllFolders` 时表示不过滤。
   ///

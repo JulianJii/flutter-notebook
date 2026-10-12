@@ -3,17 +3,14 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppUtils {
-  // 日期格式化
   static String formatDate(DateTime date, {String format = 'yyyy-MM-dd'}) {
     return DateFormat(format).format(date);
   }
 
-  // 时间格式化
   static String formatTime(DateTime time, {String format = 'HH:mm'}) {
     return DateFormat(format).format(time);
   }
 
-  // 日期和时间格式化
   static String formatDateTime(
     DateTime dateTime, {
     String format = 'yyyy-MM-dd HH:mm',
@@ -51,7 +48,6 @@ class AppUtils {
     }
   }
 
-  // 显示 snackbar
   static void showSnackBar(
     BuildContext context, {
     required String message,
@@ -69,8 +65,6 @@ class AppUtils {
     );
   }
 
-  // 显示 toast 消息（fluttertoast）
-  //
   // ⚠️ fluttertoast 只实现 Android / iOS / Web：桌面端（Windows / macOS /
   // Linux）调用会抛 MissingPluginException，且界面上什么都看不到。
   static Future<bool?> showToast({
@@ -87,7 +81,6 @@ class AppUtils {
     );
   }
 
-  // 邮箱校验
   static bool isValidEmail(String email) {
     final emailRegExp = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
     return emailRegExp.hasMatch(email);
@@ -101,13 +94,11 @@ class AppUtils {
     return passwordRegExp.hasMatch(password);
   }
 
-  // 电话号码校验（简单校验）
   static bool isValidPhoneNumber(String phoneNumber) {
     final phoneRegExp = RegExp(r'^\+?[0-9]{10,15}$');
     return phoneRegExp.hasMatch(phoneNumber);
   }
 
-  // URL 校验
   static bool isValidUrl(String url) {
     final urlRegExp = RegExp(
       r'^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)$',
@@ -115,7 +106,6 @@ class AppUtils {
     return urlRegExp.hasMatch(url);
   }
 
-  // 使用省略号截断字符串
   static String truncateString(String text, int maxLength) {
     if (text.length <= maxLength) {
       return text;
@@ -123,7 +113,6 @@ class AppUtils {
     return '${text.substring(0, maxLength)}...';
   }
 
-  // 格式化文件大小
   static String formatFileSize(int bytes) {
     if (bytes < 1024) {
       return '$bytes B';
@@ -139,7 +128,6 @@ class AppUtils {
     }
   }
 
-  // 格式化货币
   static String formatCurrency(
     double amount, {
     String symbol = '\$',

@@ -7,7 +7,7 @@ import '../tables/notes_table.dart';
 part 'note_dao.g.dart';
 
 /// 排序。core 侧的 4 个值与 domain 的 `NoteSort` 一一对应；重复 4 个枚举值
-/// 比让 core 反向 import domain 便宜。映射在 `TASK-021` 的 datasource 集中做。
+/// 比让 core 反向 import domain 便宜。翻译工作集中在 datasource 层做。
 ///
 /// ⚠️ 放库级而非 `NoteDao` 内：仓库里的 `riverpod_generator` 遇到「类内 enum」
 /// 会直接崩（`Enums can't be declared inside classes`），生成链断掉。
@@ -27,8 +27,8 @@ enum NoteDaoOrder {
 
 /// 笔记的 SQL 与 watch 查询。
 ///
-/// ⛔ 本类**不得** import `package:init/features/**`（`REPOSITORY-MAP.md` §5.3
-/// 的 R1）。参数用原始类型，返回 drift 行对象（`NoteRow`）。行 → `Note` 的
+/// ⛔ 本类**不得** import `package:init/features/**` —— core 不准依赖 features。
+/// 参数用原始类型，返回 drift 行对象（`NoteRow`）。行 → `Note` 的
 /// 转换在 `features/notes/data/datasources/note_local_data_source.dart`；
 /// `NoteQuery` 三态 → 下列参数的翻译也在那里。
 @DriftAccessor(tables: [Notes, NoteFolders])
@@ -265,7 +265,7 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
 }
 
 /// `limit == null` 但 `offset > 0` 时的占位上限。SQLite 的 `LIMIT` 上限是 2^63-1，
-/// 取 2^31-1 已远超任何真实笔记数（§5.7：155 条不分页）。
+/// 取 2^31-1 已远超任何真实笔记数（百量级不分页）。
 const int _noLimit = 0x7FFFFFFF;
 
 /// 把用户输入转成 `LIKE` 的 pattern，并对 `%` `_` `\` 三个元字符做转义。

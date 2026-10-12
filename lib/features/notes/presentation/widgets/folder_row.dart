@@ -3,19 +3,18 @@ import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 文件夹管理稿的文件夹行：左选中勾 / 中名称 / 右侧插槽（拖动图标）。唯一调用方是文件夹管理
-/// （TASK-050）。
+/// 文件夹管理稿的文件夹行：左选中勾 / 中名称 / 右侧插槽（拖动图标）。唯一调用方是文件夹管理。
 ///
 /// 容器与中右区都复用 `core/ui` 的 T1 组件（`AppCard` + `AppListTile`）——
 /// 全App 只有一种卡片外观、一种行骨架，本组件只负责「文件夹」这一行的业务语义：
 /// 32dp 对齐槽位里**仅选中项**画琥珀勾。
 ///
 /// ⛔ **参数是标量而非 `FolderWithCount`**：组件不认识 domain 实体，因此
-/// 「未分类」不需要 null 特判、测试也不必构造实体（`TASK-049` 决策 A）。
+/// 「未分类」不需要 null 特判、测试也不必构造实体。
 /// 由页面（文件夹管理）负责从 `FolderWithCount` 取 `folder?.name`。
 ///
-/// ⛔ **无重命名 / 删除入口**：文件夹管理稿无长按菜单、无多选、无行内编辑
-/// （`UI-IMPLEMENTATION-SPEC.md` §4 P4段「本页无」）。顶栏也不画 trash ——
+/// ⛔ **无重命名 / 删除入口**：文件夹管理稿无长按菜单、无多选、无行内编辑。
+/// 顶栏也不画 trash ——
 /// 本页只提供「新建」与拖拽排序。
 class FolderRow extends StatelessWidget {
   const FolderRow({

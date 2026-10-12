@@ -31,10 +31,10 @@ class AppFilterChip extends StatelessWidget {
   /// 点击回调。null → 不可点（笔记列表稿的 chip 均可点）。
   final VoidCallback? onTap;
 
-  /// chip 高度。§4 笔记列表「h 28dp」。
+  /// chip 高度。28dp。
   static const double height = 28;
 
-  /// 左右内边距。§4 笔记列表「内边距 h 12dp」= [AppSpacing.pageH]。
+  /// 左右内边距。12dp = [AppSpacing.pageH]。
   static const double horizontalPadding = AppSpacing.pageH;
 
   /// 圆角：pill 全圆角。半径 = [height] 的一半，由高度派生 —— 改高度自动跟随。

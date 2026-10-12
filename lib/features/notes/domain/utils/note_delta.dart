@@ -5,7 +5,7 @@ import 'package:dart_quill_delta/dart_quill_delta.dart';
 /// 笔记正文的编解码：**库里存 Quill Delta JSON**（`flutter_quill` 的唯一真相源，
 /// 见 `Note.content`），而字数统计与列表摘要要的是纯文本，两者在此互转。
 ///
-/// ⛔ 不建 UseCase：纯函数不过 Repository（`DEVELOPMENT-GUIDELINES.md` §5）。
+/// ⛔ 不建 UseCase：纯函数不过 Repository。
 /// ⚠️ **解码必须容错**：接富文本之前库里存的是纯文本，`Delta.fromJson` 对它会抛。
 /// 解析失败一律当纯文本处理 —— 老笔记打不开就是数据丢失，用户无从补救。
 abstract final class NoteDelta {

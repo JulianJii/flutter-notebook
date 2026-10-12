@@ -3,11 +3,11 @@ import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/notes/domain/entities/folder_with_count.dart';
 import 'package:mynote/features/notes/domain/entities/note_folder.dart';
 
-/// 文件夹的领域抽象。实现在 data 层（`TASK-022`）。
+/// 文件夹的领域抽象。实现在 data 层。
 abstract class FolderRepository {
   /// 订阅文件夹 + 每个文件夹的笔记数（一条 GROUP BY，不 N+1）。
   ///
-  /// 「全部」与「未分类」**不作为** `NoteFolder` 出现在这个流里（§5.3）。
+  /// 「全部」与「未分类」**不作为** `NoteFolder` 出现在这个流里。
   ///
   /// 流错误：Repository 实现负责把 `CacheException` 映射为 `CacheFailure`，
   /// UI 侧只会看到 `AsyncValue.error(CacheFailure)`。

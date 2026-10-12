@@ -9,8 +9,8 @@ import 'package:material_ui/material_ui.dart';
 /// 待办稿的待办卡：左复选框 + 右标题，此外什么都没有（待办稿明确「无日期、无优先级、
 /// 无删除入口」）。
 ///
-/// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（`UI-IMPLEMENTATION-SPEC.md`
-/// §2.4：12dp 圆角、`elevation.card` = 0），不在这里自绘 `Container`。
+/// 容器直接复用 `AppCard` —— 全 App 只有一种卡片外观（12dp 圆角、
+/// `elevation.card` = 0），不在这里自绘 `Container`。
 ///
 /// **参数收扁平标量而不是整个 `Todo`**（与 `NoteCard` 相反）：`NoteCard` 必须收
 /// `Note`，因为摘要规则（空 → 占位文案）与日期格式是卡片自己的表现规则；而本页
@@ -60,12 +60,12 @@ class TodoCard extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          // `AppCheckbox.size`（20dp）是该组件自己声明的「见方边长」（§4 待办），
+          // `AppCheckbox.size`（20dp）是该组件自己声明的「见方边长」，
           // 但 Material `Checkbox` 内部固定 8dp 内边距，实际占位 32dp —— 直接用
           // 会把卡片撑到 72dp，比待办稿的 60dp 高出整整一个内边距。这里把布局盒
           // 收回 20dp，让排版由真实内容（16sp × 1.4 = 22.4dp 行高）决定。
           // ⚠️ 代价：可点区从 32×32 降到 20×20。M3 的 48dp 目标本项目已经因为
-          // 待办稿明确要求 20dp 视觉而放弃（TASK-013 选了 `shrinkWrap`），此处不再
+          // 待办稿明确要求 20dp 视觉而放弃，此处不再
           // 进一步压缩到不可用的程度以外的其他数值。
           SizedBox.square(
             dimension: AppCheckbox.size,

@@ -2,13 +2,6 @@
 //
 // ⚠️ 本文件只导出 core/ui 下的 T1 组件。不要把 lib/core/generators/ 下的
 //    同名 0 字节模板文件导进来（app_card.dart 等在两处同名）。
-//
-// ⚠️ export 数 = 15 而非 `ARCHITECTURE-DESIGN.md` §3.1 写的 12：差额是
-//    `app_bottom_nav.dart` 与 `app_font_picker_sheet.dart`。前者在 TASK-013 之前
-//    已由 TASK-008 落地，
-//    §3.1 的「12」只是没把它算进去。TASK-013 spec 里的「不导出
-//    app_bottom_nav（此刻文件不存在）」这一前提已失效，漏导出会让
-//    TASK-034+ 的 `import 'core/ui/ui.dart'` 拿不到 `AppBottomNav`。
 export 'app_bottom_nav.dart';
 export 'app_card.dart';
 export 'app_checkbox.dart';

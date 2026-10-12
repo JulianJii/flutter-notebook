@@ -7,7 +7,7 @@ part 'todo_dao.g.dart';
 
 /// 待办的 SQL 与 watch 查询。
   ///
-  /// ⛔ 不得 import `package:init/features/**`（`REPOSITORY-MAP.md` §5.3 的 R1）。
+  /// ⛔ 不得 import `package:init/features/**` —— core 不准依赖 features。
   /// 返回 `TodoRow`，不接收 `Todo` —— 转换在 `features/todos/data/datasources/`。
   /// ⚠️ **不 import `note_dao.dart` / `folder_dao.dart`** —— `todos` 表与它们
   /// 无任何关系，耦合只会让三个 DAO 互相牵制。

@@ -1,5 +1,4 @@
 class AppConstants {
-  // 应用常量
   static const String appName = 'MyNote';
   static const String appVersion = '1.0.0';
   static const String packageName = 'com.wode.mynote';
@@ -17,15 +16,12 @@ class AppConstants {
   // 开源许可（关于页展示，与仓库 LICENSE 保持一致）
   static const String licenseName = 'MIT';
 
-  // 超时时长
   static const int connectTimeout = 30000;
   static const int receiveTimeout = 30000;
 
-  // Hive box names
   static const String settingsBox = 'settings';
   static const String cacheBox = 'cache';
 
-  // Animation durations
   static const Duration defaultAnimationDuration = Duration(milliseconds: 300);
 
   // Accessibility

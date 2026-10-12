@@ -46,12 +46,13 @@ powershell -ExecutionPolicy Bypass -File .\rename_app.ps1 --app-name "Your App N
 
 ## 语言生成
 
-使用本地化助手添加新语言或更新翻译：
+使用本地化助手添加新语言或检查翻译（子命令制，不认 `--add` 这类 flag）：
 
 ```bash
-./generate_language.sh --add fr,es,de  # Add French, Spanish, and German
-./generate_language.sh --sync           # Synchronize all ARB files with the base English file
-./generate_language.sh --gen            # Generate Dart code from ARB files
+./generate_language.sh add fr     # 新增语言（如法语；只需语言码）
+./generate_language.sh list       # 列出支持的语言
+./generate_language.sh check      # 检查缺失的翻译键
+./generate_language.sh generate   # 从 ARB 生成 Dart（即 flutter gen-l10n）
 ```
 
 ## Feature 生成
@@ -64,27 +65,19 @@ powershell -ExecutionPolicy Bypass -File .\rename_app.ps1 --app-name "Your App N
 
 这将按照 Clean Architecture 原则创建包含 data、domain 和 presentation 层的新 feature 文件夹。
 
-## 测试文件生成器
+## 测试运行器（带覆盖率）
 
-为 feature 生成测试文件：
+运行测试并可选生成 lcov 覆盖率报告 —— 它**不生成测试文件**：
 
 ```bash
-./test_generator.sh feature_name
+./test_generator.sh                                      # 全量测试 + 覆盖率
+./test_generator.sh --target test/features/notes/        # 只跑指定路径
+./test_generator.sh --no-coverage                        # 不统计覆盖率
 ```
 
 Windows（PowerShell）等价版本：`powershell -ExecutionPolicy Bypass -File .\test_generator.ps1 --target test/features/notes/`（也支持 `--no-coverage` / `--no-report`）。
 
-该脚本为指定的 feature 创建必要的测试文件并包含适当的样板代码。
-
-## 文档构建器
-
-构建文档网站：
-
-```bash
-cd docs && ./build_docs.sh
-```
-
-该脚本将 Markdown 文档文件转换为 HTML 并生成漂亮的文档网站。
+覆盖率转 HTML 报告需要本机装有 `lcov`（`genhtml`）；未安装时只产出原始 `coverage/lcov.info`。
 
 ## 高级用法示例
 
@@ -94,8 +87,8 @@ cd docs && ./build_docs.sh
 # Create a new feature called "user_profile"
 ./generate_feature.sh --name user_profile
 
-# Generate test files for the user_profile feature
-./test_generator.sh user_profile
+# Run tests for the user_profile feature
+./test_generator.sh --target test/features/user_profile/
 ```
 
 ### 为生产环境重命名应用

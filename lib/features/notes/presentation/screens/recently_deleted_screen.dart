@@ -306,7 +306,7 @@ class _GroupHeader extends StatelessWidget {
 ///
 /// 类型无关 —— 三类实体共用（笔记 / 文件夹 / 待办的行长得一样，只是内容不同）。
 ///
-/// 页面内私有组件（`DEVELOPMENT-GUIDELINES.md` §7.2）：语义只属于回收站，
+/// 页面内私有组件：语义只属于回收站，
 /// 不上提 `core/ui`。
 class _TrashRow extends StatelessWidget {
   const _TrashRow({

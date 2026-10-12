@@ -20,8 +20,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'todos_providers.g.dart';
 
-// ⛔ **零 import `features/notes`**：features 之间不互相依赖（`FEATURE-DEPENDENCIES.md`
-// R2）。⛔ provider 体只做装配。
+// ⛔ **零 import `features/notes`**：features 之间不互相依赖。
+// ⛔ provider 体只做装配。
 
 // ---- data source ----
 @riverpod

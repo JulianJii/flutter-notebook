@@ -12,7 +12,7 @@ enum AppColorScheme { amber, blue, green, violet }
 /// ⚠️ **是 `int` 而不是 `Color`**：本文件要保持零 import，`Color` 住在 `dart:ui`。
 /// 由 `AppTheme` 转成 `Color`。
 ///
-/// `amber` 是 `UI-IMPLEMENTATION-SPEC.md` §2.1 的设计稿强调色 `#F0A020`，
+/// `amber` 是设计稿强调色 `#F0A020`，
 /// 也是默认值 —— 换方案只改强调色与派生色板，中性色不动。
 extension AppColorSchemeSeed on AppColorScheme {
   int get seed => switch (this) {

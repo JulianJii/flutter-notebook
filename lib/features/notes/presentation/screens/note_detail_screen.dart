@@ -28,9 +28,9 @@ import '../widgets/note_image_embed_builder.dart';
 ///
 /// **单态编辑页**：笔记详情稿呈现的就是编辑态（空标题 + 有正文 + 灰色占位符）。
 /// 做「阅读态 / 编辑态切换」就要自造一个无稿的只读态，并多维护一个 `isEditing`
-/// 状态字段 —— 为无稿问题加状态违反 §9「能派生的不存 / 无稿不自造」。
+/// 状态字段 —— 为无稿问题加状态违反「能派生的不存 / 无稿不自造」。
 ///
-/// ⛔ **不建 `AppTextField`**（`ARCHITECTURE-DESIGN.md` §7.2）。若最终形态
+/// ⛔ **不建 `AppTextField`**。若最终形态
 /// 就是「无边框纯文本 + 灰色占位符」，它只是一条
 /// `InputDecoration` 样式，不值得单独建组件。
 class NoteDetailScreen extends ConsumerStatefulWidget {
@@ -50,8 +50,7 @@ class NoteDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
-  // controller 是草稿的**权威来源**（`ARCHITECTURE-DESIGN.md` §8.1 笔记详情行：
-  // 4 个 Local State）。provider 的 `draft*` 只用于 `isDirty` 与字数。
+  // controller 是草稿的**权威来源**，provider 的 `draft*` 只用于 `isDirty` 与字数。
   late final TextEditingController _titleController;
   late final QuillController _contentController;
   late final FocusNode _titleFocus;
@@ -808,7 +807,7 @@ class _NoteMetaSlot extends ConsumerWidget {
 /// 详情页元信息行：`10月3日 6:40 | 35字`。
 ///
 /// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
-/// （`DEVELOPMENT-GUIDELINES.md` §7.3「1 个页面 + 语义与页面绑定 → 页面内」）。
+/// （1 个页面 + 语义与页面绑定 → 页面内）。
 /// 类名不加 `_` 前缀是为了 widget 测试能直接引用它。
 class NoteMetaLine extends StatelessWidget {
   const NoteMetaLine({
@@ -834,7 +833,7 @@ class NoteMetaLine extends StatelessWidget {
       TextSpan(
         children: <InlineSpan>[
           TextSpan(text: '$date $time'),
-          // 分隔符两侧各留约 6dp（12sp 下一个空格 ≈3dp，两个 ≈6dp）。§4 笔记详情 `[推导]`。
+          // 分隔符两侧各留约 6dp（12sp 下一个空格 ≈3dp，两个 ≈6dp）。
           const TextSpan(text: '  |  '),
           TextSpan(
             text: AppLocalizations.of(context).noteMetaWordCount(wordCount),
@@ -855,7 +854,7 @@ class NoteMetaLine extends StatelessWidget {
 /// 选中即 `Navigator.pop(index)`，取消（下滑 / 点遮罩）返回 null = 不改。
 ///
 /// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
-/// （`DEVELOPMENT-GUIDELINES.md` §7.3）。类名不加 `_` 前缀是为了 widget 测试能引用它。
+/// （1 个页面 + 语义与页面绑定 → 页面内）。类名不加 `_` 前缀是为了 widget 测试能引用它。
 class BackgroundPickerSheet extends StatelessWidget {
   const BackgroundPickerSheet({
     required this.backgrounds,

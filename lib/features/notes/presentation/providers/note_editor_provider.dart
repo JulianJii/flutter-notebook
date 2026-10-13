@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/utils/app_clock.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_version.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_params.dart';
@@ -11,6 +13,8 @@ import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/utils/note_delta.dart';
 import 'package:mynote/features/notes/domain/utils/word_counter.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'note_editor_provider.g.dart';
@@ -378,6 +382,35 @@ class NoteEditor extends _$NoteEditor {
         },
         (saved) {
           _savedId ??= saved.id;
+          // 落库成功 → 存一版历史（挂在这条既有落库点之后，离开页面
+          // 走 `_leave() → flush()` 同样覆盖）。去重与淘汰在数据层的事务里；
+          // ⛔ 存版失败只记日志不打断保存 —— 正文已落库是既成事实。
+          int limit = defaultNoteVersionLimit;
+          try {
+            limit = ref.read(settingsProvider).noteVersionLimit;
+          } on Object {
+            // 设置链不可用（极端：容器里偏好 provider 报错）：回落默认值，
+            // 存版照常 —— 上限取错一版不致命，存版失败才致命。
+          }
+          unawaited(
+            ref
+                .read(saveNoteVersionUseCaseProvider)(
+                  NoteVersion(
+                    id: '',
+                    noteId: saved.id,
+                    title: saved.title,
+                    content: saved.content,
+                    createdAt: AppClock.appNow(),
+                  ),
+                  limit,
+                )
+                .then((result) => result.fold(
+                      (failure) => ref
+                          .read(taggedLoggerProvider('notes'))
+                          .w('note version save failed', error: failure),
+                      (_) {},
+                    )),
+          );
           return current.copyWith(
             savedTitle: saved.title,
             savedContent: saved.content,

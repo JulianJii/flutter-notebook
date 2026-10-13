@@ -1,9 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/ui.dart';
 import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/notes/presentation/providers/note_title_provider.dart';
 import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 待办稿的待办卡：左复选框 + 右标题，此外什么都没有（待办稿明确「无日期、无优先级、
@@ -23,6 +28,7 @@ class TodoCard extends StatelessWidget {
     super.key,
     this.reminderAt,
     this.priority = TodoPriority.normal,
+    this.linkedNoteId,
     this.onChanged,
     this.onTap,
   });
@@ -39,6 +45,9 @@ class TodoCard extends StatelessWidget {
   /// 优先级。[TodoPriority.normal] 不渲染任何标记（大多数待办都不设优先级，
   /// 给每条都画一根色条等于什么都没说）。
   final TodoPriority priority;
+
+  /// 挂接的笔记 id。null = 未挂接 → 不渲染笔记 chip。
+  final String? linkedNoteId;
 
   /// 勾选变更。null → 复选框禁用。
   final ValueChanged<bool>? onChanged;
@@ -58,8 +67,12 @@ class TodoCard extends StatelessWidget {
         horizontal: AppSpacing.rowPadH,
         vertical: _verticalPad,
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          Row(
+            children: <Widget>[
           // `AppCheckbox.size`（20dp）是该组件自己声明的「见方边长」，
           // 但 Material `Checkbox` 内部固定 8dp 内边距，实际占位 32dp —— 直接用
           // 会把卡片撑到 72dp，比待办稿的 60dp 高出整整一个内边距。这里把布局盒
@@ -127,6 +140,13 @@ class TodoCard extends StatelessWidget {
               ),
             ),
           ],
+          ],
+          ),
+          // 挂接的笔记 chip：单独一行（挤在标题行里会吃掉提醒的位）。
+          if (linkedNoteId != null) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            _LinkedNoteChip(noteId: linkedNoteId!),
+          ],
         ],
       ),
     );
@@ -156,5 +176,64 @@ class TodoCard extends StatelessWidget {
       TodoPriority.important => context.colors.accent,
       TodoPriority.normal => context.colors.textTertiary,
     };
+  }
+}
+
+/// 挂接笔记 chip：笔记图标 + 标题单行截断，点按跳笔记详情。
+///
+/// 悬挂引用兜底：标题读不到（空串）= 笔记已被物理清扫（FK SET NULL 不跨设备
+/// 传播，对端可能还挂着旧 id），点了弹一句而不是跳去一个读不到数据的空壳页。
+class _LinkedNoteChip extends ConsumerWidget {
+  const _LinkedNoteChip({required this.noteId});
+
+  final String noteId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final textStyles = context.textStyles;
+    final title = ref.watch(noteTitleProvider(noteId)).value ?? '';
+
+    return InkWell(
+      onTap: () {
+        if (title.isEmpty) {
+          AppUtils.showSnackBar(context, message: l10n.noteLinkMissing);
+          return;
+        }
+        context.push(AppRoutes.noteDetailPath(noteId));
+      },
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        key: const Key('todo_card_linked_note'),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: 2,
+        ),
+        decoration: BoxDecoration(
+          color: colors.bg,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            AppIcon(
+              icon: AppIcons.note,
+              size: 14,
+              color: colors.textSecondary,
+            ),
+            const SizedBox(width: AppSpacing.sm / 2),
+            Flexible(
+              child: Text(
+                title.isEmpty ? l10n.noteLinkMissing : title,
+                style: textStyles.meta.copyWith(color: colors.textSecondary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

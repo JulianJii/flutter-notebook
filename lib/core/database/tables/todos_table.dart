@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
 
+import 'notes_table.dart';
+
 /// 待办表。实体见 `features/todos/domain/entities/todo.dart`。
 ///
 /// 排序固定 `created_at DESC`（在 `TodoDao` 里做），不存 `sort_index`。
@@ -61,4 +63,19 @@ class Todos extends Table {
   /// 校验语法、还要处理「不支持的 RRULE」这种分支，全是为了一个我们自己
   /// 不会生成的输入。真要支持任意 RRULE 时换掉这一列（迁移只影响本列）。
   TextColumn get recurrence => text().nullable()();
+
+  /// 挂接的笔记 id（一对一，可空 = 未挂接，绝大多数待办）。
+  ///
+  /// ⚠️ 只存「挂上」这个用户意图，**不做双向反查列**：笔记侧的关联待办由
+  /// `todos.linked_note_id` 反向查询（索引见迁移）。外键 `ON DELETE SET NULL`
+  /// 在笔记被保留期物理清扫时自动摘掉挂接；软删除不清它 —— 进回收站不等于
+  /// 笔记消失，恢复后挂接仍在。
+  ///
+  /// SET NULL 不刷 `todos.updated_at`，该变更不跨设备传播：对端可能仍挂着
+  /// 一个已被清扫的笔记 id，跳转时由 UI 兜底提示（见 `TodoCard`）。
+  TextColumn get linkedNoteId => text().nullable().references(
+    Notes,
+    #id,
+    onDelete: KeyAction.setNull,
+  )();
 }

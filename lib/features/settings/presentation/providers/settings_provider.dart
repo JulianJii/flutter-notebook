@@ -84,6 +84,12 @@ class Settings extends _$Settings {
   void setCompressImages(bool value) =>
       _write(state.copyWith(compressImages: value));
 
+  /// 单篇笔记的版本历史上限。调用方（设置页）负责夹紧到
+  /// `minNoteVersionLimit .. maxNoteVersionLimit`，这里不再防御 ——
+  /// 与其他 setter 一致，写入侧只管「用户给了什么就存什么」。
+  void setNoteVersionLimit(int value) =>
+      _write(state.copyWith(noteVersionLimit: value));
+
   // ⛔ **不建 `setLocale`**：语言的真源是 `core` 的 `persistentLocaleProvider`
   // （键 `selected_language_code`，自己写盘），设置页的语言行直接读写它。
   // 在这里再存一份就是双真相源（`AppSettings.locale` 已因此删除）。

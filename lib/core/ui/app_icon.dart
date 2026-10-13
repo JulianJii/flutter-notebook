@@ -47,6 +47,18 @@ abstract final class AppIcons {
   static const IconData starOutline = Icons.star_outline;
   static const IconData starFilled = Icons.star;
 
+  /// 标签（列表筛选入口 / 打标菜单）。空心 / 实心一对 ——
+  /// 实心 = 当前有标签筛选生效（同置顶 / 收藏的 on/off 约定）。
+  static const IconData tag = Icons.label_outline;
+  static const IconData tagFilled = Icons.label;
+
+  /// 「笔记」实体（待办卡上的挂接 chip）。不在设计稿的 15 个语义里，
+  /// 取 Material 惯例的文档字形。
+  static const IconData note = Icons.description_outlined;
+
+  /// 版本历史入口（笔记详情顶栏）。无稿，取 Material 惯例字形。
+  static const IconData history = Icons.history;
+
   /// 子任务行的「删除这条子项」。无稿，取平台惯例的叉。
   static const IconData close = Icons.close;
 

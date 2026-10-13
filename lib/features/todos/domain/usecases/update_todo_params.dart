@@ -12,6 +12,7 @@ class UpdateTodoParams extends Equatable {
     required this.reminderAt,
     required this.priority,
     required this.recurrence,
+    required this.linkedNoteId,
   });
 
   final String todoId;
@@ -32,6 +33,10 @@ class UpdateTodoParams extends Equatable {
   /// 重复规则。`null` = 清除重复。同 [priority]，required 是为了强制表态。
   final TodoRecurrence? recurrence;
 
+  /// 挂接的笔记 id。`null` = 解除挂接。同 [priority]，required 是为了强制表态
+  /// —— 漏传会被全字段覆盖写成「解除挂接」。
+  final String? linkedNoteId;
+
   @override
   List<Object?> get props => [
     todoId,
@@ -40,5 +45,6 @@ class UpdateTodoParams extends Equatable {
     reminderAt,
     priority,
     recurrence,
+    linkedNoteId,
   ];
 }

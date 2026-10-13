@@ -140,6 +140,52 @@ class NoteRepositoryImpl implements NoteRepository {
   }
 
   @override
+  Future<Either<Failure, int>> deleteMany(List<String> noteIds) async {
+    try {
+      return Right(await _localDataSource.deleteMany(noteIds));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> moveToFolderMany(
+    List<String> noteIds,
+    String? folderId,
+  ) async {
+    try {
+      return Right(await _localDataSource.moveToFolderMany(noteIds, folderId));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int>> updateFlagsMany(
+    List<String> noteIds, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) async {
+    try {
+      return Right(
+        await _localDataSource.updateFlagsMany(
+          noteIds,
+          isPinned: isPinned,
+          isFavorite: isFavorite,
+        ),
+      );
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(CacheFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Stream<List<Note>> watchDeleted() =>
       _localDataSource.watchDeleted().handleError(_toFailure);
 

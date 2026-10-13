@@ -32,9 +32,10 @@ void main() {
         todoId: 't1',
         title: '',
         isDone: false,
-      priority: TodoPriority.normal,
-      recurrence: null,
+        priority: TodoPriority.normal,
+        recurrence: null,
         reminderAt: null,
+        linkedNoteId: null,
       ),
     );
   });

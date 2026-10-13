@@ -203,6 +203,85 @@
   "@uncategorized": {
     "description": "Filter chip for notes without a folder"
   },
+  "tags": "Tags",
+  "@tags": {
+    "description": "Tooltip of the tag filter / tag editor entry, and the tag section label"
+  },
+  "tagEditorHint": "Type a new tag, press enter to add",
+  "@tagEditorHint": {
+    "description": "Hint of the tag editor sheet input field"
+  },
+  "tagManagerTitle": "Tag manager",
+  "@tagManagerTitle": {
+    "description": "Title of the tag manager screen"
+  },
+  "tagRename": "Rename",
+  "@tagRename": {
+    "description": "Tag manager: rename action"
+  },
+  "tagRenameTitle": "Rename tag",
+  "@tagRenameTitle": {
+    "description": "Title of the tag rename dialog"
+  },
+  "tagDelete": "Delete tag",
+  "@tagDelete": {
+    "description": "Tag manager: delete action"
+  },
+  "tagDeleteConfirm": "Delete tag \"{name}\"? It will be removed from all notes.",
+  "@tagDeleteConfirm": {
+    "description": "Body of the tag delete confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagNoteCount": "{count} notes",
+  "@tagNoteCount": {
+    "description": "Subtitle of a tag manager row: how many notes carry the tag",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "manageTags": "Manage tags",
+  "@manageTags": {
+    "description": "Row in the tag filter sheet that opens the tag manager"
+  },
+  "noTags": "No tags yet",
+  "@noTags": {
+    "description": "Empty state of the tag filter sheet"
+  },
+  "noteHistory": "Version history",
+  "@noteHistory": {
+    "description": "Tooltip of the note detail top bar history entry, and the history page title"
+  },
+  "historyEmpty": "No versions yet",
+  "@historyEmpty": {
+    "description": "Empty state of the note history page"
+  },
+  "historyRestore": "Restore this version",
+  "@historyRestore": {
+    "description": "Restore button of a history version preview"
+  },
+  "historyRestoreConfirm": "Your current content will be saved as a version first, then the selected version will be restored.",
+  "@historyRestoreConfirm": {
+    "description": "Body of the restore confirmation dialog"
+  },
+  "settingsNoteVersionLimit": "Version history limit",
+  "@settingsNoteVersionLimit": {
+    "description": "Settings row: max auto-saved versions kept per note"
+  },
+  "settingsNoteVersionLimitValue": "{count} versions",
+  "@settingsNoteVersionLimitValue": {
+    "description": "Current value of the version limit row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "back": "Back",
   "@back": {
     "description": "Tooltip of the note detail top bar back button"
@@ -360,6 +439,30 @@
   "todoRecurrenceNeedsReminder": "Set a reminder first, then choose when it repeats",
   "@todoRecurrenceNeedsReminder": {
     "description": "Shown when the user picks a repeat rule while no reminder is set"
+  },
+  "todoLinkedNote": "Linked note",
+  "@todoLinkedNote": {
+    "description": "Label of the linked-note row in the todo edit dialog"
+  },
+  "todoLinkedNotePick": "Pick a note",
+  "@todoLinkedNotePick": {
+    "description": "Title of the note picker sheet for linking a note to a todo"
+  },
+  "todoUnlink": "Unlink",
+  "@todoUnlink": {
+    "description": "Action that removes the note link from a todo"
+  },
+  "notePickerHint": "Search note titles",
+  "@notePickerHint": {
+    "description": "Hint of the search field in the note picker sheet"
+  },
+  "notePickerEmpty": "No notes to link",
+  "@notePickerEmpty": {
+    "description": "Empty state of the note picker sheet"
+  },
+  "noteLinkMissing": "That note no longer exists",
+  "@noteLinkMissing": {
+    "description": "Shown when tapping a todo's linked-note chip whose note no longer exists"
   },
   "@todoTitle": {
     "description": "Hint text of the create-todo dialog text field (to-do list)"
@@ -659,6 +762,59 @@
   "restoreDone": "Restored",
   "@restoreDone": {
     "description": "Snackbar shown after an item is restored"
+  },
+  "batchSelectTitle": "{count} selected",
+  "@batchSelectTitle": {
+    "description": "Title of the note list selection top bar",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchSelectAll": "Select all",
+  "@batchSelectAll": {
+    "description": "Accessibility label of the select-all action in selection mode"
+  },
+  "batchSelectNone": "Deselect all",
+  "@batchSelectNone": {
+    "description": "Accessibility label of the deselect-all action in selection mode"
+  },
+  "batchExit": "Exit selection",
+  "@batchExit": {
+    "description": "Accessibility label of the button that exits selection mode"
+  },
+  "batchMove": "Move",
+  "@batchMove": {
+    "description": "Bottom action bar: move selected notes to a folder"
+  },
+  "batchMoveToFolder": "Move to folder",
+  "@batchMoveToFolder": {
+    "description": "Title of the folder picker sheet for batch move"
+  },
+  "batchFavorite": "Favorite",
+  "@batchFavorite": {
+    "description": "Bottom action bar: favorite the selected notes"
+  },
+  "batchUnfavorite": "Unfavorite",
+  "@batchUnfavorite": {
+    "description": "Bottom action bar: unfavorite the selected notes (shown when all selected are already favorited)"
+  },
+  "batchPin": "Pin",
+  "@batchPin": {
+    "description": "Bottom action bar: pin the selected notes"
+  },
+  "batchUnpin": "Unpin",
+  "@batchUnpin": {
+    "description": "Bottom action bar: unpin the selected notes (shown when all selected are already pinned)"
+  },
+  "batchDeleteDone": "Moved to trash",
+  "@batchDeleteDone": {
+    "description": "Snackbar shown after selected notes are moved to the trash"
+  },
+  "batchOperationFailed": "Action failed, please try again",
+  "@batchOperationFailed": {
+    "description": "Snackbar shown when a batch operation fails"
   },
   "trashDeleteForever": "Delete permanently",
   "@trashDeleteForever": {

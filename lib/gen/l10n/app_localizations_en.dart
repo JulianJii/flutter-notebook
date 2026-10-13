@@ -172,6 +172,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get uncategorized => 'Uncategorized';
 
   @override
+  String get tags => 'Tags';
+
+  @override
+  String get tagEditorHint => 'Type a new tag, press enter to add';
+
+  @override
+  String get tagManagerTitle => 'Tag manager';
+
+  @override
+  String get tagRename => 'Rename';
+
+  @override
+  String get tagRenameTitle => 'Rename tag';
+
+  @override
+  String get tagDelete => 'Delete tag';
+
+  @override
+  String tagDeleteConfirm(String name) {
+    return 'Delete tag \"$name\"? It will be removed from all notes.';
+  }
+
+  @override
+  String tagNoteCount(int count) {
+    return '$count notes';
+  }
+
+  @override
+  String get manageTags => 'Manage tags';
+
+  @override
+  String get noTags => 'No tags yet';
+
+  @override
+  String get noteHistory => 'Version history';
+
+  @override
+  String get historyEmpty => 'No versions yet';
+
+  @override
+  String get historyRestore => 'Restore this version';
+
+  @override
+  String get historyRestoreConfirm =>
+      'Your current content will be saved as a version first, then the selected version will be restored.';
+
+  @override
+  String get settingsNoteVersionLimit => 'Version history limit';
+
+  @override
+  String settingsNoteVersionLimitValue(int count) {
+    return '$count versions';
+  }
+
+  @override
   String get back => 'Back';
 
   @override
@@ -287,6 +342,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get todoRecurrenceNeedsReminder =>
       'Set a reminder first, then choose when it repeats';
+
+  @override
+  String get todoLinkedNote => 'Linked note';
+
+  @override
+  String get todoLinkedNotePick => 'Pick a note';
+
+  @override
+  String get todoUnlink => 'Unlink';
+
+  @override
+  String get notePickerHint => 'Search note titles';
+
+  @override
+  String get notePickerEmpty => 'No notes to link';
+
+  @override
+  String get noteLinkMissing => 'That note no longer exists';
 
   @override
   String get save => 'Save';
@@ -499,6 +572,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restoreDone => 'Restored';
+
+  @override
+  String batchSelectTitle(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get batchSelectAll => 'Select all';
+
+  @override
+  String get batchSelectNone => 'Deselect all';
+
+  @override
+  String get batchExit => 'Exit selection';
+
+  @override
+  String get batchMove => 'Move';
+
+  @override
+  String get batchMoveToFolder => 'Move to folder';
+
+  @override
+  String get batchFavorite => 'Favorite';
+
+  @override
+  String get batchUnfavorite => 'Unfavorite';
+
+  @override
+  String get batchPin => 'Pin';
+
+  @override
+  String get batchUnpin => 'Unpin';
+
+  @override
+  String get batchDeleteDone => 'Moved to trash';
+
+  @override
+  String get batchOperationFailed => 'Action failed, please try again';
 
   @override
   String get trashDeleteForever => 'Delete permanently';

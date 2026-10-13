@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:mynote/core/database/tables/note_folders_table.dart';
+import 'package:mynote/core/database/tables/note_tag_links_table.dart';
+import 'package:mynote/core/database/tables/note_tags_table.dart';
+import 'package:mynote/core/database/tables/note_versions_table.dart';
 import 'package:mynote/core/database/tables/notes_table.dart';
 import 'package:mynote/core/database/tables/todo_subtasks_table.dart';
 import 'package:mynote/core/database/tables/todos_table.dart';
@@ -25,13 +28,27 @@ part 'app_database.g.dart';
 /// v7 → v8 加待办的 `priority`（默认 0 = 普通）与 `recurrence`（null = 不重复），
 /// 并**新建** `todo_subtasks` 表（子任务，有自己的主键与外键）；
 /// v8 → v9 给 `notes` 加 `editor_font_id` 列（每篇笔记的编辑器字体 id，可空 =
-/// 系统默认，见 `notes_table.dart` 的列注释）。
+/// 系统默认，见 `notes_table.dart` 的列注释）；
+/// v9 → v10 做四件事（标签 / 待办挂笔记 / 单篇版本历史一批落地）：
+/// ① 新建 `note_tags`（标签，含 `deleted_at` 墓碑，见其类注释）；② 新建
+/// `note_tag_links`（笔记↔标签多对多，复合主键，摘标签也走墓碑）；③ 新建
+/// `note_versions`（单篇自动快照，FK CASCADE 随笔记物理清扫消亡）；④ `todos`
+/// 加 `linked_note_id`（挂接的笔记，可空，FK SET NULL）。老数据全部为
+/// 空表 / null = 没有标签、没挂接、没有历史，**无需回填**。
 /// ⛔ 严禁 `NativeDatabase.deleteDatabase` 删库重建（产品原则 4「永不丢数据」）。
 ///
 /// 三张表（`notes` / `note_folders` / `todos`）在 `@DriftDatabase` 注解里声明，
 /// drift 同时在本文件的 part 里生成 `NoteRow` / `NoteFolderRow` / `TodoRow`
 /// 三个行类与对应 companion。
-@DriftDatabase(tables: [Notes, NoteFolders, Todos, TodoSubtasks])
+@DriftDatabase(tables: [
+  Notes,
+  NoteFolders,
+  Todos,
+  TodoSubtasks,
+  NoteTags,
+  NoteTagLinks,
+  NoteVersions,
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.e);
 
@@ -39,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.memory() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -95,6 +112,15 @@ class AppDatabase extends _$AppDatabase {
       // （Delta 里已有的 font 属性照旧渲染）。
       if (from < 9) {
         await m.addColumn(notes, notes.editorFontId);
+      }
+      // v9 → v10：标签 / 待办挂笔记 / 单篇版本历史。三张新表：drift 的
+      // `onCreate` 会建它们，这里只为老库补建（同 v7 → v8 的 `todo_subtasks`）。
+      // `linked_note_id` 老数据为 null = 未挂接，**无需回填**。
+      if (from < 10) {
+        await m.addColumn(todos, todos.linkedNoteId);
+        await m.createTable(noteTags);
+        await m.createTable(noteTagLinks);
+        await m.createTable(noteVersions);
       }
     },
     beforeOpen: (details) async {

@@ -167,6 +167,60 @@ class AppLocalizationsZh extends AppLocalizations {
   String get uncategorized => '未分类';
 
   @override
+  String get tags => '标签';
+
+  @override
+  String get tagEditorHint => '输入新标签，回车添加';
+
+  @override
+  String get tagManagerTitle => '标签管理';
+
+  @override
+  String get tagRename => '重命名';
+
+  @override
+  String get tagRenameTitle => '重命名标签';
+
+  @override
+  String get tagDelete => '删除标签';
+
+  @override
+  String tagDeleteConfirm(String name) {
+    return '确定要删除标签「$name」吗？它会从所有笔记上移除。';
+  }
+
+  @override
+  String tagNoteCount(int count) {
+    return '$count 篇笔记';
+  }
+
+  @override
+  String get manageTags => '管理标签';
+
+  @override
+  String get noTags => '还没有标签';
+
+  @override
+  String get noteHistory => '版本历史';
+
+  @override
+  String get historyEmpty => '还没有历史版本';
+
+  @override
+  String get historyRestore => '恢复此版本';
+
+  @override
+  String get historyRestoreConfirm => '当前内容会先自动保存为一个版本，然后恢复所选版本。';
+
+  @override
+  String get settingsNoteVersionLimit => '版本历史上限';
+
+  @override
+  String settingsNoteVersionLimitValue(int count) {
+    return '$count 版';
+  }
+
+  @override
   String get back => '返回';
 
   @override
@@ -280,6 +334,24 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get todoRecurrenceNeedsReminder => '先设提醒时间，再选重复规则';
+
+  @override
+  String get todoLinkedNote => '关联笔记';
+
+  @override
+  String get todoLinkedNotePick => '选择一篇笔记';
+
+  @override
+  String get todoUnlink => '解除关联';
+
+  @override
+  String get notePickerHint => '搜索笔记标题';
+
+  @override
+  String get notePickerEmpty => '没有可关联的笔记';
+
+  @override
+  String get noteLinkMissing => '该笔记已不存在';
 
   @override
   String get save => '保存';
@@ -488,6 +560,44 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get restoreDone => '已恢复';
+
+  @override
+  String batchSelectTitle(int count) {
+    return '已选 $count 篇';
+  }
+
+  @override
+  String get batchSelectAll => '全选';
+
+  @override
+  String get batchSelectNone => '取消全选';
+
+  @override
+  String get batchExit => '退出多选';
+
+  @override
+  String get batchMove => '移动';
+
+  @override
+  String get batchMoveToFolder => '移动到文件夹';
+
+  @override
+  String get batchFavorite => '收藏';
+
+  @override
+  String get batchUnfavorite => '取消收藏';
+
+  @override
+  String get batchPin => '置顶';
+
+  @override
+  String get batchUnpin => '取消置顶';
+
+  @override
+  String get batchDeleteDone => '已移入回收站';
+
+  @override
+  String get batchOperationFailed => '操作失败，请重试';
 
   @override
   String get trashDeleteForever => '永久删除';

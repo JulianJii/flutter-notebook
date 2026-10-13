@@ -51,6 +51,7 @@ class NoteQuery extends Equatable {
     this.folder = const AllFolders(),
     this.sort = NoteSort.editedDesc,
     this.searchTerm,
+    this.tagId,
     this.limit,
     this.offset = 0,
   });
@@ -73,6 +74,11 @@ class NoteQuery extends Equatable {
   /// 匹配全部，实体不替上层做判断。
   final String? searchTerm;
 
+  /// 标签筛选。null = 不按标签过滤；非 null = 只看挂了这个标签的笔记。
+  /// 与 [folder] / [searchTerm] 是**叠加**关系。挂接已被摘除（墓碑）的
+  /// 标签不算数（数据层过滤 `deleted_at IS NULL`）。
+  final String? tagId;
+
   /// 单页条数。字段先在，不做无限滚动控制器。
   final int? limit;
 
@@ -84,6 +90,7 @@ class NoteQuery extends Equatable {
     NoteFolderFilter? folder,
     NoteSort? sort,
     Object? searchTerm = _unset,
+    Object? tagId = _unset,
     int? limit,
     int? offset,
   }) {
@@ -93,11 +100,12 @@ class NoteQuery extends Equatable {
       searchTerm: identical(searchTerm, _unset)
           ? this.searchTerm
           : searchTerm as String?,
+      tagId: identical(tagId, _unset) ? this.tagId : tagId as String?,
       limit: limit ?? this.limit,
       offset: offset ?? this.offset,
     );
   }
 
   @override
-  List<Object?> get props => [folder, sort, searchTerm, limit, offset];
+  List<Object?> get props => [folder, sort, searchTerm, tagId, limit, offset];
 }

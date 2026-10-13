@@ -270,4 +270,70 @@ void main() {
 
     expect(await dao.restoreById('nope', restoredAt), isFalse);
   });
+
+  test('softDeleteByIds 批量软删，语义与单条一致（不刷 updated_at）', () async {
+    final deletedAt = DateTime(2026, 10, 12);
+    final before1 = (await dao.getById('n1'))!;
+    final before2 = (await dao.getById('n3'))!;
+
+    expect(await dao.softDeleteByIds(['n1', 'n3'], deletedAt), 2);
+
+    expect((await dao.getById('n1'))!.deletedAt, deletedAt);
+    expect((await dao.getById('n3'))!.deletedAt, deletedAt);
+    expect(
+      (await dao.getById('n1'))!.updatedAt,
+      before1.updatedAt,
+      reason: '删除不是编辑：排序键不该因批量删除跳变',
+    );
+    expect(
+      (await dao.getById('n3'))!.updatedAt,
+      before2.updatedAt,
+    );
+    expect((await dao.getById('n2'))!.deletedAt, isNull, reason: '圈外的行不动');
+  });
+
+  test('moveToFolderByIds 刷 updated_at（归属变更必须跨设备传播）', () async {
+    final updatedAt = DateTime(2026, 10, 12);
+    final before = (await dao.getById('n2'))!;
+
+    expect(await dao.moveToFolderByIds(['n2', 'n3'], 'f1', updatedAt), 2);
+
+    expect((await dao.getById('n2'))!.folderId, 'f1');
+    expect((await dao.getById('n3'))!.folderId, 'f1');
+    expect(
+      (await dao.getById('n2'))!.updatedAt,
+      updatedAt,
+      reason: '不刷 updated_at 的话，下次同步远端会把这次移动滚回去',
+    );
+    expect(
+      before.updatedAt.isBefore(updatedAt),
+      isTrue,
+    );
+
+    // null = 移到未分类。
+    await dao.moveToFolderByIds(['n1'], null, updatedAt);
+    expect((await dao.getById('n1'))!.folderId, isNull);
+  });
+
+  test('updateFlagsByIds 批量置位，不刷 updated_at（与单条同一裁决）', () async {
+    final before = (await dao.getById('n2'))!;
+
+    expect(
+      await dao.updateFlagsByIds(['n2', 'n3'], isPinned: true, isFavorite: true),
+      2,
+    );
+    expect((await dao.getById('n2'))!.isPinned, isTrue);
+    expect((await dao.getById('n2'))!.isFavorite, isTrue);
+    expect((await dao.getById('n3'))!.isPinned, isTrue);
+    expect(
+      (await dao.getById('n2'))!.updatedAt,
+      before.updatedAt,
+      reason: '置顶/收藏是视图状态，批量是同一动作的 n 次，不另立语义',
+    );
+
+    // null 列不动：已收藏的保持收藏。
+    await dao.updateFlagsByIds(['n2'], isFavorite: false);
+    expect((await dao.getById('n2'))!.isFavorite, isFalse);
+    expect((await dao.getById('n2'))!.isPinned, isTrue, reason: 'null 列不受影响');
+  });
 }

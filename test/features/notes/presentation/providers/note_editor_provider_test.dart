@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mynote/core/error/failures.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/entities/note_version.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
@@ -13,8 +14,11 @@ import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_pa
 import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/save_note_version_use_case.dart';
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
 import 'package:mynote/features/notes/providers/notes_providers.dart';
+import 'package:mynote/features/settings/domain/entities/app_settings.dart';
+import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockGetNote extends Mock implements GetNoteUseCase {}
@@ -46,6 +50,16 @@ Note _note({
   updatedAt: DateTime(2026, 10, 3, 6, 40),
 );
 
+/// no-op 存版：flush 成功后的版本快照不在编辑器测试的关注面，但不 override
+/// 它会顺着 provider 链真连数据库（path_provider 在测试环境不存在）。
+class _NoopSaveVersion implements SaveNoteVersionUseCase {
+  const _NoopSaveVersion();
+
+  @override
+  Future<Either<Failure, Unit>> call(NoteVersion version, int limit) async =>
+      const Right(unit);
+}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(_note());
@@ -74,6 +88,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         getNoteUseCaseProvider.overrideWithValue(get),
+        // flush 成功后会读版本上限：不 override 会去真连 SharedPreferences
+        // （测试环境未实现 → ProviderException）。上限测试不在此处。
+        settingsProvider.overrideWithValue(const AppSettings.defaults()),
+        saveNoteVersionUseCaseProvider.overrideWithValue(
+          const _NoopSaveVersion(),
+        ),
         if (create != null) createNoteUseCaseProvider.overrideWithValue(create),
         if (update != null) updateNoteUseCaseProvider.overrideWithValue(update),
         if (updateBackground != null)

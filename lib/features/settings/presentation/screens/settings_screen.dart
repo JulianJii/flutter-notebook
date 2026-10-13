@@ -177,6 +177,21 @@ class SettingsScreen extends ConsumerWidget {
                         dividerBefore: true,
                         onChanged: notifier.setCompressImages,
                       ),
+                      // 单篇版本历史上限。选项是**离散档位**而不是步进器 ——
+                      // 与排序/布局同一套选择交互，步进 10→11 这样的值没有意义。
+                      _selectTile<int>(
+                        context,
+                        key: const Key('select_note_version_limit'),
+                        title: l10n.settingsNoteVersionLimit,
+                        valueText: l10n.settingsNoteVersionLimitValue(
+                          settings.noteVersionLimit,
+                        ),
+                        options: _noteVersionLimitOptions,
+                        current: settings.noteVersionLimit,
+                        labelOf: (limit) => '$limit',
+                        onSelected: notifier.setNoteVersionLimit,
+                        dividerBefore: true,
+                      ),
                     ],
                   ),
                   AppSettingsGroup(
@@ -347,6 +362,10 @@ String _noteLayoutLabel(AppLocalizations l10n, NoteLayout layout) =>
       NoteLayout.grid => l10n.settingsLayoutGrid,
       NoteLayout.list => l10n.settingsLayoutList,
     };
+
+/// 版本上限的离散档位。边界对齐 `minNoteVersionLimit` / `maxNoteVersionLimit`
+/// （`app_settings.dart`），改边界时两处要一起动 —— 选项列表是设置页的「可点全集」。
+final List<int> _noteVersionLimitOptions = <int>[10, 20, 30, 50, 100, 200];
 
 /// 语言三档：`null` 排第一（跟随系统是默认档），其余取 gen-l10n 支持的语言码。
 ///

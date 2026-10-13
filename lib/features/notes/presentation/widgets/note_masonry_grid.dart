@@ -11,12 +11,24 @@ import 'note_card.dart';
 /// 接收**已就绪的** `List<Note>`，自己不 `ref.watch` 任何 provider ——
 /// 数据订阅归 `NoteListScreen`。
 class NoteMasonryGrid extends StatelessWidget {
-  const NoteMasonryGrid({required this.notes, super.key, this.onTapNote});
+  const NoteMasonryGrid({
+    required this.notes,
+    super.key,
+    this.onTapNote,
+    this.onLongPressNote,
+    this.selectedIds = const <String>{},
+  });
 
   final List<Note> notes;
 
   /// null → 卡片静态（按压态沿用 Material 默认）。
   final ValueChanged<Note>? onTapNote;
+
+  /// 长按回调（多选入口）。null → 卡片无长按行为。
+  final ValueChanged<Note>? onLongPressNote;
+
+  /// 多选选中的笔记 id 集合（多选模式下卡片描边 + 勾选角标）。
+  final Set<String> selectedIds;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +48,11 @@ class NoteMasonryGrid extends StatelessWidget {
         return NoteCard(
           key: ValueKey<String>(note.id),
           note: note,
+          selected: selectedIds.contains(note.id),
           onTap: onTapNote == null ? null : () => onTapNote!(note),
+          onLongPress: onLongPressNote == null
+              ? null
+              : () => onLongPressNote!(note),
         );
       },
     );

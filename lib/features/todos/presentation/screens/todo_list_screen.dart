@@ -9,12 +9,16 @@ import 'package:mynote/core/utils/app_utils.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'package:mynote/features/notes/domain/utils/note_delta.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
+
 import '../../domain/entities/todo.dart';
 import '../../domain/entities/todo_priority.dart';
 import '../../domain/entities/todo_recurrence.dart';
 import '../../domain/usecases/update_todo_params.dart';
 import '../../providers/todos_providers.dart';
 import '../providers/todo_list_provider.dart';
+import '../widgets/note_picker_sheet.dart';
 import '../widgets/todo_card.dart';
 import '../widgets/todo_edit_controls.dart';
 import '../widgets/todo_reminder_sheet.dart';
@@ -124,7 +128,7 @@ class TodoListScreen extends ConsumerWidget {
   /// 成功不需要 `ref.invalidate`：drift watch 推新行，`todoListProvider` 自建。
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    final outcome = await _titleDialog(context, titleText: l10n.createTodo);
+    final outcome = await _titleDialog(context, ref: ref, titleText: l10n.createTodo);
     final title = outcome?.title;
     if (title == null || title.trim().isEmpty) return;
 
@@ -133,7 +137,11 @@ class TodoListScreen extends ConsumerWidget {
     // 用提示拦掉了，这里再兜一道是因为它不依赖 UI。
     final result = await ref
         .read(createTodoUseCaseProvider)
-        .call(title, priority: outcome!.priority);
+        .call(
+          title,
+          priority: outcome!.priority,
+          linkedNoteId: outcome.linkedNoteId,
+        );
     result.fold((failure) {
       if (context.mounted) {
         AppUtils.showSnackBar(context, message: failure.message);
@@ -163,8 +171,20 @@ class TodoListScreen extends ConsumerWidget {
   /// `UpdateTodoUseCase` 是全量覆盖写，漏传会把勾选状态抹掉。
   Future<void> _edit(BuildContext context, WidgetRef ref, Todo todo) async {
     final l10n = AppLocalizations.of(context);
+    // 现挂笔记的标题（展示用）。读不到（已清扫）就退化为只显示 id 无标题态 ——
+    // 用户仍可点「解除关联」。
+    String? linkedTitle;
+    if (todo.linkedNoteId != null) {
+      final note = await ref
+          .read(getNoteUseCaseProvider)
+          .call(todo.linkedNoteId!);
+      linkedTitle = note.fold((_) => null, (n) => n.title);
+    }
+    if (!context.mounted) return;
+
     final outcome = await _titleDialog(
       context,
+      ref: ref,
       titleText: l10n.editTodo,
       initialValue: todo.title,
       withDelete: true,
@@ -172,6 +192,8 @@ class TodoListScreen extends ConsumerWidget {
       initialRecurrence: todo.recurrence,
       hasReminder: todo.reminderAt != null,
       subtaskTodoId: todo.id,
+      initialLinkedNoteId: todo.linkedNoteId,
+      initialLinkedNoteTitle: linkedTitle,
     );
     if (outcome == null || !context.mounted) return;
 
@@ -195,6 +217,7 @@ class TodoListScreen extends ConsumerWidget {
         reminderAt: todo.reminderAt,
         priority: outcome.priority,
         recurrence: outcome.recurrence,
+        linkedNoteId: outcome.linkedNoteId,
       ),
     );
     if (!context.mounted) return;
@@ -307,11 +330,13 @@ class TodoListScreen extends ConsumerWidget {
       String? title,
       TodoPriority priority,
       TodoRecurrence? recurrence,
+      String? linkedNoteId,
       bool remove,
     })?
   >
   _titleDialog(
     BuildContext context, {
+    required WidgetRef ref,
     required String titleText,
     String initialValue = '',
     bool withDelete = false,
@@ -319,16 +344,21 @@ class TodoListScreen extends ConsumerWidget {
     TodoRecurrence? initialRecurrence,
     bool hasReminder = false,
     String? subtaskTodoId,
+    String? initialLinkedNoteId,
+    String? initialLinkedNoteTitle,
   }) {
     final l10n = AppLocalizations.of(context);
     var entered = initialValue;
     var priority = initialPriority;
     var recurrence = initialRecurrence;
+    var linkedNoteId = initialLinkedNoteId;
+    var linkedNoteTitle = initialLinkedNoteTitle;
     return showDialog<
       ({
         String? title,
         TodoPriority priority,
         TodoRecurrence? recurrence,
+        String? linkedNoteId,
         bool remove,
       })
     >(
@@ -341,6 +371,7 @@ class TodoListScreen extends ConsumerWidget {
           title: entered,
           priority: priority,
           recurrence: recurrence,
+          linkedNoteId: linkedNoteId,
           remove: false,
         ));
 
@@ -389,6 +420,25 @@ class TodoListScreen extends ConsumerWidget {
                         setState(() => recurrence = value);
                       },
                     ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _LinkedNoteRow(
+                      linkedNoteId: linkedNoteId,
+                      linkedNoteTitle: linkedNoteTitle,
+                      onPick: () => showNotePickerSheet(
+                        context,
+                        ref: ref,
+                        onSelected: (note) => setState(() {
+                          linkedNoteId = note.id;
+                          linkedNoteTitle = note.title.isEmpty
+                              ? NoteDelta.plainText(note.content)
+                              : note.title;
+                        }),
+                      ),
+                      onUnlink: () => setState(() {
+                        linkedNoteId = null;
+                        linkedNoteTitle = null;
+                      }),
+                    ),
                     if (subtaskTodoId != null) ...[
                       const SizedBox(height: AppSpacing.lg),
                       TodoSubtaskSection(todoId: subtaskTodoId),
@@ -404,6 +454,7 @@ class TodoListScreen extends ConsumerWidget {
                     title: null,
                     priority: priority,
                     recurrence: recurrence,
+                    linkedNoteId: linkedNoteId,
                     remove: true,
                   )),
                   child: Text(l10n.deleteTodo),
@@ -515,6 +566,7 @@ class _TodoList extends StatelessWidget {
           checked: todo.isDone,
           reminderAt: todo.reminderAt,
           priority: todo.priority,
+          linkedNoteId: todo.linkedNoteId,
           onChanged: (value) => onChanged(todo, value),
           onTap: () => onEdit(todo),
         );
@@ -558,6 +610,61 @@ class _DoneSectionHeader extends StatelessWidget {
         icon: expanded ? AppIcons.stepper : AppIcons.chevronRight,
       ),
       onTap: onTap,
+    );
+  }
+}
+
+/// 编辑弹窗里的「关联笔记」行：现挂标题（或空态提示）+ 点按选笔记 / 解除关联。
+/// 选择结果只存弹窗本地变量，「保存」才落库 —— 与标题 / 优先级同一节奏。
+class _LinkedNoteRow extends StatelessWidget {
+  const _LinkedNoteRow({
+    required this.linkedNoteId,
+    required this.linkedNoteTitle,
+    required this.onPick,
+    required this.onUnlink,
+  });
+
+  final String? linkedNoteId;
+
+  /// 现挂笔记的标题。null（读不到 / 已被清扫）时只显示通用提示，
+  /// 用户仍可解除关联或换挂别的。
+  final String? linkedNoteTitle;
+
+  final VoidCallback onPick;
+  final VoidCallback onUnlink;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      leading: const AppIcon(icon: AppIcons.note),
+      title: Text(
+        l10n.todoLinkedNote,
+        style: context.textStyles.body.copyWith(color: colors.textPrimary),
+      ),
+      subtitle: linkedNoteId == null
+          ? null
+          : Text(
+              linkedNoteTitle ?? l10n.noteLinkMissing,
+              style: context.textStyles.meta.copyWith(
+                color: colors.textSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+      trailing: linkedNoteId == null
+          ? const AppIcon(icon: AppIcons.chevronRight)
+          : AppIconButton(
+              key: const Key('todo_dialog_unlink'),
+              icon: AppIcons.close,
+              tooltip: l10n.todoUnlink,
+              onPressed: onUnlink,
+            ),
+      onTap: onPick,
     );
   }
 }

@@ -241,16 +241,17 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 调色 / 字体 / 更多，无标题', (tester) async {
+  testWidgets('顶栏：back + 调色 / 字体 / 历史 / 更多，无标题', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 共 4 个 AppIconButton：back + 调色 + 字体 + 正文工具条的「插入图片」。
+    // 共 5 个 AppIconButton：back + 调色 + 字体 + 历史 + 正文工具条的「插入图片」。
     // 「更多」是 PopupMenuButton，不在其中。
-    expect(find.byType(AppIconButton), findsNWidgets(4));
+    expect(find.byType(AppIconButton), findsNWidgets(5));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.fontFamily), findsOneWidget);
+    expect(find.byIcon(AppIcons.history), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
 

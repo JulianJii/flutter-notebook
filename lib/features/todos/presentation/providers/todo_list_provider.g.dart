@@ -11,8 +11,8 @@ part of 'todo_list_provider.dart';
 /// 订阅待办列表。**零逻辑**：一个 `ref.watch` + 一个 `call()`。
 ///
 /// `AsyncValue` 天然覆盖 loading / ready / error，`empty` 是 `value.isEmpty` 的
-/// **派生**而非状态字段（`ARCHITECTURE-DESIGN.md` §6.2 待办 + §11 ADR 3）。
-/// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推（§8.4）。
+/// **派生**而非状态字段。
+/// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推。
 
 @ProviderFor(todoList)
 final todoListProvider = TodoListProvider._();
@@ -20,8 +20,8 @@ final todoListProvider = TodoListProvider._();
 /// 订阅待办列表。**零逻辑**：一个 `ref.watch` + 一个 `call()`。
 ///
 /// `AsyncValue` 天然覆盖 loading / ready / error，`empty` 是 `value.isEmpty` 的
-/// **派生**而非状态字段（`ARCHITECTURE-DESIGN.md` §6.2 待办 + §11 ADR 3）。
-/// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推（§8.4）。
+/// **派生**而非状态字段。
+/// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推。
 
 final class TodoListProvider
     extends
@@ -34,8 +34,8 @@ final class TodoListProvider
   /// 订阅待办列表。**零逻辑**：一个 `ref.watch` + 一个 `call()`。
   ///
   /// `AsyncValue` 天然覆盖 loading / ready / error，`empty` 是 `value.isEmpty` 的
-  /// **派生**而非状态字段（`ARCHITECTURE-DESIGN.md` §6.2 待办 + §11 ADR 3）。
-  /// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推（§8.4）。
+  /// **派生**而非状态字段。
+  /// ⛔ 不加 `ref.invalidate` 手动刷新：drift watch 变了自动推。
   TodoListProvider._()
     : super(
         from: null,
@@ -66,8 +66,8 @@ String _$todoListHash() => r'2967067714c09d050cceb85e1051cec377fb5ea4';
 /// 乐观覆盖层：仅在 `toggle` 与落库结果不一致期间生效。
 ///
 /// **为什么不自持列表**（照抄 `TasksNotifier.toggleTask` 的写法）：它把列表 copy
-/// 进 Notifier state，与 ADR 4「数据不进 Notifier，列表由 data 层 stream 持有」
-/// 冲突，同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
+/// 进 Notifier state，与「数据不进 Notifier，列表由 data 层 stream 持有」冲突，
+/// 同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
 /// 「StreamProvider + AsyncValue」范式，待办必须与之一致。
 ///
 /// 核心洞察：**覆盖值等于 stream 值时覆盖就是无效的**（视觉完全一致），一旦不等
@@ -83,8 +83,8 @@ final todoOverridesProvider = TodoOverridesProvider._();
 /// 乐观覆盖层：仅在 `toggle` 与落库结果不一致期间生效。
 ///
 /// **为什么不自持列表**（照抄 `TasksNotifier.toggleTask` 的写法）：它把列表 copy
-/// 进 Notifier state，与 ADR 4「数据不进 Notifier，列表由 data 层 stream 持有」
-/// 冲突，同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
+/// 进 Notifier state，与「数据不进 Notifier，列表由 data 层 stream 持有」冲突，
+/// 同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
 /// 「StreamProvider + AsyncValue」范式，待办必须与之一致。
 ///
 /// 核心洞察：**覆盖值等于 stream 值时覆盖就是无效的**（视觉完全一致），一旦不等
@@ -98,8 +98,8 @@ final class TodoOverridesProvider
   /// 乐观覆盖层：仅在 `toggle` 与落库结果不一致期间生效。
   ///
   /// **为什么不自持列表**（照抄 `TasksNotifier.toggleTask` 的写法）：它把列表 copy
-  /// 进 Notifier state，与 ADR 4「数据不进 Notifier，列表由 data 层 stream 持有」
-  /// 冲突，同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
+  /// 进 Notifier state，与「数据不进 Notifier，列表由 data 层 stream 持有」冲突，
+  /// 同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
   /// 「StreamProvider + AsyncValue」范式，待办必须与之一致。
   ///
   /// 核心洞察：**覆盖值等于 stream 值时覆盖就是无效的**（视觉完全一致），一旦不等
@@ -140,8 +140,8 @@ String _$todoOverridesHash() => r'd4bbbd2ce437eb29906020171a05521333bebee5';
 /// 乐观覆盖层：仅在 `toggle` 与落库结果不一致期间生效。
 ///
 /// **为什么不自持列表**（照抄 `TasksNotifier.toggleTask` 的写法）：它把列表 copy
-/// 进 Notifier state，与 ADR 4「数据不进 Notifier，列表由 data 层 stream 持有」
-/// 冲突，同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
+/// 进 Notifier state，与「数据不进 Notifier，列表由 data 层 stream 持有」冲突，
+/// 同一份数据两处写必然不一致；且笔记列表的 `noteListProvider` 已确立
 /// 「StreamProvider + AsyncValue」范式，待办必须与之一致。
 ///
 /// 核心洞察：**覆盖值等于 stream 值时覆盖就是无效的**（视觉完全一致），一旦不等

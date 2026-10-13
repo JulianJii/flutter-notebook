@@ -21,6 +21,15 @@ enum AppThemeMode { system, light, dark }
 /// 「显式置 null」哨兵。与 `Note._unset` 同一个理由与写法。
 const Object _unset = Object();
 
+/// 单篇笔记的**版本历史上限**（超过淘汰最旧）。默认 50。
+const int defaultNoteVersionLimit = 50;
+
+/// 上限的可设边界。下限 10：低于它「历史」就名存实亡；上限 200：每版都是
+/// 一份正文快照，再大快照体积会失控（用户已在需求里确认接受「体积变大」，
+/// 但 200 是护栏而不是邀请）。
+const int minNoteVersionLimit = 10;
+const int maxNoteVersionLimit = 200;
+
 /// 用户偏好。6 个标量、**永远一行**，⛔ **不做成 drift 表**：
 /// 需在 `main()` 之前读到，`SharedPreferences` 的同步 API 更简单，
 /// drift 反而要多一个 DAO 和一张表。
@@ -35,6 +44,7 @@ class AppSettings extends Equatable {
     this.themeMode = AppThemeMode.system,
     this.colorScheme = AppColorScheme.amber,
     this.compressImages = true,
+    this.noteVersionLimit = defaultNoteVersionLimit,
   });
 
   /// 默认值入口。设置稿上显示的正是这几个值。
@@ -44,7 +54,8 @@ class AppSettings extends Equatable {
       noteLayout = NoteLayout.grid,
       themeMode = AppThemeMode.system,
       colorScheme = AppColorScheme.amber,
-      compressImages = true;
+      compressImages = true,
+      noteVersionLimit = defaultNoteVersionLimit;
 
   /// UI 文字字体：`core/fonts` 目录里某个字体的 **id**，`null` = 系统默认。
   ///
@@ -81,6 +92,11 @@ class AppSettings extends Equatable {
   /// 正文字节数会大得多。压缩目标与大小上限都住在 `NoteImage`，本类不带业务常量。
   final bool compressImages;
 
+  /// 单篇笔记的版本历史上限（`note_versions` 的存版淘汰阈值）。
+  /// 默认 [defaultNoteVersionLimit]，可设范围 [minNoteVersionLimit] ..
+  /// [maxNoteVersionLimit]（读取时被夹紧，见 `SettingsRepositoryImpl._fromJson`）。
+  final int noteVersionLimit;
+
   /// [uiFontId] 用哨兵默认值而不是 `String?`：`null` 是**合法取值**（系统默认），
   /// 用 `??` 兜底会让「选回系统默认」被静默忽略（`Note.copyWith` 同款问题、同款写法）。
   AppSettings copyWith({
@@ -90,6 +106,7 @@ class AppSettings extends Equatable {
     AppThemeMode? themeMode,
     AppColorScheme? colorScheme,
     bool? compressImages,
+    int? noteVersionLimit,
   }) {
     return AppSettings(
       uiFontId: identical(uiFontId, _unset)
@@ -100,6 +117,7 @@ class AppSettings extends Equatable {
       themeMode: themeMode ?? this.themeMode,
       colorScheme: colorScheme ?? this.colorScheme,
       compressImages: compressImages ?? this.compressImages,
+      noteVersionLimit: noteVersionLimit ?? this.noteVersionLimit,
     );
   }
 
@@ -111,5 +129,6 @@ class AppSettings extends Equatable {
     themeMode,
     colorScheme,
     compressImages,
+    noteVersionLimit,
   ];
 }

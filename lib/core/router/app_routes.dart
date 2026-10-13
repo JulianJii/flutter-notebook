@@ -35,6 +35,26 @@ abstract final class AppRoutes {
   /// ⚠️ 与 `folders` / `new` 同理，**必须**注册在 `/notes/:id` 之前。
   static const String noteTrash = '/notes/trash';
 
+  /// 标签管理。`/notes` branch 的子路由（标签筛选弹层进入）。
+  ///
+  /// ⚠️ 同理，**必须**注册在 `/notes/:id` 之前。
+  static const String noteTags = '/notes/tags';
+
+  /// 单篇笔记版本历史。`noteDetail` 的子路径（多一段固定字面量，与 `:id`
+  /// 无抢配冲突；drift / GoRouter 都按段匹配）。
+  static const String noteHistory = '/notes/:id/history';
+
+  /// 某个版本的只读预览。`noteHistory` 的子路径。
+  static const String noteHistoryVersion = '/notes/:id/history/:versionId';
+
+  /// [noteHistory] 的具体路径。
+  static String noteHistoryPath(String id) =>
+      '/notes/${Uri.encodeComponent(id)}/history';
+
+  /// [noteHistoryVersion] 的具体路径。
+  static String noteHistoryVersionPath(String id, String versionId) =>
+      '/notes/${Uri.encodeComponent(id)}/history/${Uri.encodeComponent(versionId)}';
+
   /// 笔记详情 / 编辑。`/notes` branch 的子路由。路径参数：`id`。
   static const String noteDetail = '/notes/:id';
 
@@ -93,6 +113,10 @@ abstract final class AppRoutes {
   /// 文件夹管理稿点文件夹行与笔记列表稿的筛选 chip 共用这一个参数，
   /// 无论将来筛选语义怎么变，架构都不用改。
   static const String folderQueryKey = 'folder';
+
+  /// 标签筛选的 query 参数名。`/notes?tag=<tagId>`，与 [folderQueryKey]
+  /// 叠加（同层关系，非互斥）。
+  static const String tagQueryKey = 'tag';
 }
 
 /// `?folder=` 的「未分类」哨兵值。`/notes?folder=uncategorized`。

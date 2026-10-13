@@ -89,6 +89,10 @@ Future<Either<Failure, T>> _guard<T>(Future<T> Function() body) async {
 
 /// 给 [todo] 补上 id。⛔ 不用 `copyWith`：`Todo.copyWith` 刻意不带 `id`
 /// （id 是实体的身份）。
+///
+/// ⚠️ **逐字段列举**，加字段时必须补上 —— 漏一个就是「新建时静默丢掉这个字段」
+/// （`note_repository_impl.dart` 的同类警告曾踩过 `background` 这条坑）。
+/// 本轮顺手补齐了此前漏掉的 `purgedAt` / `priority` / `recurrence`。
 Todo _withId(Todo todo, String id) {
   return Todo(
     id: id,
@@ -98,6 +102,10 @@ Todo _withId(Todo todo, String id) {
     createdAt: todo.createdAt,
     updatedAt: todo.updatedAt,
     deletedAt: todo.deletedAt,
+    purgedAt: todo.purgedAt,
+    priority: todo.priority,
+    recurrence: todo.recurrence,
+    linkedNoteId: todo.linkedNoteId,
   );
 }
 

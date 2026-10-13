@@ -266,14 +266,16 @@ void main() {
     expect(find.text('详情 n1'), findsOneWidget);
   });
 
-  testWidgets('顶栏只有 2 个图标按钮（搜索在内容区，不占顶栏）', (tester) async {
+  testWidgets('顶栏只有 3 个图标按钮（标签 / 文件夹 / 设置；搜索在内容区）', (tester) async {
     await tester.pumpWidget(
       app(routerFor('/notes'), notesStream: Stream.value(const <Note>[])),
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(AppIconButton), findsNWidgets(2));
+    expect(find.byType(AppIconButton), findsNWidgets(3));
     expect(find.byIcon(Icons.search), findsNothing);
+    // 标签入口：未筛选时空心。
+    expect(find.byIcon(AppIcons.tag), findsOneWidget);
     expect(find.byIcon(AppIcons.folder), findsOneWidget);
     expect(find.byIcon(AppIcons.settings), findsOneWidget);
   });

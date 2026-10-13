@@ -138,6 +138,7 @@ class _ReminderReconcilerState extends ConsumerState<ReminderReconciler> {
         reminderAt: at,
         priority: todo.priority,
         recurrence: todo.recurrence,
+        linkedNoteId: todo.linkedNoteId,
       ),
     );
     if (result.isLeft()) {

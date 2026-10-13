@@ -75,6 +75,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         reminderAt: Value(todo.reminderAt),
         priority: Value(todo.priority.level),
         recurrence: Value(todo.recurrence?.id),
+        linkedNoteId: Value(todo.linkedNoteId),
       ),
     );
     return _toEntity(row);
@@ -97,6 +98,8 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
         // 的复制，不是这条 SQL。）
         priority: Value(todo.priority.level),
         recurrence: Value(todo.recurrence?.id),
+        // ⚠️ 同上：漏写会在用户只改标题时把挂接静默清掉。
+        linkedNoteId: Value(todo.linkedNoteId),
       ),
     );
     if (!hit) {
@@ -176,6 +179,7 @@ Todo _toEntity(TodoRow row) {
     purgedAt: row.purgedAt,
     priority: TodoPriority.fromLevel(row.priority),
     recurrence: TodoRecurrence.fromId(row.recurrence),
+    linkedNoteId: row.linkedNoteId,
   );
 }
 

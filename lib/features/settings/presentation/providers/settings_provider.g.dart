@@ -11,21 +11,20 @@ part of 'settings_provider.dart';
 /// 全局用户偏好。**唯一的读入口**。
 ///
 /// ⛔ **`settings` feature 的公开面只有 2 个符号**：本 provider 与 `AppSettings`
-/// 实体。Repository / UseCase / DataSource **不导出**（`FEATURE-DEPENDENCIES.md`
-/// §5.1）—— 一旦有人 import `features/settings/data/...`，R2 禁令被打破时的
+/// 实体。Repository / UseCase / DataSource **不导出** —— 一旦有人 import
+/// `features/settings/data/...`，「features 互不依赖」的禁令被打破时，
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
 /// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
-/// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
+/// microtask 里读一次持久化值，读到后 state 自动重建。
 ///
 /// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
 /// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
-/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
-///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
+/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态。
+/// 默认的 autoDispose 会在最后一个监听者
 /// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 
@@ -35,42 +34,40 @@ final settingsProvider = SettingsProvider._();
 /// 全局用户偏好。**唯一的读入口**。
 ///
 /// ⛔ **`settings` feature 的公开面只有 2 个符号**：本 provider 与 `AppSettings`
-/// 实体。Repository / UseCase / DataSource **不导出**（`FEATURE-DEPENDENCIES.md`
-/// §5.1）—— 一旦有人 import `features/settings/data/...`，R2 禁令被打破时的
+/// 实体。Repository / UseCase / DataSource **不导出** —— 一旦有人 import
+/// `features/settings/data/...`，「features 互不依赖」的禁令被打破时，
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
 /// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
-/// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
+/// microtask 里读一次持久化值，读到后 state 自动重建。
 ///
 /// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
 /// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
-/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
-///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
+/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态。
+/// 默认的 autoDispose 会在最后一个监听者
 /// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   /// 全局用户偏好。**唯一的读入口**。
   ///
   /// ⛔ **`settings` feature 的公开面只有 2 个符号**：本 provider 与 `AppSettings`
-  /// 实体。Repository / UseCase / DataSource **不导出**（`FEATURE-DEPENDENCIES.md`
-  /// §5.1）—— 一旦有人 import `features/settings/data/...`，R2 禁令被打破时的
+  /// 实体。Repository / UseCase / DataSource **不导出** —— 一旦有人 import
+  /// `features/settings/data/...`，「features 互不依赖」的禁令被打破时，
   /// 破坏面就被限制在这一个文件里。
   ///
   /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
   /// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
   /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
-  /// microtask 里读一次持久化值，读到后 state 自动重建
-  ///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
+  /// microtask 里读一次持久化值，读到后 state 自动重建。
   ///
   /// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
   /// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
   ///
-  /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
-  ///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
+  /// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态。
+  /// 默认的 autoDispose 会在最后一个监听者
   /// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
   /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
   SettingsProvider._()
@@ -100,26 +97,25 @@ final class SettingsProvider extends $NotifierProvider<Settings, AppSettings> {
   }
 }
 
-String _$settingsHash() => r'dc1ce1779ec99654f56b6fbe91d9b24895ae22b3';
+String _$settingsHash() => r'be8dd24ba1f54234d7e7c628906f312d3888967c';
 
 /// 全局用户偏好。**唯一的读入口**。
 ///
 /// ⛔ **`settings` feature 的公开面只有 2 个符号**：本 provider 与 `AppSettings`
-/// 实体。Repository / UseCase / DataSource **不导出**（`FEATURE-DEPENDENCIES.md`
-/// §5.1）—— 一旦有人 import `features/settings/data/...`，R2 禁令被打破时的
+/// 实体。Repository / UseCase / DataSource **不导出** —— 一旦有人 import
+/// `features/settings/data/...`，「features 互不依赖」的禁令被打破时，
 /// 破坏面就被限制在这一个文件里。
 ///
 /// **为什么是 `Notifier` 而不是 `AsyncNotifier`**：首次读 `SharedPreferences` 是
 /// 异步的，`AsyncNotifier` 会让设置必然先渲染一帧 loading，且笔记列表/笔记详情读偏好也得
 /// 处理 `AsyncValue`。这里 `build()` 同步给默认值（UI 立刻能用），再在
-/// microtask 里读一次持久化值，读到后 state 自动重建
-///（`ARCHITECTURE-DESIGN.md` §6.2 设置段）。
+/// microtask 里读一次持久化值，读到后 state 自动重建。
 ///
 /// ⚠️ **偏好保存失败只记日志**：写偏好是 fire-and-forget（state 已经先更新），
 /// 没有 UI 事件源可弹提示，而它的可恢复路径只有「重启 App」，不值得为此加状态。
 ///
-/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态
-///（`ARCHITECTURE-DESIGN.md` §8.3）。默认的 autoDispose 会在最后一个监听者
+/// **`keepAlive: true` 不是可选项**：偏好是 App 级全局状态。
+/// 默认的 autoDispose 会在最后一个监听者
 /// （比如用户离开笔记列表）松手时把 state 丢掉 —— 下次进设置读到的又是默认值，
 /// 且 [build] 里那次 microtask 加载会撞上「Ref 已被 dispose」。
 

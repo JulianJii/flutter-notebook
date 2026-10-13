@@ -10,7 +10,9 @@ import 'package:mynote/features/todos/domain/entities/todo_recurrence.dart';
 /// ✅ **加了** `priority` / `recurrence`：这两项是对「待办稿那版只有标题和完成态」
 /// 的后续补充（见 `TodoPriority` / `TodoRecurrence`）。
 /// ⛔ **不加** `sortIndex`（排序固定，在 DAO 做）。
-/// ⛔ **不加** `folderId`：待办与笔记无关联，待办稿没有任何「关联笔记」入口。
+/// ✅ **加了** `linkedNoteId`（2026-10-13 翻转「待办与笔记无关联」的裁决）：
+/// 一对一挂接一篇笔记，编辑表单里选、卡片上可跳转。fk SET NULL，见
+/// `todos_table.dart` 的列注释。
 ///
 /// ## `deletedAt`：曾经明确不加，现在加
 ///
@@ -29,6 +31,7 @@ class Todo extends Equatable {
     this.purgedAt,
     this.priority = TodoPriority.normal,
     this.recurrence,
+    this.linkedNoteId,
   });
 
   final String id;
@@ -68,16 +71,23 @@ class Todo extends Equatable {
   /// ⚠️ 同 [priority]：不参与 [copyWith]。
   final TodoRecurrence? recurrence;
 
+  /// 挂接的笔记 id。null = 未挂接。**参与 [copyWith]（走哨兵）**：
+  /// 编辑表单里「解除关联」必须能显式置回 null —— 与 [reminderAt] 同一套写法。
+  /// 指向已被物理清扫的笔记时由 UI 兜底提示（跳转后 404 不是好体验，
+  /// 但静默吞掉挂接更不是）。
+  final String? linkedNoteId;
+
   /// [isDone] 是非空 bool，`?? this.isDone` 即可 —— 哨兵只用于「显式置 null」。
   ///
-  /// [reminderAt] 反过来：它是可空的，`copyWith(reminderAt: null)` 必须真的把提醒
-  /// 清掉（「清除提醒」按钮就靠这个），所以走 [reminderUnset] 哨兵 —— 与
+  /// [reminderAt] / [linkedNoteId] 反过来：它们是可空的，`copyWith(x: null)` 必须
+  /// 真的清掉（「清除提醒」/「解除关联」按钮就靠这个），所以走哨兵 —— 与
   /// `AppSettings.copyWith(locale)` 同一套写法。
   Todo copyWith({
     String? title,
     bool? isDone,
     DateTime? updatedAt,
     Object? reminderAt = reminderUnset,
+    Object? linkedNoteId = linkedNoteUnset,
   }) {
     return Todo(
       id: id,
@@ -88,6 +98,9 @@ class Todo extends Equatable {
       reminderAt: identical(reminderAt, reminderUnset)
           ? this.reminderAt
           : reminderAt as DateTime?,
+      linkedNoteId: identical(linkedNoteId, linkedNoteUnset)
+          ? this.linkedNoteId
+          : linkedNoteId as String?,
       deletedAt: deletedAt,
       purgedAt: purgedAt,
       priority: priority,
@@ -107,8 +120,12 @@ class Todo extends Equatable {
     purgedAt,
     priority,
     recurrence,
+    linkedNoteId,
   ];
 }
 
 /// [Todo.copyWith] 的哨兵：`copyWith(reminderAt: null)` 必须**真的**清掉提醒。
 const Object reminderUnset = Object();
+
+/// 同 [reminderUnset]：`copyWith(linkedNoteId: null)` 必须**真的**解除挂接。
+const Object linkedNoteUnset = Object();

@@ -69,10 +69,14 @@ String _$fontLoaderServiceHash() => r'1c7d3f8d9629cf8ab8ef02cc889454fb12fbc5c1';
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
-/// ⚠️ **失败抛 [FontFailure]**：调用方取 `valueOrNull`，于是加载期间与加载失败
+/// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
 /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
+///
+/// ⚠️ 失败后 **Riverpod 会按退避自动重试**，因此「网络恢复」不需要用户再选一次；
+/// 重试期间 `value` 仍是 null（继续用系统默认字体）。这条是刻意保留的默认行为，
+/// 不是漏配。
 
 @ProviderFor(fontFamilyOf)
 final fontFamilyOfProvider = FontFamilyOfFamily._();
@@ -83,10 +87,14 @@ final fontFamilyOfProvider = FontFamilyOfFamily._();
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
-/// ⚠️ **失败抛 [FontFailure]**：调用方取 `valueOrNull`，于是加载期间与加载失败
+/// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
 /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
+///
+/// ⚠️ 失败后 **Riverpod 会按退避自动重试**，因此「网络恢复」不需要用户再选一次；
+/// 重试期间 `value` 仍是 null（继续用系统默认字体）。这条是刻意保留的默认行为，
+/// 不是漏配。
 
 final class FontFamilyOfProvider
     extends $FunctionalProvider<AsyncValue<String?>, String?, FutureOr<String?>>
@@ -97,10 +105,14 @@ final class FontFamilyOfProvider
   /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
   /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
   ///
-  /// ⚠️ **失败抛 [FontFailure]**：调用方取 `valueOrNull`，于是加载期间与加载失败
+  /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
   /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
   /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
   /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
+  ///
+  /// ⚠️ 失败后 **Riverpod 会按退避自动重试**，因此「网络恢复」不需要用户再选一次；
+  /// 重试期间 `value` 仍是 null（继续用系统默认字体）。这条是刻意保留的默认行为，
+  /// 不是漏配。
   FontFamilyOfProvider._({
     required FontFamilyOfFamily super.from,
     required String? super.argument,
@@ -152,10 +164,14 @@ String _$fontFamilyOfHash() => r'61fb3239272640dfb1a2fd6681b36047e847b0cc';
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
-/// ⚠️ **失败抛 [FontFailure]**：调用方取 `valueOrNull`，于是加载期间与加载失败
+/// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
 /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
+///
+/// ⚠️ 失败后 **Riverpod 会按退避自动重试**，因此「网络恢复」不需要用户再选一次；
+/// 重试期间 `value` 仍是 null（继续用系统默认字体）。这条是刻意保留的默认行为，
+/// 不是漏配。
 
 final class FontFamilyOfFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<String?>, String?> {
@@ -174,10 +190,14 @@ final class FontFamilyOfFamily extends $Family
   /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
   /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
   ///
-  /// ⚠️ **失败抛 [FontFailure]**：调用方取 `valueOrNull`，于是加载期间与加载失败
+  /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
   /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
   /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
   /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
+  ///
+  /// ⚠️ 失败后 **Riverpod 会按退避自动重试**，因此「网络恢复」不需要用户再选一次；
+  /// 重试期间 `value` 仍是 null（继续用系统默认字体）。这条是刻意保留的默认行为，
+  /// 不是漏配。
 
   FontFamilyOfProvider call(String? fontId) =>
       FontFamilyOfProvider._(argument: fontId, from: this);

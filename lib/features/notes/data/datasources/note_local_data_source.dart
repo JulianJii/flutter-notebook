@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' show DriftWrappedException, Value;
 import 'package:drift/native.dart' show SqliteException;
 import 'package:mynote/core/database/app_database.dart';
 import 'package:mynote/core/database/daos/note_dao.dart';
+import 'package:mynote/core/database/daos/note_tag_dao.dart';
 import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/domain/entities/note_background.dart';
@@ -54,6 +55,20 @@ abstract class NoteLocalDataSource {
   /// 删除（软删除：写 `deleted_at`）。命中 0 行 → 抛 [CacheException]。
   Future<void> delete(String noteId);
 
+  /// 批量软删除，返回实际命中的行数。空列表直接返回 0（不碰 DAO）。
+  Future<int> deleteMany(List<String> noteIds);
+
+  /// 批量移动到文件夹（null = 未分类），返回实际命中的行数。
+  /// 实现内部刷 `updated_at`（归属变更必须跨设备传播，见 `NoteDao`）。
+  Future<int> moveToFolderMany(List<String> noteIds, String? folderId);
+
+  /// 批量置顶 / 收藏（`null` = 不动这一列），返回实际命中的行数。
+  Future<int> updateFlagsMany(
+    List<String> noteIds, {
+    bool? isPinned,
+    bool? isFavorite,
+  });
+
   /// 订阅「最近删除」（`deleted_at IS NOT NULL`，按删除时间倒序）。
   /// 错误传播约定同 [watch]。
   Stream<List<Note>> watchDeleted();
@@ -71,10 +86,12 @@ abstract class NoteLocalDataSource {
 class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   /// [dao] 是可选命名参数：测试可注入 mock DAO 断言「翻译是否正确」，
   /// 生产由 [NoteDao] 自己从 [db] 构造。
-  NoteLocalDataSourceImpl(AppDatabase db, {NoteDao? dao})
-    : _dao = dao ?? NoteDao(db);
+  NoteLocalDataSourceImpl(AppDatabase db, {NoteDao? dao, NoteTagDao? tagDao})
+    : _dao = dao ?? NoteDao(db),
+      _tagDao = tagDao ?? NoteTagDao(db);
 
   final NoteDao _dao;
+  final NoteTagDao _tagDao;
 
   @override
   Stream<List<Note>> watch(NoteQuery query) {
@@ -85,11 +102,21 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
             folderId: args.folderId,
             uncategorizedOnly: args.uncategorizedOnly,
             searchTerm: _normalizeTerm(query.searchTerm),
+            tagId: query.tagId,
             order: _toOrder(query.sort),
             limit: query.limit,
             offset: query.offset,
           )
-          .map((rows) => rows.map(_toEntity).toList()),
+          // 两查合并装 [Note.tags]：主行流每次推流，跟着查一次「noteId → 标签名」
+          // 映射（单条 JOIN，非 N+1）。不做双流 combine —— 那需要 rxdart 或
+          // 手写缓冲，一次附加 SELECT 在本地库上便宜且足够一致。
+          .asyncMap((rows) async {
+            final tagNames = await _tagDao.tagNamesByNoteId();
+            return <Note>[
+              for (final row in rows)
+                _toEntity(row, tagNames[row.id] ?? const <String>[]),
+            ];
+          }),
     );
   }
 
@@ -191,6 +218,34 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
   });
 
   @override
+  Future<int> deleteMany(List<String> noteIds) => _guard(() async {
+    if (noteIds.isEmpty) return 0;
+    return _dao.softDeleteByIds(noteIds, AppClock.appNow());
+  });
+
+  @override
+  Future<int> moveToFolderMany(List<String> noteIds, String? folderId) =>
+      _guard(() async {
+        if (noteIds.isEmpty) return 0;
+        // 与 restore 同一条铁律：归属变更必须刷 `updated_at` 才能跨设备传播。
+        return _dao.moveToFolderByIds(noteIds, folderId, AppClock.appNow());
+      });
+
+  @override
+  Future<int> updateFlagsMany(
+    List<String> noteIds, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) => _guard(() async {
+    if (noteIds.isEmpty) return 0;
+    return _dao.updateFlagsByIds(
+      noteIds,
+      isPinned: isPinned,
+      isFavorite: isFavorite,
+    );
+  });
+
+  @override
   Stream<List<Note>> watchDeleted() {
     return _guardStream(
       _dao.watchDeleted().map((rows) => rows.map(_toEntity).toList()),
@@ -262,8 +317,9 @@ NoteDaoOrder _toOrder(NoteSort sort) {
 /// drift 行 → 领域实体的**直连**。⛔ 不截断 `content`、不算 `wordCount`、
 /// 不 trim 标题 —— 派生值由 UI 现算。
 ///
-/// 时间字段不做时区转换。
-Note _toEntity(NoteRow row) {
+/// 时间字段不做时区转换。[tags] 默认空：只有 `watch` 的两查合并会传真值，
+/// `getById` / `update` 的回读不带标签（详情页标签单独走 `TagRepository`）。
+Note _toEntity(NoteRow row, [List<String> tags = const <String>[]]) {
   return Note(
     id: row.id,
     title: row.title,
@@ -277,6 +333,7 @@ Note _toEntity(NoteRow row) {
     isFavorite: row.isFavorite,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    tags: tags,
   );
 }
 

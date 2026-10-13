@@ -69,6 +69,7 @@ Map<String, Object?> _toJson(AppSettings s) {
     'themeMode': s.themeMode.name,
     'colorScheme': s.colorScheme.name,
     'compressImages': s.compressImages,
+    'noteVersionLimit': s.noteVersionLimit,
   };
 }
 
@@ -91,7 +92,18 @@ AppSettings _fromJson(Map<String, Object?> json) {
     colorScheme:
         _byName(AppColorScheme.values, json['colorScheme']) ?? d.colorScheme,
     compressImages: (json['compressImages'] as bool?) ?? d.compressImages,
+    noteVersionLimit: _clampedInt(
+      json['noteVersionLimit'],
+      d.noteVersionLimit,
+    ),
   );
+}
+
+/// 版本上限：不是 int、越界（含老快照的 0 / 负数）一律夹回边界内 ——
+/// 非法值不该让整个偏好读不出来。
+int _clampedInt(Object? raw, int fallback) {
+  if (raw is! int) return fallback;
+  return raw.clamp(minNoteVersionLimit, maxNoteVersionLimit);
 }
 
 /// 按 enum 的 **name** 查值。类型不是 `String` 或名字不认识都返回 `null`

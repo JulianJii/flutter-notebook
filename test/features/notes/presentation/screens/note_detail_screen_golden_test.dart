@@ -8,6 +8,7 @@ import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/features/notes/domain/entities/note.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/create_note_use_case.dart';
+import 'package:mynote/features/notes/domain/usecases/get_note_tags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
@@ -23,6 +24,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:zoloto/zoloto.dart';
 
 class _MockGetNote extends Mock implements GetNoteUseCase {}
+
+class _MockGetNoteTags extends Mock implements GetNoteTagsUseCase {}
 
 class _MockUpdateNote extends Mock implements UpdateNoteUseCase {}
 
@@ -88,6 +91,12 @@ void main() {
   testGoldenWidgets('笔记详情 —笔记详情稿原样形态（空标题 + 有正文）', (tester) async {
     final get = _MockGetNote();
     when(() => get('n1')).thenAnswer((_) async => Right(_d3Note));
+    // 详情页的标签展示行走一次性读：没有 override 会去真连 DB（path_provider
+    // 在测试环境没实现）。基线锁定「无标签」形态。
+    final getTags = _MockGetNoteTags();
+    when(
+      () => getTags('n1'),
+    ).thenAnswer((_) async => const Right<Failure, List<String>>([]));
     final update = _MockUpdateNote();
     when(() => update(any())).thenAnswer((_) async => Right(_d3Note));
     final create = _MockCreateNote();
@@ -112,6 +121,7 @@ void main() {
         // 另外两个中的任意一个都会去真连 DB。
         overrides: [
           getNoteUseCaseProvider.overrideWithValue(get),
+          getNoteTagsUseCaseProvider.overrideWithValue(getTags),
           updateNoteUseCaseProvider.overrideWithValue(update),
           createNoteUseCaseProvider.overrideWithValue(create),
           settingsRepositoryProvider.overrideWithValue(settingsRepo),

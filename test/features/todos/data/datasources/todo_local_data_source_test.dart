@@ -9,11 +9,12 @@ import 'package:mynote/features/todos/domain/entities/todo.dart';
 final DateTime _t1 = DateTime.fromMillisecondsSinceEpoch(100 * 1000);
 final DateTime _t2 = DateTime.fromMillisecondsSinceEpoch(200 * 1000);
 
-Todo _todo(String id, {String title = '买牛奶', DateTime? createdAt}) => Todo(
+Todo _todo(String id, {String title = '买牛奶', DateTime? createdAt, String? linkedNoteId}) => Todo(
   id: id,
   title: title,
   createdAt: createdAt ?? _t1,
   updatedAt: createdAt ?? _t1,
+  linkedNoteId: linkedNoteId,
 );
 
 void main() {
@@ -80,6 +81,37 @@ void main() {
     );
     expect(cleared.reminderAt, isNull);
     expect((await source.watchAll().first).single.reminderAt, isNull);
+  });
+
+  test('linkedNoteId 落库往返：写入可读回；update 全字段覆盖不把它清掉', () async {
+    // 外键开着：被挂的笔记必须真实存在。
+    await db
+        .into(db.notes)
+        .insert(
+          NotesCompanion.insert(
+            id: 'n1',
+            createdAt: _t1,
+            updatedAt: _t1,
+          ),
+        );
+    final todo = await source.insert(
+      _todo('t1', linkedNoteId: 'n1'),
+    );
+    expect(todo.linkedNoteId, 'n1');
+
+    // 只改标题的编辑（全字段覆盖写）必须带着原挂接 —— 漏写这列就等于每次
+    // 编辑把挂接清掉（与 `reminder_at` 同一类坑）。
+    final renamed = await source.update(
+      todo.copyWith(title: '改过的标题', updatedAt: _t2),
+    );
+    expect(renamed.linkedNoteId, 'n1');
+    expect((await source.watchAll().first).single.linkedNoteId, 'n1');
+
+    // 显式置 null = 解除挂接。
+    final unlinked = await source.update(
+      renamed.copyWith(linkedNoteId: null),
+    );
+    expect(unlinked.linkedNoteId, isNull);
   });
 
   test('update 未命中 -> CacheException', () async {

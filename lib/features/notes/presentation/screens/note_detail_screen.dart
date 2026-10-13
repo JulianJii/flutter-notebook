@@ -25,8 +25,10 @@ import 'package:share_plus/share_plus.dart';
 
 import '../providers/note_editor_provider.dart';
 import '../providers/note_prefs_provider.dart';
+import '../providers/tag_providers.dart';
 import '../widgets/note_background_image.dart';
 import '../widgets/note_image_embed_builder.dart';
+import '../widgets/tag_editor_sheet.dart';
 
 /// 笔记详情 / 编辑。
 ///
@@ -261,6 +263,19 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     }
   }
 
+  /// 标签展示行的刷新代数：打标弹层保存完 +1，`_NoteTagsRow` 的 Future 随之重查。
+  int _tagsVersion = 0;
+
+  /// 标签：弹出打标弹层（「完成」才一次性落库，点外部 = 取消）。
+  Future<void> _editTags() async {
+    final saved = await showTagEditorSheet(
+      context,
+      ref: ref,
+      noteId: widget.noteId,
+    );
+    if (saved && mounted) setState(() => _tagsVersion++);
+  }
+
   /// 桌面拖入的图片：读到字节 → 与工具条插图**同一条链路**插到光标处。
   ///
   /// ⛔ 不自己压图片 / 不自己拼 base64：`pickNoteImageUseCaseProvider.fromPaths`
@@ -409,6 +424,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       onShare: _share,
                       onFont: _pickFont,
                       onPalette: _pickBackground,
+                      onTags: _editTags,
+                      onHistory: () => context.push(
+                        AppRoutes.noteHistoryPath(widget.noteId),
+                      ),
                       onTogglePinned: () => ref
                           .read(
                             noteEditorProvider(
@@ -450,6 +469,14 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                                 folderId: widget.folderId,
                                 createdAt: createdAt,
                               ),
+                            if (createdAt != null) ...<Widget>[
+                              const SizedBox(height: AppSpacing.sm),
+                              _NoteTagsRow(
+                                noteId: widget.noteId,
+                                version: _tagsVersion,
+                                onEdit: _editTags,
+                              ),
+                            ],
                             const SizedBox(height: AppSpacing.lg),
                             // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
                             // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
@@ -617,7 +644,6 @@ class _EditorToolbar extends ConsumerWidget {
         showStrikeThrough: true,
         showListNumbers: true,
         showListBullets: true,
-        showListCheck: true,
         showIndent: true,
         showInlineCode: true,
         showHeaderStyle: true,
@@ -755,6 +781,8 @@ class _TopBar extends ConsumerWidget {
     required this.onShare,
     required this.onFont,
     required this.onPalette,
+    required this.onTags,
+    required this.onHistory,
     required this.onTogglePinned,
     required this.onToggleFavorite,
     required this.onDelete,
@@ -775,6 +803,12 @@ class _TopBar extends ConsumerWidget {
   final VoidCallback onTogglePinned;
 
   final VoidCallback onToggleFavorite;
+
+  /// 打开标签编辑弹层（未落库的新笔记不可用，同置顶 / 收藏 / 删除）。
+  final VoidCallback onTags;
+
+  /// 打开版本历史页（未落库的新笔记不可用 —— 还没有历史）。
+  final VoidCallback onHistory;
 
   final VoidCallback onDelete;
 
@@ -808,6 +842,13 @@ class _TopBar extends ConsumerWidget {
           tooltip: l10n.settingsFontFamily,
           onPressed: onFont,
         ),
+        // 版本历史。新笔记（未落库）没有历史，置灰同置顶 / 收藏 / 删除。
+        AppIconButton(
+          key: const Key('note_history'),
+          icon: AppIcons.history,
+          tooltip: l10n.noteHistory,
+          onPressed: isPersisted ? onHistory : null,
+        ),
         PopupMenuButton<_NoteMoreAction>(
           key: const Key('note_more'),
           tooltip: l10n.more,
@@ -826,6 +867,7 @@ class _TopBar extends ConsumerWidget {
           onSelected: (action) => switch (action) {
             _NoteMoreAction.pin => onTogglePinned(),
             _NoteMoreAction.favorite => onToggleFavorite(),
+            _NoteMoreAction.tags => onTags(),
             _NoteMoreAction.share => onShare(),
             _NoteMoreAction.delete => onDelete(),
           },
@@ -852,6 +894,12 @@ class _TopBar extends ConsumerWidget {
               ),
             ),
             PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_tags'),
+              value: _NoteMoreAction.tags,
+              enabled: isPersisted,
+              child: _MoreMenuRow(icon: AppIcons.tag, label: l10n.tags),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
               key: const Key('note_share'),
               value: _NoteMoreAction.share,
               child: _MoreMenuRow(icon: AppIcons.share, label: l10n.share),
@@ -869,8 +917,76 @@ class _TopBar extends ConsumerWidget {
   }
 }
 
-/// 「更多」菜单的四个动作。用枚举而不是四个回调，`onSelected` 才能只 switch 一次。
-enum _NoteMoreAction { pin, favorite, share, delete }
+/// 「更多」菜单的动作。用枚举而不是多个回调，`onSelected` 才能只 switch 一次。
+enum _NoteMoreAction { pin, favorite, tags, share, delete }
+
+/// 详情页元信息行下的标签条：小号 chip 只读展示，整行点按 = 打开打标弹层。
+/// 无标签时显示一行淡淡的「标签」入口（占位可点，不能让打标入口消失）。
+///
+/// ⛔ **一次性读**（`GetNoteTagsUseCase` + FutureBuilder），不订阅流：
+/// 刷新由 [_NoteDetailScreenState._tagsVersion] 驱动（弹层保存完 bump 一次）。
+/// 这里若挂一条 drift watch，测试 teardown 的「关流 Timer」会让
+/// `flutter_test` 的 pending-timer 不变量炸掉，且常驻流对一行展示毫无收益。
+class _NoteTagsRow extends ConsumerWidget {
+  const _NoteTagsRow({
+    required this.noteId,
+    required this.version,
+    required this.onEdit,
+  });
+
+  final String noteId;
+
+  /// 打标弹层每保存一次 +1：Future 以它为 key 重建（同值时复用快照）。
+  final int version;
+
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final textStyles = context.textStyles;
+    final names = ref
+        .watch(noteTagsSnapshotProvider(noteId, version))
+        .value ?? const <String>[];
+
+    return InkWell(
+      onTap: onEdit,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm / 2),
+        child: names.isEmpty
+            ? Text(
+                l10n.tags,
+                style: textStyles.meta.copyWith(color: colors.textTertiary),
+              )
+            : Wrap(
+                spacing: AppSpacing.chipGap / 2,
+                runSpacing: AppSpacing.chipGap / 2,
+                children: <Widget>[
+                  for (final name in names)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.bg,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        name,
+                        style: textStyles.meta.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+}
 
 /// 「更多」菜单的一行：图标 + 文案。三项共用，保证字形与间距一致。
 class _MoreMenuRow extends StatelessWidget {

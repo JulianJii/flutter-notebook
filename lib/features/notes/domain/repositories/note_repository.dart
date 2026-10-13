@@ -46,6 +46,24 @@ abstract class NoteRepository {
   /// 实现内部写 `deleted_at = now()`，不刷新 `updatedAt`。
   Future<Either<Failure, Unit>> delete(String noteId);
 
+  /// 批量删除（**软删除**，与 [delete] 同语义）。返回实际命中的行数。
+  Future<Either<Failure, int>> deleteMany(List<String> noteIds);
+
+  /// 批量移动到文件夹（null = 未分类）。实现内部刷 `updatedAt`
+  /// （归属变更必须跨设备传播）。返回实际命中的行数。
+  Future<Either<Failure, int>> moveToFolderMany(
+    List<String> noteIds,
+    String? folderId,
+  );
+
+  /// 批量改置顶 / 收藏（`null` = 不动这一列），列语义与 [updateFlags]
+  /// 完全一致（含不刷 `updatedAt` 的既有裁决）。返回实际命中的行数。
+  Future<Either<Failure, int>> updateFlagsMany(
+    List<String> noteIds, {
+    bool? isPinned,
+    bool? isFavorite,
+  });
+
   /// 订阅「最近删除」列表，按删除时间倒序。流错误以
   /// `Stream.error(CacheException)` 传播（与 [watch] 同约定）。
   Stream<List<Note>> watchDeleted();

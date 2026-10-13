@@ -380,6 +380,102 @@ abstract class AppLocalizations {
   /// **'未分类'**
   String get uncategorized;
 
+  /// Tooltip of the tag filter / tag editor entry, and the tag section label
+  ///
+  /// In zh, this message translates to:
+  /// **'标签'**
+  String get tags;
+
+  /// Hint of the tag editor sheet input field
+  ///
+  /// In zh, this message translates to:
+  /// **'输入新标签，回车添加'**
+  String get tagEditorHint;
+
+  /// Title of the tag manager screen
+  ///
+  /// In zh, this message translates to:
+  /// **'标签管理'**
+  String get tagManagerTitle;
+
+  /// Tag manager: rename action
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get tagRename;
+
+  /// Title of the tag rename dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名标签'**
+  String get tagRenameTitle;
+
+  /// Tag manager: delete action
+  ///
+  /// In zh, this message translates to:
+  /// **'删除标签'**
+  String get tagDelete;
+
+  /// Body of the tag delete confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除标签「{name}」吗？它会从所有笔记上移除。'**
+  String tagDeleteConfirm(String name);
+
+  /// Subtitle of a tag manager row: how many notes carry the tag
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 篇笔记'**
+  String tagNoteCount(int count);
+
+  /// Row in the tag filter sheet that opens the tag manager
+  ///
+  /// In zh, this message translates to:
+  /// **'管理标签'**
+  String get manageTags;
+
+  /// Empty state of the tag filter sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有标签'**
+  String get noTags;
+
+  /// Tooltip of the note detail top bar history entry, and the history page title
+  ///
+  /// In zh, this message translates to:
+  /// **'版本历史'**
+  String get noteHistory;
+
+  /// Empty state of the note history page
+  ///
+  /// In zh, this message translates to:
+  /// **'还没有历史版本'**
+  String get historyEmpty;
+
+  /// Restore button of a history version preview
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复此版本'**
+  String get historyRestore;
+
+  /// Body of the restore confirmation dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'当前内容会先自动保存为一个版本，然后恢复所选版本。'**
+  String get historyRestoreConfirm;
+
+  /// Settings row: max auto-saved versions kept per note
+  ///
+  /// In zh, this message translates to:
+  /// **'版本历史上限'**
+  String get settingsNoteVersionLimit;
+
+  /// Current value of the version limit row
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 版'**
+  String settingsNoteVersionLimitValue(int count);
+
   /// Tooltip of the note detail top bar back button
   ///
   /// In zh, this message translates to:
@@ -601,6 +697,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'先设提醒时间，再选重复规则'**
   String get todoRecurrenceNeedsReminder;
+
+  /// Label of the linked-note row in the todo edit dialog
+  ///
+  /// In zh, this message translates to:
+  /// **'关联笔记'**
+  String get todoLinkedNote;
+
+  /// Title of the note picker sheet for linking a note to a todo
+  ///
+  /// In zh, this message translates to:
+  /// **'选择一篇笔记'**
+  String get todoLinkedNotePick;
+
+  /// Action that removes the note link from a todo
+  ///
+  /// In zh, this message translates to:
+  /// **'解除关联'**
+  String get todoUnlink;
+
+  /// Hint of the search field in the note picker sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索笔记标题'**
+  String get notePickerHint;
+
+  /// Empty state of the note picker sheet
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可关联的笔记'**
+  String get notePickerEmpty;
+
+  /// Shown when tapping a todo's linked-note chip whose note no longer exists
+  ///
+  /// In zh, this message translates to:
+  /// **'该笔记已不存在'**
+  String get noteLinkMissing;
 
   /// Confirm button of the create-folder dialog (folder manager)
   ///
@@ -997,6 +1129,78 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'已恢复'**
   String get restoreDone;
+
+  /// Title of the note list selection top bar
+  ///
+  /// In zh, this message translates to:
+  /// **'已选 {count} 篇'**
+  String batchSelectTitle(int count);
+
+  /// Accessibility label of the select-all action in selection mode
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get batchSelectAll;
+
+  /// Accessibility label of the deselect-all action in selection mode
+  ///
+  /// In zh, this message translates to:
+  /// **'取消全选'**
+  String get batchSelectNone;
+
+  /// Accessibility label of the button that exits selection mode
+  ///
+  /// In zh, this message translates to:
+  /// **'退出多选'**
+  String get batchExit;
+
+  /// Bottom action bar: move selected notes to a folder
+  ///
+  /// In zh, this message translates to:
+  /// **'移动'**
+  String get batchMove;
+
+  /// Title of the folder picker sheet for batch move
+  ///
+  /// In zh, this message translates to:
+  /// **'移动到文件夹'**
+  String get batchMoveToFolder;
+
+  /// Bottom action bar: favorite the selected notes
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏'**
+  String get batchFavorite;
+
+  /// Bottom action bar: unfavorite the selected notes (shown when all selected are already favorited)
+  ///
+  /// In zh, this message translates to:
+  /// **'取消收藏'**
+  String get batchUnfavorite;
+
+  /// Bottom action bar: pin the selected notes
+  ///
+  /// In zh, this message translates to:
+  /// **'置顶'**
+  String get batchPin;
+
+  /// Bottom action bar: unpin the selected notes (shown when all selected are already pinned)
+  ///
+  /// In zh, this message translates to:
+  /// **'取消置顶'**
+  String get batchUnpin;
+
+  /// Snackbar shown after selected notes are moved to the trash
+  ///
+  /// In zh, this message translates to:
+  /// **'已移入回收站'**
+  String get batchDeleteDone;
+
+  /// Snackbar shown when a batch operation fails
+  ///
+  /// In zh, this message translates to:
+  /// **'操作失败，请重试'**
+  String get batchOperationFailed;
 
   /// Permanent delete action of a trash row
   ///

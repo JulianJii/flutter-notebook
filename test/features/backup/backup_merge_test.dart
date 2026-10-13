@@ -83,11 +83,57 @@ BackupTodoSubtask subtask(
       updatedAt: updatedAt ?? t2,
     );
 
+BackupNoteTag tag(
+  String id,
+  String name, {
+  DateTime? updatedAt,
+  DateTime? deletedAt,
+}) =>
+    BackupNoteTag(
+      id: id,
+      name: name,
+      createdAt: t1,
+      updatedAt: updatedAt ?? t2,
+      deletedAt: deletedAt,
+    );
+
+BackupNoteTagLink link(
+  String noteId,
+  String tagId, {
+  DateTime? updatedAt,
+  DateTime? deletedAt,
+}) =>
+    BackupNoteTagLink(
+      noteId: noteId,
+      tagId: tagId,
+      createdAt: t1,
+      updatedAt: updatedAt ?? t2,
+      deletedAt: deletedAt,
+    );
+
+BackupNoteVersion noteVersion(
+  String id,
+  String noteId, {
+  String title = '标题',
+  String content = '正文',
+  DateTime? createdAt,
+}) =>
+    BackupNoteVersion(
+      id: id,
+      noteId: noteId,
+      title: title,
+      content: content,
+      createdAt: createdAt ?? t2,
+    );
+
 BackupSnapshot snapshot({
   List<BackupNote> notes = const <BackupNote>[],
   List<BackupFolder> folders = const <BackupFolder>[],
   List<BackupTodo> todos = const <BackupTodo>[],
   List<BackupTodoSubtask> subtasks = const <BackupTodoSubtask>[],
+  List<BackupNoteTag> tags = const <BackupNoteTag>[],
+  List<BackupNoteTagLink> tagLinks = const <BackupNoteTagLink>[],
+  List<BackupNoteVersion> noteVersions = const <BackupNoteVersion>[],
 }) =>
     BackupSnapshot(
       exportedAt: t3,
@@ -95,6 +141,9 @@ BackupSnapshot snapshot({
       folders: folders,
       todos: todos,
       subtasks: subtasks,
+      tags: tags,
+      tagLinks: tagLinks,
+      noteVersions: noteVersions,
     );
 
 void main() {
@@ -201,6 +250,65 @@ void main() {
       );
 
       expect(merged.merged.todos.single.deletedAt, t3);
+    });
+
+    // ---- v6：标签 / 链接 / 版本 ----
+
+    test('标签删除跨设备传播：对端墓碑更新 → 本地标签消失（墓碑保留）', () {
+      final merged = BackupSnapshot.merge(
+        snapshot(tags: <BackupNoteTag>[tag('tag1', '工作', updatedAt: t1)]),
+        snapshot(tags: <BackupNoteTag>[tag('tag1', '工作', deletedAt: t3)]),
+      );
+
+      expect(merged.merged.tags.single.deletedAt, t3);
+    });
+
+    /// 摘标签的传播全靠链接的墓碑（表无行级 id，合并键是复合键）。
+    test('链接按复合键合并：对端摘除墓碑更新 → 本地摘除生效', () {
+      final merged = BackupSnapshot.merge(
+        snapshot(
+          tagLinks: <BackupNoteTagLink>[link('n1', 'tag1', updatedAt: t1)],
+        ),
+        snapshot(
+          tagLinks: <BackupNoteTagLink>[link('n1', 'tag1', deletedAt: t3)],
+        ),
+      );
+
+      expect(merged.merged.tagLinks.single.deletedAt, t3);
+      expect(merged.merged.tagLinks.single.mergeKey, 'n1::tag1');
+    });
+
+    test('链接复合键不同的两条互不覆盖（并集）', () {
+      final merged = BackupSnapshot.merge(
+        snapshot(tagLinks: <BackupNoteTagLink>[link('n1', 'tag1')]),
+        snapshot(tagLinks: <BackupNoteTagLink>[link('n1', 'tag2')]),
+      );
+
+      expect(merged.merged.tagLinks, hasLength(2));
+    });
+
+    test('版本按 id 合并：对端 createdAt 更晚 → 对端赢', () {
+      final merged = BackupSnapshot.merge(
+        snapshot(noteVersions: <BackupNoteVersion>[noteVersion('v1', 'n1', createdAt: t1)]),
+        snapshot(noteVersions: <BackupNoteVersion>[noteVersion('v1', 'n1', createdAt: t3)]),
+      );
+
+      expect(merged.merged.noteVersions.single.createdAt, t3);
+    });
+
+    test('解析 v5 老快照（无 tags/tagLinks/noteVersions 键）→ 空列表', () {
+      final parsed = BackupSnapshot.parse(<String, Object?>{
+        'version': 5,
+        'exportedAt': t3.toIso8601String(),
+        'notes': <Object?>[],
+        'folders': <Object?>[],
+        'todos': <Object?>[],
+        'subtasks': <Object?>[],
+      });
+      expect(parsed.skipped, 0);
+      expect(parsed.snapshot.tags, isEmpty);
+      expect(parsed.snapshot.tagLinks, isEmpty);
+      expect(parsed.snapshot.noteVersions, isEmpty);
     });
   });
 
@@ -584,6 +692,92 @@ group('子任务同步', () {
       expect(merged.merged.notes.single.title, '本地');
       expect(merged.merged.notes.single.deletedAt, isNull);
       expect(merged.result, BackupImportResult.empty);
+    });
+
+    // ---- v6：三张新表的写入路径 ----
+
+    test('标签 / 链接 / 版本往返不丢（含摘除墓碑）', () async {
+      await source.write(
+        snapshot(
+          notes: <BackupNote>[note()],
+          tags: <BackupNoteTag>[
+            tag('tag1', '工作'),
+            tag('tag2', '生活', deletedAt: t3),
+          ],
+          tagLinks: <BackupNoteTagLink>[
+            link('n1', 'tag1'),
+            link('n1', 'tag2', deletedAt: t3),
+          ],
+          noteVersions: <BackupNoteVersion>[
+            noteVersion('v1', 'n1', title: '旧标题', createdAt: t1),
+          ],
+        ),
+      );
+
+      final read = await source.read();
+      expect(read.tags, hasLength(2));
+      expect(read.tags.firstWhere((t) => t.id == 'tag2').deletedAt, t3,
+          reason: '删除墓碑必须跟着走，否则对端复活');
+      expect(read.tagLinks.firstWhere((l) => l.mergeKey == 'n1::tag2').deletedAt,
+          t3, reason: '摘除墓碑同理');
+      final v1 = read.noteVersions.single;
+      expect(v1.title, '旧标题');
+      expect(v1.noteId, 'n1');
+
+      // 再写一次（模拟下一次同步）：仍然不丢。
+      await source.write(read);
+      final again = await source.read();
+      expect(again.tags.firstWhere((t) => t.id == 'tag2').deletedAt, t3);
+      expect(again.noteVersions.single.title, '旧标题');
+    });
+
+    test('指向快照外笔记 / 标签的孤儿行被跳过，不炸事务', () async {
+      final skipped = await source.write(
+        snapshot(
+          notes: <BackupNote>[note()],
+          tags: <BackupNoteTag>[tag('tag1', '工作')],
+          tagLinks: <BackupNoteTagLink>[
+            link('n1', 'tag1'),
+            link('不存在的笔记', 'tag1'),
+            link('n1', '不存在的标签'),
+          ],
+          noteVersions: <BackupNoteVersion>[
+            noteVersion('v1', 'n1'),
+            noteVersion('v2', '不存在的笔记'),
+          ],
+        ),
+      );
+
+      expect(skipped, 0);
+      final read = await source.read();
+      expect(read.tagLinks.single.mergeKey, 'n1::tag1');
+      expect(read.noteVersions.single.id, 'v1');
+    });
+
+    test('待办的 linked_note_id 往返不丢', () async {
+      // fixture 不支持 linkedNoteId，这里直接构造。
+      final withLink = BackupSnapshot(
+        exportedAt: t3,
+        notes: <BackupNote>[note()],
+        folders: const <BackupFolder>[],
+        todos: <BackupTodo>[
+          BackupTodo(
+            id: 'd1',
+            title: '买牛奶',
+            isDone: false,
+            createdAt: t1,
+            updatedAt: t2,
+            priority: 'normal',
+            linkedNoteId: 'n1',
+          ),
+        ],
+      );
+
+      await source.write(withLink);
+      expect((await source.read()).todos.single.linkedNoteId, 'n1');
+      await source.write(await source.read());
+      expect((await source.read()).todos.single.linkedNoteId, 'n1',
+          reason: '漏写 linkedNoteId 时第二次写会把它清成 null');
     });
   });
 }

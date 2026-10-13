@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../app_database.dart';
 import '../tables/note_folders_table.dart';
+import '../tables/note_tag_links_table.dart';
 import '../tables/notes_table.dart';
 
 part 'note_dao.g.dart';
@@ -31,7 +32,7 @@ enum NoteDaoOrder {
 /// 参数用原始类型，返回 drift 行对象（`NoteRow`）。行 → `Note` 的
 /// 转换在 `features/notes/data/datasources/note_local_data_source.dart`；
 /// `NoteQuery` 三态 → 下列参数的翻译也在那里。
-@DriftAccessor(tables: [Notes, NoteFolders])
+@DriftAccessor(tables: [Notes, NoteFolders, NoteTagLinks])
 class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
   NoteDao(super.db);
 
@@ -49,6 +50,7 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
     String? folderId,
     bool uncategorizedOnly = false,
     String? searchTerm,
+    String? tagId,
     NoteDaoOrder order = NoteDaoOrder.editedDesc,
     int? limit,
     int offset = 0,
@@ -70,6 +72,17 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
       query.where((t) => t.folderId.isNull());
     } else if (folderId != null) {
       query.where((t) => t.folderId.equals(folderId));
+    }
+
+    // 标签筛选：`EXISTS` 语义经 `isInQuery` 表达 —— 挂接墓碑（摘除）不算数。
+    // 子查询只投 noteId 一列，SQLite 走 idx_note_tag_links_tag_id。
+    if (tagId != null) {
+      final subquery = selectOnly(noteTagLinks)
+        ..addColumns([noteTagLinks.noteId])
+        ..where(
+          noteTagLinks.tagId.equals(tagId) & noteTagLinks.deletedAt.isNull(),
+        );
+      query.where((t) => t.id.isInQuery(subquery));
     }
 
     if (searchTerm != null && searchTerm.isNotEmpty) {
@@ -195,6 +208,27 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
         .then((count) => count > 0);
   }
 
+  /// 批量软删除。单条 UPDATE（`IN`）本身就是原子的，**不需要**包事务。
+  /// 语义与 [softDeleteById] 逐列一致（只写 `deleted_at`）。
+  Future<int> softDeleteByIds(List<String> noteIds, DateTime deletedAt) {
+    return (super.update(notes)..where((t) => t.id.isIn(noteIds)))
+        .write(NotesCompanion(deletedAt: Value(deletedAt)));
+  }
+
+  /// 批量移动到文件夹（null = 未分类）。**必须刷 `updated_at`**：
+  /// 归属是用户数据，不刷的话合并比较键退回旧值，远端会把这次移动原样
+  /// 滚回去 —— 与 [restoreById] 刷时间戳是同一条同步铁律。
+  Future<int> moveToFolderByIds(
+    List<String> noteIds,
+    String? folderId,
+    DateTime updatedAt,
+  ) {
+    return (super.update(notes)..where((t) => t.id.isIn(noteIds)))
+        .write(
+          NotesCompanion(folderId: Value(folderId), updatedAt: Value(updatedAt)),
+        );
+  }
+
   /// 恢复（`deleted_at` 置回 null）**并刷新 `updated_at`**。返回是否命中行。
   ///
   /// ⚠️ `updated_at` 必须一起刷，否则恢复**同步不过去**：合并比较键是
@@ -244,6 +278,24 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
               : Value(isFavorite),
         ))
         .then((count) => count > 0);
+  }
+
+  /// 批量置顶 / 收藏，列语义与 [updateFlagsById] 完全一致（含不刷
+  /// `updated_at` 的既有裁决 —— 批量是同一动作的 n 次，不另立语义）。
+  Future<int> updateFlagsByIds(
+    List<String> noteIds, {
+    bool? isPinned,
+    bool? isFavorite,
+  }) {
+    return (super.update(notes)..where((t) => t.id.isIn(noteIds)))
+        .write(NotesCompanion(
+          isPinned: isPinned == null
+              ? const Value.absent()
+              : Value(isPinned),
+          isFavorite: isFavorite == null
+              ? const Value.absent()
+              : Value(isFavorite),
+        ));
   }
 
   /// 穷尽 4 个枚举值，无 `default` —— 新增枚举值时编译失败。

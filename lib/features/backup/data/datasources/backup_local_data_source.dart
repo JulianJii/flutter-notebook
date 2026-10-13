@@ -5,15 +5,16 @@ import 'package:mynote/core/error/exceptions.dart';
 import 'package:mynote/features/backup/domain/entities/backup_snapshot.dart';
 import 'package:mynote/features/todos/domain/entities/todo_priority.dart';
 
-/// 三张表 ↔ [BackupSnapshot] 的双向通道。
+/// 七张表 ↔ [BackupSnapshot] 的双向通道。
 ///
 /// ⛔ 不 import Flutter、不做 Exception → Failure（那是 Repository 的活）。
 /// drift 的 `SqliteException` / `DriftWrappedException` 在出口处包成
 /// `CacheException`（与另三个 datasource 同约定：SQL 细节不往外漏）。
 ///
-/// 写入顺序**必须是 folders → notes → todos**：`notes.folder_id` 有外键且
-/// `PRAGMA foreign_keys = ON`，快照里指向本地不存在文件夹的 `folderId` 会在
-/// 写 folders 之后被清洗成 null（见 [_writeNotes]）。
+/// 写入顺序**必须是 folders → notes → todos → 子项 → tags → versions → links**
+/// （外键约束 + `PRAGMA foreign_keys = ON`）：`notes.folder_id` 指向本地不存在
+/// 文件夹的行会被清洗成 null（见 [_writeNotes]）；`note_tag_links` 的两个外键
+/// 分别指向 notes 与 note_tags，必须最后写（见 [_writeNoteTagLinks]）。
 class BackupLocalDataSource {
   BackupLocalDataSource(this._db);
 
@@ -29,6 +30,11 @@ class BackupLocalDataSource {
     final folders = await _db.select(_db.noteFolders).get();
     final todos = await _db.select(_db.todos).get();
     final subtasks = await _db.select(_db.todoSubtasks).get();
+    // 三张新表同样**全量读**（含墓碑行）：删除与摘除都是数据，不同步过去
+    // 就会在别的设备上「复活」。
+    final tags = await _db.select(_db.noteTags).get();
+    final tagLinks = await _db.select(_db.noteTagLinks).get();
+    final noteVersions = await _db.select(_db.noteVersions).get();
 
     return BackupSnapshot(
       exportedAt: DateTime.now(),
@@ -77,6 +83,7 @@ class BackupLocalDataSource {
             purgedAt: row.purgedAt,
             priority: TodoPriority.fromLevel(row.priority).id,
             recurrence: row.recurrence,
+            linkedNoteId: row.linkedNoteId,
           ),
       ],
       // ⚠️ 子项**无条件全量读**：不同步的话 A 机勾掉的勾会在 B 机同步后被抹掉。
@@ -89,6 +96,36 @@ class BackupLocalDataSource {
             isDone: row.isDone,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
+          ),
+      ],
+      tags: <BackupNoteTag>[
+        for (final row in tags)
+          BackupNoteTag(
+            id: row.id,
+            name: row.name,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
+            deletedAt: row.deletedAt,
+          ),
+      ],
+      tagLinks: <BackupNoteTagLink>[
+        for (final row in tagLinks)
+          BackupNoteTagLink(
+            noteId: row.noteId,
+            tagId: row.tagId,
+            createdAt: row.createdAt,
+            updatedAt: row.updatedAt,
+            deletedAt: row.deletedAt,
+          ),
+      ],
+      noteVersions: <BackupNoteVersion>[
+        for (final row in noteVersions)
+          BackupNoteVersion(
+            id: row.id,
+            noteId: row.noteId,
+            title: row.title,
+            content: row.content,
+            createdAt: row.createdAt,
           ),
       ],
     );
@@ -116,6 +153,10 @@ class BackupLocalDataSource {
       // ⚠️ 子项**必须最后写**：它的外键指向 `todos`，而 `PRAGMA foreign_keys = ON`
       // 在事务内是即时生效的 —— 先写子项会整批失败。
       await _writeSubtasks(snapshot.subtasks);
+      // v10 的三张新表。links 压轴：外键同时指向 notes 与 note_tags。
+      await _writeNoteTags(snapshot.tags);
+      await _writeNoteVersions(snapshot.noteVersions, snapshot.noteIds);
+      await _writeNoteTagLinks(snapshot.tagLinks, snapshot.noteIds, snapshot.tagIds);
     });
     return skipped;
   });
@@ -244,6 +285,9 @@ class BackupLocalDataSource {
             // 优先级重置成「普通」；漏了 `recurrence` 等于全部重复提醒消失。
             priority: Value(TodoPriority.fromId(todo.priority).level),
             recurrence: Value(todo.recurrence),
+            // ⚠️ 同理：漏了 `linkedNoteId` 等于每次同步把接收端全部待办的
+            // 挂接清掉。
+            linkedNoteId: Value(todo.linkedNoteId),
           ),
           // ⚠️ `reminderAt` 必须显式写出：`insertOrReplace` 是 DELETE+INSERT，
           // 漏掉的列取默认值（NULL），等于每次同步都把接收端的提醒时间清零。
@@ -270,6 +314,83 @@ class BackupLocalDataSource {
             isDone: Value(subtask.isDone),
             createdAt: subtask.createdAt,
             updatedAt: subtask.updatedAt,
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  /// 写标签。没有 UNIQUE(name) 约束（见 `note_tags_table.dart` 类注释），
+  /// 可以像 notes 一样放心走 batch。
+  Future<void> _writeNoteTags(List<BackupNoteTag> tags) {
+    return _db.batch((batch) {
+      for (final tag in tags) {
+        batch.insert(
+          _db.noteTags,
+          NoteTagsCompanion(
+            id: Value(tag.id),
+            name: Value(tag.name),
+            createdAt: Value(tag.createdAt),
+            // ⚠️ 墓碑必须显式写出：漏了 `deletedAt`，来端「已删」的标签每同步
+            // 一次复活一批（`insertOrReplace` 是 DELETE+INSERT，未列出的列取
+            // 默认值 NULL —— 与 `_writeNotes` 同一类错误）。
+            updatedAt: Value(tag.updatedAt),
+            deletedAt: Value(tag.deletedAt),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  /// 写单篇版本。`noteIds` 是快照里出现过的笔记 id：parse 跳过某条坏笔记行时，
+  /// 它挂的版本就成了孤儿，外键开着写进去会整批失败 —— 与 `_writeNotes` 清洗
+  /// `folderId` 同一手法，这里选**跳过**而不是清键（版本没有「未归属」语义）。
+  Future<void> _writeNoteVersions(
+    List<BackupNoteVersion> versions,
+    Set<String> noteIds,
+  ) {
+    return _db.batch((batch) {
+      for (final version in versions) {
+        if (!noteIds.contains(version.noteId)) continue;
+        batch.insert(
+          _db.noteVersions,
+          NoteVersionsCompanion(
+            id: Value(version.id),
+            noteId: Value(version.noteId),
+            title: Value(version.title),
+            content: Value(version.content),
+            createdAt: Value(version.createdAt),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  /// 写笔记↔标签链接。⚠️ **必须最后写**：外键同时指向 notes 与 note_tags，
+  /// `PRAGMA foreign_keys = ON` 在事务内即时生效。孤儿行（noteId / tagId 不在
+  /// 快照里）跳过，理由同 [_writeNoteVersions]。
+  Future<void> _writeNoteTagLinks(
+    List<BackupNoteTagLink> links,
+    Set<String> noteIds,
+    Set<String> tagIds,
+  ) {
+    return _db.batch((batch) {
+      for (final link in links) {
+        if (!noteIds.contains(link.noteId) || !tagIds.contains(link.tagId)) {
+          continue;
+        }
+        batch.insert(
+          _db.noteTagLinks,
+          NoteTagLinksCompanion.insert(
+            noteId: link.noteId,
+            tagId: link.tagId,
+            createdAt: link.createdAt,
+            updatedAt: link.updatedAt,
+            // ⚠️ 墓碑必须显式写出，漏了摘除状态每同步一次复活一批。
+            deletedAt: Value(link.deletedAt),
           ),
           mode: InsertMode.insertOrReplace,
         );

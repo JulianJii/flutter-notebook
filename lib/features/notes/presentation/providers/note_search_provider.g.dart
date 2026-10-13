@@ -10,8 +10,8 @@ part of 'note_search_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
-/// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决）。
+/// 真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///
 /// ⛔ **不 debounce**：`LIKE '%term%'` 是全表扫描（`note_dao.dart` 已注明
@@ -25,8 +25,8 @@ final noteSearchProvider = NoteSearchProvider._();
 
 /// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
-/// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决）。
+/// 真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///
 /// ⛔ **不 debounce**：`LIKE '%term%'` 是全表扫描（`note_dao.dart` 已注明
@@ -37,8 +37,8 @@ final noteSearchProvider = NoteSearchProvider._();
 final class NoteSearchProvider extends $NotifierProvider<NoteSearch, String> {
   /// 笔记列表的搜索词。
   ///
-  /// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
-  /// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
+  /// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决）。
+  /// 真要分享 / 回访某次搜索时再加 URL 参数，
   /// 那时才需要跨页恢复。
   ///
   /// ⛔ **不 debounce**：`LIKE '%term%'` 是全表扫描（`note_dao.dart` 已注明
@@ -77,8 +77,8 @@ String _$noteSearchHash() => r'e7bb19aaa7c6fdf2d185b9872e7200c8d08b4476';
 
 /// 笔记列表的搜索词。
 ///
-/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决，
-/// `ARCHITECTURE-DESIGN.md` §8.2）。真要分享 / 回访某次搜索时再加 URL 参数，
+/// ⛔ **不进 URL**：搜索是**临时的查询**，不是导航状态（同设置偏好的裁决）。
+/// 真要分享 / 回访某次搜索时再加 URL 参数，
 /// 那时才需要跨页恢复。
 ///
 /// ⛔ **不 debounce**：`LIKE '%term%'` 是全表扫描（`note_dao.dart` 已注明

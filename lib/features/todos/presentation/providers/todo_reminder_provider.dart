@@ -54,6 +54,7 @@ class TodoReminder {
         reminderAt: at,
         priority: todo.priority,
         recurrence: todo.recurrence,
+        linkedNoteId: todo.linkedNoteId,
       ),
     );
     if (saved.isLeft()) return TodoReminderResult.failed;
@@ -89,6 +90,7 @@ class TodoReminder {
         reminderAt: null,
         priority: todo.priority,
         recurrence: todo.recurrence,
+        linkedNoteId: todo.linkedNoteId,
       ),
     );
     return saved.isLeft() ? TodoReminderResult.failed : TodoReminderResult.ok;

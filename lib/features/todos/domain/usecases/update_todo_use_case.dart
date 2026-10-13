@@ -27,12 +27,19 @@ class UpdateTodoUseCase {
       );
     }
     final now = AppClock.appNow();
+    // ⚠️ **params 的全部字段必须原样带上**：`update` 是全字段覆盖，漏一个
+    // 就是「改标题把优先级/挂接重置成默认」。此前 priority / recurrence 在
+    // 这里被丢掉（读库再写回时静默清零），是既有疏漏，本次连同 linkedNoteId
+    // 一起补齐。
     return _repository.update(
       Todo(
         id: params.todoId,
         title: title,
         isDone: params.isDone,
         reminderAt: params.reminderAt,
+        priority: params.priority,
+        recurrence: params.recurrence,
+        linkedNoteId: params.linkedNoteId,
         createdAt: now,
         updatedAt: now,
       ),

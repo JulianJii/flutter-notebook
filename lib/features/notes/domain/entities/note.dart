@@ -10,6 +10,9 @@ const Object _unset = Object();
 /// ⛔ **不落库的派生字段一律不加**：`wordCount`（用 `WordCounter` 现算）、
 /// `snippet`、`folderName`。派生值落库 = 同步 bug 来源。
 /// ⛔ **不预留字段**：`sortIndex` / `color` / `hasAttachment`。
+/// （2026-10-13 翻转一次：`tags` 加进来了 —— 它不是「预留」，是有表
+/// `note_tags` / `note_tag_links` 撑腰的真实数据，多对多归属由 datasource
+/// 的两查合并装配，见 `note_local_data_source.dart` 的 `watch`。）
 /// ⛔ **不建状态枚举**：设计稿对 `Note` 无任何状态描述。
 /// ⛔ **无 getter**：`isEmpty` / `hasContent` 等一律不加，需要时在 UI 层现算。
 class Note extends Equatable {
@@ -26,6 +29,7 @@ class Note extends Equatable {
     this.isPinned = false,
     this.isFavorite = false,
     this.purgedAt,
+    this.tags = const <String>[],
   });
 
   final String id;
@@ -78,6 +82,12 @@ class Note extends Equatable {
   /// 让「永久删除」能跨设备传播（见 `notes_table.dart` 的列注释）。
   final DateTime? purgedAt;
 
+  /// 标签名列表（**展示用**，按创建序）。来自 `note_tag_links` × `note_tags`
+  /// 的联查装配，不是 `notes` 表的列；打标 / 摘标走 [TagRepository.setNoteTags]，
+  /// ⛔ 不经 `Note.copyWith` 写回 —— copyWith 带它只会制造「能改但没人写库」的
+  /// 假接口。等值参与 `props`（标签变了卡片要重绘）。
+  final List<String> tags;
+
   /// [folderId] 用哨兵而非 `?? this.folderId` —— 否则
   /// `copyWith(folderId: null)`（显式移回「未分类」）会失效。
   /// [background] / [editorFontId] / [deletedAt] / [purgedAt] 同理：都需要
@@ -117,6 +127,7 @@ class Note extends Equatable {
       isFavorite: isFavorite ?? this.isFavorite,
       createdAt: createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      tags: tags,
     );
   }
 
@@ -134,5 +145,6 @@ class Note extends Equatable {
     isFavorite,
     createdAt,
     updatedAt,
+    tags,
   ];
 }

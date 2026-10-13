@@ -192,6 +192,192 @@ final class FolderRepositoryProvider
 
 String _$folderRepositoryHash() => r'678072a9b93fa912caf2407942b6c6dbc665bb48';
 
+@ProviderFor(tagLocalDataSource)
+final tagLocalDataSourceProvider = TagLocalDataSourceProvider._();
+
+final class TagLocalDataSourceProvider
+    extends
+        $FunctionalProvider<
+          TagLocalDataSource,
+          TagLocalDataSource,
+          TagLocalDataSource
+        >
+    with $Provider<TagLocalDataSource> {
+  TagLocalDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tagLocalDataSourceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tagLocalDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<TagLocalDataSource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  TagLocalDataSource create(Ref ref) {
+    return tagLocalDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TagLocalDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TagLocalDataSource>(value),
+    );
+  }
+}
+
+String _$tagLocalDataSourceHash() =>
+    r'9ebf56334b1e3a6a3c33b5880767f573af5b01d7';
+
+@ProviderFor(tagRepository)
+final tagRepositoryProvider = TagRepositoryProvider._();
+
+final class TagRepositoryProvider
+    extends $FunctionalProvider<TagRepository, TagRepository, TagRepository>
+    with $Provider<TagRepository> {
+  TagRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'tagRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$tagRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<TagRepository> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  TagRepository create(Ref ref) {
+    return tagRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(TagRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<TagRepository>(value),
+    );
+  }
+}
+
+String _$tagRepositoryHash() => r'4abb25b5680bbc35e9316b16ce7ac9f59aedd20d';
+
+@ProviderFor(noteVersionLocalDataSource)
+final noteVersionLocalDataSourceProvider =
+    NoteVersionLocalDataSourceProvider._();
+
+final class NoteVersionLocalDataSourceProvider
+    extends
+        $FunctionalProvider<
+          NoteVersionLocalDataSource,
+          NoteVersionLocalDataSource,
+          NoteVersionLocalDataSource
+        >
+    with $Provider<NoteVersionLocalDataSource> {
+  NoteVersionLocalDataSourceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'noteVersionLocalDataSourceProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$noteVersionLocalDataSourceHash();
+
+  @$internal
+  @override
+  $ProviderElement<NoteVersionLocalDataSource> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NoteVersionLocalDataSource create(Ref ref) {
+    return noteVersionLocalDataSource(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoteVersionLocalDataSource value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoteVersionLocalDataSource>(value),
+    );
+  }
+}
+
+String _$noteVersionLocalDataSourceHash() =>
+    r'252141c79fc2dca217d65048954bb6ae48691588';
+
+@ProviderFor(noteVersionRepository)
+final noteVersionRepositoryProvider = NoteVersionRepositoryProvider._();
+
+final class NoteVersionRepositoryProvider
+    extends
+        $FunctionalProvider<
+          NoteVersionRepository,
+          NoteVersionRepository,
+          NoteVersionRepository
+        >
+    with $Provider<NoteVersionRepository> {
+  NoteVersionRepositoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'noteVersionRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$noteVersionRepositoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<NoteVersionRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NoteVersionRepository create(Ref ref) {
+    return noteVersionRepository(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoteVersionRepository value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoteVersionRepository>(value),
+    );
+  }
+}
+
+String _$noteVersionRepositoryHash() =>
+    r'df033218036824b5930a4e0dc3706f5bcb0854ed';
+
 @ProviderFor(watchNotesUseCase)
 final watchNotesUseCaseProvider = WatchNotesUseCaseProvider._();
 
@@ -567,6 +753,151 @@ final class DeleteNoteUseCaseProvider
 
 String _$deleteNoteUseCaseHash() => r'5275810a12a8327a620017b4d2f283b10f3dcd2e';
 
+@ProviderFor(batchDeleteNotesUseCase)
+final batchDeleteNotesUseCaseProvider = BatchDeleteNotesUseCaseProvider._();
+
+final class BatchDeleteNotesUseCaseProvider
+    extends
+        $FunctionalProvider<
+          BatchDeleteNotesUseCase,
+          BatchDeleteNotesUseCase,
+          BatchDeleteNotesUseCase
+        >
+    with $Provider<BatchDeleteNotesUseCase> {
+  BatchDeleteNotesUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'batchDeleteNotesUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$batchDeleteNotesUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<BatchDeleteNotesUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  BatchDeleteNotesUseCase create(Ref ref) {
+    return batchDeleteNotesUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BatchDeleteNotesUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BatchDeleteNotesUseCase>(value),
+    );
+  }
+}
+
+String _$batchDeleteNotesUseCaseHash() =>
+    r'66cb8576cc1b49c4d5dcfab8ccf88aac457c997a';
+
+@ProviderFor(batchMoveNotesUseCase)
+final batchMoveNotesUseCaseProvider = BatchMoveNotesUseCaseProvider._();
+
+final class BatchMoveNotesUseCaseProvider
+    extends
+        $FunctionalProvider<
+          BatchMoveNotesUseCase,
+          BatchMoveNotesUseCase,
+          BatchMoveNotesUseCase
+        >
+    with $Provider<BatchMoveNotesUseCase> {
+  BatchMoveNotesUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'batchMoveNotesUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$batchMoveNotesUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<BatchMoveNotesUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  BatchMoveNotesUseCase create(Ref ref) {
+    return batchMoveNotesUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BatchMoveNotesUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BatchMoveNotesUseCase>(value),
+    );
+  }
+}
+
+String _$batchMoveNotesUseCaseHash() =>
+    r'd55ceb16899528e3ce15d59de81d0eb1659c25c5';
+
+@ProviderFor(batchUpdateNoteFlagsUseCase)
+final batchUpdateNoteFlagsUseCaseProvider =
+    BatchUpdateNoteFlagsUseCaseProvider._();
+
+final class BatchUpdateNoteFlagsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          BatchUpdateNoteFlagsUseCase,
+          BatchUpdateNoteFlagsUseCase,
+          BatchUpdateNoteFlagsUseCase
+        >
+    with $Provider<BatchUpdateNoteFlagsUseCase> {
+  BatchUpdateNoteFlagsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'batchUpdateNoteFlagsUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$batchUpdateNoteFlagsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<BatchUpdateNoteFlagsUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  BatchUpdateNoteFlagsUseCase create(Ref ref) {
+    return batchUpdateNoteFlagsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(BatchUpdateNoteFlagsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<BatchUpdateNoteFlagsUseCase>(value),
+    );
+  }
+}
+
+String _$batchUpdateNoteFlagsUseCaseHash() =>
+    r'6e7e8110e6688e303a40521e5ba15409ea9acb42';
+
 @ProviderFor(watchFolderCountsUseCase)
 final watchFolderCountsUseCaseProvider = WatchFolderCountsUseCaseProvider._();
 
@@ -614,6 +945,384 @@ final class WatchFolderCountsUseCaseProvider
 
 String _$watchFolderCountsUseCaseHash() =>
     r'd0653a2d6ccbd5ff2921a660826a25ad432934f0';
+
+@ProviderFor(watchTagsUseCase)
+final watchTagsUseCaseProvider = WatchTagsUseCaseProvider._();
+
+final class WatchTagsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          WatchTagsUseCase,
+          WatchTagsUseCase,
+          WatchTagsUseCase
+        >
+    with $Provider<WatchTagsUseCase> {
+  WatchTagsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'watchTagsUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$watchTagsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<WatchTagsUseCase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  WatchTagsUseCase create(Ref ref) {
+    return watchTagsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WatchTagsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WatchTagsUseCase>(value),
+    );
+  }
+}
+
+String _$watchTagsUseCaseHash() => r'b13c392a3c03e311d58a8577cb39562e52a21da2';
+
+@ProviderFor(getNoteTagsUseCase)
+final getNoteTagsUseCaseProvider = GetNoteTagsUseCaseProvider._();
+
+final class GetNoteTagsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          GetNoteTagsUseCase,
+          GetNoteTagsUseCase,
+          GetNoteTagsUseCase
+        >
+    with $Provider<GetNoteTagsUseCase> {
+  GetNoteTagsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'getNoteTagsUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$getNoteTagsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<GetNoteTagsUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  GetNoteTagsUseCase create(Ref ref) {
+    return getNoteTagsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(GetNoteTagsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<GetNoteTagsUseCase>(value),
+    );
+  }
+}
+
+String _$getNoteTagsUseCaseHash() =>
+    r'2a3b5929826b73e3d0695d7e1a8e11035e33dfc2';
+
+@ProviderFor(setNoteTagsUseCase)
+final setNoteTagsUseCaseProvider = SetNoteTagsUseCaseProvider._();
+
+final class SetNoteTagsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          SetNoteTagsUseCase,
+          SetNoteTagsUseCase,
+          SetNoteTagsUseCase
+        >
+    with $Provider<SetNoteTagsUseCase> {
+  SetNoteTagsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'setNoteTagsUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$setNoteTagsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<SetNoteTagsUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SetNoteTagsUseCase create(Ref ref) {
+    return setNoteTagsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SetNoteTagsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SetNoteTagsUseCase>(value),
+    );
+  }
+}
+
+String _$setNoteTagsUseCaseHash() =>
+    r'8d01f55822cc5f5b3c4f0578ca67ad2689d4aabd';
+
+@ProviderFor(renameTagUseCase)
+final renameTagUseCaseProvider = RenameTagUseCaseProvider._();
+
+final class RenameTagUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RenameTagUseCase,
+          RenameTagUseCase,
+          RenameTagUseCase
+        >
+    with $Provider<RenameTagUseCase> {
+  RenameTagUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'renameTagUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$renameTagUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RenameTagUseCase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  RenameTagUseCase create(Ref ref) {
+    return renameTagUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RenameTagUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RenameTagUseCase>(value),
+    );
+  }
+}
+
+String _$renameTagUseCaseHash() => r'fd291364afb32ed3835d9e9568379bc48c8387c4';
+
+@ProviderFor(deleteTagUseCase)
+final deleteTagUseCaseProvider = DeleteTagUseCaseProvider._();
+
+final class DeleteTagUseCaseProvider
+    extends
+        $FunctionalProvider<
+          DeleteTagUseCase,
+          DeleteTagUseCase,
+          DeleteTagUseCase
+        >
+    with $Provider<DeleteTagUseCase> {
+  DeleteTagUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'deleteTagUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$deleteTagUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<DeleteTagUseCase> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  DeleteTagUseCase create(Ref ref) {
+    return deleteTagUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DeleteTagUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DeleteTagUseCase>(value),
+    );
+  }
+}
+
+String _$deleteTagUseCaseHash() => r'160ae1d4579c2d90461188fb353a2adb14b93c5e';
+
+@ProviderFor(saveNoteVersionUseCase)
+final saveNoteVersionUseCaseProvider = SaveNoteVersionUseCaseProvider._();
+
+final class SaveNoteVersionUseCaseProvider
+    extends
+        $FunctionalProvider<
+          SaveNoteVersionUseCase,
+          SaveNoteVersionUseCase,
+          SaveNoteVersionUseCase
+        >
+    with $Provider<SaveNoteVersionUseCase> {
+  SaveNoteVersionUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'saveNoteVersionUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$saveNoteVersionUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<SaveNoteVersionUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  SaveNoteVersionUseCase create(Ref ref) {
+    return saveNoteVersionUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SaveNoteVersionUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SaveNoteVersionUseCase>(value),
+    );
+  }
+}
+
+String _$saveNoteVersionUseCaseHash() =>
+    r'12f8d2d04dd130d349257cf5de2610d2fc9fb43f';
+
+@ProviderFor(watchNoteVersionsUseCase)
+final watchNoteVersionsUseCaseProvider = WatchNoteVersionsUseCaseProvider._();
+
+final class WatchNoteVersionsUseCaseProvider
+    extends
+        $FunctionalProvider<
+          WatchNoteVersionsUseCase,
+          WatchNoteVersionsUseCase,
+          WatchNoteVersionsUseCase
+        >
+    with $Provider<WatchNoteVersionsUseCase> {
+  WatchNoteVersionsUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'watchNoteVersionsUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$watchNoteVersionsUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<WatchNoteVersionsUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  WatchNoteVersionsUseCase create(Ref ref) {
+    return watchNoteVersionsUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(WatchNoteVersionsUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<WatchNoteVersionsUseCase>(value),
+    );
+  }
+}
+
+String _$watchNoteVersionsUseCaseHash() =>
+    r'd742d7d50ec4e9e3b819ed637a25d117316e9c6c';
+
+@ProviderFor(restoreNoteVersionUseCase)
+final restoreNoteVersionUseCaseProvider = RestoreNoteVersionUseCaseProvider._();
+
+final class RestoreNoteVersionUseCaseProvider
+    extends
+        $FunctionalProvider<
+          RestoreNoteVersionUseCase,
+          RestoreNoteVersionUseCase,
+          RestoreNoteVersionUseCase
+        >
+    with $Provider<RestoreNoteVersionUseCase> {
+  RestoreNoteVersionUseCaseProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'restoreNoteVersionUseCaseProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$restoreNoteVersionUseCaseHash();
+
+  @$internal
+  @override
+  $ProviderElement<RestoreNoteVersionUseCase> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  RestoreNoteVersionUseCase create(Ref ref) {
+    return restoreNoteVersionUseCase(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(RestoreNoteVersionUseCase value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<RestoreNoteVersionUseCase>(value),
+    );
+  }
+}
+
+String _$restoreNoteVersionUseCaseHash() =>
+    r'd90428c83579999ca16132a8a44e633f11092913';
 
 @ProviderFor(createFolderUseCase)
 final createFolderUseCaseProvider = CreateFolderUseCaseProvider._();

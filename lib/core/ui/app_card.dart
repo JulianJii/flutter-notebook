@@ -14,6 +14,7 @@ class AppCard extends StatelessWidget {
     super.key,
     this.padding = defaultPadding,
     this.onTap,
+    this.onLongPress,
   });
 
   /// 笔记卡内边距。12dp。
@@ -33,6 +34,9 @@ class AppCard extends StatelessWidget {
   /// 文件夹行可点（选中态有稿）。保留参数、默认静态，由各页面 Task 决定。
   final VoidCallback? onTap;
 
+  /// 长按回调。null → 无长按行为。笔记列表的长按多选（无稿，平台惯例）。
+  final VoidCallback? onLongPress;
+
   @override
   Widget build(BuildContext context) {
     final content = Padding(padding: padding, child: child);
@@ -44,7 +48,9 @@ class AppCard extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       // 让 InkWell 的涟漪按 12dp 圆角裁剪。
       clipBehavior: Clip.antiAlias,
-      child: onTap == null ? content : InkWell(onTap: onTap, child: content),
+      child: onTap == null && onLongPress == null
+          ? content
+          : InkWell(onTap: onTap, onLongPress: onLongPress, child: content),
     );
   }
 }

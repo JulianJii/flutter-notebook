@@ -11,8 +11,10 @@ import 'package:mynote/features/backup/presentation/screens/webdav_history_scree
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
 import 'package:mynote/features/notes/presentation/screens/folder_manager_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/note_detail_screen.dart';
+import 'package:mynote/features/notes/presentation/screens/note_history_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/note_list_screen.dart';
 import 'package:mynote/features/notes/presentation/screens/recently_deleted_screen.dart';
+import 'package:mynote/features/notes/presentation/screens/tag_manager_screen.dart';
 import 'package:mynote/features/settings/presentation/screens/about_screen.dart';
 import 'package:mynote/features/settings/presentation/screens/legal_screens.dart';
 import 'package:mynote/features/settings/presentation/screens/settings_screen.dart';
@@ -83,10 +85,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RecentlyDeletedScreen(),
       ),
       GoRoute(
+        path: AppRoutes.noteTags,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const TagManagerScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.noteDetail,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) =>
             NoteDetailScreen(noteId: state.pathParameters['id']!),
+        routes: <RouteBase>[
+          // `/notes/:id/history`：作为 `:id` 的子路由，多一段固定字面量，
+          // 不会被当 id 吃掉。预览页再挂一层 `:versionId`。
+          GoRoute(
+            path: 'history',
+            parentNavigatorKey: rootNavigatorKey,
+            builder: (context, state) => NoteHistoryScreen(
+              noteId: state.pathParameters['id']!,
+            ),
+            routes: <RouteBase>[
+              GoRoute(
+                path: ':versionId',
+                parentNavigatorKey: rootNavigatorKey,
+                builder: (context, state) => NoteVersionPreviewScreen(
+                  versionId: state.pathParameters['versionId']!,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.settings,

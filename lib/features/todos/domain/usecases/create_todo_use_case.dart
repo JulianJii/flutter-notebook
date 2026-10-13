@@ -24,6 +24,7 @@ class CreateTodoUseCase {
     String title, {
     TodoPriority priority = TodoPriority.normal,
     TodoRecurrence? recurrence,
+    String? linkedNoteId,
   }) {
     final trimmed = title.trim();
     if (trimmed.isEmpty) {
@@ -41,6 +42,7 @@ class CreateTodoUseCase {
         updatedAt: now,
         priority: priority,
         recurrence: recurrence,
+        linkedNoteId: linkedNoteId,
       ),
     );
   }

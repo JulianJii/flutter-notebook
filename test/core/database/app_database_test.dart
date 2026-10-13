@@ -11,11 +11,11 @@ void main() {
 
   tearDown(() => db.close());
 
-  // v9 = 给 `notes` 加 `editor_font_id`（每篇笔记的编辑器字体，可空 = 系统默认）。
+  // v10 = 标签 / 待办挂笔记 / 单篇版本历史（三张新表 + todos.linked_note_id）。
 // ⚠️ 升版本**必须**同步改这条断言：老库靠 `onUpgrade` 的 `addColumn` 升级，
 // 版本号不一致会直接走错分支。
-test('schemaVersion == 9', () {
-  expect(db.schemaVersion, 9);
+test('schemaVersion == 10', () {
+  expect(db.schemaVersion, 10);
 });
 
   test('beforeOpen 已打开 PRAGMA foreign_keys', () async {
@@ -32,7 +32,15 @@ test('schemaVersion == 9', () {
         .get();
     expect(
       names.map((r) => r.read<String>('name')),
-      containsAll(<String>['note_folders', 'notes', 'todos']),
+      containsAll(<String>[
+        'note_folders',
+        'notes',
+        'todos',
+        'todo_subtasks',
+        'note_tags',
+        'note_tag_links',
+        'note_versions',
+      ]),
     );
   });
 
@@ -151,6 +159,89 @@ test('schemaVersion == 9', () {
         db.todos,
       )..where((t) => t.id.equals('t1'))).getSingle()).isDone,
       isFalse,
+    );
+  });
+
+  test('todos.linked_note_id 存在且默认 null（= 未挂接笔记）', () async {
+    final now = DateTime(2026, 10, 13);
+    await db
+        .into(db.todos)
+        .insert(
+          TodosCompanion.insert(
+            id: 't1',
+            title: '买牛奶',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    final todo = await (db.select(
+      db.todos,
+    )..where((t) => t.id.equals('t1'))).getSingle();
+    expect(todo.linkedNoteId, isNull);
+  });
+
+  test('删笔记后其版本与标签链接连带删除，挂接它的待办置 null', () async {
+    final now = DateTime(2026, 10, 13);
+    await db
+        .into(db.notes)
+        .insert(
+          NotesCompanion.insert(id: 'n1', createdAt: now, updatedAt: now),
+        );
+    await db
+        .into(db.noteTags)
+        .insert(
+          NoteTagsCompanion.insert(
+            id: 'tag1',
+            name: '工作',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    await db
+        .into(db.noteTagLinks)
+        .insert(
+          NoteTagLinksCompanion.insert(
+            noteId: 'n1',
+            tagId: 'tag1',
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+    await db
+        .into(db.noteVersions)
+        .insert(
+          NoteVersionsCompanion.insert(
+            id: 'v1',
+            noteId: 'n1',
+            createdAt: now,
+          ),
+        );
+    await db
+        .into(db.todos)
+        .insert(
+          TodosCompanion.insert(
+            id: 't1',
+            title: '买牛奶',
+            linkedNoteId: const Value('n1'),
+            createdAt: now,
+            updatedAt: now,
+          ),
+        );
+
+    // 物理删除笔记（模拟保留期清扫后的状态）。
+    await (db.delete(db.notes)..where((t) => t.id.equals('n1'))).go();
+
+    expect(
+      await db.select(db.noteTagLinks).get(),
+      isEmpty,
+    );
+    expect(await db.select(db.noteVersions).get(), isEmpty);
+    expect(
+      (await (db.select(
+        db.todos,
+      )..where((t) => t.id.equals('t1'))).getSingle()).linkedNoteId,
+      isNull,
     );
   });
 }

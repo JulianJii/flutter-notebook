@@ -200,6 +200,85 @@
   "@uncategorized": {
     "description": "Filter chip for notes without a folder"
   },
+  "tags": "标签",
+  "@tags": {
+    "description": "Tooltip of the tag filter / tag editor entry, and the tag section label"
+  },
+  "tagEditorHint": "输入新标签，回车添加",
+  "@tagEditorHint": {
+    "description": "Hint of the tag editor sheet input field"
+  },
+  "tagManagerTitle": "标签管理",
+  "@tagManagerTitle": {
+    "description": "Title of the tag manager screen"
+  },
+  "tagRename": "重命名",
+  "@tagRename": {
+    "description": "Tag manager: rename action"
+  },
+  "tagRenameTitle": "重命名标签",
+  "@tagRenameTitle": {
+    "description": "Title of the tag rename dialog"
+  },
+  "tagDelete": "删除标签",
+  "@tagDelete": {
+    "description": "Tag manager: delete action"
+  },
+  "tagDeleteConfirm": "确定要删除标签「{name}」吗？它会从所有笔记上移除。",
+  "@tagDeleteConfirm": {
+    "description": "Body of the tag delete confirmation dialog",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tagNoteCount": "{count} 篇笔记",
+  "@tagNoteCount": {
+    "description": "Subtitle of a tag manager row: how many notes carry the tag",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "manageTags": "管理标签",
+  "@manageTags": {
+    "description": "Row in the tag filter sheet that opens the tag manager"
+  },
+  "noTags": "还没有标签",
+  "@noTags": {
+    "description": "Empty state of the tag filter sheet"
+  },
+  "noteHistory": "版本历史",
+  "@noteHistory": {
+    "description": "Tooltip of the note detail top bar history entry, and the history page title"
+  },
+  "historyEmpty": "还没有历史版本",
+  "@historyEmpty": {
+    "description": "Empty state of the note history page"
+  },
+  "historyRestore": "恢复此版本",
+  "@historyRestore": {
+    "description": "Restore button of a history version preview"
+  },
+  "historyRestoreConfirm": "当前内容会先自动保存为一个版本，然后恢复所选版本。",
+  "@historyRestoreConfirm": {
+    "description": "Body of the restore confirmation dialog"
+  },
+  "settingsNoteVersionLimit": "版本历史上限",
+  "@settingsNoteVersionLimit": {
+    "description": "Settings row: max auto-saved versions kept per note"
+  },
+  "settingsNoteVersionLimitValue": "{count} 版",
+  "@settingsNoteVersionLimitValue": {
+    "description": "Current value of the version limit row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "back": "返回",
   "@back": {
     "description": "Tooltip of the note detail top bar back button"
@@ -360,6 +439,30 @@
   "todoRecurrenceNeedsReminder": "先设提醒时间，再选重复规则",
   "@todoRecurrenceNeedsReminder": {
     "description": "Shown when the user picks a repeat rule while no reminder is set"
+  },
+  "todoLinkedNote": "关联笔记",
+  "@todoLinkedNote": {
+    "description": "Label of the linked-note row in the todo edit dialog"
+  },
+  "todoLinkedNotePick": "选择一篇笔记",
+  "@todoLinkedNotePick": {
+    "description": "Title of the note picker sheet for linking a note to a todo"
+  },
+  "todoUnlink": "解除关联",
+  "@todoUnlink": {
+    "description": "Action that removes the note link from a todo"
+  },
+  "notePickerHint": "搜索笔记标题",
+  "@notePickerHint": {
+    "description": "Hint of the search field in the note picker sheet"
+  },
+  "notePickerEmpty": "没有可关联的笔记",
+  "@notePickerEmpty": {
+    "description": "Empty state of the note picker sheet"
+  },
+  "noteLinkMissing": "该笔记已不存在",
+  "@noteLinkMissing": {
+    "description": "Shown when tapping a todo's linked-note chip whose note no longer exists"
   },
   "save": "保存",
   "@save": {
@@ -656,6 +759,59 @@
   "restoreDone": "已恢复",
   "@restoreDone": {
     "description": "Snackbar shown after an item is restored"
+  },
+  "batchSelectTitle": "已选 {count} 篇",
+  "@batchSelectTitle": {
+    "description": "Title of the note list selection top bar",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "batchSelectAll": "全选",
+  "@batchSelectAll": {
+    "description": "Accessibility label of the select-all action in selection mode"
+  },
+  "batchSelectNone": "取消全选",
+  "@batchSelectNone": {
+    "description": "Accessibility label of the deselect-all action in selection mode"
+  },
+  "batchExit": "退出多选",
+  "@batchExit": {
+    "description": "Accessibility label of the button that exits selection mode"
+  },
+  "batchMove": "移动",
+  "@batchMove": {
+    "description": "Bottom action bar: move selected notes to a folder"
+  },
+  "batchMoveToFolder": "移动到文件夹",
+  "@batchMoveToFolder": {
+    "description": "Title of the folder picker sheet for batch move"
+  },
+  "batchFavorite": "收藏",
+  "@batchFavorite": {
+    "description": "Bottom action bar: favorite the selected notes"
+  },
+  "batchUnfavorite": "取消收藏",
+  "@batchUnfavorite": {
+    "description": "Bottom action bar: unfavorite the selected notes (shown when all selected are already favorited)"
+  },
+  "batchPin": "置顶",
+  "@batchPin": {
+    "description": "Bottom action bar: pin the selected notes"
+  },
+  "batchUnpin": "取消置顶",
+  "@batchUnpin": {
+    "description": "Bottom action bar: unpin the selected notes (shown when all selected are already pinned)"
+  },
+  "batchDeleteDone": "已移入回收站",
+  "@batchDeleteDone": {
+    "description": "Snackbar shown after selected notes are moved to the trash"
+  },
+  "batchOperationFailed": "操作失败，请重试",
+  "@batchOperationFailed": {
+    "description": "Snackbar shown when a batch operation fails"
   },
   "trashDeleteForever": "永久删除",
   "@trashDeleteForever": {

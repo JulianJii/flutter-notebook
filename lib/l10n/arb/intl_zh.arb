@@ -1129,6 +1129,66 @@
   "@dataErrorUnknown": {
     "description": "Snackbar shown for any other backup failure"
   },
+  "settingsImportArticle": "导入文章",
+  "@settingsImportArticle": {
+    "description": "Settings row that opens the article import screen; reused as that screen's title"
+  },
+  "importArticleGroupSource": "来源",
+  "@importArticleGroupSource": {
+    "description": "Section header of the article import source group"
+  },
+  "importArticlePick": "选择文件",
+  "@importArticlePick": {
+    "description": "Row that opens the system file picker for Markdown / HTML articles"
+  },
+  "importArticlePickDesc": "支持 Markdown（.md、.markdown）与 HTML（.html、.htm），可一次选多个文件",
+  "@importArticlePickDesc": {
+    "description": "Subtitle of the article file picker row"
+  },
+  "importArticleNote": "每个文件变一篇新笔记，都放在「未分类」里；能认出来的格式会尽量保留，远程图片与表格只留下带链接的文字。",
+  "@importArticleNote": {
+    "description": "Explanatory note at the bottom of the article import screen"
+  },
+  "importArticleGroupResult": "导入结果",
+  "@importArticleGroupResult": {
+    "description": "Section header of the article import result group"
+  },
+  "importArticleCreated": "已导入",
+  "@importArticleCreated": {
+    "description": "Result row detail for an article that was imported successfully"
+  },
+  "importArticleDone": "已导入 {created} 篇，{failed} 篇失败",
+  "@importArticleDone": {
+    "description": "Snackbar shown after importing articles",
+    "placeholders": {
+      "created": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "importArticleAllFailed": "没有导入任何文章，请看下面的失败原因",
+  "@importArticleAllFailed": {
+    "description": "Snackbar shown when every picked article failed to import"
+  },
+  "importArticleReasonEmpty": "文件里没有内容",
+  "@importArticleReasonEmpty": {
+    "description": "Result detail for an article file that holds nothing but whitespace"
+  },
+  "importArticleReasonUnsupported": "不支持的格式，只认 Markdown 与 HTML",
+  "@importArticleReasonUnsupported": {
+    "description": "Result detail for a picked file whose extension is not supported"
+  },
+  "importArticleReasonUnreadable": "读不出文本，可能不是 UTF-8 编码",
+  "@importArticleReasonUnreadable": {
+    "description": "Result detail for a file that could not be decoded as UTF-8"
+  },
+  "importArticleReasonWriteFailed": "写入失败，请重试",
+  "@importArticleReasonWriteFailed": {
+    "description": "Result detail for an article that failed to be saved as a note"
+  },
   "webDavHistory": "历史版本",
   "@webDavHistory": {
     "description": "Title of the WebDAV version history screen"

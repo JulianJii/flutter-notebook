@@ -136,12 +136,12 @@ void main() {
       }
     });
 
-    testWidgets('11 行按 外观 / 笔记 / 数据 / 关于 的顺序落位', (tester) async {
+    testWidgets('12 行按 外观 / 笔记 / 数据 / 关于 的顺序落位', (tester) async {
       await pumpP5(tester);
 
       // 行序就是这次重构的产物，逐行断言纵向位置递增（顺序回归即失败）：
       // 外观（字体 / 主题 / 语言）→ 笔记（排序 / 布局 / 压缩图片）→ 数据（数据与同步 /
-      // 最近删除）→ 关于（隐私政策 / 用户协议 / 关于）。
+      // 导入文章 / 最近删除）→ 关于（隐私政策 / 用户协议 / 关于）。
       const List<String> rowsInOrder = <String>[
         'select_font_family',
         'chevron_theme',
@@ -150,6 +150,7 @@ void main() {
         'select_note_layout',
         'switch_compress_images',
         'chevron_data_management',
+        'chevron_import_article',
         'chevron_recent_deleted',
         'chevron_privacy_policy',
         'chevron_user_agreement',
@@ -209,25 +210,25 @@ void main() {
       );
     });
 
-    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 7 条）', (tester) async {
+    testWidgets('同卡片内第 2 行起各有一条 1dp 分割线（共 8 条）', (tester) async {
       await pumpP5(tester);
 
       // 外观 3 行（字体 / 主题 / 语言）→ 2 条，笔记 3 行（排序 / 布局 / 压缩图片）
-      // → 2 条，数据 2 行（数据与同步 / 最近删除）→ 1 条，关于 3 行（隐私政策 /
-      // 用户协议 / 关于）→ 2 条。
-      expect(find.byType(AppDivider), findsNWidgets(7));
+      // → 2 条，数据 3 行（数据与同步 / 导入文章 / 最近删除）→ 2 条，关于 3 行
+      // （隐私政策 / 用户协议 / 关于）→ 2 条。
+      expect(find.byType(AppDivider), findsNWidgets(8));
     });
 
-    testWidgets('4 张分组卡，11 行', (tester) async {
+    testWidgets('4 张分组卡，12 行', (tester) async {
       await pumpP5(tester);
 
       expect(find.byType(AppCard), findsNWidgets(4));
-      expect(find.byType(AppListTile), findsNWidgets(11));
+      expect(find.byType(AppListTile), findsNWidgets(12));
       // 「图片压缩」是唯一一个开关行：它只有两种取值，不像明暗有三档。
       expect(find.byType(Switch), findsOneWidget);
-      // 6 个 chevron 行（主题 / 数据与同步 / 最近删除 / 隐私政策 / 用户协议 /
-      // 关于）+ 4 个选择器行（字体 / 排序 / 布局 / 语言）。
-      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(10));
+      // 7 个 chevron 行（主题 / 数据与同步 / 导入文章 / 最近删除 / 隐私政策 /
+      // 用户协议 / 关于）+ 4 个选择器行（字体 / 排序 / 布局 / 语言）。
+      expect(find.byIcon(AppIcons.chevronRight), findsNWidgets(11));
     });
   });
 
@@ -369,10 +370,11 @@ void main() {
   });
 
   group('chevron 行', () {
-    /// 已接线的 6 行。「速记」二级页无稿、整行已移除，故这里没有不可点行。
+    /// 已接线的 7 行。「速记」二级页无稿、整行已移除，故这里没有不可点行。
     const List<String> wiredKeys = <String>[
       'chevron_theme',
       'chevron_data_management',
+      'chevron_import_article',
       'chevron_recent_deleted',
       'chevron_privacy_policy',
       'chevron_user_agreement',

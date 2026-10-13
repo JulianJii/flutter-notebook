@@ -835,6 +835,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String get dataErrorUnknown => '操作失败，请重试';
 
   @override
+  String get settingsImportArticle => '导入文章';
+
+  @override
+  String get importArticleGroupSource => '来源';
+
+  @override
+  String get importArticlePick => '选择文件';
+
+  @override
+  String get importArticlePickDesc =>
+      '支持 Markdown（.md、.markdown）与 HTML（.html、.htm），可一次选多个文件';
+
+  @override
+  String get importArticleNote =>
+      '每个文件变一篇新笔记，都放在「未分类」里；能认出来的格式会尽量保留，远程图片与表格只留下带链接的文字。';
+
+  @override
+  String get importArticleGroupResult => '导入结果';
+
+  @override
+  String get importArticleCreated => '已导入';
+
+  @override
+  String importArticleDone(int created, int failed) {
+    return '已导入 $created 篇，$failed 篇失败';
+  }
+
+  @override
+  String get importArticleAllFailed => '没有导入任何文章，请看下面的失败原因';
+
+  @override
+  String get importArticleReasonEmpty => '文件里没有内容';
+
+  @override
+  String get importArticleReasonUnsupported => '不支持的格式，只认 Markdown 与 HTML';
+
+  @override
+  String get importArticleReasonUnreadable => '读不出文本，可能不是 UTF-8 编码';
+
+  @override
+  String get importArticleReasonWriteFailed => '写入失败，请重试';
+
+  @override
   String get webDavHistory => '历史版本';
 
   @override

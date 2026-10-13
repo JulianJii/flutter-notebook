@@ -864,6 +864,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataErrorUnknown => 'Something went wrong. Try again';
 
   @override
+  String get settingsImportArticle => 'Import articles';
+
+  @override
+  String get importArticleGroupSource => 'Source';
+
+  @override
+  String get importArticlePick => 'Choose files';
+
+  @override
+  String get importArticlePickDesc =>
+      'Markdown (.md, .markdown) and HTML (.html, .htm); you can pick several at once';
+
+  @override
+  String get importArticleNote =>
+      'Each file becomes a new note under Unfiled. Formatting we recognise is kept; remote images and tables are kept as text with their links.';
+
+  @override
+  String get importArticleGroupResult => 'Results';
+
+  @override
+  String get importArticleCreated => 'Imported';
+
+  @override
+  String importArticleDone(int created, int failed) {
+    return 'Imported $created, $failed failed';
+  }
+
+  @override
+  String get importArticleAllFailed =>
+      'Nothing was imported — see the reasons below';
+
+  @override
+  String get importArticleReasonEmpty => 'The file has no content';
+
+  @override
+  String get importArticleReasonUnsupported =>
+      'Unsupported format — only Markdown and HTML';
+
+  @override
+  String get importArticleReasonUnreadable =>
+      'Could not read the text; it may not be UTF-8';
+
+  @override
+  String get importArticleReasonWriteFailed =>
+      'Could not save it, please try again';
+
+  @override
   String get webDavHistory => 'Version history';
 
   @override

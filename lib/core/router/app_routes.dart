@@ -57,6 +57,12 @@ abstract final class AppRoutes {
   /// 数据与同步（导出 / 导入 / WebDAV）。`/settings` 的兄弟路由。
   static const String dataManagement = '/settings/data';
 
+  /// 导入文章（Markdown / HTML 文件 → 笔记）。从 [settings] 的「数据」分组进入。
+  ///
+  /// ⚠️ 挂在 `/settings` 前缀下而不是 `/notes`，所以**不存在** `:id` 被当成
+  /// 笔记 id 的路由冲突（那是 `/notes` 子树才有的问题）。
+  static const String importArticle = '/settings/import';
+
   /// WebDAV 服务器配置。从 [dataManagement] 进入。
   static const String webDav = '/settings/webdav';
 

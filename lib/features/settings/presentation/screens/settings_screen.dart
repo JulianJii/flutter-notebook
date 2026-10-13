@@ -189,6 +189,15 @@ class SettingsScreen extends ConsumerWidget {
                         title: l10n.settingsDataManagement,
                         onTap: () => context.push(AppRoutes.dataManagement),
                       ),
+                      // 与「数据与同步」同组：都是「把东西弄进 / 弄出这个 App」。
+                      // 不进数据与同步页做子入口 —— 一级就能看见，少一次跳转。
+                      _chevronTile(
+                        context,
+                        key: const Key('chevron_import_article'),
+                        title: l10n.settingsImportArticle,
+                        dividerBefore: true,
+                        onTap: () => context.push(AppRoutes.importArticle),
+                      ),
                       _chevronTile(
                         context,
                         key: const Key('chevron_recent_deleted'),

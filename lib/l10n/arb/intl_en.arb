@@ -1135,6 +1135,66 @@
   "@dataErrorUnknown": {
     "description": "Snackbar shown for any other backup failure"
   },
+  "settingsImportArticle": "Import articles",
+  "@settingsImportArticle": {
+    "description": "Settings row that opens the article import screen; reused as that screen's title"
+  },
+  "importArticleGroupSource": "Source",
+  "@importArticleGroupSource": {
+    "description": "Section header of the article import source group"
+  },
+  "importArticlePick": "Choose files",
+  "@importArticlePick": {
+    "description": "Row that opens the system file picker for Markdown / HTML articles"
+  },
+  "importArticlePickDesc": "Markdown (.md, .markdown) and HTML (.html, .htm); you can pick several at once",
+  "@importArticlePickDesc": {
+    "description": "Subtitle of the article file picker row"
+  },
+  "importArticleNote": "Each file becomes a new note under Unfiled. Formatting we recognise is kept; remote images and tables are kept as text with their links.",
+  "@importArticleNote": {
+    "description": "Explanatory note at the bottom of the article import screen"
+  },
+  "importArticleGroupResult": "Results",
+  "@importArticleGroupResult": {
+    "description": "Section header of the article import result group"
+  },
+  "importArticleCreated": "Imported",
+  "@importArticleCreated": {
+    "description": "Result row detail for an article that was imported successfully"
+  },
+  "importArticleDone": "Imported {created}, {failed} failed",
+  "@importArticleDone": {
+    "description": "Snackbar shown after importing articles",
+    "placeholders": {
+      "created": {
+        "type": "int"
+      },
+      "failed": {
+        "type": "int"
+      }
+    }
+  },
+  "importArticleAllFailed": "Nothing was imported — see the reasons below",
+  "@importArticleAllFailed": {
+    "description": "Snackbar shown when every picked article failed to import"
+  },
+  "importArticleReasonEmpty": "The file has no content",
+  "@importArticleReasonEmpty": {
+    "description": "Result detail for an article file that holds nothing but whitespace"
+  },
+  "importArticleReasonUnsupported": "Unsupported format — only Markdown and HTML",
+  "@importArticleReasonUnsupported": {
+    "description": "Result detail for a picked file whose extension is not supported"
+  },
+  "importArticleReasonUnreadable": "Could not read the text; it may not be UTF-8",
+  "@importArticleReasonUnreadable": {
+    "description": "Result detail for a file that could not be decoded as UTF-8"
+  },
+  "importArticleReasonWriteFailed": "Could not save it, please try again",
+  "@importArticleReasonWriteFailed": {
+    "description": "Result detail for an article that failed to be saved as a note"
+  },
   "webDavHistory": "Version history",
   "@webDavHistory": {
     "description": "Title of the WebDAV version history screen"

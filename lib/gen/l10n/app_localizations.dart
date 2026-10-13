@@ -1610,6 +1610,84 @@ abstract class AppLocalizations {
   /// **'操作失败，请重试'**
   String get dataErrorUnknown;
 
+  /// Settings row that opens the article import screen; reused as that screen's title
+  ///
+  /// In zh, this message translates to:
+  /// **'导入文章'**
+  String get settingsImportArticle;
+
+  /// Section header of the article import source group
+  ///
+  /// In zh, this message translates to:
+  /// **'来源'**
+  String get importArticleGroupSource;
+
+  /// Row that opens the system file picker for Markdown / HTML articles
+  ///
+  /// In zh, this message translates to:
+  /// **'选择文件'**
+  String get importArticlePick;
+
+  /// Subtitle of the article file picker row
+  ///
+  /// In zh, this message translates to:
+  /// **'支持 Markdown（.md、.markdown）与 HTML（.html、.htm），可一次选多个文件'**
+  String get importArticlePickDesc;
+
+  /// Explanatory note at the bottom of the article import screen
+  ///
+  /// In zh, this message translates to:
+  /// **'每个文件变一篇新笔记，都放在「未分类」里；能认出来的格式会尽量保留，远程图片与表格只留下带链接的文字。'**
+  String get importArticleNote;
+
+  /// Section header of the article import result group
+  ///
+  /// In zh, this message translates to:
+  /// **'导入结果'**
+  String get importArticleGroupResult;
+
+  /// Result row detail for an article that was imported successfully
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入'**
+  String get importArticleCreated;
+
+  /// Snackbar shown after importing articles
+  ///
+  /// In zh, this message translates to:
+  /// **'已导入 {created} 篇，{failed} 篇失败'**
+  String importArticleDone(int created, int failed);
+
+  /// Snackbar shown when every picked article failed to import
+  ///
+  /// In zh, this message translates to:
+  /// **'没有导入任何文章，请看下面的失败原因'**
+  String get importArticleAllFailed;
+
+  /// Result detail for an article file that holds nothing but whitespace
+  ///
+  /// In zh, this message translates to:
+  /// **'文件里没有内容'**
+  String get importArticleReasonEmpty;
+
+  /// Result detail for a picked file whose extension is not supported
+  ///
+  /// In zh, this message translates to:
+  /// **'不支持的格式，只认 Markdown 与 HTML'**
+  String get importArticleReasonUnsupported;
+
+  /// Result detail for a file that could not be decoded as UTF-8
+  ///
+  /// In zh, this message translates to:
+  /// **'读不出文本，可能不是 UTF-8 编码'**
+  String get importArticleReasonUnreadable;
+
+  /// Result detail for an article that failed to be saved as a note
+  ///
+  /// In zh, this message translates to:
+  /// **'写入失败，请重试'**
+  String get importArticleReasonWriteFailed;
+
   /// Title of the WebDAV version history screen
   ///
   /// In zh, this message translates to:

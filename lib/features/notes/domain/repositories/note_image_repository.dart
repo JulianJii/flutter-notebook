@@ -16,7 +16,17 @@ abstract interface class NoteImageRepository {
   /// 读到 / 压缩失败 → `Left(ImageFailure)`。
   /// 超过 [NoteImage.maxSingleBytes] 或 [NoteImage.maxTotalBytes] →
   /// `Left(ImageFailure)`，message 要能直接进 Snackbar。
-  Future<Either<Failure, List<NoteImage>>> pickImages({
+  Future<Either<Failure, List<NoteImage>>> pickImages({required bool compress});
+
+  /// 把**已经在手上的文件路径**读成可内嵌的 [NoteImage]（桌面拖入图片走这条）。
+  ///
+  /// ⚠️ 参数是 `String` 而不是 `XFile`：domain 层禁止 Flutter / image_picker 依赖，
+  /// 而拖入的文件本来就是文件系统上的真实路径，data 层自己包成 `XFile` 即可。
+  ///
+  /// 校验与压缩语义与 [pickImages] 逐字一致（共用同一段实现）：
+  /// 空列表 → `Right([])`、超上限 / 读不出来 → `Left(ImageFailure)`。
+  Future<Either<Failure, List<NoteImage>>> imagesFromPaths(
+    List<String> paths, {
     required bool compress,
   });
 }

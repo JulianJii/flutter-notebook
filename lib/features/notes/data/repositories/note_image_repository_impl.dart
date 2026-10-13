@@ -16,7 +16,8 @@ import 'package:path/path.dart' as p;
 ///
 class NoteImageRepositoryImpl implements NoteImageRepository {
   /// [picker] 可注入，测试用（生产永远走默认的 [ImagePicker]）。
-  NoteImageRepositoryImpl({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
+  NoteImageRepositoryImpl({ImagePicker? picker})
+    : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 
@@ -29,32 +30,61 @@ class NoteImageRepositoryImpl implements NoteImageRepository {
       // `requestFullMetadata: false` → iOS 不再弹相册授权框（PHPicker 本来也不需要，
       // 但默认的 true 会多走一次 `PHPhotoLibrary` 授权）。
       final picked = await _picker.pickMultiImage(requestFullMetadata: false);
-      if (picked.isEmpty) return const Right(<NoteImage>[]); // 用户取消
-
-      // 先只看 size，超限就直接拒 —— **不先把字节读进来**。多选时每个文件都会
-      // 被完整读进内存，先读再判会让「一次选了 50 张」变成一次 OOM。
-      var total = 0;
-      for (final file in picked) {
-        final size = await file.length();
-        if (size > NoteImage.maxSingleBytes) {
-          return const Left(ImageFailure(message: 'single image too large'));
-        }
-        total += size;
-        if (total > NoteImage.maxTotalBytes) {
-          return const Left(ImageFailure(message: 'total images too large'));
-        }
-      }
-
-      final images = <NoteImage>[];
-      for (final file in picked) {
-        images.add(await _encode(await file.readAsBytes(), _mimeOf(file), compress));
-      }
-      return Right(images);
+      return await _encodeAll(picked, compress: compress);
     } on Object catch (e) {
       // 相册不可用 / 平台未实现 / 读取失败时插件会抛；压缩遇到解不了的格式也抛。
       // ⚠️ 不用 debugPrint（data 层禁 Flutter），原因放进 Failure 的 message。
       return Left(ImageFailure(message: 'pick failed: $e'));
     }
+  }
+
+  /// 桌面拖入的图片：路径 → 字节。校验、压缩、上限与 [pickImages] **同一段实现**。
+  ///
+  /// `XFile(path)` 的 `mimeType` 为 null → [_mimeOf] 自然落到扩展名兜底分支。
+  @override
+  Future<Either<Failure, List<NoteImage>>> imagesFromPaths(
+    List<String> paths, {
+    required bool compress,
+  }) async {
+    try {
+      return await _encodeAll(
+        paths.map(XFile.new).toList(growable: false),
+        compress: compress,
+      );
+    } on Object catch (e) {
+      return Left(ImageFailure(message: 'read dropped file failed: $e'));
+    }
+  }
+
+  /// 校验上限 → 逐张读字节并（可选）压缩。两条入口共用，避免第二份上限校验漂移。
+  Future<Either<Failure, List<NoteImage>>> _encodeAll(
+    List<XFile> files, {
+    required bool compress,
+  }) async {
+    // 空列表 = 用户取消（相册）/ 没有可用的文件（拖入）：不是失败。
+    if (files.isEmpty) return const Right(<NoteImage>[]);
+
+    // 先只看 size，超限就直接拒 —— **不先把字节读进来**。多选时每个文件都会
+    // 被完整读进内存，先读再判会让「一次选了 50 张」变成一次 OOM。
+    var total = 0;
+    for (final file in files) {
+      final size = await file.length();
+      if (size > NoteImage.maxSingleBytes) {
+        return const Left(ImageFailure(message: 'single image too large'));
+      }
+      total += size;
+      if (total > NoteImage.maxTotalBytes) {
+        return const Left(ImageFailure(message: 'total images too large'));
+      }
+    }
+
+    final images = <NoteImage>[];
+    for (final file in files) {
+      images.add(
+        await _encode(await file.readAsBytes(), _mimeOf(file), compress),
+      );
+    }
+    return Right(images);
   }
 
   /// [compress] = true 时每张图都压，不看原始大小。压完一律是 JPEG（PNG 的透明
@@ -80,10 +110,15 @@ class NoteImageRepositoryImpl implements NoteImageRepository {
 
 /// MIME：优先用插件给的（Android 来自 ContentResolver，最准），拿不到才退回按扩展名
 /// 猜。两者都没有时一律当 JPEG —— 相册里挑的本来就是图，报错不如让用户看到图。
+///
+/// ⚠️ `p.extension` 带回点（`.png`），比较前必须剥掉：桌面拖入的 `XFile(path)`
+/// 没有 `mimeType`（插件不会给），全部走这条扩展名分支 —— 不剥就等于所有图
+/// 都当 JPEG 内嵌。
 String _mimeOf(XFile file) {
   final given = file.mimeType;
   if (given != null && given.startsWith('image/')) return given;
-  return switch (p.extension(file.path).toLowerCase()) {
+  final ext = p.extension(file.path).toLowerCase().replaceFirst('.', '');
+  return switch (ext) {
     'png' => 'image/png',
     'gif' => 'image/gif',
     'webp' => 'image/webp',

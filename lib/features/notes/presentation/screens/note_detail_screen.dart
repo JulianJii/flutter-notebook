@@ -1,3 +1,4 @@
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,8 @@ import 'package:mynote/core/fonts/font_providers.dart';
 import 'package:mynote/core/logging/logger_provider.dart';
 import 'package:mynote/core/router/app_routes.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_radius.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
 import 'package:mynote/core/ui/ui.dart';
@@ -17,6 +20,7 @@ import 'package:mynote/gen/assets.gen.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 
 import '../providers/note_editor_provider.dart';
@@ -61,6 +65,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 
   /// `PopScope` 的「已允许退出」标志。见 [_leave]。
   bool _allowPop = false;
+
+  /// 是否有文件正拖在本页上方（桌面）。只用于画那圈「可放下」提示。
+  bool _isDragging = false;
 
   @override
   void initState() {
@@ -254,6 +261,42 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     }
   }
 
+  /// 桌面拖入的图片：读到字节 → 与工具条插图**同一条链路**插到光标处。
+  ///
+  /// ⛔ 不自己压图片 / 不自己拼 base64：`pickNoteImageUseCaseProvider.fromPaths`
+  /// 与相册那条路共用同一段上限校验 + 压缩实现，设置里的「图片压缩」同时管两者。
+  ///
+  /// ⚠️ 落库无需在这里做任何事：插入会改 `Document` → 触发 `_onContentChanged`
+  /// → 走既有的 500ms debounce 自动保存。
+  Future<void> _onDropDone(DropDoneDetails details) async {
+    setState(() => _isDragging = false);
+
+    final paths = imagePathsOf(details.files);
+    // 拖进来的全是非图片（文件夹 / 文档）：静默忽略 —— 弹一句「插入失败」只会
+    // 让人猜是哪里失败了。
+    if (paths.isEmpty) return;
+
+    final result = await ref
+        .read(pickNoteImageUseCaseProvider)
+        .fromPaths(paths, compress: ref.read(noteCompressImagesProvider));
+
+    // ⚠️ 异步间隙：读文件 / 压缩期间用户可能已退出本页（`context` 失效后再用会崩）。
+    if (!mounted) return;
+
+    result.fold(
+      // 文案与相册插入失败共用一句（补救动作一样：换张图 / 换小一点的图）。
+      (failure) => AppUtils.showSnackBar(
+        context,
+        message: AppLocalizations.of(context).noteImageInsertFailed,
+      ),
+      (images) {
+        for (final image in images) {
+          insertImageAtCursor(_contentController, image.embedData);
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 库中值 → controller，**只灌一次**（首次 resolve）。之后只有
@@ -336,86 +379,100 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         if (didPop) return;
         _leave();
       },
-      child: Scaffold(
-        // 白底（笔记详情稿）—— 与笔记列表/待办的 `bg` 不同。
-        backgroundColor: context.colors.surface,
-        body: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            // 背景图层（palette 切换）：半透明压在正文下面，保证文字可读。
-            if (backgroundImage != null)
-              Positioned.fill(
-                child: Opacity(
-                  opacity: kNoteBackgroundOpacity,
-                  child: backgroundImage.image(fit: BoxFit.cover),
-                ),
-              ),
-            SafeArea(
-              child: Column(
-                children: <Widget>[
-                  _TopBar(
-                    onBack: _leave,
-                    onShare: _share,
-                    onFont: _pickFont,
-                    onPalette: _pickBackground,
-                    onTogglePinned: () => ref
-                        .read(
-                          noteEditorProvider(
-                            widget.noteId,
-                            folderId: widget.folderId,
-                          ).notifier,
-                        )
-                        .setFlags(isPinned: !(flags.$1 ?? false)),
-                    onToggleFavorite: () => ref
-                        .read(
-                          noteEditorProvider(
-                            widget.noteId,
-                            folderId: widget.folderId,
-                          ).notifier,
-                        )
-                        .setFlags(isFavorite: !(flags.$2 ?? false)),
-                    isPinned: flags.$1 ?? false,
-                    isFavorite: flags.$2 ?? false,
-                    // 未落库的新笔记（`/notes/new`）库里没有对应行：置顶 / 收藏 / 删除
-                    // 三个动作都是写库操作，写了只会拿到一句 not found —— 整个「更多」
-                    // 菜单禁用，而不是让用户点出三次必然的失败。
-                    isPersisted: createdAt != null,
-                    onDelete: _delete,
+      // 桌面：把图片文件拖进编辑窗口 → 插到光标处（同工具条的「插入图片」）。
+      // ⚠️ `desktop_drop` 的平台侧是**全局**接收者，看不见的 `DropTarget` 照样
+      // 收事件 —— 故只在编辑页挂一个（它是 root navigator 上的整屏路由，弹出即
+      // 从树上消失），⛔ 不要提到 `MaterialApp.builder` 那种常驻层。
+      child: DropTarget(
+        onDragEntered: (_) => setState(() => _isDragging = true),
+        onDragExited: (_) => setState(() => _isDragging = false),
+        onDragDone: _onDropDone,
+        child: Scaffold(
+          // 白底（笔记详情稿）—— 与笔记列表/待办的 `bg` 不同。
+          backgroundColor: context.colors.surface,
+          body: Stack(
+            fit: StackFit.expand,
+            children: <Widget>[
+              // 背景图层（palette 切换）：半透明压在正文下面，保证文字可读。
+              if (backgroundImage != null)
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: kNoteBackgroundOpacity,
+                    child: backgroundImage.image(fit: BoxFit.cover),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.pageH,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          const SizedBox(height: AppSpacing.sm),
-                          _titleField(context, editorFontFamily),
-                          const SizedBox(height: AppSpacing.sm),
-                          if (createdAt != null)
-                            _NoteMetaSlot(
-                              noteId: widget.noteId,
+                ),
+              SafeArea(
+                child: Column(
+                  children: <Widget>[
+                    _TopBar(
+                      onBack: _leave,
+                      onShare: _share,
+                      onFont: _pickFont,
+                      onPalette: _pickBackground,
+                      onTogglePinned: () => ref
+                          .read(
+                            noteEditorProvider(
+                              widget.noteId,
                               folderId: widget.folderId,
-                              createdAt: createdAt,
+                            ).notifier,
+                          )
+                          .setFlags(isPinned: !(flags.$1 ?? false)),
+                      onToggleFavorite: () => ref
+                          .read(
+                            noteEditorProvider(
+                              widget.noteId,
+                              folderId: widget.folderId,
+                            ).notifier,
+                          )
+                          .setFlags(isFavorite: !(flags.$2 ?? false)),
+                      isPinned: flags.$1 ?? false,
+                      isFavorite: flags.$2 ?? false,
+                      // 未落库的新笔记（`/notes/new`）库里没有对应行：置顶 / 收藏 / 删除
+                      // 三个动作都是写库操作，写了只会拿到一句 not found —— 整个「更多」
+                      // 菜单禁用，而不是让用户点出三次必然的失败。
+                      isPersisted: createdAt != null,
+                      onDelete: _delete,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.pageH,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            const SizedBox(height: AppSpacing.sm),
+                            _titleField(context, editorFontFamily),
+                            const SizedBox(height: AppSpacing.sm),
+                            if (createdAt != null)
+                              _NoteMetaSlot(
+                                noteId: widget.noteId,
+                                folderId: widget.folderId,
+                                createdAt: createdAt,
+                              ),
+                            const SizedBox(height: AppSpacing.lg),
+                            // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
+                            // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
+                            // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
+                            Expanded(
+                              child: _contentField(context, editorFontFamily),
                             ),
-                          const SizedBox(height: AppSpacing.lg),
-                          // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
-                          // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
-                          // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
-                          Expanded(
-                            child: _contentField(context, editorFontFamily),
-                          ),
-                          _EditorToolbar(controller: _contentController),
-                          const SizedBox(height: AppSpacing.sm),
-                        ],
+                            _EditorToolbar(controller: _contentController),
+                            const SizedBox(height: AppSpacing.sm),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              // 「可放下」提示（无稿，按主题色推导）：拖到编辑窗口上方时在**最上层**
+              // 描一圈边框 + 一层淡填充。`IgnorePointer` 不能省 —— 否则这层会挡下
+              // 落下事件，光标位置也就丢了。
+              if (_isDragging)
+                const _DropHighlight(key: Key('note_drop_highlight')),
+            ],
+          ),
         ),
       ),
     );
@@ -612,14 +669,75 @@ class _EditorToolbar extends ConsumerWidget {
   }
 
   /// 在光标处插一张图，并把光标移到这张图之后（多图依次往下排）。
-  void _insertSingle(String embedData) {
-    final max = controller.document.length;
-    final index = controller.selection.baseOffset.clamp(0, max);
-    controller.replaceText(
-      index,
-      0,
-      BlockEmbed.image(embedData),
-      TextSelection.collapsed(offset: index + 1),
+  void _insertSingle(String embedData) =>
+      insertImageAtCursor(controller, embedData);
+}
+
+/// 把一张图插到 [controller] 的**当前光标**处，并把光标移到图之后。
+///
+/// ⛔ 只此一份实现：工具条的「插入图片」按钮与桌面拖入共用它 —— 两处各写一遍，
+/// 光标语义（插完光标落哪、多图顺序）迟早会漂。
+///
+/// ⚠️ 光标取 `selection.baseOffset`：正文从未获得过焦点时它是 `-1`，`clamp` 之后
+/// 落在文档开头（与工具条按钮的既有行为一致；拖入前在正文里点一下即可定光标）。
+void insertImageAtCursor(QuillController controller, String embedData) {
+  final max = controller.document.length;
+  final index = controller.selection.baseOffset.clamp(0, max);
+  controller.replaceText(
+    index,
+    0,
+    BlockEmbed.image(embedData),
+    TextSelection.collapsed(offset: index + 1),
+  );
+}
+
+/// 认得的图片扩展名（不带点）。与 data 层 `_mimeOf` 的扩展名分支对齐：
+/// 这里管「收不收这个文件」，那里管「算什么 MIME」。
+const Set<String> _kImageExtensions = <String>{
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'bmp',
+};
+
+/// 从拖进来的文件里挑出图片，返回路径（保持拖入顺序）。
+///
+/// 桌面拖入的 `XFile` 只有路径、没有 `mimeType`（插件不给），所以只能按扩展名认。
+/// 非图片（文件夹、文档…）一律丢掉 —— 上层静默忽略。
+List<String> imagePathsOf(List<XFile> files) => <String>[
+  for (final file in files)
+    if (_kImageExtensions.contains(
+      p.extension(file.path).toLowerCase().replaceFirst('.', ''),
+    ))
+      file.path,
+];
+
+/// 拖入时的「可放下」提示：一圈 2dp 强调色描边 + 6% 同色淡填充。
+///
+/// 无稿，全部按既有 token 推导（描边宽度取 `AppStroke.icon`、圆角取
+/// `AppRadius.card`、颜色取 `colors.accent`）；⛔ 不加文案、不加动画。
+class _DropHighlight extends StatelessWidget {
+  const _DropHighlight({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.colors.accent;
+    return Positioned.fill(
+      // ⛔ 不能省：这一层在最上面，不忽略指针就挡掉了落下事件（光标位置也会丢）。
+      child: IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border: Border.all(color: accent, width: AppStroke.icon),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

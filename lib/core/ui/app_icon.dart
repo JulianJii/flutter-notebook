@@ -62,6 +62,10 @@ abstract final class AppIcons {
   /// 取 Material 惯例字形，等设计补稿后只改这里。
   static const IconData image = Icons.image_outlined;
 
+  /// 全局搜索面板（`Ctrl+F`）的输入行图标。**不在设计稿的 15 个语义里**（稿无
+  /// 全局搜索弹层），取 Material 惯例字形，等设计补稿后只改这里。
+  static const IconData search = Icons.search;
+
   // ---- 底部导航（笔记列表稿/待办稿）----
   static const IconData navNotes = Icons.list_rounded;
   static const IconData navTodo = Icons.check_rounded;

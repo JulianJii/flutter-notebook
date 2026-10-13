@@ -17,4 +17,10 @@ class PickNoteImageUseCase {
 
   Future<Either<Failure, List<NoteImage>>> call({required bool compress}) =>
       _repository.pickImages(compress: compress);
+
+  /// 桌面拖入的图片：文件路径 → [NoteImage]。同样零逻辑。
+  Future<Either<Failure, List<NoteImage>>> fromPaths(
+    List<String> paths, {
+    required bool compress,
+  }) => _repository.imagesFromPaths(paths, compress: compress);
 }

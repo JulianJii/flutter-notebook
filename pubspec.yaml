@@ -128,6 +128,10 @@ dependencies:
   flutter_timezone: ^5.1.1
   #桌面窗口：Windows / macOS 去掉系统标题栏（改自绘）
   window_manager: ^0.5.2
+  #桌面把图片文件拖进编辑窗口（Flutter 无原生桌面文件拖放 API，只能靠它）
+  #⚠️ 不用 ^0.8.4：desktop_drop ≥0.8.1 要 dbus ^0.7.10，与 wakelock_plus 1.8.1
+  #   要的 dbus ^0.8.0 冲突，只能停在 0.8.0（API 与 0.8.4 一致，拖入只用 DropTarget）
+  desktop_drop: ^0.8.0
 
 dev_dependencies:
   #单元测试 / Widget 测试

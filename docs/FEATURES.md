@@ -28,6 +28,8 @@ title: Features
 
 **图片**：工具条右端按钮 → 系统相册多选 → 在光标处依次插入。图片**不落文件系统**，而是 base64 data-URI 内嵌进 Quill 的 image embed，随正文一起落库 —— 因此不存在「笔记还在、图片没了」的悬挂引用。设置里「图片压缩」默认开，压成 JPEG（短边 1600px / quality 85）。
 
+**桌面拖入图片**：把图片文件从系统文件管理器拖进编辑窗口，松手即插到正文光标处 —— 与上面的按钮**同一条链路**（同一个 use case、同一个压缩开关、同一个插入函数），差别只是图片来源是拖进来的文件路径。拖动经过编辑区时浮出一圈强调色描边（`_DropHighlight`），离开即消失。只认扩展名（`png/jpg/jpeg/gif/webp/bmp`），非图片静默忽略。
+
 **两个贯穿全局的设计**：
 
 - **视图状态不算编辑**。换背景、点收藏、改优先级都走窄通道**只写自己那一列、不刷 `updatedAt`** —— 否则「点一下收藏」会让笔记的「编辑于」跳到今天，也会在同步时被当成一次内容编辑而产生无意义写库。
@@ -149,6 +151,20 @@ Windows / macOS **没有系统标题栏**：`main.dart` 启动时调 `setUpDeskt
 
 ⚠️ 平台判断走 `defaultTargetPlatform`（**不是** `dart:io` 的 `Platform`），测试里用 `TargetPlatformVariant` 覆盖即可，两端共用一份真源。内容区顶部安全区被 `MediaQuery.removePadding(removeTop: true)` 抹掉 —— macOS 会把透明标题栏的高度报成顶部安全区，不抹会多出一条空隙。
 
+**键盘快捷键**（`core/window/desktop_shortcuts.dart`，挂 `builder` 里 `DesktopWindowFrame` 之内、Navigator 之上 —— 只有这一层覆盖所有页面与弹层）：
+
+| 键 | 行为 |
+|---|---|
+| `Ctrl+N` | 新建笔记；带上当前分类（`?folder=`），已在笔记二级页时 no-op |
+| `Ctrl+F` | 弹出全局搜索面板（`features/notes/presentation/widgets/note_search_panel.dart`），任意页面可用 |
+| `Ctrl+S` | 立即把当前编辑页的草稿落库（非编辑页 no-op；`flush()` 非 dirty 直接返回） |
+| `Ctrl+,` | 打开设置；已在设置时不重复压栈 |
+| `Esc` | 返回上一页（`maybePop` —— 编辑页因此仍走「先落库再退」的 `PopScope` 保护） |
+
+macOS 同组再注册一份 `Cmd`（`SingleActivator` 的 `control` / `meta` 互斥，表达不了「二者其一」，故注册两份）。判断「现在在哪一页」用 `routerProvider.state.uri`：`routerDelegate.currentConfiguration.uri` 对 `push` 出来的页面**是过期值**。⚠️ 这一层在 Navigator **之上**，`Navigator.of(context)` 找不到 Navigator —— 弹层要用 `rootNavigatorKey.currentState?.overlay?.context` 当锚点。
+
+**全局搜索面板**：自持输入框与关键字（⛔ 不写 `noteSearchProvider`，否则在面板里打字会连带过滤背后的列表），复用 `noteListProvider` + `noteListPrefsProvider`；点结果 push 详情，`Enter` 打开第一条，`Esc` 关闭（走全局那层 `maybePop`）。未输入关键字时不订阅查询，面板只留一行输入框。
+
 ---
 
 ## 已知限制
@@ -170,6 +186,11 @@ Windows / macOS **没有系统标题栏**：`main.dart` 启动时调 `setUpDeskt
 
 - **启动瞬间会闪一下系统标题栏。** 窗口由 runner 在 Dart 起来之前就显示了（Windows 的 `runner/main.cpp` 建完就 `Show()`，macOS 的 nib 同理），无边框样式只能等 Dart 跑起来再切。要彻底消掉得改原生建窗时的样式。
 - **自绘标题栏的三个窗口按钮没有 tooltip / 无障碍标签。** 用的是 `window_manager` 自带的 `WindowCaption`，只有图形没有语义；要补就得自绘这三个按钮外加 4 条 l10n 文案。
+- **快捷键不可配置，且只覆盖 Ctrl / Cmd 这一组。** 没有「改键」界面，也不做菜单栏；移动端按不出这些组合键，那一层只是原样透传（不按平台开关，是为少一个平台分支）。
+- **`Ctrl+S` 只落库、不给任何反馈。** 自动保存本来就是 500ms 内的事，成功时静默；失败仍由编辑页既有的 Snackbar 提示。
+- **全局搜索面板不做 debounce、不分组、不限条数。** 与列表页内联搜索同一条裁决（参数化 `LIKE` 全表扫描在本项目笔记量级下几十微秒），结果靠面板内滚动。
+- **拖入只认扩展名**（`png/jpg/jpeg/gif/webp/bmp`）。桌面拖入的 `XFile` 没有 `mimeType`，所以一个改过名的文件（内容不是图片却叫 `.png`）会插成「图片损坏」占位而不是被拦下。
+- **拖入的光标位置取编辑器当前 selection。** 编辑页刚打开、正文从未获得过焦点时它是 `-1`，`clamp` 后落在文档开头 —— 与工具条「插入图片」按钮的既有行为一致（点一下正文即可定光标）。
 
 ### 凭据与传输
 

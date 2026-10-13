@@ -8,6 +8,7 @@ import 'package:mynote/core/providers/storage_providers.dart';
 import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/updates/update_providers.dart';
+import 'package:mynote/core/window/desktop_shortcuts.dart';
 import 'package:mynote/core/window/desktop_window.dart';
 import 'package:mynote/features/backup/presentation/providers/startup_sync_provider.dart';
 import 'package:mynote/features/todos/presentation/providers/reminder_reconciler.dart';
@@ -85,9 +86,12 @@ class MyApp extends ConsumerWidget {
           routerConfig: router,
           debugShowCheckedModeBanner: false,
 
-          // Windows / macOS 的自绘标题栏（其余平台原样透传 child）
-          builder: (BuildContext context, Widget? child) =>
-              DesktopWindowFrame(child: child ?? const SizedBox.shrink()),
+          // Windows / macOS 的自绘标题栏（其余平台原样透传 child）。
+          // 快捷键层挂在标题栏**之内**、Navigator **之上**：只有这一层覆盖所有
+          // 页面与弹层（见 `core/window/desktop_shortcuts.dart`）。
+          builder: (BuildContext context, Widget? child) => DesktopWindowFrame(
+            child: DesktopShortcuts(child: child ?? const SizedBox.shrink()),
+          ),
 
           locale: locale,
           localizationsDelegates: [

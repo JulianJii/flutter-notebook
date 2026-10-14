@@ -530,6 +530,18 @@ abstract class AppLocalizations {
   /// **'插入图片'**
   String get noteImageInsert;
 
+  /// Tooltip of the note detail editor toolbar toggle that widens the rich text toolbar
+  ///
+  /// In zh, this message translates to:
+  /// **'格式'**
+  String get noteToolbarExpand;
+
+  /// Tooltip of the note detail editor toolbar toggle that collapses the rich text toolbar
+  ///
+  /// In zh, this message translates to:
+  /// **'收起格式'**
+  String get noteToolbarCollapse;
+
   /// Snackbar shown when picking or compressing the chosen images fails, including the size limits
   ///
   /// In zh, this message translates to:

@@ -248,6 +248,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noteImageInsert => '插入图片';
 
   @override
+  String get noteToolbarExpand => '格式';
+
+  @override
+  String get noteToolbarCollapse => '收起格式';
+
+  @override
   String get noteImageInsertFailed => '图片插入失败（单张上限 10MB，一次最多 20MB）';
 
   @override

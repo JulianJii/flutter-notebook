@@ -179,9 +179,20 @@ void main() {
     );
   }
 
+  /// 展开富文本工具条：它默认收起，点右端的「格式」开关才露出来。
+  Future<void> expandToolbar(WidgetTester tester) async {
+    // 幂等：已经展开就不要再点（再点是收起）。判据用富文本槽的可见宽度 ——
+    // `QuillSimpleToolbar` 自身的尺寸恒定，量不出展开与否。
+    final richSlot = find.byKey(const Key('editor_toolbar_rich_text_slot'));
+    if (tester.getSize(richSlot).width > 0) return;
+    await tester.tap(find.byIcon(AppIcons.textFormat));
+    await tester.pumpAndSettle();
+  }
+
   /// 工具条是横向滚动列表：调色按钮在列表末尾，测试视口（800×600）
-  /// 放不下它 —— 先把工具条拖到最右露出目标，再点。
+  /// 放不下它 —— 先展开（默认收起）、再把工具条拖到最右露出目标，然后点。
   Future<void> tapToolbarIcon(WidgetTester tester, IconData icon) async {
+    await expandToolbar(tester);
     await tester.drag(find.byType(QuillSimpleToolbar), const Offset(-800, 0));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(icon));
@@ -204,25 +215,67 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 历史 / 更多；工具条左端：调色 + 右端插图', (tester) async {
+  testWidgets('顶栏：back + 历史 / 更多；工具条：撤销 / 重做 / 插图 + 格式开关', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 共 3 个 AppIconButton：back + 历史 + 工具条右端的「插入图片」。
-    // 调色现在是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
+    // 共 4 个 AppIconButton：back + 历史 + 工具条的「插入图片」+「格式」开关。
+    // 调色是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
     // 「更多」是 PopupMenuButton，都不在其中。
-    expect(find.byType(AppIconButton), findsNWidgets(3));
+    expect(find.byType(AppIconButton), findsNWidgets(4));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
-    expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.history), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
+    expect(find.byIcon(AppIcons.textFormat), findsOneWidget);
+    // 调色在工具条里、默认被裁到 0 宽：字形在树里（`findsOneWidget`），但点不到。
+    expect(find.byIcon(AppIcons.palette), findsOneWidget);
 
     // 分享 / 置顶 / 收藏都收进了「更多」下拉，菜单未展开时页面上没有这些字形。
     expect(find.byIcon(AppIcons.share), findsNothing);
     expect(find.byIcon(AppIcons.pushPin), findsNothing);
     expect(find.byIcon(AppIcons.starOutline), findsNothing);
     expect(find.byType(AppBottomNav), findsNothing, reason: '整页盖在嵌套 Push 页');
+  });
+
+  testWidgets('工具条：默认收起，点格式开关加宽展开、自有图标同步收窄', (tester) async {
+    await tester.pumpWidget(app('n1', stubbedGet()));
+    await tester.pumpAndSettle();
+
+    final ownSlot = find.byKey(const Key('editor_toolbar_own_slot'));
+    final richSlot = find.byKey(const Key('editor_toolbar_rich_text_slot'));
+    double widthOf(Finder finder) => tester.getSize(finder).width;
+
+    // 收起态：富文本槽宽 0（Quill 那一整套全藏起来），自有图标铺满可动画区域，
+    // 开关恒在最右。
+    final region = widthOf(ownSlot);
+    expect(region, greaterThan(0));
+    expect(widthOf(richSlot), 0);
+    expect(
+      tester.getTopLeft(find.byIcon(AppIcons.textFormat)).dx,
+      greaterThan(tester.getTopLeft(find.byIcon(AppIcons.image)).dx),
+      reason: '开关在最后（右端）',
+    );
+
+    // 点开关 → 动画**中途**两个槽都在半路，证明是加宽 / 收窄动画而不是瞬切。
+    await tester.tap(find.byIcon(AppIcons.textFormat));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(widthOf(richSlot), greaterThan(0));
+    expect(widthOf(richSlot), lessThan(region));
+    expect(widthOf(ownSlot), greaterThan(0));
+    expect(widthOf(ownSlot), lessThan(region));
+
+    // 动画结束：工具条占满可动画区域，自有图标收到 0。
+    await tester.pumpAndSettle();
+    expect(widthOf(richSlot), moreOrLessEquals(region, epsilon: 0.5));
+    expect(widthOf(ownSlot), 0);
+
+    // 再点开关：原路收回。
+    await tester.tap(find.byIcon(AppIcons.textFormat));
+    await tester.pumpAndSettle();
+    expect(widthOf(richSlot), 0);
+    expect(widthOf(ownSlot), moreOrLessEquals(region, epsilon: 0.5));
   });
 
   testWidgets('更多菜单：置顶 / 收藏写库并翻成实心字形', (tester) async {
@@ -317,12 +370,14 @@ void main() {
     expect(find.textContaining('14字'), findsOneWidget);
   });
 
-  testWidgets('工具条：常驻 + 点加粗真的落到文档上', (tester) async {
+  testWidgets('工具条：展开后点加粗真的落到文档上', (tester) async {
     final update = MockUpdateNote();
     await tester.pumpWidget(app('n1', stubbedGetWith(''), update: update));
     await tester.pumpAndSettle();
 
+    // 工具条常驻树中（只是默认被裁到 0 宽），展开才可点。
     expect(find.byType(QuillSimpleToolbar), findsOneWidget);
+    await expandToolbar(tester);
 
     // ⚠️ 顺序是「先点加粗，再输入」：Quill 在折叠选区下把格式挂到光标处的
     // block / 输入流上，**不追溯**已经插入的文字（先输入再点加粗，Delta 是干净的）。

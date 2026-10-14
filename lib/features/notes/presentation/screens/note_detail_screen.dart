@@ -532,24 +532,27 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   }
 }
 
-/// 正文富文本工具条。
+/// 正文富文本工具条：**收起 / 展开两态**。
 ///
-/// **常驻一行**，不做「聚焦才浮出」：浮出要额外订阅编辑器焦点态，而本页是单态
-/// 编辑页（见本文件头注），常驻一行 42dp 不引入任何新状态。
+/// 收起（默认）只露自己添加的图标 —— 撤销 / 重做 / 插入图片，末尾是「格式」开关；
+/// flutter_quill 自带的那一整套（粗体 / 斜体 / 字号 / 文字色 / 标题 / 行高 /
+/// 列表 / 引用 / 链接 / 调色）默认**不显示**。点开关后完整工具条在**同一行内**
+/// 加宽展开、自有图标同步收窄到 0（都在 [_slot] 里做），整行高度自始至终
+/// 48dp（= 开关的触控区），页面不跳。
 ///
 /// 按钮集对齐 flutter-quill 官方 `example/lib/custom_toolbar.dart`：
 /// 撤销 / 重做（钉在最前）｜ 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字号 ｜
 /// 文字色 / 背景色 ｜ 标题样式 ｜ 行高 ｜ 复选框清单 / 有序 / 无序 / 缩进 / 行内代码 /
 /// 引用 ｜ 链接 ｜ 调色（列表末尾，同滚动）；图片按钮由本类自绘
-/// （见 [_insertImage]），钉在工具条右端。
+/// （见 [_insertImage]），随自有图标一起收起。
 ///
-/// ⛔ 背景是**每篇笔记一个整篇设置**（原顶栏入口，现挪进工具条左端），
-/// 不是按选中范围的富文本属性。⛔ 仍然关着的几项与理由：
+/// ⛔ 背景是**每篇笔记一个整篇设置**（原顶栏入口，现是展开态按钮列表末尾的自定义
+/// 按钮），不是按选中范围的富文本属性。⛔ 仍然关着的几项与理由：
 /// **字体**（Quill 自带的字体清单里大半是官方示例打包的字体，本项目没有，
 /// 选中后只会静默回落）、
 /// 小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
 /// 代码块（行内代码已够）、上下标 / 剪贴板 / 搜索（笔记正文无此语义）。
-class _EditorToolbar extends ConsumerWidget {
+class _EditorToolbar extends ConsumerStatefulWidget {
   const _EditorToolbar({
     required this.controller,
     required this.onPalette,
@@ -557,11 +560,26 @@ class _EditorToolbar extends ConsumerWidget {
 
   final QuillController controller;
 
-  /// 背景切换：入口从顶栏挪进工具条，钉在左端（字号按钮之前）。
+  /// 背景切换：入口是展开态按钮列表末尾的自定义按钮（`customButtons`）。
   final VoidCallback onPalette;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_EditorToolbar> createState() => _EditorToolbarState();
+}
+
+class _EditorToolbarState extends ConsumerState<_EditorToolbar> {
+  /// 富文本工具条是否展开。纯 UI 状态：不开 provider、不落偏好 ——
+  /// 离开编辑页即回到收起态。
+  bool _expanded = false;
+
+  /// 展开 / 收起动画。
+  ///
+  /// `ponytail:` 就这一处动画，值与曲线内联在这里；出现第二处动画需求时
+  /// 再提到 `core/theme/tokens` 做 motion token。
+  static const Duration _animationDuration = Duration(milliseconds: 200);
+
+  @override
+  Widget build(BuildContext context) {
     return DecoratedBox(
       // 顶边一条分隔线把工具条与正文分开（工具条在编辑窗口**下面**）。页面
       // `Column` 的交叉轴是 `start`，故要显式撑满，否则这条线只盖住工具条
@@ -571,35 +589,100 @@ class _EditorToolbar extends ConsumerWidget {
       ),
       child: SizedBox(
         width: double.infinity,
-        child: Row(
-          children: <Widget>[
-            // 撤销 / 重做钉在最前（Quill 内置的 undo/redo 关闭，见
-            // `_richTextButtons` 的 `showUndo / showRedo`）。
-            QuillToolbarHistoryButton(
-              controller: controller,
-              isUndo: true,
-            ),
-            QuillToolbarHistoryButton(
-              controller: controller,
-              isUndo: false,
-            ),
-            // `Expanded` 而非等分：工具条按钮数随 11 个按钮横滚变化，
-            // 给它「剩下的全部」，图片按钮则始终钉在右端。
-            Expanded(child: _richTextButtons(context)),
-            AppIconButton(
-              icon: AppIcons.image,
-              tooltip: AppLocalizations.of(context).noteImageInsert,
-              onPressed: () => _insertImage(context, ref),
-            ),
-          ],
+        // ⚠️ `LayoutBuilder` 必须在 `Row` **外面**：`Row` 没有 flex 子节点时
+        // 给每个子节点**无界**宽度约束，在里面量 `constraints.maxWidth` 只会
+        // 拿到 infinity。
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // 开关恒钉在右端、不参与动画，故可动画区域 = 整行宽 - 开关触控区。
+            final region = (constraints.maxWidth - AppIconButton.minTapSize)
+                .clamp(0.0, double.infinity);
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: _expanded ? 1 : 0),
+              duration: _animationDuration,
+              curve: Curves.easeInOut,
+              builder: (context, t, _) => Row(
+                children: <Widget>[
+                  // 自有图标：铺满可动画区域（图标靠左，右侧留白）→ 收窄到 0。
+                  _slot(
+                    key: const Key('editor_toolbar_own_slot'),
+                    factor: 1 - t,
+                    width: region,
+                    child: Row(
+                      children: <Widget>[
+                        // 撤销 / 重做钉在最前（Quill 内置的 undo/redo 关闭，
+                        // 见 `_richTextButtons` 的 `showUndo / showRedo`）。
+                        QuillToolbarHistoryButton(
+                          controller: widget.controller,
+                          isUndo: true,
+                        ),
+                        QuillToolbarHistoryButton(
+                          controller: widget.controller,
+                          isUndo: false,
+                        ),
+                        AppIconButton(
+                          icon: AppIcons.image,
+                          tooltip: AppLocalizations.of(context).noteImageInsert,
+                          onPressed: () => _insertImage(context),
+                        ),
+                        // 撑住右端的空白：收起态下按钮挤在左边、开关留在最右，
+                        // 同时让这一行**永远**有富余宽度（不出现溢出）。
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                  // 完整富文本工具条：0 → 铺满可动画区域。
+                  _slot(
+                    key: const Key('editor_toolbar_rich_text_slot'),
+                    factor: t,
+                    width: region,
+                    child: _richTextButtons(context),
+                  ),
+                  AppIconButton(
+                    icon: AppIcons.textFormat,
+                    tooltip: _expanded
+                        ? AppLocalizations.of(context).noteToolbarCollapse
+                        : AppLocalizations.of(context).noteToolbarExpand,
+                    onPressed: () => setState(() => _expanded = !_expanded),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  /// 一个「可见宽度 = [width] × [factor]」的槽位：内容始终按 [width] 原样布局、
+  /// 不被压缩，超出的部分连**绘制带命中**一起裁掉。
+  ///
+  /// `ClipRect` 裁掉命中测试是白拿的语义：收起态下 Quill 的按钮点不到，展开态下
+  /// 自有图标也点不到（见 [_EditorToolbar] 的两态说明）。
+  ///
+  /// ⚠️ 刻意**不**让 `QuillSimpleToolbar` 逐帧按动画宽度重排：它的单行模式根节点
+  /// 是 `QuillToolbarArrowIndicatedButtonList`，左右各钉死 8dp 箭头位 —— 工具条
+  /// 自身布局宽度 < 16dp 就必然 RenderFlex 溢出（debug 报错 + golden 花屏）。
+  /// 固定按 [width] 排版、只动画裁剪窗口，就没有这一帧。
+  Widget _slot({
+    required Key key,
+    required double factor,
+    required double width,
+    required Widget child,
+  }) {
+    return ClipRect(
+      key: key,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        widthFactor: factor,
+        child: SizedBox(width: width, child: child),
       ),
     );
   }
 
   Widget _richTextButtons(BuildContext context) {
     return QuillSimpleToolbar(
-      controller: controller,
+      controller: widget.controller,
       config: QuillSimpleToolbarConfig(
         // 单行：`multiRowsDisplay: false` 走 Quill 自带的横向滚动按钮列表
         // （固定高 42dp，放不下时两侧出现滚动箭头）。360dp 竖屏放不下 20 多个
@@ -650,7 +733,7 @@ class _EditorToolbar extends ConsumerWidget {
           QuillToolbarCustomButtonOptions(
             icon: const Icon(AppIcons.palette),
             tooltip: AppLocalizations.of(context).palette,
-            onPressed: onPalette,
+            onPressed: widget.onPalette,
           ),
         ],
       ),
@@ -661,7 +744,7 @@ class _EditorToolbar extends ConsumerWidget {
   ///
   /// 插入动作本身由 `QuillController` 完成，落库走既有的 `_onContentChanged`
   /// 链路（`@riverpod` 的 NoteEditor debounce），这里不碰任何持久化代码。
-  Future<void> _insertImage(BuildContext context, WidgetRef ref) async {
+  Future<void> _insertImage(BuildContext context) async {
     final result = await ref.read(pickNoteImageUseCaseProvider)(
       compress: ref.read(noteCompressImagesProvider),
     );
@@ -686,7 +769,7 @@ class _EditorToolbar extends ConsumerWidget {
 
   /// 在光标处插一张图，并把光标移到这张图之后（多图依次往下排）。
   void _insertSingle(String embedData) =>
-      insertImageAtCursor(controller, embedData);
+      insertImageAtCursor(widget.controller, embedData);
 }
 
 /// 把一张图插到 [controller] 的**当前光标**处，并把光标移到图之后。

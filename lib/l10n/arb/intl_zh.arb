@@ -315,6 +315,14 @@
   "@noteImageInsert": {
     "description": "Tooltip of the note detail editor toolbar button that picks an image to insert into the note body"
   },
+  "noteToolbarExpand": "格式",
+  "@noteToolbarExpand": {
+    "description": "Tooltip of the note detail editor toolbar toggle that widens the rich text toolbar"
+  },
+  "noteToolbarCollapse": "收起格式",
+  "@noteToolbarCollapse": {
+    "description": "Tooltip of the note detail editor toolbar toggle that collapses the rich text toolbar"
+  },
   "noteImageInsertFailed": "图片插入失败（单张上限 10MB，一次最多 20MB）",
   "@noteImageInsertFailed": {
     "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"

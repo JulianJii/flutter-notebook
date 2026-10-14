@@ -318,6 +318,14 @@
   "@noteImageInsert": {
     "description": "Tooltip of the note detail editor toolbar button that picks an image to insert into the note body"
   },
+  "noteToolbarExpand": "Format",
+  "@noteToolbarExpand": {
+    "description": "Tooltip of the note detail editor toolbar toggle that widens the rich text toolbar"
+  },
+  "noteToolbarCollapse": "Hide format",
+  "@noteToolbarCollapse": {
+    "description": "Tooltip of the note detail editor toolbar toggle that collapses the rich text toolbar"
+  },
   "noteImageInsertFailed": "Could not insert the image (10MB per image, 20MB in total)",
   "@noteImageInsertFailed": {
     "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"

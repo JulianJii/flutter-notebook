@@ -254,6 +254,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noteImageInsert => 'Insert image';
 
   @override
+  String get noteToolbarExpand => 'Format';
+
+  @override
+  String get noteToolbarCollapse => 'Hide format';
+
+  @override
   String get noteImageInsertFailed =>
       'Could not insert the image (10MB per image, 20MB in total)';
 

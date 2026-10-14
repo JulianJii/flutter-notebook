@@ -58,20 +58,6 @@ test('schemaVersion == 10', () {
     );
   });
 
-  test('notes.editor_font_id 存在且默认 null（= 系统默认字体）', () async {
-    final now = DateTime(2026, 10, 12);
-    await db
-        .into(db.notes)
-        .insert(
-          NotesCompanion.insert(id: 'n1', createdAt: now, updatedAt: now),
-        );
-
-    final note = await (db.select(
-      db.notes,
-    )..where((t) => t.id.equals('n1'))).getSingle();
-    expect(note.editorFontId, isNull);
-  });
-
   test('note_folders.name 唯一约束存在', () async {
     final now = DateTime(2026, 10, 3);
     await db

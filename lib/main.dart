@@ -63,7 +63,7 @@ class MyApp extends ConsumerWidget {
     // 注册进引擎」都在 `core/fonts` 现算 —— `AsyncValue.value` 在加载期间与失败时
     // 给 `null`，于是这一帧回落系统字体、加载完自动换过来（⛔ 不阻塞 `main()`。
     // 代价只是冷启动时一次短暂的字形切换）。
-    // ⛔ 只作用于 UI 文字：每篇笔记的标题 / 正文走该篇笔记自己的 `editorFontId`。
+    // ⛔ 只作用于 UI 文字：笔记的标题 / 正文是平台默认字体，不跟随这里。
     final uiFontId = ref.watch(settingsProvider.select((s) => s.uiFontId));
     final fontFamily = ref.watch(fontFamilyOfProvider(uiFontId)).value;
 

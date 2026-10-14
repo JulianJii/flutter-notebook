@@ -65,12 +65,12 @@ String _$fontLoaderServiceHash() => r'1c7d3f8d9629cf8ab8ef02cc889454fb12fbc5c1';
 
 /// 字体 id → **可直接喂给 `TextStyle.fontFamily` 的族名**。
 ///
-/// 这是两条消费链（`main.dart` 的 UI 字体 / 笔记详情页的编辑器字体）的**唯一读入口**：
+/// 这是 `main.dart` 的 UI 字体链的**唯一读入口**：
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
 /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
-/// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
+/// 都自然回落系统默认字体，⛔ 不阻塞启动。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
 ///
@@ -83,12 +83,12 @@ final fontFamilyOfProvider = FontFamilyOfFamily._();
 
 /// 字体 id → **可直接喂给 `TextStyle.fontFamily` 的族名**。
 ///
-/// 这是两条消费链（`main.dart` 的 UI 字体 / 笔记详情页的编辑器字体）的**唯一读入口**：
+/// 这是 `main.dart` 的 UI 字体链的**唯一读入口**：
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
 /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
-/// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
+/// 都自然回落系统默认字体，⛔ 不阻塞启动。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
 ///
@@ -101,12 +101,12 @@ final class FontFamilyOfProvider
     with $FutureModifier<String?>, $FutureProvider<String?> {
   /// 字体 id → **可直接喂给 `TextStyle.fontFamily` 的族名**。
   ///
-  /// 这是两条消费链（`main.dart` 的 UI 字体 / 笔记详情页的编辑器字体）的**唯一读入口**：
+  /// 这是 `main.dart` 的 UI 字体链的**唯一读入口**：
   /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
   /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
   ///
   /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
-  /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
+  /// 都自然回落系统默认字体，⛔ 不阻塞启动。
   /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
   /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
   ///
@@ -160,12 +160,12 @@ String _$fontFamilyOfHash() => r'61fb3239272640dfb1a2fd6681b36047e847b0cc';
 
 /// 字体 id → **可直接喂给 `TextStyle.fontFamily` 的族名**。
 ///
-/// 这是两条消费链（`main.dart` 的 UI 字体 / 笔记详情页的编辑器字体）的**唯一读入口**：
+/// 这是 `main.dart` 的 UI 字体链的**唯一读入口**：
 /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
 /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
 ///
 /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
-/// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
+/// 都自然回落系统默认字体，⛔ 不阻塞启动。
 /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
 /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
 ///
@@ -186,12 +186,12 @@ final class FontFamilyOfFamily extends $Family
 
   /// 字体 id → **可直接喂给 `TextStyle.fontFamily` 的族名**。
   ///
-  /// 这是两条消费链（`main.dart` 的 UI 字体 / 笔记详情页的编辑器字体）的**唯一读入口**：
+  /// 这是 `main.dart` 的 UI 字体链的**唯一读入口**：
   /// - [fontId] 为 `null` 或不认识的 id → 返回 `null`（= 平台默认），**不触发任何下载**；
   /// - 已知 id → 先 `ensureLoaded`（首次联网下载，之后读本地缓存），成功返回族名。
   ///
   /// ⚠️ **失败抛 [FontFailure]**：调用方取 `value`，于是加载期间与加载失败
-  /// 都自然回落系统默认字体，⛔ 不阻塞启动、不阻塞打开笔记。
+  /// 都自然回落系统默认字体，⛔ 不阻塞启动。
   /// 用户需要知道失败的只有「刚点下选择」那一次 —— 那条路径在弹层里直接
   /// `await ensureLoaded`（见 `AppFontPickerSheet`），不走本 provider。
   ///

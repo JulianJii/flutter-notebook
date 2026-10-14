@@ -251,15 +251,6 @@ class NoteDao extends DatabaseAccessor<AppDatabase> with _$NoteDaoMixin {
         .then((count) => count > 0);
   }
 
-  /// 只写 `editor_font_id` 列（null = 系统默认字体），**不刷 `updated_at`** ——
-  /// 理由同 [updateBackgroundById]：换字体只改外观，不算一次编辑。
-  /// 返回是否命中行。
-  Future<bool> updateEditorFontById(String noteId, String? fontId) {
-    return (super.update(notes)..where((t) => t.id.equals(noteId)))
-        .write(NotesCompanion(editorFontId: Value(fontId)))
-        .then((count) => count > 0);
-  }
-
   /// 只写置顶 / 收藏两列，**不刷 `updated_at`** —— 理由同 [updateBackgroundById]：
   /// 它们是视图状态而非内容，一次「点收藏」不该让笔记的编辑日期跳到今天，
   /// 也不该在同步时被当成一次内容编辑而产生无意义写库。

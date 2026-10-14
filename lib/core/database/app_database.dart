@@ -16,7 +16,7 @@ part 'app_database.g.dart';
 
 /// 全 App 唯一的 SQLite 出入口。不是 feature，不含业务语义。
 ///
-/// `schemaVersion = 6`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
+/// `schemaVersion = 10`：v1 → v2 给 `notes` 加 `deleted_at` 列（软删除，见
 /// `notes_table.dart` 头注）；v2 → v3 加 `background` 列（笔记纸张背景，
 /// 可空 = 无背景）；v3 → v4 给 `note_folders` 加 `sort_index` 列（文件夹管理拖拽排序）；
 /// v4 → v5 给 `todos` 加 `reminder_at` 列（待办提醒时刻，可空 = 无提醒）；
@@ -27,8 +27,10 @@ part 'app_database.g.dart';
 /// `is_favorite` 两个置位布尔列，老数据默认 false = 都不置顶不收藏；
 /// v7 → v8 加待办的 `priority`（默认 0 = 普通）与 `recurrence`（null = 不重复），
 /// 并**新建** `todo_subtasks` 表（子任务，有自己的主键与外键）；
-/// v8 → v9 给 `notes` 加 `editor_font_id` 列（每篇笔记的编辑器字体 id，可空 =
-/// 系统默认，见 `notes_table.dart` 的列注释）；
+/// v8 → v9（**已撤销**）曾给 `notes` 加 `editor_font_id` 列（每篇笔记的编辑器字体）。
+/// 该功能已删除：列定义从 `notes_table.dart` 直接摘掉，**不写迁移、不升版本号**
+/// （v9 的 `addColumn` 分支同步删除）。老库物理残留这一列，drift 的读写全部用显式
+/// 列名，残留列不参与任何查询，无害；新装的库天然没有它。
 /// v9 → v10 做四件事（标签 / 待办挂笔记 / 单篇版本历史一批落地）：
 /// ① 新建 `note_tags`（标签，含 `deleted_at` 墓碑，见其类注释）；② 新建
 /// `note_tag_links`（笔记↔标签多对多，复合主键，摘标签也走墓碑）；③ 新建
@@ -106,12 +108,6 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(todos, todos.priority);
         await m.addColumn(todos, todos.recurrence);
         await m.createTable(todoSubtasks);
-      }
-      // v8 → v9：`notes` 加编辑器字体列。老数据为 null = 系统默认字体，与升级前
-      // 「正文的族名由工具栏按选中范围写在 Delta 里」共存，**无需回填**
-      // （Delta 里已有的 font 属性照旧渲染）。
-      if (from < 9) {
-        await m.addColumn(notes, notes.editorFontId);
       }
       // v9 → v10：标签 / 待办挂笔记 / 单篇版本历史。三张新表：drift 的
       // `onCreate` 会建它们，这里只为老库补建（同 v7 → v8 的 `todo_subtasks`）。

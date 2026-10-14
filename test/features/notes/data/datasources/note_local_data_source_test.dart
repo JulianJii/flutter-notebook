@@ -218,22 +218,6 @@ void main() {
       );
     });
 
-    test('updateEditorFont 未命中 -> CacheException', () async {
-      when(
-        () => dao.updateEditorFontById('nope', 'smileySans'),
-      ).thenAnswer((_) async => false);
-      await expectLater(
-        source.updateEditorFont('nope', 'smileySans'),
-        throwsA(
-          isA<CacheException>().having(
-            (e) => e.message,
-            'message',
-            contains('nope'),
-          ),
-        ),
-      );
-    });
-
     test('delete（软删除）未命中 -> CacheException', () async {
       when(
         () => dao.softDeleteById('nope', any()),
@@ -352,44 +336,6 @@ void main() {
 
       await expectLater(
         source.updateBackground('nope', NoteBackground.paper),
-        throwsA(isA<CacheException>()),
-      );
-    });
-
-    test('字体全链路：insert 落库、整行 update 不覆盖、updateEditorFont 改 / 清', () async {
-      final inserted = await source.insert(
-        Note(
-          id: 'n1',
-          title: '带字体',
-          content: '正文',
-          editorFontId: 'smileySans',
-          createdAt: _t1,
-          updatedAt: _t1,
-        ),
-      );
-      expect(inserted.editorFontId, 'smileySans');
-      expect((await source.getById('n1')).editorFontId, 'smileySans');
-
-      await source.update(
-        Note(id: 'n1', title: '改标题', createdAt: _t1, updatedAt: _t2),
-      );
-      expect(
-        (await source.getById('n1')).editorFontId,
-        'smileySans',
-        reason: '整行 update 不写字体列：自动保存不会把字体冲掉',
-      );
-
-      await source.updateEditorFont('n1', 'lxgwWenKai');
-      final changed = await source.getById('n1');
-      expect(changed.editorFontId, 'lxgwWenKai');
-      expect(changed.title, '改标题', reason: '只写一列，别的字段不动');
-      expect(changed.updatedAt, _t2, reason: '换字体不刷 updatedAt');
-
-      await source.updateEditorFont('n1', null);
-      expect((await source.getById('n1')).editorFontId, isNull);
-
-      await expectLater(
-        source.updateEditorFont('nope', 'smileySans'),
         throwsA(isA<CacheException>()),
       );
     });

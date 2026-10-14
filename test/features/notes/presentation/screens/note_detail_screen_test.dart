@@ -6,8 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mynote/core/error/failures.dart';
-import 'package:mynote/core/fonts/font_loader_service.dart';
-import 'package:mynote/core/fonts/font_providers.dart';
 import 'package:mynote/core/theme/app_theme.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/ui/ui.dart';
@@ -20,8 +18,6 @@ import 'package:mynote/features/notes/domain/usecases/delete_note_use_case.dart'
 import 'package:mynote/features/notes/domain/usecases/get_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
-import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_params.dart';
-import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_flags_params.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_flags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_params.dart';
@@ -35,8 +31,6 @@ import 'package:mynote/features/settings/providers/settings_providers.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
-
-import '../../../../support/fake_font_registrar.dart';
 
 class MockGetNote extends Mock implements GetNoteUseCase {}
 
@@ -61,33 +55,7 @@ class MockUpdateNoteFlags extends Mock implements UpdateNoteFlagsUseCase {
   }
 }
 
-/// 记录字体写入的参数。用 [calls] 而不是 `verify`，理由同 [MockUpdateNoteFlags]。
-class MockUpdateNoteEditorFont extends Mock
-    implements UpdateNoteEditorFontUseCase {
-  final List<UpdateNoteEditorFontParams> calls =
-      <UpdateNoteEditorFontParams>[];
-
-  @override
-  Future<Either<Failure, Unit>> call(UpdateNoteEditorFontParams params) async {
-    calls.add(params);
-    return const Right(unit);
-  }
-}
-
 class _MockSettingsRepository extends Mock implements SettingsRepository {}
-
-/// 编辑器正文外层 `DefaultTextStyle` 的当前样式（标题与正文的字都从它取）。
-DefaultTextStyle _editorTextStyle(WidgetTester tester) {
-  // `find.ancestor` 由近及远，`.first` 就是紧贴编辑器的那一层。
-  return tester.widget<DefaultTextStyle>(
-    find
-        .ancestor(
-          of: find.byType(QuillEditor),
-          matching: find.byType(DefaultTextStyle),
-        )
-        .first,
-  );
-}
 
 /// 成功读取 n1 的 mock。stub 放在各测试里而不是 app() 助手里，避免覆盖读库失败的用例。
 MockGetNote stubbedGet() {
@@ -128,9 +96,6 @@ void main() {
         background: NoteBackground.paper,
       ),
     );
-    registerFallbackValue(
-      const UpdateNoteEditorFontParams(noteId: 'n1', fontId: 'smileySans'),
-    );
     registerFallbackValue(const AppSettings.defaults());
   });
 
@@ -142,8 +107,6 @@ void main() {
     MockDeleteNote? delete,
     _MockUpdateNoteBackground? updateBackground,
     MockUpdateNoteFlags? updateFlags,
-    MockUpdateNoteEditorFont? updateFont,
-    FakeFontRegistrar? fontRegistrar,
   }) {
     final router = GoRouter(
       initialLocation: '/notes/n1',
@@ -181,9 +144,6 @@ void main() {
     // 同上：置顶 / 收藏窄通道默认成功。
     final flags = updateFlags ?? MockUpdateNoteFlags();
 
-    // 同上：字体窄通道默认成功。
-    final font = updateFont ?? MockUpdateNoteEditorFont();
-
     // 笔记详情（插入图片时）从 `settingsProvider` 读「图片压缩」，而它经
     // `sharedPreferencesProvider` 落到插件上 —— 测试环境无插件实现，必须在
     // **Repository** 层 override（同 `settings_screen_test`）。
@@ -203,13 +163,7 @@ void main() {
         deleteNoteUseCaseProvider.overrideWithValue(del),
         updateNoteBackgroundUseCaseProvider.overrideWithValue(updateBg),
         updateNoteFlagsUseCaseProvider.overrideWithValue(flags),
-        updateNoteEditorFontUseCaseProvider.overrideWithValue(font),
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
-        // 字体弹层选中一款字体会真去 `DynamicFont.url(...)` 下载字体文件，
-        // 测试里换成「立刻成功」的替身（真实加载逻辑由 core/fonts 的单测覆盖）。
-        fontLoaderServiceProvider.overrideWithValue(
-          FontLoaderService(fontRegistrar ?? FakeFontRegistrar()),
-        ),
       ],
       child: MaterialApp.router(
         theme: AppTheme.light(),
@@ -225,8 +179,8 @@ void main() {
     );
   }
 
-  /// 工具条是横向滚动列表：调色 / 字体按钮在列表末尾，测试视口（800×600）
-  /// 放不下它们 —— 先把工具条拖到最右露出目标，再点。
+  /// 工具条是横向滚动列表：调色按钮在列表末尾，测试视口（800×600）
+  /// 放不下它 —— 先把工具条拖到最右露出目标，再点。
   Future<void> tapToolbarIcon(WidgetTester tester, IconData icon) async {
     await tester.drag(find.byType(QuillSimpleToolbar), const Offset(-800, 0));
     await tester.pumpAndSettle();
@@ -250,17 +204,16 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 历史 / 更多；工具条左端：调色 / 字体 + 右端插图', (tester) async {
+  testWidgets('顶栏：back + 历史 / 更多；工具条左端：调色 + 右端插图', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
     // 共 3 个 AppIconButton：back + 历史 + 工具条右端的「插入图片」。
-    // 调色 / 字体现在是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
+    // 调色现在是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
     // 「更多」是 PopupMenuButton，都不在其中。
     expect(find.byType(AppIconButton), findsNWidgets(3));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
-    expect(find.byIcon(AppIcons.fontFamily), findsOneWidget);
     expect(find.byIcon(AppIcons.history), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
@@ -270,71 +223,6 @@ void main() {
     expect(find.byIcon(AppIcons.pushPin), findsNothing);
     expect(find.byIcon(AppIcons.starOutline), findsNothing);
     expect(find.byType(AppBottomNav), findsNothing, reason: '整页盖在嵌套 Push 页');
-  });
-
-  testWidgets('字体：顶栏弹层选一款字体 → 只写字体列，标题与正文一起换', (tester) async {
-    final font = MockUpdateNoteEditorFont();
-    await tester.pumpWidget(app('n1', stubbedGet(), updateFont: font));
-    await tester.pumpAndSettle();
-
-    expect(
-      _editorTextStyle(tester).style.fontFamily,
-      isNull,
-      reason: '默认 = 系统字体',
-    );
-
-    await tapToolbarIcon(tester, AppIcons.fontFamily);
-    await tester.pumpAndSettle();
-    expect(find.text('系统默认'), findsOneWidget, reason: '弹层第一档是系统默认');
-
-    await tester.tap(find.text('得意黑'));
-    await tester.pumpAndSettle();
-
-    // 窄通道：只带 noteId 与字体 id，不碰标题 / 正文 / updatedAt。
-    expect(font.calls, hasLength(1));
-    expect(font.calls.single.noteId, 'n1');
-    expect(font.calls.single.fontId, 'smileySans');
-
-    expect(_editorTextStyle(tester).style.fontFamily, 'SmileySans-Oblique');
-    expect(
-      tester.widget<TextField>(find.byType(TextField).first).style?.fontFamily,
-      'SmileySans-Oblique',
-      reason: '标题跟着一起换',
-    );
-  });
-
-  testWidgets('字体：库里存过就按它渲染（冷启动重开笔记的路径）', (tester) async {
-    final get = MockGetNote();
-    when(() => get('n1')).thenAnswer(
-      (_) async => Right(_emptyTitleNote.copyWith(editorFontId: 'lxgwWenKai')),
-    );
-
-    await tester.pumpWidget(app('n1', get));
-    await tester.pumpAndSettle();
-
-    expect(_editorTextStyle(tester).style.fontFamily, 'LXGWWenKai');
-  });
-
-  testWidgets('字体：下载失败留在弹层里，不写库、不改当前字体', (tester) async {
-    final font = MockUpdateNoteEditorFont();
-    await tester.pumpWidget(
-      app(
-        'n1',
-        stubbedGet(),
-        updateFont: font,
-        fontRegistrar: FakeFontRegistrar(succeeds: false),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tapToolbarIcon(tester, AppIcons.fontFamily);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('得意黑'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('得意黑'), findsOneWidget, reason: '弹层还在，用户可以再点一次');
-    expect(font.calls, isEmpty, reason: '没落库，选择没变');
-    expect(_editorTextStyle(tester).style.fontFamily, isNull);
   });
 
   testWidgets('更多菜单：置顶 / 收藏写库并翻成实心字形', (tester) async {

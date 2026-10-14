@@ -902,7 +902,7 @@ abstract class AppLocalizations {
   /// **'立即更新'**
   String get updateDialogUpdate;
 
-  /// Font picker: settings row title (UI font) + note detail top bar button tooltip (editor font)
+  /// Font picker: settings row title (UI font only)
   ///
   /// In zh, this message translates to:
   /// **'字体'**

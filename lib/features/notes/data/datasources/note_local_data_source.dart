@@ -39,11 +39,6 @@ abstract class NoteLocalDataSource {
   /// 命中 0 行 → 抛 [CacheException]。
   Future<void> updateBackground(String noteId, NoteBackground? background);
 
-  /// 只写编辑器字体列（`core/fonts` 目录里的 id，null = 系统默认），
-  /// **不刷新 `updated_at`** —— 与 [updateBackground] 同一条约定。
-  /// 命中 0 行 → 抛 [CacheException]。
-  Future<void> updateEditorFont(String noteId, String? fontId);
-
   /// 只写置顶 / 收藏两列（`null` = 不动这一列），**不刷 `updated_at`**。
   /// 命中 0 行抛 [CacheException]。
   Future<void> updateFlags(
@@ -138,7 +133,6 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
         content: Value(note.content),
         folderId: Value(note.folderId),
         background: Value(note.background?.id),
-        editorFontId: Value(note.editorFontId),
         createdAt: note.createdAt,
         updatedAt: note.updatedAt,
       ),
@@ -198,15 +192,6 @@ class NoteLocalDataSourceImpl implements NoteLocalDataSource {
       throw CacheException(message: 'Note not found: $noteId');
     }
   });
-
-  @override
-  Future<void> updateEditorFont(String noteId, String? fontId) =>
-      _guard(() async {
-        final hit = await _dao.updateEditorFontById(noteId, fontId);
-        if (!hit) {
-          throw CacheException(message: 'Note not found: $noteId');
-        }
-      });
 
   @override
   Future<void> delete(String noteId) => _guard(() async {
@@ -326,7 +311,6 @@ Note _toEntity(NoteRow row, [List<String> tags = const <String>[]]) {
     content: row.content,
     folderId: row.folderId,
     background: NoteBackground.fromId(row.background),
-    editorFontId: row.editorFontId,
     deletedAt: row.deletedAt,
     purgedAt: row.purgedAt,
     isPinned: row.isPinned,

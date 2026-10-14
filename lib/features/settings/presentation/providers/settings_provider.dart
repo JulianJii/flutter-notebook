@@ -58,7 +58,7 @@ class Settings extends _$Settings {
   /// UI 文字字体。写入口在设置页的「字体」行（弹出字体选择弹层）。
   ///
   /// 存的是 `core/fonts` 目录里的**字体 id**，`null` = 系统默认。
-  /// ⛔ 不动编辑器里的笔记标题 / 正文：它们走 `Note.editorFontId`。
+  /// ⛔ 不动编辑器里的笔记标题 / 正文：它们恒为平台默认字体。
   void setUiFontId(String? value) => _write(state.copyWith(uiFontId: value));
 
   void setNoteSort(AppNoteSort value) =>

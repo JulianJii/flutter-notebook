@@ -28,10 +28,6 @@ abstract class NoteRepository {
     NoteBackground? background,
   );
 
-  /// 只改这篇笔记的编辑器字体（null = 系统默认字体）。实现内部**不刷新
-  /// `updatedAt`**，理由同 [updateBackground]：换字体只改外观，不算一次编辑。
-  Future<Either<Failure, Unit>> updateEditorFont(String noteId, String? fontId);
-
   /// 改置顶 / 收藏。`null` = 不动这一列。
   ///
   /// 实现内部**不刷新 `updatedAt`**，理由同 [updateBackground]：它们是视图状态

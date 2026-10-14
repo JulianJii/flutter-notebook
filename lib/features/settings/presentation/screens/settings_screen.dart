@@ -97,8 +97,8 @@ class SettingsScreen extends ConsumerWidget {
                     key: const Key('section_appearance'),
                     title: l10n.settingsGroupAppearance,
                     children: <Widget>[
-                      // UI 字体。⛔ **只作用于 UI 文字**：每篇笔记的标题 / 正文走
-                      // 该篇笔记自己的 `editorFontId`（笔记详情页顶栏的「字体」按钮）。
+                      // UI 字体。⛔ **只作用于 UI 文字**：笔记的标题 / 正文是平台
+                      // 默认字体（编辑器不再提供字体选择）。
                       //
                       // 不走 `_selectTile` 的通用选项单：选中一款字体要先把字体文件
                       // 下载并注册进引擎，失败要留在弹层里让用户重试 —— 通用选项单

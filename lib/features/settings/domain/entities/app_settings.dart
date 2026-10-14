@@ -63,8 +63,7 @@ class AppSettings extends Equatable {
   /// `core/fonts` 的目录数据；换字体版本时族名可能变，id 不变。也因此本文件
   /// ⛔ 不 import `core/fonts` —— domain 只认一个字符串。
   ///
-  /// ⛔ **只管 UI 文字**：每篇笔记的标题与正文走 `Note.editorFontId`，由笔记详情页
-  /// 顶栏的「字体」按钮改。
+  /// ⛔ **只管 UI 文字**：笔记的标题与正文是平台默认字体，不跟随这里。
   ///
   /// ⚠️ 取值在读取时被校验（必须是目录里存在的 id），历史残留 / 被下线字体的旧值
   /// 一律回落系统默认 —— 见 `SettingsRepositoryImpl._fromJson`。

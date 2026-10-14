@@ -21,10 +21,6 @@ abstract final class AppIcons {
   static const IconData palette = Icons.palette_outlined;
   static const IconData overflow = Icons.more_vert;
 
-  /// 笔记详情页的「字体」。**不在设计稿的 15 个语义里**（稿无字体入口），
-  /// 取 Material 惯例的 T 字框，等设计补稿后只改这里。
-  static const IconData fontFamily = Icons.text_fields;
-
   // ---- 页面内（笔记列表稿/待办稿/文件夹管理稿）----
   static const IconData plus = Icons.add;
   static const IconData chevronRight = Icons.chevron_right;

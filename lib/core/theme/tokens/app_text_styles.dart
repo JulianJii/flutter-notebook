@@ -109,8 +109,8 @@ class AppTextStyles extends ThemeExtension<AppTextStyles> {
   /// **不带 UI 字体族**的字阶基线（逐字等于 [light] 的原始取值）。
   ///
   /// 只给**编辑器内部的文字**用：笔记标题（[detailTitle]）与正文（[body]）。
-  /// 设置里的「字体」只管 UI 文字，笔记文字的字体由编辑器工具栏的「字体」按钮
-  /// 按选中范围决定 —— 两者互不干扰。
+  /// 设置里的「字体」只管 UI 文字，⛔ 不要拿 `context.textStyles` 喂编辑器
+  /// （会让 UI 字体盖到笔记文字上）。这一份**不带族名** = 平台默认字体。
   static const AppTextStyles editor = AppTextStyles.light();
 
   /// 把字体族名套到 13 级字阶上。**套用动作在本项目只出现这一处**。

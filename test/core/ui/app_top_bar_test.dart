@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/ui/app_icon.dart';
+import 'package:mynote/core/ui/app_icon_button.dart';
 import 'package:mynote/core/ui/app_top_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -49,20 +51,34 @@ void main() {
     );
   });
 
-  testWidgets('2 个 action 之间间距 8dp，且靠右', (tester) async {
+  testWidgets('2 个 action：48dp 触控区贴合、间距来自图形侧留白，且靠右', (tester) async {
     await tester.pumpWidget(
       wrap(
-        const AppTopBar(
-          actions: <Widget>[Icon(Icons.folder), Icon(Icons.settings)],
+        AppTopBar(
+          actions: <Widget>[
+            AppIconButton(icon: AppIcons.folder, onPressed: () {}),
+            AppIconButton(icon: AppIcons.settings, onPressed: () {}),
+          ],
         ),
       ),
     );
 
-    final r0 = tester.getRect(find.byIcon(Icons.folder));
-    final r1 = tester.getRect(find.byIcon(Icons.settings));
-    expect(r1.left - r0.right, closeTo(AppSpacing.chipGap, 0.5));
+    // ⚠️ 顶栏 action 的间距**不由 gap 给**：48dp 触控区里 24dp 图形居中，两侧各
+    // 12dp 留白就是视觉间距（`AppTopBar._actionGap = 0`）。用裸 `Icon` 看不出这条
+    // —— 那会让字形真的贴在一起，不是顶栏的真实形态。
+    final r0 = tester.getRect(find.byType(AppIconButton).first);
+    final r1 = tester.getRect(find.byType(AppIconButton).last);
+    expect(r0.right, closeTo(r1.left, 0.5), reason: '触控区贴合，⛔ 不再加 gap');
 
-    // 靠右：最后一个 action 与顶栏右边缘之间只剩 12dp 页面内边距
+    // 用户看到的字形间距 = 两个触控区比图形大的那一圈留白（48 - 24）。
+    final g0 = tester.getRect(find.byIcon(AppIcons.folder));
+    final g1 = tester.getRect(find.byIcon(AppIcons.settings));
+    expect(
+      g1.left - g0.right,
+      closeTo(AppIconButton.minTapSize - AppIcon.defaultSize, 0.5),
+    );
+
+    // 靠右：最后一个 action 与顶栏右边缘之间只剩 12dp 页面内边距。
     final bar = tester.getRect(find.byType(AppTopBar));
     expect(bar.right - r1.right, closeTo(AppSpacing.pageH, 0.5));
   });

@@ -28,7 +28,7 @@ int appFontIndexOf(String? id) {
 String appFontLabel(AppLocalizations l10n, String? id) =>
     appFontById(id)?.label ?? l10n.fontFamilySystem;
 
-/// 字体选择弹层。设置页（UI 字体）与笔记详情页顶栏（编辑器字体）**共用同一形态**。
+/// 字体选择弹层（只服务设置页的 UI 字体）。
 ///
 /// 返回值照抄背景弹层（`BackgroundPickerSheet`）的约定：`0` = 系统默认、
 /// `null` = 取消 —— 因此调用方**不能**用 `picked != null` 判断「用户选没选」。

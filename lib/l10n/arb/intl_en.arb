@@ -598,7 +598,7 @@
   },
   "settingsFontFamily": "Font",
   "@settingsFontFamily": {
-    "description": "Font picker: settings row title (UI font) + note detail top bar button tooltip (editor font)"
+    "description": "Font picker: settings row title (UI font only)"
   },
   "settingsNoteSort": "Sort by",
   "@settingsNoteSort": {

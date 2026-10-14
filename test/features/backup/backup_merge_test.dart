@@ -13,7 +13,6 @@ final DateTime t3 = DateTime.fromMillisecondsSinceEpoch(300 * 1000);
 BackupNote note({
   String id = 'n1',
   String title = '标题',
-  String? editorFontId,
   DateTime? updatedAt,
   DateTime? deletedAt,
 }) =>
@@ -23,7 +22,6 @@ BackupNote note({
       content: '正文',
       folderId: null,
       background: null,
-      editorFontId: editorFontId,
       createdAt: t1,
       updatedAt: updatedAt ?? t2,
       deletedAt: deletedAt,
@@ -315,7 +313,7 @@ void main() {
   group('BackupSnapshot.parse', () {
     test('JSON 往返不丢字段', () {
       final original = snapshot(
-        notes: <BackupNote>[note(deletedAt: t3, editorFontId: 'lxgwWenKai')],
+        notes: <BackupNote>[note(deletedAt: t3)],
         folders: <BackupFolder>[folder('f1', '工作')],
       );
 
@@ -324,7 +322,6 @@ void main() {
       expect(parsed.skipped, 0);
       expect(parsed.snapshot.notes.single.title, '标题');
       expect(parsed.snapshot.notes.single.deletedAt, t3);
-      expect(parsed.snapshot.notes.single.editorFontId, 'lxgwWenKai');
       expect(parsed.snapshot.folders.single.name, '工作');
     });
 
@@ -575,24 +572,7 @@ group('子任务同步', () {
       expect((await source.read()).todos.single.reminderAt, t3);
     });
 
-    /// 防回归，与 `reminder_at` 同一条：`_writeNotes` 也是 `insertOrReplace`，
-    /// 少写 `editor_font_id` 一列 = 每次同步把接收端全部笔记的字体清零。
-    test('笔记的 editor_font_id 往返不丢（写回不把它清成 null）', () async {
-      await source.write(
-        snapshot(
-          notes: <BackupNote>[note(editorFontId: 'notoSansSc')],
-        ),
-      );
-
-      final read = await source.read();
-      expect(read.notes.single.editorFontId, 'notoSansSc');
-
-      // 再写一次（模拟下一次同步）：仍必须留着。
-      await source.write(read);
-      expect((await source.read()).notes.single.editorFontId, 'notoSansSc');
-    });
-
-    /// 同上，但提醒为空的那条也不能被写成别的东西。
+    /// 提醒为空的那条也不能被写成别的东西。
     test('没设提醒的待办往返后 reminder_at 仍为 null', () async {
       await source.write(
         BackupSnapshot(

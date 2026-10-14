@@ -1,5 +1,5 @@
 /// 可选字体目录。**纯 Dart**，不 import Flutter —— 字体 id 会作为 `String?`
-/// 存进 domain 层（`AppSettings.uiFontId` / `Note.editorFontId`），
+/// 存进 domain 层（`AppSettings.uiFontId`），
 /// 所以 domain ⛔ 不 import 本文件，只认那个字符串。
 ///
 /// ⛔ **目录里没有「系统默认」这一项**：`null` 即系统默认。这样 domain 层不必

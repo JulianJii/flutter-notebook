@@ -24,7 +24,6 @@ class Note extends Equatable {
     this.content = '',
     this.folderId,
     this.background,
-    this.editorFontId,
     this.deletedAt,
     this.isPinned = false,
     this.isFavorite = false,
@@ -52,15 +51,6 @@ class Note extends Equatable {
   /// ⚠️ 它是**视觉属性**，不是编辑内容：由专用用例（`UpdateNoteBackgroundUseCase`）
   /// 只写这一列，不刷新 [updatedAt]。
   final NoteBackground? background;
-
-  /// 这篇笔记的编辑器字体：`core/fonts` 目录里某个字体的 **id**，null = 系统默认。
-  ///
-  /// ⛔ **存 id 不存族名**：族名是 `DynamicFont` 注册进引擎用的名字，属于
-  /// `core/fonts` 的目录数据（换字体版本可能变），本层也不 import 它。
-  ///
-  /// ⚠️ 它是**每篇笔记的视觉属性**，与 [background] 同类：由专用用例
-  /// （`UpdateNoteEditorFontUseCase`）只写这一列、不刷新 [updatedAt]。
-  final String? editorFontId;
 
   /// 本地时钟。domain 不做时区转换。
   final DateTime createdAt;
@@ -90,14 +80,12 @@ class Note extends Equatable {
 
   /// [folderId] 用哨兵而非 `?? this.folderId` —— 否则
   /// `copyWith(folderId: null)`（显式移回「未分类」）会失效。
-  /// [background] / [editorFontId] / [deletedAt] / [purgedAt] 同理：都需要
-  /// 「显式置回 null」（换回「系统默认字体」正是其中一种）。
+  /// [background] / [deletedAt] / [purgedAt] 同理：都需要「显式置回 null」。
   Note copyWith({
     String? title,
     String? content,
     Object? folderId = _unset,
     Object? background = _unset,
-    Object? editorFontId = _unset,
     Object? deletedAt = _unset,
     Object? purgedAt = _unset,
     DateTime? updatedAt,
@@ -114,9 +102,6 @@ class Note extends Equatable {
       background: identical(background, _unset)
           ? this.background
           : background as NoteBackground?,
-      editorFontId: identical(editorFontId, _unset)
-          ? this.editorFontId
-          : editorFontId as String?,
       deletedAt: identical(deletedAt, _unset)
           ? this.deletedAt
           : deletedAt as DateTime?,
@@ -138,7 +123,6 @@ class Note extends Equatable {
     content,
     folderId,
     background,
-    editorFontId,
     deletedAt,
     purgedAt,
     isPinned,

@@ -46,7 +46,6 @@ class BackupLocalDataSource {
             content: row.content,
             folderId: row.folderId,
             background: row.background,
-            editorFontId: row.editorFontId,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             deletedAt: row.deletedAt,
@@ -251,9 +250,6 @@ class BackupLocalDataSource {
             isPinned: Value(note.isPinned),
             isFavorite: Value(note.isFavorite),
             background: Value(note.background),
-            // ⚠️ 同理：漏一次就把接收端全部笔记的字体清零（含「系统默认」这个
-            // 合法取值 —— 它也是 null，与「漏了」在库里长得一模一样）。
-            editorFontId: Value(note.editorFontId),
           ),
           // `insertOrReplace`：主键撞车时整行替换。两张表都只按主键判重
           // （`note_folders.name` 的 UNIQUE 由 [_writeFolders] 逐条处理），

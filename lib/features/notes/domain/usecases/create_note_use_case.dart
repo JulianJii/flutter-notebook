@@ -31,7 +31,6 @@ class CreateNoteUseCase {
         content: params.content,
         folderId: params.folderId,
         background: params.background,
-        editorFontId: params.editorFontId,
         createdAt: now,
         updatedAt: now,
       ),

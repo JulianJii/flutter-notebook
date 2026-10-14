@@ -36,7 +36,6 @@ import 'package:mynote/features/notes/domain/usecases/save_note_version_use_case
 import 'package:mynote/features/notes/domain/usecases/manage_tag_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/set_note_tags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_background_use_case.dart';
-import 'package:mynote/features/notes/domain/usecases/update_note_editor_font_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_flags_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/update_note_use_case.dart';
 import 'package:mynote/features/notes/domain/usecases/watch_deleted_notes_use_case.dart';
@@ -124,11 +123,6 @@ UpdateNoteUseCase updateNoteUseCase(Ref ref) {
 @riverpod
 UpdateNoteBackgroundUseCase updateNoteBackgroundUseCase(Ref ref) {
   return UpdateNoteBackgroundUseCase(ref.watch(noteRepositoryProvider));
-}
-
-@riverpod
-UpdateNoteEditorFontUseCase updateNoteEditorFontUseCase(Ref ref) {
-  return UpdateNoteEditorFontUseCase(ref.watch(noteRepositoryProvider));
 }
 
 @riverpod

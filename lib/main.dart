@@ -16,6 +16,7 @@ import 'package:mynote/features/settings/domain/entities/app_settings.dart';
 import 'package:mynote/features/settings/presentation/providers/settings_provider.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toastr_flutter/toastr.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,8 +90,13 @@ class MyApp extends ConsumerWidget {
           // Windows / macOS 的自绘标题栏（其余平台原样透传 child）。
           // 快捷键层挂在标题栏**之内**、Navigator **之上**：只有这一层覆盖所有
           // 页面与弹层（见 `core/window/desktop_shortcuts.dart`）。
-          builder: (BuildContext context, Widget? child) => DesktopWindowFrame(
-            child: DesktopShortcuts(child: child ?? const SizedBox.shrink()),
+          // toastr_flutter 的 overlay 放最外层：app 有嵌套 Navigator
+          //（StatefulShellRoute），不在这层挂 builder，toast 只落在一个子 Navigator 里。
+          builder: (BuildContext context, Widget? child) => Toastr.builder(
+            context,
+            DesktopWindowFrame(
+              child: DesktopShortcuts(child: child ?? const SizedBox.shrink()),
+            ),
           ),
 
           locale: locale,

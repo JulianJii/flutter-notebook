@@ -422,8 +422,6 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     _TopBar(
                       onBack: _leave,
                       onShare: _share,
-                      onFont: _pickFont,
-                      onPalette: _pickBackground,
                       onTags: _editTags,
                       onHistory: () => context.push(
                         AppRoutes.noteHistoryPath(widget.noteId),
@@ -484,7 +482,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                             Expanded(
                               child: _contentField(context, editorFontFamily),
                             ),
-                            _EditorToolbar(controller: _contentController),
+                            _EditorToolbar(
+                              controller: _contentController,
+                              onPalette: _pickBackground,
+                              onFont: _pickFont,
+                            ),
                             const SizedBox(height: AppSpacing.sm),
                           ],
                         ),
@@ -577,18 +579,28 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 /// 编辑页（见本文件头注），常驻一行 42dp 不引入任何新状态。
 ///
 /// 按钮集对齐 flutter-quill 官方 `example/lib/custom_toolbar.dart`：
-/// 撤销 / 重做 / 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字号 ｜
+/// 撤销 / 重做（钉在最前）｜ 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字号 ｜
 /// 文字色 / 背景色 ｜ 标题样式 ｜ 行高 ｜ 复选框清单 / 有序 / 无序 / 缩进 / 行内代码 /
-/// 引用 ｜ 链接；图片按钮由本类自绘（见 [_insertImage]），钉在工具条右端。
+/// 引用 ｜ 链接 ｜ 调色 / 字体（列表末尾，同滚动）；图片按钮由本类自绘
+/// （见 [_insertImage]），钉在工具条右端。
 ///
-/// ⛔ 仍然关着的几项与理由：**字体**（改成每篇笔记一个整篇设置，入口在本页顶栏 ——
-/// 按选中范围改字体与「整篇默认字体」是两套心智，同时留着会互相打架）、
+/// ⛔ 背景 / 字体是**每篇笔记一个整篇设置**（原顶栏入口，现挪进工具条左端），
+/// 不是按选中范围的富文本属性。⛔ 仍然关着的几项与理由：
+/// **字体**（按选中范围改字体与「整篇默认字体」是两套心智，同时留着会互相打架）、
 /// 小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
 /// 代码块（行内代码已够）、上下标 / 剪贴板 / 搜索（笔记正文无此语义）。
 class _EditorToolbar extends ConsumerWidget {
-  const _EditorToolbar({required this.controller});
+  const _EditorToolbar({
+    required this.controller,
+    required this.onPalette,
+    required this.onFont,
+  });
 
   final QuillController controller;
+
+  /// 背景切换 / 字体：入口从顶栏挪进工具条，钉在左端（字号按钮之前）。
+  final VoidCallback onPalette;
+  final VoidCallback onFont;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -603,6 +615,16 @@ class _EditorToolbar extends ConsumerWidget {
         width: double.infinity,
         child: Row(
           children: <Widget>[
+            // 撤销 / 重做钉在最前（Quill 内置的 undo/redo 关闭，见
+            // `_richTextButtons` 的 `showUndo / showRedo`）。
+            QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: true,
+            ),
+            QuillToolbarHistoryButton(
+              controller: controller,
+              isUndo: false,
+            ),
             // `Expanded` 而非等分：工具条按钮数随 11 个按钮横滚变化，
             // 给它「剩下的全部」，图片按钮则始终钉在右端。
             Expanded(child: _richTextButtons(context)),
@@ -636,8 +658,10 @@ class _EditorToolbar extends ConsumerWidget {
         // 选中后只会静默回落）。
         showFontFamily: false,
         showFontSize: true,
-        showUndo: true,
-        showRedo: true,
+        // 撤销 / 重做由本类自绘钉在工具条最前面（`QuillToolbarHistoryButton`），
+        // 不用 Quill 内置的（它在字号之后的滚动列表里，位置不归我们排）。
+        showUndo: false,
+        showRedo: false,
         showBoldButton: true,
         showItalicButton: true,
         showUnderLineButton: true,
@@ -663,6 +687,20 @@ class _EditorToolbar extends ConsumerWidget {
         showSubscript: false,
         showSuperscript: false,
         showSearchButton: false,
+        // 调色（背景）/ 字体作为自定义按钮混进按钮列表末尾：与其它按钮同为
+        // `QuillToolbarIconButton`（同字号、同间距、同滚动），不做钉住的特例。
+        customButtons: <QuillToolbarCustomButtonOptions>[
+          QuillToolbarCustomButtonOptions(
+            icon: const Icon(AppIcons.palette),
+            tooltip: AppLocalizations.of(context).palette,
+            onPressed: onPalette,
+          ),
+          QuillToolbarCustomButtonOptions(
+            icon: const Icon(AppIcons.fontFamily),
+            tooltip: AppLocalizations.of(context).settingsFontFamily,
+            onPressed: onFont,
+          ),
+        ],
       ),
     );
   }
@@ -768,19 +806,15 @@ class _DropHighlight extends StatelessWidget {
   }
 }
 
-/// 笔记详情稿的顶栏：左 `back` + 右 3 个入口，无标题。
+/// 笔记详情稿的顶栏：左 `back` + 右历史 / 更多，无标题。
 ///
-/// palette 接了「切换正文背景图」（循环：无背景 ↔ 3 张纸张纹理，见
-/// [noteBackgroundImages]）。「配色 / 样式」的语义尚无稿，先以背景切换落地。
-/// 「字体」（`AppIcons.fontFamily`）是笔记详情稿之后补的入口：**整篇**笔记的标题与
-/// 正文字体，选完随这篇笔记落库 —— 无稿，取 Material 惯例字形。
+/// 背景切换（palette）与字体入口已挪进下方正文工具条的左端（见
+/// [_EditorToolbar]）。
 /// 「更多」下拉里是四个有确定语义的动作：置顶 / 收藏 / 分享 / 删除。
 class _TopBar extends ConsumerWidget {
   const _TopBar({
     required this.onBack,
     required this.onShare,
-    required this.onFont,
-    required this.onPalette,
     required this.onTags,
     required this.onHistory,
     required this.onTogglePinned,
@@ -794,11 +828,6 @@ class _TopBar extends ConsumerWidget {
   final VoidCallback onBack;
 
   final VoidCallback onShare;
-
-  /// 弹出字体选择（改的是**这篇笔记**的标题 + 正文，不是 UI 字体）。
-  final VoidCallback onFont;
-
-  final VoidCallback onPalette;
 
   final VoidCallback onTogglePinned;
 
@@ -832,16 +861,6 @@ class _TopBar extends ConsumerWidget {
         onPressed: onBack,
       ),
       actions: <Widget>[
-        AppIconButton(
-          icon: AppIcons.palette,
-          tooltip: l10n.palette,
-          onPressed: onPalette,
-        ),
-        AppIconButton(
-          icon: AppIcons.fontFamily,
-          tooltip: l10n.settingsFontFamily,
-          onPressed: onFont,
-        ),
         // 版本历史。新笔记（未落库）没有历史，置灰同置顶 / 收藏 / 删除。
         AppIconButton(
           key: const Key('note_history'),

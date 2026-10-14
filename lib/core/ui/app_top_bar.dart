@@ -36,7 +36,8 @@ class AppTopBar extends StatelessWidget {
   final Widget? centerTitle;
 
   /// 右侧图标组，按给定顺序排列（笔记列表稿: folder → settings；
-  /// 笔记详情: palette → 字体 → overflow，分享 / 置顶 / 收藏收在 overflow 菜单里）。
+  /// 笔记详情: 历史 → overflow，背景 / 字体在正文工具条里，分享 / 置顶 / 收藏收在
+  /// overflow 菜单里）。
   final List<Widget> actions;
 
   /// 顶栏底边是否画 1dp 分隔线。
@@ -49,8 +50,9 @@ class AppTopBar extends StatelessWidget {
   /// 顶栏内容区高度，不含状态栏安全区。
   static const double height = 56;
 
-  /// 图标按钮之间的间距。8dp（推导值，与 [AppSpacing.chipGap] 同）。
-  static const double _actionGap = AppSpacing.chipGap;
+  /// 图标按钮之间的间距。0dp：`AppIconButton` 本身 48dp 触控区已带
+  /// 12dp 侧留白（图标 24dp 居中），再加 gap 视觉间距 28dp 过大，故取 0。
+  static const double _actionGap = 0;
 
   @override
   Widget build(BuildContext context) {

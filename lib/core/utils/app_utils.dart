@@ -1,6 +1,6 @@
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:toastr_flutter/toastr.dart';
 
 class AppUtils {
   static String formatDate(DateTime date, {String format = 'yyyy-MM-dd'}) {
@@ -65,20 +65,14 @@ class AppUtils {
     );
   }
 
-  // ⚠️ fluttertoast 只实现 Android / iOS / Web：桌面端（Windows / macOS /
-  // Linux）调用会抛 MissingPluginException，且界面上什么都看不到。
-  static Future<bool?> showToast({
+  // toastr_flutter：纯 Dart 实现，全平台（含 Windows / macOS / Linux）可用，
+  // 无需 BuildContext；因存在嵌套 Navigator（StatefulShellRoute），
+  // MaterialApp.builder 已挂 Toastr.builder（见 main.dart）。
+  static void showToast({
     required String message,
     Duration? duration,
   }) {
-    return Fluttertoast.showToast(
-      msg: message,
-      timeInSecForIosWeb: (duration ?? const Duration(seconds: 2)).inSeconds,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.black.withValues(alpha: 0.7),
-      textColor: Colors.white,
-      fontSize: 14,
-    );
+    Toastr.info(message, duration: duration ?? const Duration(seconds: 2));
   }
 
   static bool isValidEmail(String email) {

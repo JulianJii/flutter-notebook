@@ -225,6 +225,15 @@ void main() {
     );
   }
 
+  /// 工具条是横向滚动列表：调色 / 字体按钮在列表末尾，测试视口（800×600）
+  /// 放不下它们 —— 先把工具条拖到最右露出目标，再点。
+  Future<void> tapToolbarIcon(WidgetTester tester, IconData icon) async {
+    await tester.drag(find.byType(QuillSimpleToolbar), const Offset(-800, 0));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(icon));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('已有笔记：标题占位符 + 元信息行 + 正文', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
@@ -241,13 +250,14 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 调色 / 字体 / 历史 / 更多，无标题', (tester) async {
+  testWidgets('顶栏：back + 历史 / 更多；工具条左端：调色 / 字体 + 右端插图', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 共 5 个 AppIconButton：back + 调色 + 字体 + 历史 + 正文工具条的「插入图片」。
-    // 「更多」是 PopupMenuButton，不在其中。
-    expect(find.byType(AppIconButton), findsNWidgets(5));
+    // 共 3 个 AppIconButton：back + 历史 + 工具条右端的「插入图片」。
+    // 调色 / 字体现在是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
+    // 「更多」是 PopupMenuButton，都不在其中。
+    expect(find.byType(AppIconButton), findsNWidgets(3));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.palette), findsOneWidget);
     expect(find.byIcon(AppIcons.fontFamily), findsOneWidget);
@@ -273,7 +283,7 @@ void main() {
       reason: '默认 = 系统字体',
     );
 
-    await tester.tap(find.byIcon(AppIcons.fontFamily));
+    await tapToolbarIcon(tester, AppIcons.fontFamily);
     await tester.pumpAndSettle();
     expect(find.text('系统默认'), findsOneWidget, reason: '弹层第一档是系统默认');
 
@@ -317,7 +327,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(AppIcons.fontFamily));
+    await tapToolbarIcon(tester, AppIcons.fontFamily);
     await tester.pumpAndSettle();
     await tester.tap(find.text('得意黑'));
     await tester.pumpAndSettle();
@@ -579,7 +589,7 @@ void main() {
     expect(find.byType(BottomSheet), findsNothing);
 
     // 点 palette → 弹层里有 3 张纹理 + 「无背景」占位
-    await tester.tap(find.byIcon(AppIcons.palette));
+    await tapToolbarIcon(tester, AppIcons.palette);
     await tester.pumpAndSettle();
     final sheet = find.byType(BackgroundPickerSheet);
     expect(sheet, findsOneWidget);
@@ -598,7 +608,7 @@ void main() {
     expect(saved.background, NoteBackground.mint);
 
     // 再打开、选「无背景」占位 → 撤回背景，并落库 null
-    await tester.tap(find.byIcon(AppIcons.palette));
+    await tapToolbarIcon(tester, AppIcons.palette);
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey<int>(0)));
     await tester.pumpAndSettle();

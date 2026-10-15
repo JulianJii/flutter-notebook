@@ -79,6 +79,10 @@ abstract final class AppIcons {
   /// 等设计补稿后只改这里。
   static const IconData textFormat = Icons.text_format;
 
+  /// 笔记正文工具条的「手写板」。**不在设计稿的 15 个语义里**（稿无手写入口），
+  /// 取 Material 惯例字形，等设计补稿后只改这里。
+  static const IconData draw = Icons.draw_outlined;
+
   // ---- 底部导航（笔记列表稿/待办稿）----
   static const IconData navNotes = Icons.list_rounded;
   static const IconData navTodo = Icons.check_rounded;

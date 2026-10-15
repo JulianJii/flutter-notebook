@@ -264,6 +264,65 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not insert the image (10MB per image, 20MB in total)';
 
   @override
+  String get noteHandwriting => 'Handwriting';
+
+  @override
+  String get noteHandwritingDone => 'Done';
+
+  @override
+  String get noteHandwritingTooLarge =>
+      'The handwriting is too large to insert (10MB limit)';
+
+  @override
+  String get noteHandwritingExportFailed => 'Could not export the handwriting';
+
+  @override
+  String get noteHandwritingPen => 'Pen';
+
+  @override
+  String get noteHandwritingLine => 'Line';
+
+  @override
+  String get noteHandwritingRectangle => 'Rectangle';
+
+  @override
+  String get noteHandwritingCircle => 'Ellipse';
+
+  @override
+  String get noteHandwritingEraser => 'Eraser';
+
+  @override
+  String get noteHandwritingUndo => 'Undo';
+
+  @override
+  String get noteHandwritingRedo => 'Redo';
+
+  @override
+  String get noteHandwritingClear => 'Clear';
+
+  @override
+  String get noteHandwritingClearConfirm =>
+      'Clear the canvas? This can\'t be undone.';
+
+  @override
+  String get noteHandwritingStrokeWidth => 'Stroke width';
+
+  @override
+  String get noteHandwritingColorBlack => 'Black';
+
+  @override
+  String get noteHandwritingColorRed => 'Red';
+
+  @override
+  String get noteHandwritingColorBlue => 'Blue';
+
+  @override
+  String get noteHandwritingColorGreen => 'Green';
+
+  @override
+  String get noteHandwritingColorOrange => 'Orange';
+
+  @override
   String get noteBackgroundNone => 'No background';
 
   @override

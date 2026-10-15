@@ -215,18 +215,19 @@ void main() {
     expect(find.byType(NoteMetaLine), findsOneWidget);
   });
 
-  testWidgets('顶栏：back + 历史 / 更多；工具条：撤销 / 重做 / 插图 + 格式开关', (tester) async {
+  testWidgets('顶栏：back + 历史 / 更多；工具条：撤销 / 重做 / 插图 + 手写板 + 格式开关', (tester) async {
     await tester.pumpWidget(app('n1', stubbedGet()));
     await tester.pumpAndSettle();
 
-    // 共 4 个 AppIconButton：back + 历史 + 工具条的「插入图片」+「格式」开关。
-    // 调色是 Quill 工具条的自定义按钮（普通 IconButton，按字形断言），
-    // 「更多」是 PopupMenuButton，都不在其中。
-    expect(find.byType(AppIconButton), findsNWidgets(4));
+    // 共 5 个 AppIconButton：back + 历史 + 工具条的「插入图片」+「手写板」
+    // +「格式」开关。调色是 Quill 工具条的自定义按钮（普通 IconButton，按字形
+    // 断言），「更多」是 PopupMenuButton，都不在其中。
+    expect(find.byType(AppIconButton), findsNWidgets(5));
     expect(find.byIcon(AppIcons.back), findsOneWidget);
     expect(find.byIcon(AppIcons.history), findsOneWidget);
     expect(find.byIcon(AppIcons.overflow), findsOneWidget);
     expect(find.byIcon(AppIcons.image), findsOneWidget);
+    expect(find.byIcon(AppIcons.draw), findsOneWidget);
     expect(find.byIcon(AppIcons.textFormat), findsOneWidget);
     // 调色在工具条里、默认被裁到 0 宽：字形在树里（`findsOneWidget`），但点不到。
     expect(find.byIcon(AppIcons.palette), findsOneWidget);

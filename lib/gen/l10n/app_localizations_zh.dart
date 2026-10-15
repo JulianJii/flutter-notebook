@@ -257,6 +257,63 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noteImageInsertFailed => '图片插入失败（单张上限 10MB，一次最多 20MB）';
 
   @override
+  String get noteHandwriting => '手写板';
+
+  @override
+  String get noteHandwritingDone => '完成';
+
+  @override
+  String get noteHandwritingTooLarge => '手写内容太大，无法插入（上限 10MB）';
+
+  @override
+  String get noteHandwritingExportFailed => '手写内容导出失败';
+
+  @override
+  String get noteHandwritingPen => '画笔';
+
+  @override
+  String get noteHandwritingLine => '直线';
+
+  @override
+  String get noteHandwritingRectangle => '矩形';
+
+  @override
+  String get noteHandwritingCircle => '圆形';
+
+  @override
+  String get noteHandwritingEraser => '橡皮擦';
+
+  @override
+  String get noteHandwritingUndo => '撤销';
+
+  @override
+  String get noteHandwritingRedo => '重做';
+
+  @override
+  String get noteHandwritingClear => '清空';
+
+  @override
+  String get noteHandwritingClearConfirm => '确定要清空画布吗？此操作无法撤销。';
+
+  @override
+  String get noteHandwritingStrokeWidth => '笔画粗细';
+
+  @override
+  String get noteHandwritingColorBlack => '黑色';
+
+  @override
+  String get noteHandwritingColorRed => '红色';
+
+  @override
+  String get noteHandwritingColorBlue => '蓝色';
+
+  @override
+  String get noteHandwritingColorGreen => '绿色';
+
+  @override
+  String get noteHandwritingColorOrange => '橙色';
+
+  @override
   String get noteBackgroundNone => '无背景';
 
   @override

@@ -25,6 +25,7 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/note_editor_provider.dart';
 import '../providers/note_prefs_provider.dart';
 import '../providers/tag_providers.dart';
+import '../widgets/handwriting_board_dialog.dart';
 import '../widgets/note_background_image.dart';
 import '../widgets/note_image_embed_builder.dart';
 import '../widgets/tag_editor_sheet.dart';
@@ -625,6 +626,11 @@ class _EditorToolbarState extends ConsumerState<_EditorToolbar> {
                           tooltip: AppLocalizations.of(context).noteImageInsert,
                           onPressed: () => _insertImage(context),
                         ),
+                        AppIconButton(
+                          icon: AppIcons.draw,
+                          tooltip: AppLocalizations.of(context).noteHandwriting,
+                          onPressed: () => _openHandwriting(context),
+                        ),
                         // 撑住右端的空白：收起态下按钮挤在左边、开关留在最右，
                         // 同时让这一行**永远**有富余宽度（不出现溢出）。
                         const Spacer(),
@@ -765,6 +771,21 @@ class _EditorToolbarState extends ConsumerState<_EditorToolbar> {
         }
       },
     );
+  }
+
+  /// 手写板 → 画完导出 PNG → 插进正文。
+  ///
+  /// ⛔ 不自绘、不落文件：导出与大小校验都归对话框（`getImageData` + 上限检查），
+  /// 这里只接一个已经打包好的 `NoteImage`，再走 [_insertSingle] —— 与「插入图片」
+  /// 同一条落库链路（`_onContentChanged` 的 debounce 持久化）。
+  Future<void> _openHandwriting(BuildContext context) async {
+    final image = await showHandwritingBoardDialog(context);
+
+    // ⚠️ 异步间隙：手写期间用户可能已退出本页（`context` 失效后再用会崩）。
+    // 取消 / 空画布返回 null → 什么都不做。
+    if (!context.mounted || image == null) return;
+
+    _insertSingle(image.embedData);
   }
 
   /// 在光标处插一张图，并把光标移到这张图之后（多图依次往下排）。

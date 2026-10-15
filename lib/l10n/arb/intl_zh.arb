@@ -327,6 +327,82 @@
   "@noteImageInsertFailed": {
     "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"
   },
+  "noteHandwriting": "手写板",
+  "@noteHandwriting": {
+    "description": "Tooltip of the note detail editor toolbar button that opens the handwriting board, and the title of that board"
+  },
+  "noteHandwritingDone": "完成",
+  "@noteHandwritingDone": {
+    "description": "Confirm button of the handwriting board that exports the drawing into the note body"
+  },
+  "noteHandwritingTooLarge": "手写内容太大，无法插入（上限 10MB）",
+  "@noteHandwritingTooLarge": {
+    "description": "Snackbar shown when the exported handwriting image exceeds the note image size limit"
+  },
+  "noteHandwritingExportFailed": "手写内容导出失败",
+  "@noteHandwritingExportFailed": {
+    "description": "Snackbar shown when exporting the handwriting board into an image fails"
+  },
+  "noteHandwritingPen": "画笔",
+  "@noteHandwritingPen": {
+    "description": "Tooltip of the freehand pen tool in the handwriting board"
+  },
+  "noteHandwritingLine": "直线",
+  "@noteHandwritingLine": {
+    "description": "Tooltip of the straight line tool in the handwriting board"
+  },
+  "noteHandwritingRectangle": "矩形",
+  "@noteHandwritingRectangle": {
+    "description": "Tooltip of the rectangle tool in the handwriting board"
+  },
+  "noteHandwritingCircle": "圆形",
+  "@noteHandwritingCircle": {
+    "description": "Tooltip of the ellipse tool in the handwriting board"
+  },
+  "noteHandwritingEraser": "橡皮擦",
+  "@noteHandwritingEraser": {
+    "description": "Tooltip of the eraser tool in the handwriting board"
+  },
+  "noteHandwritingUndo": "撤销",
+  "@noteHandwritingUndo": {
+    "description": "Tooltip of the undo action in the handwriting board"
+  },
+  "noteHandwritingRedo": "重做",
+  "@noteHandwritingRedo": {
+    "description": "Tooltip of the redo action in the handwriting board"
+  },
+  "noteHandwritingClear": "清空",
+  "@noteHandwritingClear": {
+    "description": "Tooltip of the clear-canvas action in the handwriting board"
+  },
+  "noteHandwritingClearConfirm": "确定要清空画布吗？此操作无法撤销。",
+  "@noteHandwritingClearConfirm": {
+    "description": "Body of the clear-canvas confirmation dialog in the handwriting board"
+  },
+  "noteHandwritingStrokeWidth": "笔画粗细",
+  "@noteHandwritingStrokeWidth": {
+    "description": "Accessibility label of the stroke width slider in the handwriting board"
+  },
+  "noteHandwritingColorBlack": "黑色",
+  "@noteHandwritingColorBlack": {
+    "description": "Accessibility label of the black ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorRed": "红色",
+  "@noteHandwritingColorRed": {
+    "description": "Accessibility label of the red ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorBlue": "蓝色",
+  "@noteHandwritingColorBlue": {
+    "description": "Accessibility label of the blue ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorGreen": "绿色",
+  "@noteHandwritingColorGreen": {
+    "description": "Accessibility label of the green ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorOrange": "橙色",
+  "@noteHandwritingColorOrange": {
+    "description": "Accessibility label of the orange ink swatch in the handwriting board"
+  },
   "noteBackgroundNone": "无背景",
   "@noteBackgroundNone": {
     "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"

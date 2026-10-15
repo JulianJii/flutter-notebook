@@ -102,6 +102,8 @@ dependencies:
   image_picker: ^1.2.4
   #插入笔记图片：把超大图压成 JPEG 再 base64 内嵌（设置项可关）
   flutter_image_compress: ^2.5.1
+  #手写板：编辑页全屏手写画板（画完导出 PNG 插入正文，复用图片内嵌链路）
+  flutter_drawing_board: ^1.0.1+2
   #待办提醒：到点弹系统通知（Android / iOS）
   flutter_local_notifications: ^23.0.0-dev.3
   #定时通知要用 TZDateTime（Android 12+ 的精确闹钟只认带时区的时刻）

@@ -548,6 +548,120 @@ abstract class AppLocalizations {
   /// **'图片插入失败（单张上限 10MB，一次最多 20MB）'**
   String get noteImageInsertFailed;
 
+  /// Tooltip of the note detail editor toolbar button that opens the handwriting board, and the title of that board
+  ///
+  /// In zh, this message translates to:
+  /// **'手写板'**
+  String get noteHandwriting;
+
+  /// Confirm button of the handwriting board that exports the drawing into the note body
+  ///
+  /// In zh, this message translates to:
+  /// **'完成'**
+  String get noteHandwritingDone;
+
+  /// Snackbar shown when the exported handwriting image exceeds the note image size limit
+  ///
+  /// In zh, this message translates to:
+  /// **'手写内容太大，无法插入（上限 10MB）'**
+  String get noteHandwritingTooLarge;
+
+  /// Snackbar shown when exporting the handwriting board into an image fails
+  ///
+  /// In zh, this message translates to:
+  /// **'手写内容导出失败'**
+  String get noteHandwritingExportFailed;
+
+  /// Tooltip of the freehand pen tool in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'画笔'**
+  String get noteHandwritingPen;
+
+  /// Tooltip of the straight line tool in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'直线'**
+  String get noteHandwritingLine;
+
+  /// Tooltip of the rectangle tool in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'矩形'**
+  String get noteHandwritingRectangle;
+
+  /// Tooltip of the ellipse tool in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'圆形'**
+  String get noteHandwritingCircle;
+
+  /// Tooltip of the eraser tool in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'橡皮擦'**
+  String get noteHandwritingEraser;
+
+  /// Tooltip of the undo action in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'撤销'**
+  String get noteHandwritingUndo;
+
+  /// Tooltip of the redo action in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'重做'**
+  String get noteHandwritingRedo;
+
+  /// Tooltip of the clear-canvas action in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get noteHandwritingClear;
+
+  /// Body of the clear-canvas confirmation dialog in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要清空画布吗？此操作无法撤销。'**
+  String get noteHandwritingClearConfirm;
+
+  /// Accessibility label of the stroke width slider in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'笔画粗细'**
+  String get noteHandwritingStrokeWidth;
+
+  /// Accessibility label of the black ink swatch in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'黑色'**
+  String get noteHandwritingColorBlack;
+
+  /// Accessibility label of the red ink swatch in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'红色'**
+  String get noteHandwritingColorRed;
+
+  /// Accessibility label of the blue ink swatch in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'蓝色'**
+  String get noteHandwritingColorBlue;
+
+  /// Accessibility label of the green ink swatch in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'绿色'**
+  String get noteHandwritingColorGreen;
+
+  /// Accessibility label of the orange ink swatch in the handwriting board
+  ///
+  /// In zh, this message translates to:
+  /// **'橙色'**
+  String get noteHandwritingColorOrange;
+
   /// Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet
   ///
   /// In zh, this message translates to:

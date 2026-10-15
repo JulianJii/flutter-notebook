@@ -330,6 +330,82 @@
   "@noteImageInsertFailed": {
     "description": "Snackbar shown when picking or compressing the chosen images fails, including the size limits"
   },
+  "noteHandwriting": "Handwriting",
+  "@noteHandwriting": {
+    "description": "Tooltip of the note detail editor toolbar button that opens the handwriting board, and the title of that board"
+  },
+  "noteHandwritingDone": "Done",
+  "@noteHandwritingDone": {
+    "description": "Confirm button of the handwriting board that exports the drawing into the note body"
+  },
+  "noteHandwritingTooLarge": "The handwriting is too large to insert (10MB limit)",
+  "@noteHandwritingTooLarge": {
+    "description": "Snackbar shown when the exported handwriting image exceeds the note image size limit"
+  },
+  "noteHandwritingExportFailed": "Could not export the handwriting",
+  "@noteHandwritingExportFailed": {
+    "description": "Snackbar shown when exporting the handwriting board into an image fails"
+  },
+  "noteHandwritingPen": "Pen",
+  "@noteHandwritingPen": {
+    "description": "Tooltip of the freehand pen tool in the handwriting board"
+  },
+  "noteHandwritingLine": "Line",
+  "@noteHandwritingLine": {
+    "description": "Tooltip of the straight line tool in the handwriting board"
+  },
+  "noteHandwritingRectangle": "Rectangle",
+  "@noteHandwritingRectangle": {
+    "description": "Tooltip of the rectangle tool in the handwriting board"
+  },
+  "noteHandwritingCircle": "Ellipse",
+  "@noteHandwritingCircle": {
+    "description": "Tooltip of the ellipse tool in the handwriting board"
+  },
+  "noteHandwritingEraser": "Eraser",
+  "@noteHandwritingEraser": {
+    "description": "Tooltip of the eraser tool in the handwriting board"
+  },
+  "noteHandwritingUndo": "Undo",
+  "@noteHandwritingUndo": {
+    "description": "Tooltip of the undo action in the handwriting board"
+  },
+  "noteHandwritingRedo": "Redo",
+  "@noteHandwritingRedo": {
+    "description": "Tooltip of the redo action in the handwriting board"
+  },
+  "noteHandwritingClear": "Clear",
+  "@noteHandwritingClear": {
+    "description": "Tooltip of the clear-canvas action in the handwriting board"
+  },
+  "noteHandwritingClearConfirm": "Clear the canvas? This can't be undone.",
+  "@noteHandwritingClearConfirm": {
+    "description": "Body of the clear-canvas confirmation dialog in the handwriting board"
+  },
+  "noteHandwritingStrokeWidth": "Stroke width",
+  "@noteHandwritingStrokeWidth": {
+    "description": "Accessibility label of the stroke width slider in the handwriting board"
+  },
+  "noteHandwritingColorBlack": "Black",
+  "@noteHandwritingColorBlack": {
+    "description": "Accessibility label of the black ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorRed": "Red",
+  "@noteHandwritingColorRed": {
+    "description": "Accessibility label of the red ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorBlue": "Blue",
+  "@noteHandwritingColorBlue": {
+    "description": "Accessibility label of the blue ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorGreen": "Green",
+  "@noteHandwritingColorGreen": {
+    "description": "Accessibility label of the green ink swatch in the handwriting board"
+  },
+  "noteHandwritingColorOrange": "Orange",
+  "@noteHandwritingColorOrange": {
+    "description": "Accessibility label of the orange ink swatch in the handwriting board"
+  },
   "noteBackgroundNone": "No background",
   "@noteBackgroundNone": {
     "description": "Accessibility label of the blank (no background) thumbnail in the note detail background picker sheet"

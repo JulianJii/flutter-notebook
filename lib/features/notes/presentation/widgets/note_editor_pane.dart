@@ -1,0 +1,1331 @@
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mynote/core/logging/logger_provider.dart';
+import 'package:mynote/core/router/app_routes.dart';
+import 'package:mynote/core/theme/tokens/app_colors.dart';
+import 'package:mynote/core/theme/tokens/app_elevation.dart';
+import 'package:mynote/core/theme/tokens/app_radius.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
+import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/ui.dart';
+import 'package:mynote/core/utils/app_utils.dart';
+import 'package:mynote/features/notes/domain/entities/note_background.dart';
+import 'package:mynote/features/notes/domain/utils/note_delta.dart';
+import 'package:mynote/features/notes/providers/notes_providers.dart';
+// `BackgroundPickerSheet` 收 `AssetGenImage`，本文件不再直接引用 `Assets.*`。
+import 'package:mynote/gen/assets.gen.dart';
+import 'package:mynote/gen/l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:path/path.dart' as p;
+import 'package:share_plus/share_plus.dart';
+
+import '../providers/note_editor_provider.dart';
+import '../providers/note_prefs_provider.dart';
+import '../providers/tag_providers.dart';
+import 'handwriting_board_dialog.dart';
+import 'note_background_image.dart';
+import 'note_image_embed_builder.dart';
+import 'tag_editor_sheet.dart';
+
+/// 笔记编辑主体。**一套编辑逻辑，两种外壳**：
+///
+/// - 整页：`NoteDetailScreen`（`/notes/:id`、`/notes/new`，窄屏与深链）。
+/// - 内嵌：宽屏双栏的右栏（`NotesWideLayout`）。
+///
+/// 两种外壳的差别只有三处，全部由 [embedded] 表达：
+/// 1. 左上角按钮：整页是「返回」，内嵌是「关闭」。
+/// 2. 内嵌时不接管 `PopScope`（面板关闭不走路由，未保存保护由整页外壳负责）。
+/// 3. 宽屏下内容（标题 / 元信息 / 标签 / 正文 / 工具条）限宽 760dp 居中。
+///
+/// ⛔ **不要为面板再写一份编辑逻辑**：`NoteEditorProvider` 是 family，两处必须
+/// 用**同一组** `(noteId, folderId)` 参数，否则会拿到两个实例（两次读库、两套草稿）。
+///
+/// **单态编辑**：笔记详情稿呈现的就是编辑态（空标题 + 有正文 + 灰色占位符）。
+/// 做「阅读态 / 编辑态切换」就要自造一个无稿的只读态，并多维护一个 `isEditing`
+/// 状态字段 —— 为无稿问题加状态违反「能派生的不存 / 无稿不自造」。
+///
+/// ⛔ **不建 `AppTextField`**。若最终形态
+/// 就是「无边框纯文本 + 灰色占位符」，它只是一条
+/// `InputDecoration` 样式，不值得单独建组件。
+class NoteEditorPane extends ConsumerStatefulWidget {
+  const NoteEditorPane({
+    required this.noteId,
+    required this.onClosed,
+    super.key,
+    this.folderId,
+    this.embedded = false,
+    this.onDeleted,
+  });
+
+  /// 真实 uuid，或 [kNewNoteId]。
+  final String noteId;
+
+  /// 新笔记的落地分类（`/notes/new?folder=<id>`）。null = 未分类。
+  ///
+  /// 已有笔记不看它：归属从库里读。⛔ 它是 [noteEditorProvider] 的 family 参数，
+  /// 漏传会拿到另一个 provider 实例（多一次读库 + 草稿不同步）。
+  final String? folderId;
+
+  /// 是否为内嵌面板（宽屏右栏）。见类注释。
+  final bool embedded;
+
+  /// 「返回 / 关闭」按钮的去路。**落库由外壳负责**（它才知道要不要 pop）。
+  ///
+  /// 整页外壳传「flush → pop」；宽屏面板传「flush → 清空选中」。
+  /// ⛔ 本组件不预先 flush：否则加上外壳那一次就是两次 update。
+  final VoidCallback onClosed;
+
+  /// 删除成功后的去路。null → 回笔记列表（整页外壳的行为）。
+  final VoidCallback? onDeleted;
+
+  @override
+  ConsumerState<NoteEditorPane> createState() => _NoteEditorPaneState();
+}
+
+class _NoteEditorPaneState extends ConsumerState<NoteEditorPane> {
+  // controller 是草稿的**权威来源**，provider 的 `draft*` 只用于 `isDirty` 与字数。
+  late final TextEditingController _titleController;
+  late final QuillController _contentController;
+  late final FocusNode _titleFocus;
+
+  /// 库 → controller 灌值期间为 true，抑制回写：否则首次 resolve 会被误判为
+  /// 用户编辑，`isDirty` 假阳性、返回时白落一次库。
+  bool _hydrating = false;
+
+  /// 是否已把库里的值灌进 controller。
+  ///
+  /// ⚠️ **不能只靠 `ref.listen` 的 `prev?.value == null` 判断**：宽屏面板是
+  /// 「provider 已经加载过、这才挂上来」的场景（切回上一篇笔记时 `ref.read`
+  /// 拿到的就是 `AsyncData`），此时监听不会收到「首次 resolve」那次通知，
+  /// 编辑器会永远停在空白。故挂载时先 `ref.read` 主动灌一次。
+  bool _hydrated = false;
+
+  /// 是否有文件正拖在本页上方（桌面）。只用于画那圈「可放下」提示。
+  bool _isDragging = false;
+
+  /// 标签展示行的刷新代数：打标弹层保存完 +1，`_NoteTagsRow` 的 Future 随之重查。
+  int _tagsVersion = 0;
+
+  /// 内容区最大阅读宽度。宽屏下一行超过 80 个字符就很难「换行回找」。
+  static const double _contentMaxWidth = 760;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _contentController = QuillController.basic();
+    _titleFocus = FocusNode();
+    _contentController.addListener(_onContentChanged);
+
+    // 挂载即灌一次（见 [_hydrated] 的注释）。post-frame 是因为首帧里
+    // `ref.read` 可能刚触发 provider 的 build，同步写 controller 会带着
+    // 未完成的编辑器一起布局。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _hydrate(
+        ref
+            .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
+            .value,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController
+      ..removeListener(_onContentChanged)
+      ..dispose();
+    _titleFocus.dispose();
+    super.dispose();
+  }
+
+  /// 正文变更 → 落库草稿。
+  ///
+  /// ⚠️ **每次按键全量序列化**（`ponytail:` 单文档 O(n)，笔记体量下不可测；
+  /// 出现万字长文卡顿就改成 `controller.changes` 增量合并 + debounce）。
+  void _onContentChanged() {
+    if (_hydrating) return;
+    ref
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
+        .setContent(NoteDelta.encode(_contentController.document.toDelta()));
+  }
+
+  /// 库里的原始值灌进编辑器。旧笔记存的是纯文本，[NoteDelta.decode] 负责兜底。
+  void _hydrateContent(String raw) {
+    _hydrating = true;
+    _contentController.document = Document.fromDelta(NoteDelta.decode(raw));
+    _hydrating = false;
+  }
+
+  /// 库 → controller，**只灌一次**。之后只有 controller → provider 一个方向；
+  /// provider 的 `saved*` 变化不再回灌，否则 debounce 保存后会触发一次
+  /// `onChanged`，把「保存」误判为「编辑」，`isDirty` 反复翻转。
+  void _hydrate(NoteEditorState? loaded) {
+    if (loaded == null || _hydrated) return;
+    _hydrated = true;
+    _titleController.text = loaded.draftTitle;
+    _hydrateContent(loaded.draftContent);
+  }
+
+  /// 关闭 / 返回：**落库的责任在外壳**（见 [NoteEditorPane.onClosed]）。
+  ///
+  /// ⛔ 本组件不自己 `flush()`：整页外壳的 `_leave()` 本来就会先落库再 pop，
+  /// 两处各存一次会真的发两次 update（同一份内容写两遍 + 两次存版）。
+  /// ⛔ 面板态**不**走 `Navigator.pop`：右栏不是一个路由，pop 会把整个 `/notes`
+  /// 页面弹掉。
+  void _close() => widget.onClosed();
+
+  /// 删除当前笔记：二次确认 → `DeleteNoteUseCase`（软删除）→ 离开。
+  ///
+  /// ⛔ **不先 `flush`**：草稿还没落库就删，等于「先存再删」，多一次 IO，还会让
+  /// 删除与关闭抢同一个 `NoteEditor`。用户要删就是不要这些内容。
+  ///
+  /// ⛔ **成功后用回调而不是 `pop`**：`pop` 会退回上一页（可能正是这条笔记的详情
+  /// 入口），留下一张读不到数据的空壳页。
+  ///
+  /// 确认弹窗与 Snackbar 沿用 Material 默认形态。
+  Future<void> _delete() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        content: Text(l10n.deleteNoteConfirm),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final result = await ref.read(deleteNoteUseCaseProvider)(widget.noteId);
+    if (!mounted) return;
+    result.fold(
+      (failure) => AppUtils.showSnackBar(context, message: failure.message),
+      (_) {
+        AppUtils.showSnackBar(context, message: l10n.noteDeleted);
+        widget.onDeleted?.call();
+        if (widget.onDeleted == null && mounted) {
+          context.go(AppRoutes.notes);
+        }
+      },
+    );
+  }
+
+  /// palette：弹出底部滑动弹层选背景（笔记详情稿）。选中即 `pop(index)`，取消不改。
+  ///
+  /// 弹层的下标语义（0 = 无背景，1..n = 纹理）在这里与 [NoteBackground] 互转；
+  /// 落库交给 `NoteEditor.setBackground`（已有笔记只写背景列、不刷 `updatedAt`）。
+  Future<void> _pickBackground() async {
+    final current = ref
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
+        .value
+        ?.draftBackground;
+    final picked = await showAppBottomSheet<int>(
+      context: context,
+      // 弹层无底色（笔记详情稿）：只留一条浅色顶边，纸纹直接浮在页面背景上。
+      backgroundColor: Colors.transparent,
+      // 抬升阴影是给有底色的弹层用的；无底色时它只剩一道污渍。
+      elevation: 0,
+      builder: (sheetContext) => BackgroundPickerSheet(
+        backgrounds: noteBackgroundImages,
+        selected: current == null ? 0 : current.index + 1,
+      ),
+    );
+    if (picked == null || !mounted) return;
+    await ref
+        .read(
+          noteEditorProvider(widget.noteId, folderId: widget.folderId).notifier,
+        )
+        .setBackground(picked == 0 ? null : NoteBackground.values[picked - 1]);
+  }
+
+  /// 分享当前草稿到系统分享面板。
+  ///
+  /// 分享的是**草稿**不是库里那份：用户看到什么就分享什么，因此不先 `flush`。
+  /// 标题与正文都空时直接返回 —— share_plus 对空 text 抛 `ArgumentError`。
+  ///
+  /// `sharePositionOrigin` 不是可选美化：iPad 上缺它系统面板没锚点、直接抛错。
+  Future<void> _share() async {
+    final state = ref
+        .read(noteEditorProvider(widget.noteId, folderId: widget.folderId))
+        .value;
+    if (state == null) return;
+    final title = state.draftTitle.trim();
+    final text = <String>[
+      if (title.isNotEmpty) title,
+      NoteDelta.plainText(state.draftContent).trim(),
+    ].where((line) => line.isNotEmpty).join('\n\n');
+    if (text.isEmpty) return;
+
+    final box = context.findRenderObject() as RenderBox?;
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          text: text,
+          subject: title.isEmpty ? null : title,
+          sharePositionOrigin: box == null
+              ? null
+              : box.localToGlobal(Offset.zero) & box.size,
+        ),
+      );
+    } on Object catch (error) {
+      // 无分享实现的环境（桌面 / 模拟器）会抛，不能让它带着页面一起崩。
+      ref.read(taggedLoggerProvider('notes')).w('share failed', error: error);
+    }
+  }
+
+  /// 标签：弹出打标弹层（「完成」才一次性落库，点外部 = 取消）。
+  Future<void> _editTags() async {
+    final saved = await showTagEditorSheet(
+      context,
+      ref: ref,
+      noteId: widget.noteId,
+    );
+    if (saved && mounted) setState(() => _tagsVersion++);
+  }
+
+  /// 桌面拖入的图片：读到字节 → 与工具条插图**同一条链路**插到光标处。
+  ///
+  /// ⛔ 不自己压图片 / 不自己拼 base64：`pickNoteImageUseCaseProvider.fromPaths`
+  /// 与相册那条路共用同一段上限校验 + 压缩实现，设置里的「图片压缩」同时管两者。
+  ///
+  /// ⚠️ 落库无需在这里做任何事：插入会改 `Document` → 触发 `_onContentChanged`
+  /// → 走既有的 500ms debounce 自动保存。
+  Future<void> _onDropDone(DropDoneDetails details) async {
+    setState(() => _isDragging = false);
+
+    final paths = imagePathsOf(details.files);
+    // 拖进来的全是非图片（文件夹 / 文档）：静默忽略 —— 弹一句「插入失败」只会
+    // 让人猜是哪里失败了。
+    if (paths.isEmpty) return;
+
+    final result = await ref
+        .read(pickNoteImageUseCaseProvider)
+        .fromPaths(paths, compress: ref.read(noteCompressImagesProvider));
+
+    // ⚠️ 异步间隙：读文件 / 压缩期间用户可能已退出本页（`context` 失效后再用会崩）。
+    if (!mounted) return;
+
+    result.fold(
+      // 文案与相册插入失败共用一句（补救动作一样：换张图 / 换小一点的图）。
+      (failure) => AppUtils.showSnackBar(
+        context,
+        message: AppLocalizations.of(context).noteImageInsertFailed,
+      ),
+      (images) {
+        for (final image in images) {
+          insertImageAtCursor(_contentController, image.embedData);
+        }
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AsyncValue<NoteEditorState>>(
+      noteEditorProvider(widget.noteId, folderId: widget.folderId),
+      (prev, next) {
+        final loaded = next.value;
+        if (loaded == null) return;
+        // 自动保存失败：弹一句就清状态（否则 debounce 期间会反复弹）。
+        // Snackbar 视觉无稿，沿用既有 `AppUtils.showSnackBar`。
+        final failure = loaded.lastFailure;
+        if (failure != null) {
+          // post-frame：listener 是在 provider 通知里同步跑的，那一刻可能正处于
+          // build/layout 阶段，直接 `showSnackBar` 会打到一个还没布局完的 messenger。
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            AppUtils.showSnackBar(context, message: failure.message);
+          });
+          ref
+              .read(
+                noteEditorProvider(
+                  widget.noteId,
+                  folderId: widget.folderId,
+                ).notifier,
+              )
+              .clearFailure();
+        }
+        _hydrate(loaded);
+      },
+    );
+
+    // ⛔ 只订阅 `createdAt` —— 它是本页唯一一个**不随每次按键变**的字段
+    // （`isNew` 由它派生，落库后也只变一次）。订阅整份 state 会让每敲一个字
+    // 都重建含 `QuillEditor` 的整棵子树；字数行自己订阅 `wordCount`。
+    final createdAt = ref.watch(
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => s.value?.createdAt),
+    );
+    // 背景单独 select：只有真正换背景时才重建，不随每次按键。
+    final background = ref.watch(
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => s.value?.draftBackground),
+    );
+    final backgroundImage = noteBackgroundImageOrNull(background);
+    // 置顶 / 收藏同理：单独 select，只有真的翻了图标才重建顶栏。
+    final flags = ref.watch(
+      noteEditorProvider(
+        widget.noteId,
+        folderId: widget.folderId,
+      ).select((s) => (s.value?.isPinned, s.value?.isFavorite)),
+    );
+
+    // 桌面：把图片文件拖进编辑窗口 → 插到光标处（同工具条的「插入图片」）。
+    // ⚠️ `desktop_drop` 的平台侧是**全局**接收者，看不见的 `DropTarget` 照样
+    // 收事件 —— 故只在编辑主体上挂一个（整页与面板互斥，同一时刻只有一个）。
+    // ⛔ 不要提到 `MaterialApp.builder` 那种常驻层。
+    return ColoredBox(
+      // 白底（笔记详情稿）—— 与笔记列表/待办的 `bg` 不同。面板态没有 Scaffold，
+      // 底色必须由本组件自己铺。
+      color: context.colors.surface,
+      child: DropTarget(
+        onDragEntered: (_) => setState(() => _isDragging = true),
+        onDragExited: (_) => setState(() => _isDragging = false),
+        onDragDone: _onDropDone,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            // 背景图层（palette 切换）：半透明压在正文下面，保证文字可读。
+            // 纸纹铺满整个外壳（不随内容限宽）。
+            if (backgroundImage != null)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: kNoteBackgroundOpacity,
+                  child: backgroundImage.image(fit: BoxFit.cover),
+                ),
+              ),
+            SafeArea(
+              child: Column(
+                children: <Widget>[
+                  _EditorTopBar(
+                    leadingIcon: widget.embedded
+                        ? AppIcons.close
+                        : AppIcons.back,
+                    onBack: _close,
+                    onShare: _share,
+                    onTags: _editTags,
+                    onHistory: () =>
+                        context.push(AppRoutes.noteHistoryPath(widget.noteId)),
+                    onTogglePinned: () => ref
+                        .read(
+                          noteEditorProvider(
+                            widget.noteId,
+                            folderId: widget.folderId,
+                          ).notifier,
+                        )
+                        .setFlags(isPinned: !(flags.$1 ?? false)),
+                    onToggleFavorite: () => ref
+                        .read(
+                          noteEditorProvider(
+                            widget.noteId,
+                            folderId: widget.folderId,
+                          ).notifier,
+                        )
+                        .setFlags(isFavorite: !(flags.$2 ?? false)),
+                    isPinned: flags.$1 ?? false,
+                    isFavorite: flags.$2 ?? false,
+                    // 未落库的新笔记（`/notes/new`）库里没有对应行：置顶 / 收藏 / 删除
+                    // 三个动作都是写库操作，写了只会拿到一句 not found —— 整个「更多」
+                    // 菜单禁用，而不是让用户点出三次必然的失败。
+                    isPersisted: createdAt != null,
+                    onDelete: _delete,
+                  ),
+                  // 宽屏限宽：标题 / 元信息 / 标签 / 正文 / 工具条同宽居中，正文一行
+                  // 不再横跨 1400dp。窄屏（< 760dp）时约束不起作用，逐像素不变。
+                  Expanded(
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _contentMaxWidth,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.pageH,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              // 宽屏多留一口气：一行文字与顶栏贴太近时，视觉上
+                              // 会以为标题属于顶栏。
+                              SizedBox(
+                                height: context.usesNavRail
+                                    ? 24
+                                    : AppSpacing.sm,
+                              ),
+                              _titleField(context),
+                              const SizedBox(height: AppSpacing.sm),
+                              if (createdAt != null)
+                                _NoteMetaSlot(
+                                  noteId: widget.noteId,
+                                  folderId: widget.folderId,
+                                  createdAt: createdAt,
+                                ),
+                              if (createdAt != null) ...<Widget>[
+                                const SizedBox(height: AppSpacing.sm),
+                                _NoteTagsRow(
+                                  noteId: widget.noteId,
+                                  version: _tagsVersion,
+                                  onEdit: _editTags,
+                                ),
+                              ],
+                              const SizedBox(height: AppSpacing.lg),
+                              // 编辑窗口**占满**其余空间（[QuillEditorConfig.expands]），
+                              // 工具条挂在它下面 —— 正文短时下方那片空白也落在编辑器
+                              // 的命中区内，点哪儿都能落光标。正文改成编辑器内滚动。
+                              Expanded(child: _contentField(context)),
+                              _EditorToolbar(
+                                controller: _contentController,
+                                onPalette: _pickBackground,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 「可放下」提示（无稿，按主题色推导）：拖到编辑窗口上方时在**最上层**
+            // 描一圈边框 + 一层淡填充。`IgnorePointer` 不能省 —— 否则这层会挡下
+            // 落下事件，光标位置也就丢了。
+            if (_isDragging)
+              const _DropHighlight(key: Key('note_drop_highlight')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _titleField(BuildContext context) {
+    // ⚠️ 标题与正文都取 `AppTextStyles.editor`（**不带 UI 字体族**的那份基线）：
+    // 设置里的「字体」只管 UI 文字，取 `context.textStyles` 会让标题跟着 UI
+    // 字体走。编辑器文字不再有自己的字体选择，回落平台默认。
+    final editorStyles = AppTextStyles.editor;
+    return TextField(
+      controller: _titleController,
+      focusNode: _titleFocus,
+      onChanged: ref
+          .read(
+            noteEditorProvider(
+              widget.noteId,
+              folderId: widget.folderId,
+            ).notifier,
+          )
+          .setTitle,
+      // 笔记详情稿无输入框视觉：边框、下划线、光标样式均无稿，不自造。
+      style: editorStyles.detailTitle.copyWith(
+        color: context.colors.textPrimary,
+      ),
+      cursorColor: context.colors.textPrimary,
+      decoration: InputDecoration.collapsed(
+        hintText: AppLocalizations.of(context).noteTitleHint,
+        hintStyle: editorStyles.detailTitle.copyWith(
+          color: context.colors.textPlaceholder,
+        ),
+      ),
+    );
+  }
+
+  Widget _contentField(BuildContext context) {
+    // ⚠️ 正文同样取 `AppTextStyles.editor`：设置里的「字体」**不管编辑器文字**。
+    // 改用 `context.textStyles.body` 会让 UI 字体盖到正文上。
+    // ⚠️ Delta 里已有的 `font` 属性（旧版工具栏按选中范围写的）**优先级更高**，
+    // 本行只是「没有逐段指定字体时」的基准 —— 历史数据不做迁移。
+    // 段落间距**不额外实现**：笔记详情稿的段落间距 = 2×行距，是正文内容里本来就有
+    // 的 `\n\n`。手写 `ParagraphStyle` 插空行会与用户输入的换行叠加成双倍空行。
+    //
+    // `DefaultTextStyle` 是把 Design Token 的正文样式喂给 Quill 的唯一入口：
+    // Quill 的 `DefaultStyles.getInstance` 从 `DefaultTextStyle.of(context)` 取
+    // 基准样式，而它读的是 **flutter SDK** 的 Theme —— 本项目用 `material_ui`
+    // 的 Theme，两套互不相通，不显式喂就是默认字号 + 暗色模式下黑字黑底。
+    return DefaultTextStyle(
+      style: AppTextStyles.editor.body.copyWith(
+        color: context.colors.textPrimary,
+      ),
+      child: QuillEditor.basic(
+        controller: _contentController,
+        config: const QuillEditorConfig(
+          // 外层 `Expanded` 给足高度，编辑器自己滚 —— `scrollable: false` 时
+          // 它只有文字那么高，下方空白点不进光标（`expands` 只在 scrollable
+          // 为 true 时生效）。
+          scrollable: true,
+          expands: true,
+          padding: EdgeInsets.zero,
+          // 正文里图片的渲染器。不注册的话 image embed 会走 Quill 的
+          // `unknownEmbedBuilder`，画成一块占位文字。
+          embedBuilders: <EmbedBuilder>[NoteImageEmbedBuilder()],
+        ),
+      ),
+    );
+  }
+}
+
+/// 正文富文本工具条：**收起 / 展开两态**。
+///
+/// 收起（默认）只露自己添加的图标 —— 撤销 / 重做 / 插入图片，末尾是「格式」开关；
+/// flutter_quill 自带的那一整套（粗体 / 斜体 / 字号 / 文字色 / 标题 / 行高 /
+/// 列表 / 引用 / 链接 / 调色）默认**不显示**。点开关后完整工具条在**同一行内**
+/// 加宽展开、自有图标同步收窄到 0（都在 [_slot] 里做），整行高度自始至终
+/// 48dp（= 开关的触控区），页面不跳。
+///
+/// 按钮集对齐 flutter-quill 官方 `example/lib/custom_toolbar.dart`：
+/// 撤销 / 重做（钉在最前）｜ 粗体 / 斜体 / 下划线 / 删除线 / 清除格式 ｜ 字号 ｜
+/// 文字色 / 背景色 ｜ 标题样式 ｜ 行高 ｜ 复选框清单 / 有序 / 无序 / 缩进 / 行内代码 /
+/// 引用 ｜ 链接 ｜ 调色（列表末尾，同滚动）；图片按钮由本类自绘
+/// （见 [_insertImage]），随自有图标一起收起。
+///
+/// ⛔ 背景是**每篇笔记一个整篇设置**（原顶栏入口，现是展开态按钮列表末尾的自定义
+/// 按钮），不是按选中范围的富文本属性。⛔ 仍然关着的几项与理由：
+/// **字体**（Quill 自带的字体清单里大半是官方示例打包的字体，本项目没有，
+/// 选中后只会静默回落）、
+/// 小号字（与「字号」重复）、对齐 / 方向（正文无排版语义）、
+/// 代码块（行内代码已够）、上下标 / 剪贴板 / 搜索（笔记正文无此语义）。
+class _EditorToolbar extends ConsumerStatefulWidget {
+  const _EditorToolbar({required this.controller, required this.onPalette});
+
+  final QuillController controller;
+
+  /// 背景切换：入口是展开态按钮列表末尾的自定义按钮（`customButtons`）。
+  final VoidCallback onPalette;
+
+  @override
+  ConsumerState<_EditorToolbar> createState() => _EditorToolbarState();
+}
+
+class _EditorToolbarState extends ConsumerState<_EditorToolbar> {
+  /// 富文本工具条是否展开。纯 UI 状态：不开 provider、不落偏好 ——
+  /// 离开编辑页即回到收起态。
+  bool _expanded = false;
+
+  /// 展开 / 收起动画。
+  ///
+  /// `ponytail:` 就这一处动画，值与曲线内联在这里；出现第二处动画需求时
+  /// 再提到 `core/theme/tokens` 做 motion token。
+  static const Duration _animationDuration = Duration(milliseconds: 200);
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      // 顶边一条分隔线把工具条与正文分开（工具条在编辑窗口**下面**）。页面
+      // `Column` 的交叉轴是 `start`，故要显式撑满，否则这条线只盖住工具条
+      // 本身那一段。
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: context.colors.divider)),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        // ⚠️ `LayoutBuilder` 必须在 `Row` **外面**：`Row` 没有 flex 子节点时
+        // 给每个子节点**无界**宽度约束，在里面量 `constraints.maxWidth` 只会
+        // 拿到 infinity。
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // 开关恒钉在右端、不参与动画，故可动画区域 = 整行宽 - 开关触控区。
+            final region = (constraints.maxWidth - AppIconButton.minTapSize)
+                .clamp(0.0, double.infinity);
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0, end: _expanded ? 1 : 0),
+              duration: _animationDuration,
+              curve: Curves.easeInOut,
+              builder: (context, t, _) => Row(
+                children: <Widget>[
+                  // 自有图标：铺满可动画区域（图标靠左，右侧留白）→ 收窄到 0。
+                  _slot(
+                    key: const Key('editor_toolbar_own_slot'),
+                    factor: 1 - t,
+                    width: region,
+                    child: Row(
+                      children: <Widget>[
+                        // 撤销 / 重做钉在最前（Quill 内置的 undo/redo 关闭，
+                        // 见 `_richTextButtons` 的 `showUndo / showRedo`）。
+                        QuillToolbarHistoryButton(
+                          controller: widget.controller,
+                          isUndo: true,
+                        ),
+                        QuillToolbarHistoryButton(
+                          controller: widget.controller,
+                          isUndo: false,
+                        ),
+                        AppIconButton(
+                          icon: AppIcons.image,
+                          tooltip: AppLocalizations.of(context).noteImageInsert,
+                          onPressed: () => _insertImage(context),
+                        ),
+                        AppIconButton(
+                          icon: AppIcons.draw,
+                          tooltip: AppLocalizations.of(context).noteHandwriting,
+                          onPressed: () => _openHandwriting(context),
+                        ),
+                        // 撑住右端的空白：收起态下按钮挤在左边、开关留在最右，
+                        // 同时让这一行**永远**有富余宽度（不出现溢出）。
+                        const Spacer(),
+                      ],
+                    ),
+                  ),
+                  // 完整富文本工具条：0 → 铺满可动画区域。
+                  _slot(
+                    key: const Key('editor_toolbar_rich_text_slot'),
+                    factor: t,
+                    width: region,
+                    child: _richTextButtons(context),
+                  ),
+                  AppIconButton(
+                    icon: AppIcons.textFormat,
+                    tooltip: _expanded
+                        ? AppLocalizations.of(context).noteToolbarCollapse
+                        : AppLocalizations.of(context).noteToolbarExpand,
+                    onPressed: () => setState(() => _expanded = !_expanded),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  /// 一个「可见宽度 = [width] × [factor]」的槽位：内容始终按 [width] 原样布局、
+  /// 不被压缩，超出的部分连**绘制带命中**一起裁掉。
+  ///
+  /// `ClipRect` 裁掉命中测试是白拿的语义：收起态下 Quill 的按钮点不到，展开态下
+  /// 自有图标也点不到（见 [_EditorToolbar] 的两态说明）。
+  ///
+  /// ⚠️ 刻意**不**让 `QuillSimpleToolbar` 逐帧按动画宽度重排：它的单行模式根节点
+  /// 是 `QuillToolbarArrowIndicatedButtonList`，左右各钉死 8dp 箭头位 —— 工具条
+  /// 自身布局宽度 < 16dp 就必然 RenderFlex 溢出（debug 报错 + golden 花屏）。
+  /// 固定按 [width] 排版、只动画裁剪窗口，就没有这一帧。
+  Widget _slot({
+    required Key key,
+    required double factor,
+    required double width,
+    required Widget child,
+  }) {
+    return ClipRect(
+      key: key,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        widthFactor: factor,
+        child: SizedBox(width: width, child: child),
+      ),
+    );
+  }
+
+  Widget _richTextButtons(BuildContext context) {
+    return QuillSimpleToolbar(
+      controller: widget.controller,
+      config: QuillSimpleToolbarConfig(
+        // 单行：`multiRowsDisplay: false` 走 Quill 自带的横向滚动按钮列表
+        // （固定高 42dp，放不下时两侧出现滚动箭头）。360dp 竖屏放不下 20 多个
+        // 按钮，故**必然**是「一行 + 可滑动」而不是 `Wrap` 的两行。
+        multiRowsDisplay: false,
+        // 默认底色是 `Theme.canvasColor`，与本页纸面白底不一致。
+        color: context.colors.surface,
+        showDividers: true,
+        sectionDividerColor: context.colors.divider,
+        // 字号：**编辑器内的文字**归它管。
+        // ⛔ 保留 `showFontFamily: false`（默认即 false，显式写出来是防止有人
+        // 顺手打开它：Quill 自带的字体清单里大半是官方示例打包的字体，本项目没有，
+        // 选中后只会静默回落）。
+        showFontFamily: false,
+        showFontSize: true,
+        // 撤销 / 重做由本类自绘钉在工具条最前面（`QuillToolbarHistoryButton`），
+        // 不用 Quill 内置的（它在字号之后的滚动列表里，位置不归我们排）。
+        showUndo: false,
+        showRedo: false,
+        showBoldButton: true,
+        showItalicButton: true,
+        showUnderLineButton: true,
+        showStrikeThrough: true,
+        showListNumbers: true,
+        showListBullets: true,
+        showIndent: true,
+        showInlineCode: true,
+        showHeaderStyle: true,
+        showLineHeightButton: true,
+        showColorButton: true,
+        showBackgroundColorButton: true,
+        showQuote: true,
+        showLink: true,
+        showClearFormat: true,
+        // 小号字：与「字号」菜单里的「小」是同一件事，留一个入口就够。
+        showSmallButton: false,
+        // 对齐 / 方向：笔记正文无排版语义（左对齐是唯一形态）。
+        showAlignmentButtons: false,
+        showDirection: false,
+        // 代码块 / 上下标 / 剪贴板 / 搜索：笔记正文无此语义。
+        showCodeBlock: false,
+        showSubscript: false,
+        showSuperscript: false,
+        showSearchButton: false,
+        // 调色（背景）作为自定义按钮混进按钮列表末尾：与其它按钮同为
+        // `QuillToolbarIconButton`（同字号、同间距、同滚动），不做钉住的特例。
+        customButtons: <QuillToolbarCustomButtonOptions>[
+          QuillToolbarCustomButtonOptions(
+            icon: const Icon(AppIcons.palette),
+            tooltip: AppLocalizations.of(context).palette,
+            onPressed: widget.onPalette,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 选图 → 压缩 → 插进正文。
+  ///
+  /// 插入动作本身由 `QuillController` 完成，落库走既有的 `_onContentChanged`
+  /// 链路（`@riverpod` 的 NoteEditor debounce），这里不碰任何持久化代码。
+  Future<void> _insertImage(BuildContext context) async {
+    final result = await ref.read(pickNoteImageUseCaseProvider)(
+      compress: ref.read(noteCompressImagesProvider),
+    );
+
+    // ⚠️ 异步间隙：选择器期间用户可能已退出本页（`context` 失效后再用会崩）。
+    if (!context.mounted) return;
+
+    result.fold(
+      // 文案里带上上限：对着一张 15MB 的照片说「插入失败」，用户只会反复重试。
+      // 至于「太大」与「读取失败」共用一句，是因为两者的补救动作一样（换张图）。
+      (failure) => AppUtils.showSnackBar(
+        context,
+        message: AppLocalizations.of(context).noteImageInsertFailed,
+      ),
+      (images) {
+        for (final image in images) {
+          _insertSingle(image.embedData);
+        }
+      },
+    );
+  }
+
+  /// 手写板 → 画完导出 PNG → 插进正文。
+  ///
+  /// ⛔ 不自绘、不落文件：导出与大小校验都归对话框（`getImageData` + 上限检查），
+  /// 这里只接一个已经打包好的 `NoteImage`，再走 [_insertSingle] —— 与「插入图片」
+  /// 同一条落库链路（`_onContentChanged` 的 debounce 持久化）。
+  Future<void> _openHandwriting(BuildContext context) async {
+    final image = await showHandwritingBoardDialog(context);
+
+    // ⚠️ 异步间隙：手写期间用户可能已退出本页（`context` 失效后再用会崩）。
+    // 取消 / 空画布返回 null → 什么都不做。
+    if (!context.mounted || image == null) return;
+
+    _insertSingle(image.embedData);
+  }
+
+  /// 在光标处插一张图，并把光标移到这张图之后（多图依次往下排）。
+  void _insertSingle(String embedData) =>
+      insertImageAtCursor(widget.controller, embedData);
+}
+
+/// 把一张图插到 [controller] 的**当前光标**处，并把光标移到图之后。
+///
+/// ⛔ 只此一份实现：工具条的「插入图片」按钮与桌面拖入共用它 —— 两处各写一遍，
+/// 光标语义（插完光标落哪、多图顺序）迟早会漂。
+///
+/// ⚠️ 光标取 `selection.baseOffset`：正文从未获得过焦点时它是 `-1`，`clamp` 之后
+/// 落在文档开头（与工具条按钮的既有行为一致；拖入前在正文里点一下即可定光标）。
+void insertImageAtCursor(QuillController controller, String embedData) {
+  final max = controller.document.length;
+  final index = controller.selection.baseOffset.clamp(0, max);
+  controller.replaceText(
+    index,
+    0,
+    BlockEmbed.image(embedData),
+    TextSelection.collapsed(offset: index + 1),
+  );
+}
+
+/// 认得的图片扩展名（不带点）。与 data 层 `_mimeOf` 的扩展名分支对齐：
+/// 这里管「收不收这个文件」，那里管「算什么 MIME」。
+const Set<String> _kImageExtensions = <String>{
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'webp',
+  'bmp',
+};
+
+/// 从拖进来的文件里挑出图片，返回路径（保持拖入顺序）。
+///
+/// 桌面拖入的 `XFile` 只有路径、没有 `mimeType`（插件不给），所以只能按扩展名认。
+/// 非图片（文件夹、文档…）一律丢掉 —— 上层静默忽略。
+List<String> imagePathsOf(List<XFile> files) => <String>[
+  for (final file in files)
+    if (_kImageExtensions.contains(
+      p.extension(file.path).toLowerCase().replaceFirst('.', ''),
+    ))
+      file.path,
+];
+
+/// 拖入时的「可放下」提示：一圈 2dp 强调色描边 + 6% 同色淡填充。
+///
+/// 无稿，全部按既有 token 推导（描边宽度取 `AppStroke.icon`、圆角取
+/// `AppRadius.card`、颜色取 `colors.accent`）；⛔ 不加文案、不加动画。
+class _DropHighlight extends StatelessWidget {
+  const _DropHighlight({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.colors.accent;
+    return Positioned.fill(
+      // ⛔ 不能省：这一层在最上面，不忽略指针就挡掉了落下事件（光标位置也会丢）。
+      child: IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border: Border.all(color: accent, width: AppStroke.icon),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 笔记详情稿的顶栏：左 `back` + 右历史 / 更多，无标题。
+///
+/// 背景切换（palette）入口在下方正文工具条的左端（见 [_EditorToolbar]）。
+/// 「更多」下拉里是四个有确定语义的动作：置顶 / 收藏 / 分享 / 删除。
+///
+/// [leadingIcon] 是整页（返回箭头）与内嵌面板（关闭）的唯一差别。
+class _EditorTopBar extends ConsumerWidget {
+  const _EditorTopBar({
+    required this.leadingIcon,
+    required this.onBack,
+    required this.onShare,
+    required this.onTags,
+    required this.onHistory,
+    required this.onTogglePinned,
+    required this.onToggleFavorite,
+    required this.onDelete,
+    required this.isPersisted,
+    required this.isPinned,
+    required this.isFavorite,
+  });
+
+  final IconData leadingIcon;
+
+  final VoidCallback onBack;
+
+  final VoidCallback onShare;
+
+  final VoidCallback onTogglePinned;
+
+  final VoidCallback onToggleFavorite;
+
+  /// 打开标签编辑弹层（未落库的新笔记不可用，同置顶 / 收藏 / 删除）。
+  final VoidCallback onTags;
+
+  /// 打开版本历史页（未落库的新笔记不可用 —— 还没有历史）。
+  final VoidCallback onHistory;
+
+  final VoidCallback onDelete;
+
+  /// 笔记是否已落库。false（`/notes/new` 尚未写进库）→ 菜单里三项写库动作
+  /// （置顶 / 收藏 / 删除）置灰：库里没有行，写了只会打一条不存在的 id。
+  /// ⛔ 分享**不**受它管 —— 分享的是草稿，不需要库里先有这行。
+  final bool isPersisted;
+
+  /// 当前置顶 / 收藏态。**只影响菜单里的文案与字形，不影响是否可点** ——
+  /// 可点性由 [isPersisted] 管。
+  final bool isPinned;
+  final bool isFavorite;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    return AppTopBar(
+      leading: AppIconButton(
+        icon: leadingIcon,
+        tooltip: leadingIcon == AppIcons.close ? l10n.close : l10n.back,
+        onPressed: onBack,
+      ),
+      actions: <Widget>[
+        // 版本历史。新笔记（未落库）没有历史，置灰同置顶 / 收藏 / 删除。
+        AppIconButton(
+          key: const Key('note_history'),
+          icon: AppIcons.history,
+          tooltip: l10n.noteHistory,
+          onPressed: isPersisted ? onHistory : null,
+        ),
+        PopupMenuButton<_NoteMoreAction>(
+          key: const Key('note_more'),
+          tooltip: l10n.more,
+          icon: const AppIcon(icon: AppIcons.overflow),
+          // 菜单落在按钮**下方**（默认 `over` 是盖住按钮本身）。
+          position: PopupMenuPosition.under,
+          // 图标按钮留白的默认 8dp 既会撑大触控区，又会让菜单往上挪半格盖住按钮；
+          // 清零后菜单正好从按钮底边开始。
+          padding: EdgeInsets.zero,
+          // 与 `AppIconButton` 同一度量：图标 24dp、触控区 ≥48dp、无额外内边距
+          // （IconButton 默认 8dp padding 会把 48dp 约束撑成 64dp）。
+          style: IconButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size.square(AppIconButton.minTapSize),
+          ),
+          onSelected: (action) => switch (action) {
+            _NoteMoreAction.pin => onTogglePinned(),
+            _NoteMoreAction.favorite => onToggleFavorite(),
+            _NoteMoreAction.tags => onTags(),
+            _NoteMoreAction.share => onShare(),
+            _NoteMoreAction.delete => onDelete(),
+          },
+          itemBuilder: (menuContext) => <PopupMenuEntry<_NoteMoreAction>>[
+            // ⚠️ 选中态用**实心**图标而不是给图标染色：主题里的 active 色与其它
+            // 「已开启」开关共用，用户分不清「置顶」与「已选文件夹」。实心 / 空心
+            // 是 M3 里表达 on/off 的通用约定，跨主题都认。
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_toggle_pin'),
+              value: _NoteMoreAction.pin,
+              enabled: isPersisted,
+              child: _MoreMenuRow(
+                icon: isPinned ? AppIcons.pushPinFilled : AppIcons.pushPin,
+                label: isPinned ? l10n.noteUnpin : l10n.notePin,
+              ),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_toggle_favorite'),
+              value: _NoteMoreAction.favorite,
+              enabled: isPersisted,
+              child: _MoreMenuRow(
+                icon: isFavorite ? AppIcons.starFilled : AppIcons.starOutline,
+                label: isFavorite ? l10n.noteUnfavorite : l10n.noteFavorite,
+              ),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_tags'),
+              value: _NoteMoreAction.tags,
+              enabled: isPersisted,
+              child: _MoreMenuRow(icon: AppIcons.tag, label: l10n.tags),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_share'),
+              value: _NoteMoreAction.share,
+              child: _MoreMenuRow(icon: AppIcons.share, label: l10n.share),
+            ),
+            PopupMenuItem<_NoteMoreAction>(
+              key: const Key('note_delete'),
+              value: _NoteMoreAction.delete,
+              enabled: isPersisted,
+              child: _MoreMenuRow(icon: AppIcons.trash, label: l10n.delete),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// 「更多」菜单的动作。用枚举而不是多个回调，`onSelected` 才能只 switch 一次。
+enum _NoteMoreAction { pin, favorite, tags, share, delete }
+
+/// 详情页元信息行下的标签条：小号 chip 只读展示，整行点按 = 打开打标弹层。
+/// 无标签时显示一行淡淡的「标签」入口（占位可点，不能让打标入口消失）。
+///
+/// ⛔ **一次性读**（`GetNoteTagsUseCase` + FutureBuilder），不订阅流：
+/// 刷新由 [_NoteEditorPaneState._tagsVersion] 驱动（弹层保存完 bump 一次）。
+/// 这里若挂一条 drift watch，测试 teardown 的「关流 Timer」会让
+/// `flutter_test` 的 pending-timer 不变量炸掉，且常驻流对一行展示毫无收益。
+class _NoteTagsRow extends ConsumerWidget {
+  const _NoteTagsRow({
+    required this.noteId,
+    required this.version,
+    required this.onEdit,
+  });
+
+  final String noteId;
+
+  /// 打标弹层每保存一次 +1：Future 以它为 key 重建（同值时复用快照）。
+  final int version;
+
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final colors = context.colors;
+    final textStyles = context.textStyles;
+    final names =
+        ref.watch(noteTagsSnapshotProvider(noteId, version)).value ??
+        const <String>[];
+
+    return InkWell(
+      onTap: onEdit,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm / 2),
+        child: names.isEmpty
+            ? Text(
+                l10n.tags,
+                style: textStyles.meta.copyWith(color: colors.textTertiary),
+              )
+            : Wrap(
+                spacing: AppSpacing.chipGap / 2,
+                runSpacing: AppSpacing.chipGap / 2,
+                children: <Widget>[
+                  for (final name in names)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colors.bg,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        name,
+                        style: textStyles.meta.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+/// 「更多」菜单的一行：图标 + 文案。三项共用，保证字形与间距一致。
+class _MoreMenuRow extends StatelessWidget {
+  const _MoreMenuRow({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        AppIcon(icon: icon),
+        const SizedBox(width: AppSpacing.chipGap),
+        Text(label),
+      ],
+    );
+  }
+}
+
+/// [NoteMetaLine] 的订阅壳。存在的**唯一**理由是隔离 rebuild：
+/// `wordCount` 依赖 `draftContent`，每敲一个字都变。挂在页面里就等于让
+/// 每一次按键都重建 `Scaffold` + `QuillEditor` + 整段正文的排版；自己
+/// `select` 之后，重建范围缩到这一行文本。
+class _NoteMetaSlot extends ConsumerWidget {
+  const _NoteMetaSlot({
+    required this.noteId,
+    required this.folderId,
+    required this.createdAt,
+  });
+
+  final String noteId;
+
+  /// 必须与页面传的一致，否则命中另一个 provider 实例（多一次读库）。
+  final String? folderId;
+
+  /// 父级已判非空（落库成功后才有），这里只透传，不重复订阅。
+  final DateTime createdAt;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wordCount = ref.watch(
+      noteEditorProvider(
+        noteId,
+        folderId: folderId,
+      ).select((s) => s.value?.wordCount),
+    );
+    return NoteMetaLine(createdAt: createdAt, wordCount: wordCount ?? 0);
+  }
+}
+
+/// 详情页元信息行：`10月3日 6:40 | 35字`。
+///
+/// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
+/// （1 个页面 + 语义与页面绑定 → 页面内）。
+/// 类名不加 `_` 前缀是为了 widget 测试能直接引用它。
+class NoteMetaLine extends StatelessWidget {
+  const NoteMetaLine({
+    required this.createdAt,
+    required this.wordCount,
+    super.key,
+  });
+
+  final DateTime createdAt;
+
+  /// 已由 `WordCounter` 算好的字数。本组件**不调** `WordCounter`（保持纯展示）。
+  final int wordCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    final date = DateFormat.MMMd(locale).format(createdAt);
+    // ⚠️ 刻意用 `h:mm` 而不是 `DateFormat.jm`：笔记详情稿显示「6:40」**无 AM/PM**，
+    // 而 `jm` 在 zh locale 下输出「上午6:40」。12/24 小时制偏好待设计补稿。
+    final time = DateFormat('h:mm', locale).format(createdAt);
+
+    return Text.rich(
+      TextSpan(
+        children: <InlineSpan>[
+          TextSpan(text: '$date $time'),
+          // 分隔符两侧各留约 6dp（12sp 下一个空格 ≈3dp，两个 ≈6dp）。
+          const TextSpan(text: '  |  '),
+          TextSpan(
+            text: AppLocalizations.of(context).noteMetaWordCount(wordCount),
+          ),
+        ],
+      ),
+      style: context.textStyles.meta.copyWith(
+        color: context.colors.textTertiary,
+      ),
+    );
+  }
+}
+
+/// 背景选择弹层：横向滑动的纸张缩略图，选中项描琥珀边（笔记详情稿实测）。
+///
+/// 下标语义：0 = 无背景（白底 + 示意横线），1..n = [backgrounds]。
+/// 调用方负责与 `NoteBackground` 互转（下标 `index - 1` → `values[index - 1]`）。
+/// 选中即 `Navigator.pop(index)`，取消（下滑 / 点遮罩）返回 null = 不改。
+///
+/// T3 页面内组件，语义与笔记详情绑定，不上提为 `core/ui`、不单独建文件
+/// （1 个页面 + 语义与页面绑定 → 页面内）。类名不加 `_` 前缀是为了 widget 测试能引用它。
+class BackgroundPickerSheet extends StatelessWidget {
+  const BackgroundPickerSheet({
+    required this.backgrounds,
+    required this.selected,
+    super.key,
+  });
+
+  /// 纸张纹理候选，展示顺序即切换顺序。
+  final List<AssetGenImage> backgrounds;
+
+  /// 当前选中下标（0 = 无背景）。
+  final int selected;
+
+  /// 缩略图尺寸。稿上约 100×135，按屏宽比例取整到 88×120（笔记详情稿 `[推导]`）。
+  static const double _tileWidth = 88;
+  static const double _tileHeight = 120;
+
+  /// 圆角与描边（选中 2dp 琥珀，未选中 1dp 分隔色）。
+  static const double _radius = 12;
+
+  /// 「无背景」缩略图里的示意横线宽度，稿上四条不等长（笔记详情稿实测）。
+  static const List<double> _blankLines = <double>[56, 72, 64, 48];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        const AppDivider(),
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: SizedBox(
+              height: _tileHeight,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.pageH,
+                ),
+                children: <Widget>[
+                  for (var index = 0; index <= backgrounds.length; index++)
+                    _tile(context, index),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tile(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context);
+    final isSelected = index == selected;
+    final colors = context.colors;
+    return Padding(
+      // 末项不留右侧空隙，末项圆角与页面右边距自然对齐。
+      padding: EdgeInsets.only(
+        right: index == backgrounds.length ? 0 : AppSpacing.gridGutter,
+      ),
+      child: Semantics(
+        key: ValueKey<int>(index),
+        button: true,
+        selected: isSelected,
+        label: index == 0 ? l10n.noteBackgroundNone : l10n.noteBackground,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).pop(index),
+          child: Container(
+            width: _tileWidth,
+            height: _tileHeight,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: colors.surface,
+              borderRadius: BorderRadius.circular(_radius),
+              border: Border.all(
+                color: isSelected ? colors.accent : colors.divider,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: index == 0
+                ? _blankTile(context)
+                : backgrounds[index - 1].image(
+                    width: _tileWidth,
+                    height: _tileHeight,
+                    fit: BoxFit.cover,
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 「无背景」缩略图：白底 + 四条示意横线。
+  Widget _blankTile(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          for (final width in _blankLines)
+            Container(
+              width: width,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 3),
+              decoration: BoxDecoration(
+                color: context.colors.textPlaceholder,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

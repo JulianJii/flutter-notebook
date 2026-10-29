@@ -26,7 +26,9 @@ class NoteCard extends StatelessWidget {
     super.key,
     this.onTap,
     this.onLongPress,
+    this.onSecondaryTapDown,
     this.selected = false,
+    this.active = false,
   });
 
   final Note note;
@@ -34,8 +36,17 @@ class NoteCard extends StatelessWidget {
   /// 多选模式下的选中态：主色描边 + 右上角勾选角标。
   final bool selected;
 
+  /// 宽屏双栏下「右侧正在编辑的就是这篇」：左侧 3dp 琥珀竖条。
+  ///
+  /// 与 [selected] 明确区分 —— 多选态的描边 + 角标是「待处理」，激活态是
+  /// 「正在看」，两者会同时出现（多选时右侧面板仍开着）。
+  final bool active;
+
   /// 长按回调（多选模式的入口）。
   final VoidCallback? onLongPress;
+
+  /// 鼠标右键按下（桌面）：在指针位置弹上下文菜单。见 `note_context_menu.dart`。
+  final GestureTapDownCallback? onSecondaryTapDown;
 
   /// 摘要最大行数。**卡片高度就是瀑布流的错落来源**：上限卡在 2 行时短正文
   /// 与长正文的卡片几乎等高，两列排下来观感退化成等高网格。放宽到 6 行后
@@ -55,6 +66,7 @@ class NoteCard extends StatelessWidget {
     final card = AppCard(
       onTap: onTap,
       onLongPress: onLongPress,
+      onSecondaryTapDown: onSecondaryTapDown,
       // 背景要铺满整张卡（含圆角），故内边距从 AppCard 挪到内容层自己带：
       // 默认那份 `AppSpacing.cardPad` 走 `AppCard.defaultPadding`，数值不变。
       padding: EdgeInsets.zero,
@@ -138,40 +150,57 @@ class NoteCard extends StatelessWidget {
       ),
     );
 
-    if (!selected) return card;
+    if (!selected && !active) return card;
     // 多选选中态：主色描边 + 右上角勾选角标。描边画在覆盖层而不动 AppCard
     // （core/ui 不认识业务），圆角沿用主题的 `AppRadius.card`。
-    return Stack(
-      children: <Widget>[
-        card,
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(color: colors.accent, width: 2),
+    // 激活态（宽屏双栏）与它是两件事，可以同时出现。
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Stack(
+        children: <Widget>[
+          card,
+          if (active)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              // 3dp 琥珀竖条：比描边克制，扫视列表时能立刻找到「正在看的那篇」。
+              child: SizedBox(
+                width: 3,
+                child: ColoredBox(color: colors.accent),
               ),
             ),
-          ),
-        ),
-        Positioned(
-          right: AppSpacing.sm,
-          top: AppSpacing.sm,
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              color: colors.accent,
-              shape: BoxShape.circle,
+          if (selected) ...<Widget>[
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                    border: Border.all(color: colors.accent, width: 2),
+                  ),
+                ),
+              ),
             ),
-            child: const Icon(
-              AppIcons.check,
-              size: 14,
-              color: Colors.white,
+            Positioned(
+              right: AppSpacing.sm,
+              top: AppSpacing.sm,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: colors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  AppIcons.check,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        ],
+      ),
     );
   }
 

@@ -26,6 +26,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.switchOff,
     required this.chipSelectedBg,
     required this.textDisabled,
+    required this.hoverOverlay,
   });
 
   /// 浅色模式取值。
@@ -44,7 +45,8 @@ class AppColors extends ThemeExtension<AppColors> {
       outlineControl = const Color(0xFF9E9E9E),
       switchOff = const Color(0xFFBDBDBD),
       chipSelectedBg = const Color(0xFFEFEFEF),
-      textDisabled = const Color(0xFF666666);
+      textDisabled = const Color(0xFF666666),
+      hoverOverlay = const Color(0x0F000000);
 
   /// 深色模式取值。
   ///
@@ -65,7 +67,8 @@ class AppColors extends ThemeExtension<AppColors> {
       outlineControl = const Color(0xFF9E9E9E),
       switchOff = const Color(0xFF4A4A4A),
       chipSelectedBg = const Color(0xFF2A2A2A),
-      textDisabled = const Color(0xFFA0A0A0);
+      textDisabled = const Color(0xFFA0A0A0),
+      hoverOverlay = const Color(0x14FFFFFF);
 
   /// 页面底色（列表页 / 设置页）。笔记列表稿/待办稿/文件夹管理稿/设置稿卡片外区域。
   final Color bg;
@@ -121,6 +124,12 @@ class AppColors extends ThemeExtension<AppColors> {
   /// JPEG 取色精度有限，属已知误差。
   final Color textDisabled;
 
+  /// 鼠标悬停覆盖层（桌面端）。浅色 6% 黑 / 深色 8% 白。
+  ///
+  /// ⚠️ **只在指针悬停时叠加**（`InkWell.hoverColor` / 显式 `Color.lerp`），
+  /// 触屏与 golden 上不出现，因此窄屏视觉逐像素不变。
+  final Color hoverOverlay;
+
   /// 操作成功反馈色（Snackbar 文案、图标）。数据与同步的提示、恢复成功。
   ///
   /// ⚠️ **不进构造函数**：iOS 系统绿在明暗两套下同值，浅色深色没有差别，所以它是
@@ -153,6 +162,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? switchOff,
     Color? chipSelectedBg,
     Color? textDisabled,
+    Color? hoverOverlay,
   }) {
     return AppColors(
       bg: bg ?? this.bg,
@@ -169,6 +179,7 @@ class AppColors extends ThemeExtension<AppColors> {
       switchOff: switchOff ?? this.switchOff,
       chipSelectedBg: chipSelectedBg ?? this.chipSelectedBg,
       textDisabled: textDisabled ?? this.textDisabled,
+      hoverOverlay: hoverOverlay ?? this.hoverOverlay,
     );
   }
 
@@ -194,6 +205,7 @@ class AppColors extends ThemeExtension<AppColors> {
       switchOff: Color.lerp(switchOff, other.switchOff, t)!,
       chipSelectedBg: Color.lerp(chipSelectedBg, other.chipSelectedBg, t)!,
       textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!,
+      hoverOverlay: Color.lerp(hoverOverlay, other.hoverOverlay, t)!,
     );
   }
 }

@@ -56,65 +56,71 @@ class TodoListScreen extends ConsumerWidget {
       backgroundColor: context.colors.bg,
       body: SafeArea(
         bottom: false,
-        child: Stack(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                AppTopBar(
-                  showDivider: false,
-                  // 页面标题在顶栏内（与笔记列表一致）：标题与右侧图标同处一行。
-                  title: Text(
-                    l10n.todos,
-                    style: context.textStyles.displayTitle.copyWith(
-                      color: context.colors.textPrimary,
+        // 宽屏内容限宽 720 居中：待办是单列行，拉满 1400dp 时标题与复选框会
+        // 隔着一整屏。窄屏上 `AppPageBody` 是零视觉变化的包装。
+        // ⚠️ FAB 放在这层**之内**，因此它跟随内容列贴右，而不是贴到窗口右边缘。
+        child: AppPageBody(
+          maxWidth: 720,
+          // 外层 `SafeArea(bottom: false)` 已经处理过安全区；这里再避一次底部
+          // 会在手机上多出一条 home indicator 的留白。
+          bottom: false,
+          child: Stack(
+            children: <Widget>[
+              Column(
+                children: <Widget>[
+                  AppTopBar(
+                    showDivider: false,
+                    // 页面标题在顶栏内（与笔记列表一致）：标题与右侧图标同处一行。
+                    title: Text(
+                      l10n.todos,
+                      style: context.textStyles.displayTitle.copyWith(
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                    actions: <Widget>[
+                      // 清空入口只在有已完成项时可用 —— 空分组上弹「确定清空吗」是噪音。
+                      AppIconButton(
+                        icon: AppIcons.trash,
+                        tooltip: l10n.clearCompletedTodos,
+                        onPressed: done.isEmpty
+                            ? null
+                            : () => _clearCompleted(context, ref, done),
+                      ),
+                      AppIconButton(
+                        icon: AppIcons.settings,
+                        // tooltip 传 l10n：`AppIconButton` 的 tooltip 是无障碍必需，
+                        // 不是装饰（笔记列表稿~设置稿上都没有文字标签）。
+                        tooltip: l10n.settings,
+                        onPressed: () => context.push(AppRoutes.settings),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: _TodoList(
+                      active: active,
+                      done: done,
+                      expanded: expanded,
+                      onToggleSection: () =>
+                          ref.read(todoDoneSectionProvider.notifier).toggle(),
+                      onChanged: (todo, value) =>
+                          _toggle(context, ref, todo, value),
+                      onEdit: (todo) => _openSheet(context, ref, todo),
                     ),
                   ),
-                  actions: <Widget>[
-                    // 清空入口只在有已完成项时可用 —— 空分组上弹「确定清空吗」是噪音。
-                    AppIconButton(
-                      icon: AppIcons.trash,
-                      tooltip: l10n.clearCompletedTodos,
-                      onPressed: done.isEmpty
-                          ? null
-                          : () => _clearCompleted(context, ref, done),
-                    ),
-                    AppIconButton(
-                      icon: AppIcons.settings,
-                      // tooltip 传 l10n：`AppIconButton` 的 tooltip 是无障碍必需，
-                      // 不是装饰（笔记列表稿~设置稿上都没有文字标签）。
-                      tooltip: l10n.settings,
-                      onPressed: () => context.push(AppRoutes.settings),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: _TodoList(
-                    active: active,
-                    done: done,
-                    expanded: expanded,
-                    onToggleSection: () =>
-                        ref.read(todoDoneSectionProvider.notifier).toggle(),
-                    onChanged: (todo, value) =>
-                        _toggle(context, ref, todo, value),
-                    onEdit: (todo) => _openSheet(context, ref, todo),
-                  ),
-                ),
-              ],
-            ),
-            // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
-            // 后者的 z 序在 `bottomNavigationBar` 之下，而待办稿里 FAB 明确叠在
-            // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
-            Positioned(
-              // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
-              right: AppSpacing.pageH + AppSpacing.sm,
-              bottom:
-                  kBottomNavContentHeight +
-                  AppSpacing.pageH -
-                  AppSpacing.sm -
-                  30,
-              child: AppFab(onPressed: () => _create(context, ref)),
-            ),
-          ],
+                ],
+              ),
+              // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
+              // 后者的 z 序在 `bottomNavigationBar` 之下，而待办稿里 FAB 明确叠在
+              // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
+              Positioned(
+                // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
+                right: AppSpacing.pageH + AppSpacing.sm,
+                // 窄屏压住底栏、宽屏贴内容区右下角（同笔记列表）。
+                bottom: fabBottomInsetOf(context),
+                child: AppFab(onPressed: () => _create(context, ref)),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -128,7 +134,11 @@ class TodoListScreen extends ConsumerWidget {
   /// 成功不需要 `ref.invalidate`：drift watch 推新行，`todoListProvider` 自建。
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    final outcome = await _titleDialog(context, ref: ref, titleText: l10n.createTodo);
+    final outcome = await _titleDialog(
+      context,
+      ref: ref,
+      titleText: l10n.createTodo,
+    );
     final title = outcome?.title;
     if (title == null || title.trim().isEmpty) return;
 
@@ -577,15 +587,13 @@ class _TodoList extends StatelessWidget {
   /// 底部留白 = 底部导航高 + 12dp + 安全区，与笔记列表 / 笔记详情同一约定（笔记列表稿实测卡片
   /// 曾被底栏直接裁切）。待办稿只有 1 张卡看不出裁切，但 FAB 会压住空区域 ——
   /// 不为「看不到」而省掉。
+  // `listBottomInsetOf` 内部同理只用 `paddingOf`：后者对**全部** MediaQuery
+  // 指标建依赖，键盘弹出 / 收起（改的是 `viewInsets`）都会重建整个列表。
   EdgeInsets _padding(BuildContext context) => EdgeInsets.fromLTRB(
     AppSpacing.pageH,
     0,
     AppSpacing.pageH,
-    kBottomNavContentHeight +
-        AppSpacing.pageH +
-        // `paddingOf` 而非 `of`：后者对**全部** MediaQuery 指标建依赖，键盘弹出 /
-        // 收起（改的是 `viewInsets`）都会重建整个列表。只依赖 padding 就没有。
-        MediaQuery.paddingOf(context).bottom,
+    listBottomInsetOf(context),
   );
 }
 

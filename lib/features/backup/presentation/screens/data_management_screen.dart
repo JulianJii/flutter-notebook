@@ -29,7 +29,7 @@ class DataManagementScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -115,9 +115,15 @@ class DataManagementScreen extends ConsumerWidget {
                       AppListTile(
                         key: const Key('data_sync_now'),
                         title: l10n.dataSyncNow,
-                        trailing: _trailing(context, running, BackupOperation.sync),
+                        trailing: _trailing(
+                          context,
+                          running,
+                          BackupOperation.sync,
+                        ),
                         dividerBefore: true,
-                        onTap: running == null ? () => _sync(context, ref) : null,
+                        onTap: running == null
+                            ? () => _sync(context, ref)
+                            : null,
                       ),
                       AppSwitchRow(
                         key: const Key('data_auto_sync'),

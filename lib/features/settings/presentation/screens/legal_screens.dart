@@ -77,7 +77,7 @@ class _LegalDocument extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(

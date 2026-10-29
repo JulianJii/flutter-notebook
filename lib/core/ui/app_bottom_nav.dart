@@ -1,7 +1,10 @@
 import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_elevation.dart';
 import 'package:mynote/core/theme/tokens/app_radius.dart';
+import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:mynote/core/theme/tokens/app_text_styles.dart';
+import 'package:mynote/core/ui/app_breakpoints.dart';
+import 'package:mynote/core/ui/app_fab.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 底部标签栏（2 项）。**纯视觉组件：只管画，不管导航。**
@@ -70,6 +73,40 @@ class AppBottomNav extends StatelessWidget {
 /// 类成员常量需前缀，两种都会逼下游各复制一份字面量 64 然后互相漂移。
 /// 改这一处即可，别在下游再定义同值常量。
 const double kBottomNavContentHeight = 64;
+
+/// 页面内容需要为底部导航预留的高度：窄屏 = [kBottomNavContentHeight]，
+/// 宽屏（左侧导航栏）= 0。
+///
+/// ⚠️ 存在的理由：FAB 定位、列表底部留白、多选动作栏三处都按
+/// 「底部导航顶部 + 12dp」算，宽屏没有底栏，直接用 [kBottomNavContentHeight]
+/// 会在 FAB 下面留一条 64dp 的空洞。所有这类位置一律改读本函数。
+double navBottomInsetOf(BuildContext context) =>
+    context.usesNavRail ? 0 : kBottomNavContentHeight;
+
+/// FAB 距内容区底边的高度。
+///
+/// - 窄屏：`kBottomNavContentHeight + 12 - 8 - 30` = 38dp，即设计稿里 FAB 与
+///   底栏重叠 26dp 的那一版（换算过程写在 `note_list_screen` 的旧注释里）。
+/// - 宽屏：没有底栏，贴到内容区右下角（页面边距 12 + 8）。
+///
+/// ⚠️ 这个减法只在「有底栏」时成立：宽屏直接套会算出 **-26**，FAB 一半落到
+/// 屏幕外。故收口到本函数，页面里不再各自写算式。
+double fabBottomInsetOf(BuildContext context) {
+  final nav = navBottomInsetOf(context);
+  if (nav == 0) return AppSpacing.pageH + AppSpacing.sm;
+  return nav + AppSpacing.pageH - AppSpacing.sm - 30;
+}
+
+/// 列表底部留白：底栏 + FAB 都不能遮住最后一项。
+///
+/// - 窄屏：`底栏高 + 12 + 安全区`（与设计稿的实测一致）。
+/// - 宽屏：没有底栏，但 FAB 悬在右下角，留白改成「FAB 直径 + 页面边距」。
+double listBottomInsetOf(BuildContext context) {
+  final nav = navBottomInsetOf(context);
+  return (nav > 0 ? nav : AppFab.size) +
+      AppSpacing.pageH +
+      MediaQuery.paddingOf(context).bottom;
+}
 
 /// 底部导航的单项。纯数据，不含业务语义（不认识「笔记」「待办」）。
 class AppBottomNavItem {

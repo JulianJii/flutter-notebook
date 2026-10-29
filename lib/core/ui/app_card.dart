@@ -1,3 +1,4 @@
+import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/theme/tokens/app_spacing.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,6 +16,7 @@ class AppCard extends StatelessWidget {
     this.padding = defaultPadding,
     this.onTap,
     this.onLongPress,
+    this.onSecondaryTapDown,
   });
 
   /// 笔记卡内边距。12dp。
@@ -37,9 +39,16 @@ class AppCard extends StatelessWidget {
   /// 长按回调。null → 无长按行为。笔记列表的长按多选（无稿，平台惯例）。
   final VoidCallback? onLongPress;
 
+  /// 鼠标右键按下（桌面）。坐标用于在指针位置弹上下文菜单。
+  ///
+  /// ⚠️ 只在**指针**场景触发（触屏没有右键），不影响窄屏与 golden。
+  final GestureTapDownCallback? onSecondaryTapDown;
+
   @override
   Widget build(BuildContext context) {
     final content = Padding(padding: padding, child: child);
+    final interactive =
+        onTap != null || onLongPress != null || onSecondaryTapDown != null;
 
     return Card(
       // M3 的 Card 默认 margin all(4) 与 surfaceTint 会破坏「白卡浮在灰底上」的
@@ -48,9 +57,17 @@ class AppCard extends StatelessWidget {
       surfaceTintColor: Colors.transparent,
       // 让 InkWell 的涟漪按 12dp 圆角裁剪。
       clipBehavior: Clip.antiAlias,
-      child: onTap == null && onLongPress == null
-          ? content
-          : InkWell(onTap: onTap, onLongPress: onLongPress, child: content),
+      child: interactive
+          ? InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              onSecondaryTapDown: onSecondaryTapDown,
+              // 悬停提亮：主题里的 hoverColor 由 flex_color_scheme 派生，
+              // 在灰白配色上几乎看不见；统一换成 6% / 8% 的语义色。
+              hoverColor: context.colors.hoverOverlay,
+              child: content,
+            )
+          : content,
     );
   }
 }

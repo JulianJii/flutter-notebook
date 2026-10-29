@@ -24,12 +24,9 @@ Future<bool> showTagEditorSheet(
 }) async {
   final current = await ref.read(getNoteTagsUseCaseProvider)(noteId);
   if (!context.mounted) return false;
-  final initial = current.fold(
-    (_) => <String>[],
-    (names) => names,
-  );
+  final initial = current.fold((_) => <String>[], (names) => names);
 
-  final result = await showModalBottomSheet<Set<String>>(
+  final result = await showAppBottomSheet<Set<String>>(
     context: context,
     isScrollControlled: true,
     builder: (_) => _TagEditorSheet(initialNames: initial),
@@ -42,14 +39,11 @@ Future<bool> showTagEditorSheet(
   );
   // 失败才出提示；成功由调用方刷新展示行。
   var saved = true;
-  either.fold(
-    (failure) {
-      saved = false;
-      if (!context.mounted) return;
-      AppUtils.showSnackBar(context, message: failure.message);
-    },
-    (_) {},
-  );
+  either.fold((failure) {
+    saved = false;
+    if (!context.mounted) return;
+    AppUtils.showSnackBar(context, message: failure.message);
+  }, (_) {});
   return saved;
 }
 
@@ -100,9 +94,7 @@ class _TagEditorSheetState extends ConsumerState<_TagEditorSheet> {
 
     return Padding(
       // 键盘顶起：isScrollControlled 弹层的标配。
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewInsetsOf(context).bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

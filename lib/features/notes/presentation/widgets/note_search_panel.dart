@@ -15,6 +15,7 @@ import '../../domain/entities/note_query.dart';
 import '../../domain/utils/note_delta.dart';
 import '../providers/note_list_provider.dart';
 import '../providers/note_prefs_provider.dart';
+import '../providers/selected_note_provider.dart';
 
 /// 弹出全局搜索面板（桌面 `Ctrl+F`）。
 ///
@@ -75,13 +76,27 @@ class _NoteSearchPanelState extends ConsumerState<NoteSearchPanel> {
     setState(() => _term = '');
   }
 
-  /// 打开一条结果：先关面板再 push 详情（详情是二级页，⛔ 不能用 `go` ——
-  /// 返回键要回到打开面板前的页面）。
+  /// 打开一条结果：先关面板再进详情。
+  ///
+  /// 两条去路：
+  /// - 宽屏双栏且当前就在 `/notes` → **填进右栏**（`selectedNoteProvider`），
+  ///   列表原地不动。压一张整页路由上去等于把双栏糊掉，搜完还得退两次。
+  /// - 其它情况 → `push` 整页详情（详情是二级页，⛔ 不能用 `go` —— 返回键要
+  ///   回到打开面板前的页面）。
   ///
   /// ⚠️ `GoRouter` 必须先取出来：`pop` 之后本 widget 的 `context` 已失效。
   void _open(Note note) {
     final router = GoRouter.of(context);
+    final paned =
+        currentWindowWidth() >= AppBreakpoints.twoPane &&
+        router.state.uri.path == AppRoutes.notes;
+    // notifier 也在 pop **之前**取：面板被 pop 掉之后它的 `ref` 不该再被使用。
+    final selection = ref.read(selectedNoteProvider.notifier);
     Navigator.of(context).pop();
+    if (paned) {
+      selection.select(note.id);
+      return;
+    }
     router.push(AppRoutes.noteDetailPath(note.id));
   }
 

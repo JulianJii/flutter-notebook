@@ -286,6 +286,22 @@
   "@back": {
     "description": "Tooltip of the note detail top bar back button"
   },
+  "close": "Close",
+  "@close": {
+    "description": "Tooltip of the close button on the embedded editor pane"
+  },
+  "openNote": "Open",
+  "@openNote": {
+    "description": "Context menu item: open the note"
+  },
+  "notePaneEmptyTitle": "No note selected",
+  "@notePaneEmptyTitle": {
+    "description": "Empty state title of the wide-screen editor pane"
+  },
+  "notePaneEmptyHint": "Pick one on the left, or create a new note",
+  "@notePaneEmptyHint": {
+    "description": "Empty state hint of the wide-screen editor pane"
+  },
   "share": "Share",
   "@share": {
     "description": "Tooltip of the note detail top bar share icon"

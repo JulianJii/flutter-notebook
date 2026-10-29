@@ -49,7 +49,7 @@ class _ImportArticleScreenState extends ConsumerState<ImportArticleScreen> {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(

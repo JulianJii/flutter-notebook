@@ -20,7 +20,7 @@ Future<void> showNotePickerSheet(
   required WidgetRef ref,
   required ValueChanged<Note> onSelected,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     builder: (sheetContext) {

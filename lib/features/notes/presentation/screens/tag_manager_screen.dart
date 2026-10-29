@@ -27,7 +27,7 @@ class TagManagerScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         bottom: false,
         child: Column(
           children: <Widget>[
@@ -106,8 +106,7 @@ class TagManagerScreen extends ConsumerWidget {
           key: const Key('tag_rename_field'),
           controller: controller,
           autofocus: true,
-          onSubmitted: (value) =>
-              Navigator.of(dialogContext).pop(value.trim()),
+          onSubmitted: (value) => Navigator.of(dialogContext).pop(value.trim()),
         ),
         actions: <Widget>[
           TextButton(

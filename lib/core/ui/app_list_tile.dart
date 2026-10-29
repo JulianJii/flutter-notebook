@@ -147,6 +147,13 @@ class AppListTile extends StatelessWidget {
       child: row,
     );
 
-    return onTap == null ? content : InkWell(onTap: onTap, child: content);
+    return onTap == null
+        ? content
+        // 桌面端悬停提亮：设置 / 文件夹 / 待办三页的行都由这里画，收口一处。
+        : InkWell(
+            onTap: onTap,
+            hoverColor: colors.hoverOverlay,
+            child: content,
+          );
   }
 }

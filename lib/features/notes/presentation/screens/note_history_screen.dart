@@ -37,7 +37,7 @@ class NoteHistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         bottom: false,
         child: Column(
           children: <Widget>[
@@ -155,9 +155,7 @@ class _TimelineRow extends StatelessWidget {
                     DateFormat.yMMMd(
                       Localizations.localeOf(context).toString(),
                     ).add_Hm().format(version.createdAt),
-                    style: textStyles.meta.copyWith(
-                      color: colors.textTertiary,
-                    ),
+                    style: textStyles.meta.copyWith(color: colors.textTertiary),
                   ),
                   const SizedBox(height: AppSpacing.sm / 2),
                   Text(
@@ -170,9 +168,7 @@ class _TimelineRow extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm / 2),
                   Text(
-                    preview.isEmpty
-                        ? l10n.noteSnippetPlaceholder
-                        : preview,
+                    preview.isEmpty ? l10n.noteSnippetPlaceholder : preview,
                     style: textStyles.meta.copyWith(
                       color: colors.textSecondary,
                     ),
@@ -206,7 +202,7 @@ class NoteVersionPreviewScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.surface,
-      body: SafeArea(
+      body: AppPageBody(
         bottom: false,
         child: version == null
             ? const SizedBox.shrink()
@@ -264,15 +260,13 @@ class NoteVersionPreviewScreen extends ConsumerWidget {
                       AppSpacing.pageH,
                       AppSpacing.sm,
                       AppSpacing.pageH,
-                      AppSpacing.pageH +
-                          MediaQuery.paddingOf(context).bottom,
+                      AppSpacing.pageH + MediaQuery.paddingOf(context).bottom,
                     ),
                     child: SizedBox(
                       width: double.infinity,
                       child: FilledButton(
                         key: const Key('history_restore'),
-                        onPressed: () =>
-                            _restore(context, ref, version),
+                        onPressed: () => _restore(context, ref, version),
                         child: Text(l10n.historyRestore),
                       ),
                     ),

@@ -139,6 +139,12 @@ class NoteEditorState {
 class NoteEditor extends _$NoteEditor {
   Timer? _debounce;
 
+  /// 未落库草稿的保活释放函数（`ref.keepAlive()` 返回链接的 `close`）。
+  ///
+  /// 存 tear-off 而不是链接本身：`KeepAliveLink` 在本项目可用的 Riverpod 导出面
+  /// 里拿不到类型名，而这里只需要「能关掉」这一个能力。
+  void Function()? _releaseKeepAliveLink;
+
   /// `build` 的入参。codegen 不把 family 参数存成字段，`flush()` 又要用，故显式留一份。
   late String _noteId;
 
@@ -273,9 +279,23 @@ class NoteEditor extends _$NoteEditor {
 
   /// debounce 500ms。
   /// 不用 debounce 包：加一个依赖不值 3 行 `Timer`。
+  ///
+  /// ⚠️ **dirty 期间必须 `keepAlive`**：本 provider 是 autoDispose，宽屏双栏
+  /// 切换笔记 / 窗口从双栏收窄成单栏时，旧页面立刻 unmount → provider 连同
+  /// 500ms 的定时器一起 dispose，**最后一段输入直接丢**。保活到落库成功为止。
   void _scheduleSave() {
     _debounce?.cancel();
+    _releaseKeepAliveLink ??= ref.keepAlive().close;
     _debounce = Timer(const Duration(milliseconds: 500), flush);
+  }
+
+  /// 已无未落库内容 → 放开保活，让 autoDispose 正常回收。
+  ///
+  /// 落库失败时**不**释放（`isDirty` 仍为 true）：草稿还在内存里，用户改一个字
+  /// 还能再触发一次保存，释放就等于默默丢掉。
+  void _releaseKeepAlive() {
+    _releaseKeepAliveLink?.call();
+    _releaseKeepAliveLink = null;
   }
 
   /// 立即落库。**public**：`NoteDetailScreen` 返回前直接调它，不在 Screen 里
@@ -283,7 +303,10 @@ class NoteEditor extends _$NoteEditor {
   Future<void> flush() async {
     _debounce?.cancel();
     final current = state.value;
-    if (current == null || !current.isDirty) return;
+    if (current == null || !current.isDirty) {
+      _releaseKeepAlive();
+      return;
+    }
 
     final result = current.isNew
         ? await ref.read(createNoteUseCaseProvider)(
@@ -343,12 +366,14 @@ class NoteEditor extends _$NoteEditor {
                   ),
                   limit,
                 )
-                .then((result) => result.fold(
-                      (failure) => ref
-                          .read(taggedLoggerProvider('notes'))
-                          .w('note version save failed', error: failure),
-                      (_) {},
-                    )),
+                .then(
+                  (result) => result.fold(
+                    (failure) => ref
+                        .read(taggedLoggerProvider('notes'))
+                        .w('note version save failed', error: failure),
+                    (_) {},
+                  ),
+                ),
           );
           return current.copyWith(
             savedTitle: saved.title,
@@ -360,6 +385,9 @@ class NoteEditor extends _$NoteEditor {
         },
       ),
     );
+
+    // 落库成功（或本来就干净）→ 放掉保活；失败时草稿仍脏，继续保活。
+    if (!(state.value?.isDirty ?? false)) _releaseKeepAlive();
   }
 
   /// 清掉已提示过的失败（UI 弹完 Snackbar 立刻调）。

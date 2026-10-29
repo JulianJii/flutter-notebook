@@ -166,15 +166,29 @@ Windows / macOS **没有系统标题栏**：`main.dart` 启动时调 `setUpDeskt
 
 | 键 | 行为 |
 |---|---|
-| `Ctrl+N` | 新建笔记；带上当前分类（`?folder=`），已在笔记二级页时 no-op |
+| `Ctrl+N` | 新建笔记；带上当前分类（`?folder=`），已在笔记二级页时 no-op；**宽屏双栏下落在右栏** |
 | `Ctrl+F` | 弹出全局搜索面板（`features/notes/presentation/widgets/note_search_panel.dart`），任意页面可用 |
-| `Ctrl+S` | 立即把当前编辑页的草稿落库（非编辑页 no-op；`flush()` 非 dirty 直接返回） |
+| `Ctrl+S` | 立即把当前编辑页的草稿落库（宽屏下也管右栏那篇；非编辑页 no-op） |
 | `Ctrl+,` | 打开设置；已在设置时不重复压栈 |
-| `Esc` | 返回上一页（`maybePop` —— 编辑页因此仍走「先落库再退」的 `PopScope` 保护） |
+| `Ctrl+1` / `Ctrl+2` | 切到笔记 / 待办（已在目标分支的任意页面时 no-op） |
+| `Esc` | 宽屏右栏有笔记时先落库再关面板；否则返回上一页（`maybePop` —— 编辑页因此仍走「先落库再退」的 `PopScope` 保护） |
 
 macOS 同组再注册一份 `Cmd`（`SingleActivator` 的 `control` / `meta` 互斥，表达不了「二者其一」，故注册两份）。判断「现在在哪一页」用 `routerProvider.state.uri`：`routerDelegate.currentConfiguration.uri` 对 `push` 出来的页面**是过期值**。⚠️ 这一层在 Navigator **之上**，`Navigator.of(context)` 找不到 Navigator —— 弹层要用 `rootNavigatorKey.currentState?.overlay?.context` 当锚点。
 
-**全局搜索面板**：自持输入框与关键字（⛔ 不写 `noteSearchProvider`，否则在面板里打字会连带过滤背后的列表），复用 `noteListProvider` + `noteListPrefsProvider`；点结果 push 详情，`Enter` 打开第一条，`Esc` 关闭（走全局那层 `maybePop`）。未输入关键字时不订阅查询，面板只留一行输入框。
+**全局搜索面板**：自持输入框与关键字（⛔ 不写 `noteSearchProvider`，否则在面板里打字会连带过滤背后的列表），复用 `noteListProvider` + `noteListPrefsProvider`；点结果 push 详情（宽屏双栏下若当前在 `/notes` 则填进右栏），`Enter` 打开第一条，`Esc` 关闭（走全局那层 `maybePop`）。未输入关键字时不订阅查询，面板只留一行输入框。
+
+### 宽屏布局（Windows / 横屏）
+
+窗口宽于 600dp 时底部导航换成左侧导航栏；宽于 1024dp 时笔记页变成
+「导航栏 + 380dp 列表 + 右侧编辑画布」的三栏工作台，点卡片不再压整页路由，
+而是在右栏直接编辑（未选中时右栏是空态）。编辑页正文、待办、设置与所有二级页
+在大屏下限宽居中；底部弹层与大屏弹窗也限宽。
+
+桌面端另有鼠标悬停提亮、笔记卡片**右键菜单**（打开 / 置顶 / 收藏 / 移动 /
+删除，动作复用批量 use case）、窗口最小尺寸 760×560。
+
+断点值、各区域宽度、双栏选中态为什么不进 URL、草稿保活策略见
+`docs/ADAPTIVE_LAYOUT.md`。
 
 ---
 

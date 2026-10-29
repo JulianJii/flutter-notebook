@@ -59,7 +59,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -394,7 +394,7 @@ Future<T?> _pickOption<T>(
   required T current,
   required String Function(T value) labelOf,
 }) {
-  return showModalBottomSheet<T>(
+  return showAppBottomSheet<T>(
     context: context,
     builder: (sheetContext) => SafeArea(
       child: Column(

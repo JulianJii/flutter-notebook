@@ -67,7 +67,7 @@ class FolderManagerScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -329,7 +329,7 @@ class FolderManagerScreen extends ConsumerWidget {
     NoteFolder folder,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final action = await showModalBottomSheet<_FolderAction>(
+    final action = await showAppBottomSheet<_FolderAction>(
       context: context,
       builder: (sheetContext) => SafeArea(
         child: Column(

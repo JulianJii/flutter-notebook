@@ -29,7 +29,7 @@ Future<void> showTodoReminderSheet({
   required Todo todo,
   required VoidCallback onEditTitle,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     showDragHandle: true,
     builder: (sheetContext) =>
@@ -201,7 +201,7 @@ Future<SetReminderResult?> showSetReminderSheet({
   required BuildContext context,
   DateTime? initial,
 }) {
-  return showModalBottomSheet<SetReminderResult>(
+  return showAppBottomSheet<SetReminderResult>(
     context: context,
     showDragHandle: true,
     builder: (sheetContext) => _SetReminderSheet(initial: initial),

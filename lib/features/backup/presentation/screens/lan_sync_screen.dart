@@ -58,12 +58,11 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final peers =
-        ref.watch(lanSyncPeersProvider).value ?? const <LanPeer>[];
+    final peers = ref.watch(lanSyncPeersProvider).value ?? const <LanPeer>[];
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -158,9 +157,7 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
                       _PeerRow(
                         peer: peer,
                         busy: _syncingWith == peer.address,
-                        onTap: _syncingWith == null
-                            ? () => _sync(peer)
-                            : null,
+                        onTap: _syncingWith == null ? () => _sync(peer) : null,
                       ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
@@ -217,7 +214,10 @@ class _LanSyncScreenState extends ConsumerState<LanSyncScreen> {
         showFeedbackSnack(context, l10n.lanSyncDone(report.changed), ok: true);
         // 对时是**顺带**的，值得单独说一句 —— 否则用户不知道刚才还校了时钟。
         if (report.clockOffset.abs() >= const Duration(minutes: 1)) {
-          AppUtils.showSnackBar(context, message: l10n.lanClockAligned(peer.name));
+          AppUtils.showSnackBar(
+            context,
+            message: l10n.lanClockAligned(peer.name),
+          );
         }
       },
     );

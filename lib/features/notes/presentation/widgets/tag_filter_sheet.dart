@@ -18,7 +18,7 @@ Future<void> showTagFilterSheet(
   required ValueChanged<String?> onSelected,
   required VoidCallback onManage,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     builder: (sheetContext) {
       final l10n = AppLocalizations.of(sheetContext);
@@ -40,9 +40,7 @@ Future<void> showTagFilterSheet(
               ),
               child: Text(
                 l10n.tags,
-                style: textStyles.subtitle.copyWith(
-                  color: colors.textPrimary,
-                ),
+                style: textStyles.subtitle.copyWith(color: colors.textPrimary),
               ),
             ),
             Flexible(

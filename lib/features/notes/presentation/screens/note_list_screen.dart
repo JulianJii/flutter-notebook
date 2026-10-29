@@ -17,13 +17,17 @@ import '../../domain/entities/note.dart';
 import '../../domain/entities/note_query.dart';
 import '../../providers/notes_providers.dart';
 import '../providers/folder_provider.dart';
+import '../providers/note_editor_provider.dart' show kNewNoteId;
 import '../providers/note_list_provider.dart';
 import '../providers/note_prefs_provider.dart';
 import '../providers/note_search_provider.dart';
 import '../providers/note_selection_provider.dart';
+import '../providers/selected_note_provider.dart';
 import '../widgets/folder_picker_sheet.dart';
 import '../widgets/note_card.dart';
+import '../widgets/note_context_menu.dart';
 import '../widgets/note_masonry_grid.dart';
+import '../widgets/notes_wide_layout.dart';
 import '../widgets/tag_filter_sheet.dart';
 
 /// 笔记列表。薄编排：只 `ref.watch` + 拼装，零 `setState`、零业务判断。
@@ -138,17 +142,19 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
     // 上，因此这里顺带 watch 当前分类的列表 —— 与 `_CategoryPage` 同一个
     // query 实例，共享同一条流。
     final selection = ref.watch(noteSelectionProvider);
-    final visibleNotes = ref
-        .watch(
-          noteListProvider(
-            noteQueryFor(
-              filter,
-              searchTerm: searchTerm,
-              tagId: tagFilter,
-            ).copyWith(sort: sort),
-          ),
-        )
-        .value ?? const <Note>[];
+    final visibleNotes =
+        ref
+            .watch(
+              noteListProvider(
+                noteQueryFor(
+                  filter,
+                  searchTerm: searchTerm,
+                  tagId: tagFilter,
+                ).copyWith(sort: sort),
+              ),
+            )
+            .value ??
+        const <Note>[];
 
     _categories = <String?>[
       null,
@@ -163,81 +169,97 @@ class _NoteListScreenState extends ConsumerState<NoteListScreen>
       _alignTo(currentIndex);
     }
 
+    // 单栏内容（顶栏 / 搜索 / 分类栏 / 列表 / FAB / 多选动作栏）。宽屏时整块
+    // 塞进双栏的左栏，本函数其余部分与窄屏完全共用。
+    final content = Stack(
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            _TopBar(
+              selection: selection,
+              visibleNoteIds: <String>{
+                for (final note in visibleNotes) note.id,
+              },
+              activeTagId: tagFilter,
+            ),
+            // 多选模式下收起搜索框：搜索 + 多选的组合没有稿也没有场景
+            //（先选出再搜只会缩小可选范围），留白更干净。
+            if (selection.isEmpty) const _SearchField(),
+            if (_tabController case final controller?) ...<Widget>[
+              _CategoryTabBar(controller: controller, folders: folderList),
+              // 分类栏与内容区之间留一条通用小间距：本 App 无阴影、无分隔线，
+              // 胶囊紧贴卡片会糊成一片，只能靠留白分层（同顶栏无分隔线的解法）。
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            Expanded(
+              child: _tabController == null
+                  ? const SizedBox.shrink()
+                  : TabBarView(
+                      controller: _tabController,
+                      children: <Widget>[
+                        for (final filter in _categories)
+                          _CategoryPage(
+                            key: ValueKey<String>(filter ?? 'all'),
+                            filter: filter,
+                            noteSort: sort,
+                            noteLayout: layout,
+                            searchTerm: searchTerm,
+                            tagId: tagFilter,
+                          ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+        // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
+        // 后者的 z 序在 `bottomNavigationBar` 之下，而笔记列表稿里 FAB 明确叠在
+        // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
+        // 多选模式下让位给底部动作栏。
+        if (selection.isEmpty)
+          Positioned(
+            // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
+            right: AppSpacing.pageH + AppSpacing.sm,
+            // 窄屏压住底栏 26dp、宽屏贴内容区右下角 —— 两种口径都由
+            // `fabBottomInsetOf` 给（宽屏直接套旧算式会得到负数）。
+            bottom: fabBottomInsetOf(context),
+            // 落地页 = 笔记详情空白编辑器：`/notes/new` 与
+            // `NoteEditorProvider(kNewNoteId)` 共用编辑页，停止输入 500ms 自动落库。
+            // 「全部」与「未分类」没有真实归属，`folderId` 传 null → 落到未分类。
+            child: AppFab(
+              onPressed: () {
+                // 宽屏双栏：新建落在**右侧面板**，不再压一张整页路由上去
+                // （压上去等于把双栏糊成单栏，还得点两次才回来）。
+                if (context.isTwoPane) {
+                  ref.read(selectedNoteProvider.notifier).select(kNewNoteId);
+                  return;
+                }
+                context.push(
+                  AppRoutes.noteNewPath(folderId: newNoteFolderId(filter)),
+                );
+              },
+            ),
+          ),
+        if (selection.isNotEmpty)
+          Positioned(
+            left: AppSpacing.pageH,
+            right: AppSpacing.pageH,
+            bottom: navBottomInsetOf(context) + AppSpacing.sm,
+            child: _SelectionActionBar(selection: selection),
+          ),
+      ],
+    );
+
     return Scaffold(
       backgroundColor: context.colors.bg,
       body: SafeArea(
         bottom: false,
-        child: Stack(
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-                _TopBar(
-                  selection: selection,
-                  visibleNoteIds: <String>{
-                    for (final note in visibleNotes) note.id,
-                  },
-                  activeTagId: tagFilter,
-                ),
-                // 多选模式下收起搜索框：搜索 + 多选的组合没有稿也没有场景
-                //（先选出再搜只会缩小可选范围），留白更干净。
-                if (selection.isEmpty) const _SearchField(),
-                if (_tabController case final controller?) ...<Widget>[
-                  _CategoryTabBar(controller: controller, folders: folderList),
-                  // 分类栏与内容区之间留一条通用小间距：本 App 无阴影、无分隔线，
-                  // 胶囊紧贴卡片会糊成一片，只能靠留白分层（同顶栏无分隔线的解法）。
-                  const SizedBox(height: AppSpacing.sm),
-                ],
-                Expanded(
-                  child: _tabController == null
-                      ? const SizedBox.shrink()
-                      : TabBarView(
-                          controller: _tabController,
-                          children: <Widget>[
-                            for (final filter in _categories)
-                              _CategoryPage(
-                                key: ValueKey<String>(filter ?? 'all'),
-                                filter: filter,
-                                noteSort: sort,
-                                noteLayout: layout,
-                                searchTerm: searchTerm,
-                                tagId: tagFilter,
-                              ),
-                          ],
-                        ),
-                ),
-              ],
-            ),
-            // FAB 用 `Stack` + `Positioned` 而**不是** `Scaffold.floatingActionButton`：
-            // 后者的 z 序在 `bottomNavigationBar` 之下，而笔记列表稿里 FAB 明确叠在
-            // 底部导航之上；且 Material 默认 margin 是 16dp，与稿的 12dp 不符。
-            // 多选模式下让位给底部动作栏。
-            if (selection.isEmpty)
-              Positioned(
-                // 相对页面边距再往左下各挪 `sm`（8dp），下方向额外再下移 10dp。
-                right: AppSpacing.pageH + AppSpacing.sm,
-                bottom:
-                    kBottomNavContentHeight +
-                    AppSpacing.pageH -
-                    AppSpacing.sm -
-                    30,
-                // 落地页 = 笔记详情空白编辑器：`/notes/new` 与
-                // `NoteEditorProvider(kNewNoteId)` 共用编辑页，停止输入 500ms 自动落库。
-                // 「全部」与「未分类」没有真实归属，`folderId` 传 null → 落到未分类。
-                child: AppFab(
-                  onPressed: () => context.push(
-                    AppRoutes.noteNewPath(folderId: newNoteFolderId(filter)),
-                  ),
-                ),
-              ),
-            if (selection.isNotEmpty)
-              Positioned(
-                left: AppSpacing.pageH,
-                right: AppSpacing.pageH,
-                bottom: kBottomNavContentHeight + AppSpacing.sm,
-                child: _SelectionActionBar(selection: selection),
-              ),
-          ],
-        ),
+        child: context.isTwoPane
+            ? NotesWideLayout(
+                list: content,
+                // 与 FAB 同一条映射：`uncategorized` 是筛选指令不是文件夹 id。
+                newNoteFolderId: newNoteFolderId(filter),
+              )
+            : content,
       ),
     );
   }
@@ -281,13 +303,24 @@ class _CategoryPage extends ConsumerWidget {
     final items = notes.value ?? const <Note>[];
     final selection = ref.watch(noteSelectionProvider);
     final selecting = selection.isNotEmpty;
+    // 宽屏双栏：左侧列表是**导航性的侧栏**，宫格在这个宽度里会把卡片挤成
+    // 两张纸条（列数按 380dp 现算仍是 2 列）。故双栏下恒用单列列表，
+    // 设置里的「列表布局」只在单栏（手机 / 中等宽度）生效。
+    final twoPane = context.isTwoPane;
+    // 当前右侧正在编辑的笔记（仅双栏有意义），用于列表里的「激活」竖条。
+    final activeNoteId = twoPane ? ref.watch(selectedNoteProvider) : null;
 
     // 多选态下点按 = 翻转选中；否则进详情。
-    // ⛔ 必须 `push` 而非 `go`：详情是二级页，`go` 会替换整条栈 → 返回时
+    // ⛔ 窄屏必须 `push` 而非 `go`：详情是二级页，`go` 会替换整条栈 → 返回时
     // `pop` 无内容（"There is nothing to pop"），且列表滚动位置丢失。
+    // 宽屏双栏则**不导航**，只把选中值交给右侧面板（见 `selectedNoteProvider`）。
     void openNote(Note note) {
       if (selecting) {
         ref.read(noteSelectionProvider.notifier).toggle(note.id);
+        return;
+      }
+      if (twoPane) {
+        ref.read(selectedNoteProvider.notifier).select(note.id);
         return;
       }
       context.push(AppRoutes.noteDetailPath(note.id));
@@ -296,6 +329,25 @@ class _CategoryPage extends ConsumerWidget {
     // 长按 = 进入 / 翻转多选。集合空 ↔ 非空即「模式的进入与退出」。
     void longPressNote(Note note) =>
         ref.read(noteSelectionProvider.notifier).toggle(note.id);
+
+    // 右键（桌面）= 单篇快捷动作。多选模式下不弹：此时批量动作栏已经在那了，
+    // 两套「删除」入口同时出现只会让人犹豫删的是不是同一批。
+    void contextMenuNote(Note note, Offset globalPosition) {
+      if (selecting) return;
+      showNoteContextMenu(
+        context,
+        ref: ref,
+        note: note,
+        position: globalPosition,
+        onOpen: () => openNote(note),
+        // 删掉的正好是右栏那篇才清空；删别的笔记不该把正在编辑的面板关掉。
+        onDeleted: () {
+          if (ref.read(selectedNoteProvider) == note.id) {
+            ref.read(selectedNoteProvider.notifier).clear();
+          }
+        },
+      );
+    }
 
     // 搜索无结果：内联 3 行，与 `RecentlyDeletedScreen` / 待办的空状态写法逐字一致。
     // ⛔ 只在**有搜索词**时提示 —— 无搜索词的空列表是「还没笔记」，是另一回事
@@ -311,11 +363,23 @@ class _CategoryPage extends ConsumerWidget {
       );
     }
 
+    if (twoPane) {
+      return _NoteList(
+        notes: items,
+        onTapNote: openNote,
+        onLongPressNote: longPressNote,
+        onContextMenuNote: contextMenuNote,
+        selectedIds: selection,
+        activeNoteId: activeNoteId,
+      );
+    }
+
     return switch (noteLayout) {
       NoteLayout.grid => NoteMasonryGrid(
         notes: items,
         onTapNote: openNote,
         onLongPressNote: longPressNote,
+        onContextMenuNote: contextMenuNote,
         selectedIds: selection,
       ),
       // 列表与宫格共用同一张 NoteCard —— 两种布局的**唯一**区别是排布方式，
@@ -324,6 +388,7 @@ class _CategoryPage extends ConsumerWidget {
         notes: items,
         onTapNote: openNote,
         onLongPressNote: longPressNote,
+        onContextMenuNote: contextMenuNote,
         selectedIds: selection,
       ),
     };
@@ -438,7 +503,9 @@ NoteQuery noteQueryFor(String? filter, {String? searchTerm, String? tagId}) =>
         searchTerm: searchTerm,
         tagId: tagId,
       ),
-      final id => NoteQuery.of(id).copyWith(searchTerm: searchTerm, tagId: tagId),
+      final id => NoteQuery.of(
+        id,
+      ).copyWith(searchTerm: searchTerm, tagId: tagId),
     };
 
 /// 笔记列表顶栏：左对齐页面标题「笔记」+ 右对齐图标组。
@@ -468,8 +535,8 @@ class _TopBar extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     if (selection.isNotEmpty) {
-      final allSelected = visibleNoteIds.isNotEmpty &&
-          visibleNoteIds.every(selection.contains);
+      final allSelected =
+          visibleNoteIds.isNotEmpty && visibleNoteIds.every(selection.contains);
       return AppTopBar(
         showDivider: false,
         leading: AppIconButton(
@@ -524,12 +591,14 @@ class _TopBar extends ConsumerWidget {
             context,
             ref: ref,
             selectedTagId: activeTagId,
-            onSelected: (tagId) => context.go(filterLocation(
-              selectedFolderFilter(
-                GoRouterState.of(context).uri.queryParameters,
+            onSelected: (tagId) => context.go(
+              filterLocation(
+                selectedFolderFilter(
+                  GoRouterState.of(context).uri.queryParameters,
+                ),
+                tagId: tagId,
               ),
-              tagId: tagId,
-            )),
+            ),
             onManage: () => context.push(AppRoutes.noteTags),
           ),
         ),
@@ -646,6 +715,8 @@ class _NoteList extends StatelessWidget {
     required this.onTapNote,
     required this.onLongPressNote,
     required this.selectedIds,
+    this.onContextMenuNote,
+    this.activeNoteId,
   });
 
   final List<Note> notes;
@@ -654,7 +725,14 @@ class _NoteList extends StatelessWidget {
 
   final ValueChanged<Note> onLongPressNote;
 
+  /// 右键（桌面）：第二参是全局坐标。
+  final void Function(Note note, Offset globalPosition)? onContextMenuNote;
+
   final Set<String> selectedIds;
+
+  /// 双栏模式下右侧正在编辑的那篇（用于卡片左侧的琥珀竖条）。
+  /// 单栏时为 null —— 列表里没有「打开着」这个概念。
+  final String? activeNoteId;
 
   @override
   Widget build(BuildContext context) {
@@ -666,9 +744,7 @@ class _NoteList extends StatelessWidget {
         AppSpacing.pageH,
         0,
         AppSpacing.pageH,
-        kBottomNavContentHeight +
-            AppSpacing.pageH +
-            MediaQuery.paddingOf(context).bottom,
+        listBottomInsetOf(context),
       ),
       itemCount: notes.length,
       separatorBuilder: (context, index) =>
@@ -679,8 +755,12 @@ class _NoteList extends StatelessWidget {
           key: ValueKey<String>(note.id),
           note: note,
           selected: selectedIds.contains(note.id),
+          active: note.id == activeNoteId,
           onTap: () => onTapNote(note),
           onLongPress: () => onLongPressNote(note),
+          onSecondaryTapDown: onContextMenuNote == null
+              ? null
+              : (details) => onContextMenuNote!(note, details.globalPosition),
         );
       },
     );
@@ -705,8 +785,7 @@ class _SelectionActionBar extends ConsumerWidget {
 
     // flags 的翻转语义需要选中笔记的现值。全量列表与分类页共享同一条 DAO 流。
     final allNotes =
-        ref.watch(noteListProvider(const NoteQuery())).value ??
-        const <Note>[];
+        ref.watch(noteListProvider(const NoteQuery())).value ?? const <Note>[];
     final selectedNotes = <Note>[
       for (final note in allNotes)
         if (selection.contains(note.id)) note,
@@ -715,7 +794,8 @@ class _SelectionActionBar extends ConsumerWidget {
         selectedNotes.isNotEmpty &&
         selectedNotes.every((note) => note.isFavorite);
     final allPinned =
-        selectedNotes.isNotEmpty && selectedNotes.every((note) => note.isPinned);
+        selectedNotes.isNotEmpty &&
+        selectedNotes.every((note) => note.isPinned);
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -775,11 +855,7 @@ class _SelectionActionBar extends ConsumerWidget {
       ref,
       ref
           .read(batchUpdateNoteFlagsUseCaseProvider)
-          .call(
-            selection.toList(),
-            isPinned: isPinned,
-            isFavorite: isFavorite,
-          ),
+          .call(selection.toList(), isPinned: isPinned, isFavorite: isFavorite),
       // ⛔ 不清多选：flags 之后卡片不消失，用户常连做「置顶 → 移动」。
     );
   }
@@ -848,7 +924,11 @@ class _SelectionAction extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              AppIcon(icon: icon, size: 20, color: iconColor ?? colors.textPrimary),
+              AppIcon(
+                icon: icon,
+                size: 20,
+                color: iconColor ?? colors.textPrimary,
+              ),
               const SizedBox(height: AppSpacing.sm / 2),
               Text(
                 label,

@@ -482,6 +482,30 @@ abstract class AppLocalizations {
   /// **'返回'**
   String get back;
 
+  /// Tooltip of the close button on the embedded editor pane
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get close;
+
+  /// Context menu item: open the note
+  ///
+  /// In zh, this message translates to:
+  /// **'打开'**
+  String get openNote;
+
+  /// Empty state title of the wide-screen editor pane
+  ///
+  /// In zh, this message translates to:
+  /// **'未选择笔记'**
+  String get notePaneEmptyTitle;
+
+  /// Empty state hint of the wide-screen editor pane
+  ///
+  /// In zh, this message translates to:
+  /// **'从左侧选一篇，或新建一篇'**
+  String get notePaneEmptyHint;
+
   /// Tooltip of the note detail top bar share icon
   ///
   /// In zh, this message translates to:

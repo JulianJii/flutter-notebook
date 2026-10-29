@@ -85,6 +85,11 @@ class NoteRepositoryImpl implements NoteRepository {
 - **页面**：监视 Provider 的简单 Widget。
 - **组件**：可复用的组件。
 
+**响应式布局**：断点与宽屏规则见 `docs/ADAPTIVE_LAYOUT.md`。三条硬约束：
+1. 断点值只在 `core/ui/app_breakpoints.dart`，页面里不许写 `600` / `1024` 字面量；
+2. 二级页 `Scaffold.body` 用 `AppPageBody`（安全区 + 840dp 限宽），不要自己拼 `SafeArea + ConstrainedBox`；
+3. 底部弹层一律走 `showAppBottomSheet`（大屏限宽 640 + 顶部圆角），不要直接调 `showModalBottomSheet`。
+
 **Notifier 示例：**
 ```dart
 class ExampleNotifier extends Notifier<ExampleState> {

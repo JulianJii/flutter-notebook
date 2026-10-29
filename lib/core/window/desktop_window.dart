@@ -26,6 +26,11 @@ Future<void> setUpDesktopWindow() async {
     TitleBarStyle.hidden,
     windowButtonVisibility: false,
   );
+  // 最小窗口尺寸（无稿，按「三档布局都还站得住」的下限推）：
+  // 宽 760 保证双栏收窄后单栏编辑区仍有 ~700dp 的正文宽度；
+  // 高 560 保证 56 顶栏 + 工具条 + 三行正文不被挤没。
+  // ⚠️ 只在桌面生效（本方法开头已按平台返回），移动端不涉及。
+  await windowManager.setMinimumSize(const Size(760, 560));
 }
 
 /// 窗口外壳：顶部 32dp 自绘标题栏（拖动 / 双击最大化 / 最小化 / 最大化 / 关闭）

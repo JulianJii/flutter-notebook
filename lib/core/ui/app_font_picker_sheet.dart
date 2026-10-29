@@ -7,6 +7,7 @@ import '../theme/tokens/app_colors.dart';
 import '../utils/app_utils.dart';
 import 'app_icon.dart';
 import 'app_list_tile.dart';
+import 'app_sheet.dart';
 import 'package:mynote/gen/l10n/app_localizations.dart';
 
 /// 字体选择弹层的下标约定：`0` = 系统默认（不加任何字体），`1..n` = `appFonts[i-1]`。
@@ -43,7 +44,7 @@ Future<int?> showAppFontPickerSheet(
   BuildContext context, {
   required int selected,
 }) {
-  return showModalBottomSheet<int>(
+  return showAppBottomSheet<int>(
     context: context,
     builder: (_) => AppFontPickerSheet(selected: selected),
   );

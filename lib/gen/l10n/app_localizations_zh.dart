@@ -224,6 +224,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get back => '返回';
 
   @override
+  String get close => '关闭';
+
+  @override
+  String get openNote => '打开';
+
+  @override
+  String get notePaneEmptyTitle => '未选择笔记';
+
+  @override
+  String get notePaneEmptyHint => '从左侧选一篇，或新建一篇';
+
+  @override
   String get share => '分享';
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'package:mynote/core/ui/app_breakpoints.dart';
+
 import 'app_color_scheme.dart';
 import 'tokens/app_colors.dart';
 import 'tokens/app_elevation.dart';
@@ -118,6 +120,11 @@ class AppTheme {
       dividerTheme: DividerThemeData(
         thickness: AppStroke.divider,
         color: colors.divider,
+      ),
+      // 弹窗限宽：确认框只有一两行文案，桌面窗口上默认会拉到 560dp 以上，
+      // 文案与两个按钮之间空出半屏。窄屏（< 420dp）时约束不起作用，视觉不变。
+      dialogTheme: const DialogThemeData(
+        constraints: BoxConstraints(maxWidth: AppBreakpoints.dialogMaxWidth),
       ),
     );
   }

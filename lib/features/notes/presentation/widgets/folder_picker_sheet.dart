@@ -18,10 +18,11 @@ Future<void> showFolderPickerSheet(
   required WidgetRef ref,
   required ValueChanged<String?> onSelected,
 }) {
-  return showModalBottomSheet<void>(
+  return showAppBottomSheet<void>(
     context: context,
     builder: (sheetContext) {
-      final folders = ref.read(folderProvider).value ?? const <FolderWithCount>[];
+      final folders =
+          ref.read(folderProvider).value ?? const <FolderWithCount>[];
       final l10n = AppLocalizations.of(sheetContext);
       final colors = sheetContext.colors;
       final textStyles = sheetContext.textStyles;
@@ -54,7 +55,8 @@ Future<void> showFolderPickerSheet(
                       icon: AppIcons.folder,
                       label: item.folder.name,
                       trailing: '${item.count}',
-                      onTap: () => _pop(sheetContext, item.folder.id, onSelected),
+                      onTap: () =>
+                          _pop(sheetContext, item.folder.id, onSelected),
                     ),
                 ],
               ),

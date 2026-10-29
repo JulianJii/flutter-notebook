@@ -230,6 +230,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get back => 'Back';
 
   @override
+  String get close => 'Close';
+
+  @override
+  String get openNote => 'Open';
+
+  @override
+  String get notePaneEmptyTitle => 'No note selected';
+
+  @override
+  String get notePaneEmptyHint => 'Pick one on the left, or create a new note';
+
+  @override
   String get share => 'Share';
 
   @override

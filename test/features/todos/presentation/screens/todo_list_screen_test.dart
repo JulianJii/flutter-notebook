@@ -46,6 +46,18 @@ Todo todo(String id, {bool isDone = false}) => Todo(
 void main() {
   setUpAll(() => registerFallbackValue(todo('fallback')));
 
+  // 本文件断言的全部是**手机形态**（底部导航 / 通栏卡片 / 64dp 底栏留白）。
+  // 默认测试窗口 800×600 已超过 600dp 断点，Shell 会切到左侧导航栏、
+  // 待办页也会套上 720dp 限宽 —— 那属于宽屏用例，另见 `notes_wide_layout_test`。
+  setUp(() {
+    final view = TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .views
+        .first;
+    view.physicalSize = const Size(400, 800);
+    view.devicePixelRatio = 1;
+  });
+
   /// override 打在 **Repository** 层（data 的边界）：既验证「Screen 只经 provider
   /// 取数」这条分层约束，又不接真实 drift 库（stream 取消时留下的 0 时长 Timer
   /// 会让每个用例挂在「A Timer is still pending」上）。

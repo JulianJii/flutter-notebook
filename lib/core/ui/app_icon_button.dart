@@ -1,3 +1,4 @@
+import 'package:mynote/core/theme/tokens/app_colors.dart';
 import 'package:mynote/core/ui/app_icon.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -37,9 +38,28 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return IconButton(
       onPressed: onPressed,
       tooltip: tooltip,
+      // 悬停 / 聚焦用中性覆盖层，按压仍走主题主色：M3 默认把三者都用主色，
+      // 在本 App 的琥珀配色上会浮出一圈明显的暖色光晕（同分类 TabBar 的
+      // `overlayColor` 裁决）。⛔ 只在指针场景出现，窄屏与 golden 不受影响。
+      style: ButtonStyle(
+        overlayColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.pressed)) {
+            return Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: 0.10);
+          }
+          if (states.contains(WidgetState.hovered) ||
+              states.contains(WidgetState.focused)) {
+            return colors.hoverOverlay;
+          }
+          return null;
+        }),
+      ),
       icon: AppIcon(icon: icon, size: size, color: color),
       // 48dp 触控区，但不额外撑大视觉。IconButton 默认 padding 12dp 会让 48dp
       // 约束下总边长变成 72dp，故设 zero。

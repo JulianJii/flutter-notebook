@@ -28,7 +28,8 @@ class WebDavHistoryScreen extends ConsumerStatefulWidget {
   const WebDavHistoryScreen({super.key});
 
   @override
-  ConsumerState<WebDavHistoryScreen> createState() => _WebDavHistoryScreenState();
+  ConsumerState<WebDavHistoryScreen> createState() =>
+      _WebDavHistoryScreenState();
 }
 
 class _WebDavHistoryScreenState extends ConsumerState<WebDavHistoryScreen> {
@@ -50,7 +51,7 @@ class _WebDavHistoryScreenState extends ConsumerState<WebDavHistoryScreen> {
 
     return Scaffold(
       backgroundColor: context.colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -81,7 +82,8 @@ class _WebDavHistoryScreenState extends ConsumerState<WebDavHistoryScreen> {
                   if (data == null) return const SizedBox.shrink();
                   return data.fold(
                     (_) => const SizedBox.shrink(),
-                    (entries) => entries.isEmpty ? _empty(l10n) : _list(entries),
+                    (entries) =>
+                        entries.isEmpty ? _empty(l10n) : _list(entries),
                   );
                 },
               ),
@@ -114,9 +116,12 @@ class _WebDavHistoryScreenState extends ConsumerState<WebDavHistoryScreen> {
         vertical: AppSpacing.sm,
       ),
       itemCount: entries.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.sm),
-      itemBuilder: (context, index) =>
-          _HistoryRow(entry: entries[index], onRestore: () => _confirmRestore(entries[index])),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.sm),
+      itemBuilder: (context, index) => _HistoryRow(
+        entry: entries[index],
+        onRestore: () => _confirmRestore(entries[index]),
+      ),
     );
   }
 

@@ -42,8 +42,10 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
     super.initState();
     _saved = ref.read(webDavConfigProvider);
     _url = TextEditingController(text: _saved.url)..addListener(_onEdit);
-    _username = TextEditingController(text: _saved.username)..addListener(_onEdit);
-    _password = TextEditingController(text: _saved.password)..addListener(_onEdit);
+    _username = TextEditingController(text: _saved.username)
+      ..addListener(_onEdit);
+    _password = TextEditingController(text: _saved.password)
+      ..addListener(_onEdit);
     _remoteFile = TextEditingController(text: _saved.remoteFile)
       ..addListener(_onEdit);
   }
@@ -82,7 +84,7 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
 
     return Scaffold(
       backgroundColor: colors.bg,
-      body: SafeArea(
+      body: AppPageBody(
         child: Column(
           children: <Widget>[
             AppTopBar(
@@ -144,8 +146,7 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
                             size: _kSuffixIconSize,
                           ),
                           tooltip: l10n.webDavPasswordToggle,
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
                       _field(
@@ -238,7 +239,11 @@ class _WebDavConfigScreenState extends ConsumerState<WebDavConfigScreen> {
       (failure) => showFailureSnack(context, failure, isImport: false),
       (_) {
         setState(() => _saved = next);
-        showFeedbackSnack(context, AppLocalizations.of(context).webDavSaved, ok: true);
+        showFeedbackSnack(
+          context,
+          AppLocalizations.of(context).webDavSaved,
+          ok: true,
+        );
       },
     );
   }

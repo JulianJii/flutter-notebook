@@ -252,6 +252,13 @@ void main() {
   // Shell 是 NotesShell / AppBottomNav 唯一真实宿主。
   group('NotesShell 宿主冒烟', () {
     Future<GoRouter> pumpApp(WidgetTester tester) async {
+      // 默认测试窗口 800×600 ≥ 断点 600，Shell 会切成**左侧导航栏**
+      // （`AppNavRail`）。本组断言的是手机形态（底部 2 Tab），故把窗口显式
+      // 压到手机宽度；宽屏形态见 `app_nav_rail_test.dart` 与宽屏双栏用例。
+      tester.view.physicalSize = const Size(400, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
       final router = newContainer().read(routerProvider);
       await tester.pumpWidget(app(router));
       await tester.pumpAndSettle();

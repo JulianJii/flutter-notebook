@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mynote/core/router/app_router.dart';
 import 'package:mynote/core/router/app_routes.dart';
+import 'package:mynote/core/ui/app_breakpoints.dart';
 import 'package:mynote/features/notes/presentation/providers/note_editor_provider.dart';
+import 'package:mynote/features/notes/presentation/providers/selected_note_provider.dart';
 import 'package:mynote/features/notes/presentation/screens/note_list_screen.dart';
 import 'package:mynote/features/notes/presentation/widgets/note_search_panel.dart';
 
@@ -17,11 +19,13 @@ import 'package:mynote/features/notes/presentation/widgets/note_search_panel.dar
 /// 组合键（Windows 用 Ctrl，macOS 同组再注册一份 Cmd，见 [_bindings]）：
 /// | 键 | 行为 |
 /// |---|---|
-/// | `Ctrl+N` | 新建笔记（带上下拉当前分类），已在笔记二级页时 no-op |
+/// | `Ctrl+N` | 新建笔记（带上下拉当前分类；宽屏下落在右侧面板），已在笔记二级页时 no-op |
 /// | `Ctrl+F` | 弹出全局搜索面板（[showNoteSearchPanel]） |
-/// | `Ctrl+S` | 立即落库当前编辑页（非编辑页 no-op） |
+/// | `Ctrl+S` | 立即落库当前编辑页 / 宽屏右栏面板（非编辑页 no-op） |
 /// | `Ctrl+,` | 打开设置 |
-/// | `Esc` | 返回上一页（[rootNavigatorKey] 的 `maybePop`） |
+/// | `Ctrl+1` | 切到笔记 |
+/// | `Ctrl+2` | 切到待办 |
+/// | `Esc` | 宽屏右栏有笔记时先关面板；否则返回上一页（[rootNavigatorKey] 的 `maybePop`） |
 ///
 /// ⛔ **Esc 必须 `maybePop`**：`pop()` 绕过 `PopScope`，等于绕过编辑页的未保存
 /// 保护（编辑页靠 `PopScope` 拦下返回、先 `flush()` 草稿再退）。
@@ -30,7 +34,7 @@ import 'package:mynote/features/notes/presentation/widgets/note_search_panel.dar
 /// 少一个平台分支。
 ///
 /// 该层虽然叫「桌面」，判断位置的依据是**路由 URL**而不是平台：
-/// `ref.read(routerProvider).routerDelegate.currentConfiguration.uri`。
+/// `ref.read(routerProvider).state.uri`。
 class DesktopShortcuts extends ConsumerStatefulWidget {
   const DesktopShortcuts({required this.child, super.key});
 
@@ -58,9 +62,16 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
   ///
   /// ⛔ 已在笔记二级页（详情 / 新建 / 文件夹 / 回收站）直接 no-op：在一条还没
   /// 保存的编辑之上再叠一个「新建」，只会让人分不清哪一层是哪个草稿。
+  ///
+  /// 宽屏双栏下不压路由，直接让右栏切到新建 —— 那正是双栏存在的意义。
   void _newNote() {
     final uri = _location;
     if (uri.path.startsWith('${AppRoutes.notes}/')) return;
+
+    if (_isTwoPane) {
+      ref.read(selectedNoteProvider.notifier).select(kNewNoteId);
+      return;
+    }
 
     ref
         .read(routerProvider)
@@ -92,27 +103,39 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
 
   /// 立即落库当前编辑页。
   ///
-  /// ⛔ 不新增「当前编辑的是哪篇」这种状态：笔记 id 就在 URL 里（`/notes/:id`、
-  /// `/notes/new` 的 `new` 即 `kNewNoteId`），分类在 `?folder=` 里 —— 与编辑页
-  /// 传给 `noteEditorProvider` 的参数逐字一致，因此命中的是同一个 provider 实例。
+  /// ⛔ 不新增「当前编辑的是哪篇」这种状态：
+  /// - 整页：笔记 id 就在 URL 里（`/notes/:id`、`/notes/new` 的 `new` 即
+  ///   [kNewNoteId]），分类在 `?folder=` 里 —— 与编辑页传给 [noteEditorProvider]
+  ///   的参数逐字一致，因此命中的是同一个 provider 实例。
+  /// - 宽屏面板：URL 里没有笔记 id（双栏的选中态不进 URL），读 [selectedNoteProvider]。
+  ///
   /// `flush()` 非 dirty 直接返回，可重复调用。
-  Future<void> _save() async {
+  void _save() {
     final uri = _location;
     // 文件夹管理 / 回收站不是编辑器：照 URL 去读一篇不存在的笔记纯属白跑一次库。
     if (uri.path == AppRoutes.noteFolders || uri.path == AppRoutes.noteTrash) {
       return;
     }
-    final segments = uri.pathSegments;
-    if (segments.length != 2 || segments.first != 'notes') return;
 
-    await ref
-        .read(
-          noteEditorProvider(
-            segments[1],
-            folderId: uri.queryParameters[AppRoutes.folderQueryKey],
-          ).notifier,
-        )
-        .flush();
+    final segments = uri.pathSegments;
+    if (segments.length == 2 && segments.first == 'notes') {
+      _flushEditor(segments[1], uri.queryParameters[AppRoutes.folderQueryKey]);
+      return;
+    }
+
+    final selected = ref.read(selectedNoteProvider);
+    if (selected != null && _isTwoPane) {
+      _flushEditor(
+        selected,
+        selected == kNewNoteId
+            ? newNoteFolderId(uri.queryParameters[AppRoutes.folderQueryKey])
+            : null,
+      );
+    }
+  }
+
+  void _flushEditor(String noteId, String? folderId) {
+    ref.read(noteEditorProvider(noteId, folderId: folderId).notifier).flush();
   }
 
   /// 打开设置。已在设置（含其二级页）时不重复压栈。
@@ -121,8 +144,52 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
     ref.read(routerProvider).push(AppRoutes.settings);
   }
 
-  /// 返回上一页。与点返回按钮等价 —— `maybePop` 无路可退时返回 false，天然安全。
-  void _back() => rootNavigatorKey.currentState?.maybePop();
+  /// 切到第 [index] 个 Tab（0 = 笔记，1 = 待办）。
+  ///
+  /// 已在目标分支的任意页面 → no-op：`Ctrl+1` 的本意是「切过去」，不是
+  /// 「把正在编辑的笔记关掉回列表」。
+  void _switchTab(int index) {
+    final path = _location.path;
+    if (index == 0 && path.startsWith(AppRoutes.notes)) return;
+    if (index == 1 && path.startsWith(AppRoutes.todos)) return;
+    ref.read(routerProvider).go(index == 0 ? AppRoutes.notes : AppRoutes.todos);
+  }
+
+  /// 返回上一页。宽屏右栏有笔记时优先关面板。
+  ///
+  /// 与点返回按钮等价 —— `maybePop` 无路可退时返回 false，天然安全。
+  void _back() {
+    final selected = ref.read(selectedNoteProvider);
+    if (selected != null && _isTwoPane) {
+      _closePane(selected);
+      return;
+    }
+    rootNavigatorKey.currentState?.maybePop();
+  }
+
+  /// 关闭右栏：先落库再清选中（顺序与 `NotesWideLayout._closePane` 一致）。
+  Future<void> _closePane(String noteId) async {
+    await ref
+        .read(
+          noteEditorProvider(
+            noteId,
+            folderId: noteId == kNewNoteId
+                ? newNoteFolderId(
+                    _location.queryParameters[AppRoutes.folderQueryKey],
+                  )
+                : null,
+          ).notifier,
+        )
+        .flush();
+    ref.read(selectedNoteProvider.notifier).clear();
+  }
+
+  /// 当前窗口是否够宽、笔记页是否处于双栏形态。
+  ///
+  /// ⚠️ 用 `platformDispatcher` 现算而不是 `MediaQuery.sizeOf(context)`：
+  /// 本层在 Build 期不读尺寸（会把整个 Navigator 绑到窗口尺寸上），回调里
+  /// 再 `dependOnInheritedWidget` 又是非 build 阶段读继承依赖，会打警告。
+  bool get _isTwoPane => currentWindowWidth() >= AppBreakpoints.twoPane;
 
   /// 组合键 → 回调。
   ///
@@ -141,6 +208,18 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
             _save,
         SingleActivator(LogicalKeyboardKey.comma, control: !meta, meta: meta):
             _openSettings,
+        SingleActivator(
+          LogicalKeyboardKey.digit1,
+          control: !meta,
+          meta: meta,
+        ): () =>
+            _switchTab(0),
+        SingleActivator(
+          LogicalKeyboardKey.digit2,
+          control: !meta,
+          meta: meta,
+        ): () =>
+            _switchTab(1),
       });
     }
     bindings[const SingleActivator(LogicalKeyboardKey.escape)] = _back;
